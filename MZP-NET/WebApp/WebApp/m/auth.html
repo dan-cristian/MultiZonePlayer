@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head id="Head1">
+    <meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+    <meta name="robots" content="index, follow, noodp" />
+    <title>
+      Auth
+    </title>
+      <script type="text/javascript">
+
+        var pass = null;
+        var auth = false;
+
+        function askpass(obj) {
+                pass = prompt("Password?", "");
+                obj.src.replace("_pass", pass);
+        }
+        
+
+        function nextimage(obj) {
+            if (pass == null)
+                askpass(obj);
+            setTimeout(function () { getnextframe(obj) }, 3000);
+        }
+
+        function nextimageerror(obj) {
+            if (pass == null)
+                askpass(obj);
+
+            setTimeout(function () { getnextframe(obj) }, 3000);
+        }
+
+        function getnextframe(obj) {
+
+            
+                var _url = obj.src;
+                _url = _url.substring(0, _url.indexOf('&r='));
+                _url += "&r=" + Math.random();
+                _url += "&pass=" + pass;
+                obj.src = _url;
+                
+        }
+
+        
+        </script>
+
+    </head>
+  <body>
+    <div id="ObjectContainer">
+      <img src="http://#~HTMLDVRServerPort#/nothing?pass=_pass" id="authid" onerror="nextimageerror(this)" onload="nextimage(this)"/>
+      </div>
+      <br />
+  </body>
+</html>

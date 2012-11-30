@@ -1,0 +1,5 @@
+C:\Development\MZP\MZP-NET\WebApp\WebApp\bin\WebApp.dll
+C:\Development\MZP\MZP-NET\WebApp\WebApp\bin\WebApp.pdb
+C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.dll
+C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.pdb
+C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.csprojResolveAssemblyReference.cache

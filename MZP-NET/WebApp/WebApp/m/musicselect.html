@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Music</title>
+    <style type="text/css">
+        .style1
+        {
+            height: 23px;
+        }
+        .style2
+        {
+            width: 32px;
+        }
+    </style>
+</head>
+<body>
+
+    <table style="">
+    <tr>
+    <td>
+        <form action="music.html?zoneid=%_zoneid" method="post">
+        <input name="command" type="hidden" value="searchmediaitem"/>
+        <input name="searchvalue" type="text" value="" autofocus/>
+        <input type="submit" value="Search" />
+        </form>
+    </td>
+    </tr>
+    
+    <tr>
+    <td>
+        <form action="musicselect.html?zoneid=%_zoneid" method="post">
+        <input name="command" type="hidden" value="setartistlist"/>
+        <select multiple="yes" size="3" name="selectedindex">
+        #~HTMLGetCmdValues,%_zoneid,artistlist,option#
+        </select><br />
+        <input type="submit" value="Select Artists" />
+        </form>
+    
+    </td>
+    
+    </tr>
+    <tr>
+        <td>
+        <form action="musicselect.html?zoneid=%_zoneid" method="post">
+        <input name="command" type="hidden" value="setgenrelist"/>
+        <select multiple="yes" size="3" name="selectedindex">
+        #~HTMLGetCmdValues,%_zoneid,genrelist,option#
+        </select><br />
+        <input type="submit" value="Select Genres" />
+        </form>
+            </td>
+      </tr>
+      <tr>
+      <td>
+      <form action="musicselect.html?zoneid=%_zoneid" method="post">
+        <input name="command" type="hidden" value="setmoodmusic"/>
+        <select multiple="no" size="3" name="selectedindex">
+         #~HTMLGetCmdValues,%_zoneid,getmoodmusiclist,option#
+        </select><br />
+        <input type="submit" value="Select Mood" />
+        </form>
+      
+        </td>
+      </tr>
+            <tr><td><a href="music.html?zoneid=%_zoneid">Back</a></td></tr>
+    </table>
+    <br />
+    
+</body>
+</html>

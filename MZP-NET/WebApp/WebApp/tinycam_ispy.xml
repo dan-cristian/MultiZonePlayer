@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Custom vendors XML file is designed for defining additional camera models in
+ tinyCam Monitor for Android app (http://tinycammonitor.com)
+
+ To load this modified file you first need to upload it on your Android phone.
+ Then run tinyCam Monitor and in "App Settings -> Custom vendors xml file"
+ specify full link to the file, e.g. "/sdcard/custom_vendors.xml".
+ Exit from the app and run it again. You will see a popup message saying
+ whether the file has been successfully loaded or error occurred.
+
+ If you want your changes to be included into the next tinyCam Monitor release
+ send this file with your changes to alexey.vasilyev@gmail.com
+
+
+ Use protocol analyzer tool like Wireshark to intercept HTTP requests.
+ All requests used in this file are HTTP GET. All names are case sensitive.
+ Optional values which can be used in requests:
+
+   %CAMERANO%   - channel number [1..max]
+   %CAMERANO-1% - channel number [0..max]
+   %USERNAME%   - username
+   %PASSWORD%   - password
+   %PRESETNO%   - preset number [1..8]
+   %PRESETNO-1% - preset number [0..7]
+
+  These values will be automatically substited at runtime with approriate values.
+
+ -->
+<vendors>
+
+    <!-- Sample camera vendor -->
+    <vendor name="iSpy">
+
+        <!-- ======================================================= -->
+        <!-- Example camera definition which just shows video.       -->
+        <!-- Every <vendor> should have at least one <model>.        -->
+        <!-- ======================================================= -->
+        <model name="Foscam IP no PTZ">
+            <request name="JPEG">/livefeed?oid=%CAMERANO%&amp;full&amp;pass=%PASSWORD%</request>
+            <!-- Alternative JPEG image snapshot (optional) when low bandwidth profile is used -->
+            <request name="JPEG2">/livefeed?oid=%CAMERANO%&amp;pass=%PASSWORD%</request>
+            
+            <request name="LedOff">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=94&amp;pass=%PASSWORD%</request>
+            <request name="LedOn">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=95&amp;pass=%PASSWORD%</request>
+
+            <request custom="Resolution 320x240">/camera_control.cgi?param=0&amp;value=8&amp;pass=%PASSWORD%</request>
+            <request custom="Resolution 640x480">/camera_control.cgi?param=0&amp;value=32&amp;pass=%PASSWORD%</request>
+            <!-- tag confirmation show the Yes/No confirmation message box -->
+            <request custom="Reboot" confirmation="yes">/reboot.cgi&amp;pass=%PASSWORD%</request>
+            
+        </model>
+
+        <!-- ======================================================= -->
+        <!-- Advanced camera which supports PTZ.                     -->
+        <!-- ======================================================= -->
+        <model name="FOSCAM IP PTZ" basedOn="Foscam IP no PTZ">
+            <!-- Video requests section. At least JPEG or MJPEG request should be specified. -->
+            
+            <!-- MJPEG data. Content-type: multipart/x-mixed-replace -->
+            <request name="MJPEG">/cgi/video.mjpg&amp;pass=%PASSWORD%</request>
+            <!-- Alternative MJPEG data (optional) when low bandwidth profile is used -->
+            <request name="MJPEG2">/cgi/video.mjpg?resolution=160x120&amp;fps=1&amp;pass=%PASSWORD%</request>
+
+            <!-- PTZ requests section (optional) -->
+            <!-- Button will be disabled if request is not specified -->
+            <request name="PtzMoveHome">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=1&amp;pass=%PASSWORD%</request>
+            <request name="PtzMoveRelLeft">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=6&amp;onestep=1&amp;pass=%PASSWORD%</request>
+            <request name="PtzMoveRelRight">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=4&amp;onestep=1&amp;pass=%PASSWORD%</request>
+            <request name="PtzMoveRelUp">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=0&amp;onestep=1&amp;pass=%PASSWORD%</request>
+            <request name="PtzMoveRelDown">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=2&amp;onestep=1&amp;pass=%PASSWORD%</request>
+
+            <request custom="Stop Up">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=1&amp;pass=%PASSWORD%</request>
+            <request custom="Stop Down">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=3&amp;pass=%PASSWORD%</request>
+            <request custom="Stop Left">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=5&amp;pass=%PASSWORD%</request>
+            <request custom="Stop Right">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=7&amp;pass=%PASSWORD%</request>
+            <request custom="Center">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=25&amp;pass=%PASSWORD%</request>
+          
+            <request custom="H Patrol">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=28&amp;pass=%PASSWORD%</request>
+            <request custom="V Patrol">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=26&amp;pass=%PASSWORD%</request>
+
+            <request custom="Resolution 320x240">/camera_control.cgi?param=0&amp;value=8&amp;pass=%PASSWORD%</request>
+            <request custom="Resolution 640x480">/camera_control.cgi?param=0&amp;value=32&amp;pass=%PASSWORD%</request>
+            <!-- tag confirmation show the Yes/No confirmation message box -->
+            <request custom="Reboot" confirmation="yes">/reboot.cgi&amp;pass=%PASSWORD%</request>
+          
+            <!-- Additional possible request names:
+            
+             <request name="PtzSetPreset">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=30</request>
+            <request name="PtzGotoPreset">/changesetting?field=ptz&amp;oid=%CAMERANO%&amp;value=command=31</request>
+            
+            <request name="PtzMoveRelUp">/cgi/ptz.cgi?move=up</request>
+            <request name="PtzMoveRelDown">/cgi/ptz.cgi?move=down</request>
+            <request name="PtzZoomTele">/cgi/ptz.cgi?zoom=tele</request>
+            <request name="PtzZoomWide">/cgi/ptz.cgi?zoom=wide</request>
+            <request name="PtzGotoPreset">/cgi/ptz.cgi?gotoserverpresetno=%PRESETNO%</request> <!-- %PRESETNO% = [1..8] 
+            <request name="PtzSetPreset">/cgi/ptz.cgi?setserverpresetno=%PRESETNO%</request>
+                 Login
+                 PtzMoveStop
+                 PtzZoomStop
+                 PtzFocusAuto
+                 PtzFocusManual
+                 PtzFocusFar
+                 PtzFocusNear
+                 PtzFocusStop
+                 PtzIrisAuto
+                 PtzIrisManual
+                 PtzIrisOpen
+                 PtzIrisClose
+                 PtzIrisStop
+                 RelayOn
+                 RelayOff
+                 LedOn
+                 LedOff
+                 PtzGotoPreset1
+                 PtzGotoPreset2
+                 ...
+                 PtzGotoPreset8
+                 PtzSetPreset1
+                 PtzSetPreset2
+                 ...
+                 PtzSetPreset8
+                 Sleep
+                 Wake
+             -->
+
+            <!-- Admin requests section (optional) -->
+            <!-- If any of custom request specified additional ptz screen will be created -->
+            <!-- Atrribute custom should contain any custom text to be shown on button -->
+            
+            
+            
+        </model>
+
+
+    </vendor>
+
+
+
+    <vendor name="ZoneMinder Custom">
+        <model name="Generic">
+            <request name="Login">/zm/index.php?view=watch&amp;mid=%CAMERANO%&amp;username=%USERNAME%&amp;password=%PASSWORD%&amp;action=login</request>
+            <request name="MJPEG">/cgi-bin/nph-zms?mode=jpeg&amp;monitor=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%</request>
+            <request name="MJPEG2">/cgi-bin/nph-zms?mode=jpeg&amp;monitor=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;maxfps=1</request>
+            <request name="JPEG">/cgi-bin/nph-zms?mode=single&amp;monitor=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%</request>
+            <request name="PtzMoveRelLeft">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=moveConLeft&amp;yge=75</request>
+            <request name="PtzMoveRelRight">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=moveConRight&amp;yge=75</request>
+            <request name="PtzMoveRelUp">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=moveConUp&amp;yge=75</request>
+            <request name="PtzMoveRelDown">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=moveConDown&amp;yge=75</request>
+            <request name="PtzMoveHome">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=presetHome</request>
+            <request name="PtzZoomTele">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=zoomConTele&amp;yge=75</request>
+            <request name="PtzZoomWide">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=zoomConWide&amp;yge=75</request>
+            <request name="PtzFocusAuto">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=focusAuto</request>
+            <request name="PtzFocusManual">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=focusMan</request>
+            <request name="PtzFocusFar">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=focusConFar&amp;yge=75</request>
+            <request name="PtzFocusNear">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=focusConNear&amp;yge=75</request>
+            <request name="PtzIrisAuto">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=irisAuto</request>
+            <request name="PtzIrisManual">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=irisMan</request>
+            <request name="PtzIrisOpen">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=irisConOpen&amp;yge=75</request>
+            <request name="PtzIrisClose">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=irisConClose&amp;yge=75</request>
+            <request name="PtzGotoPreset">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=presetGoto%PRESETNO%</request> <!-- where %PRESETNO% = [1..max] -->
+            <request name="PtzSetPreset">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=presetSet%PRESETNO%</request>
+            <request name="Sleep">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=sleep</request>
+            <request name="Wake">/zm/?view=request&amp;request=control&amp;id=%CAMERANO%&amp;user=%USERNAME%&amp;pass=%PASSWORD%&amp;control=wake</request>
+        </model>
+    </vendor>
+
+</vendors>

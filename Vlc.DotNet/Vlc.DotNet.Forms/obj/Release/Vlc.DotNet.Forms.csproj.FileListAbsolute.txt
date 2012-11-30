@@ -1,0 +1,9 @@
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Release\Vlc.DotNet.Forms.dll
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Release\Vlc.DotNet.Forms.pdb
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Release\Vlc.DotNet.Core.dll
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Release\Vlc.DotNet.Core.Interops.dll
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Release\Vlc.DotNet.Core.Interops.pdb
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Release\Vlc.DotNet.Core.pdb
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Release\Vlc.DotNet.Forms.csprojResolveAssemblyReference.cache
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Release\Vlc.DotNet.Forms.dll
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Release\Vlc.DotNet.Forms.pdb

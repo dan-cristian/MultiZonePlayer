@@ -1,0 +1,7 @@
+
+2012/10/19  08:09:08   New         Zone           01                    OPENED
+2012/10/19  08:09:32   Restore     Zone           01                    CLOSED
+2012/10/19  08:10:06   New         Zone           05                    OPENED
+2012/10/19  08:10:08   Restore     Zone           05                    CLOSED
+2012/10/28  20:10:06   New         Zone           02                    OPENED
+2012/10/28  20:10:06   New         Zone           02                    OPENED

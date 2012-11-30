@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Music #~HTMLZones.ZoneName,%_zoneid#</title>
+    <script type="text/JavaScript" src="utilities.js"></script> 
+    <style type="text/css">
+        table {width: 100%;text-align:left;}
+        tr {text-align:left;}
+        td {text-align:left;table-layout:auto;}
+        a {text-decoration: none;}
+        a.big {font-size:96px;}
+        a.med {font-size:48px;}
+  </style>
+    <meta http-equiv="refresh" content="30; URL=music.html?zoneid=%_zoneid"/>
+    <meta http-equiv="content-type" content="text/html;charset=unicode;" />
+</head>
+<body style="width: 100%;">
+    <table>
+        <tr>
+            <td><a class="big" href="music.html?command=play&zoneid=%_zoneid" title="play">►</a></td>
+            <td><a class="big" href="music.html?command=stop&zoneid=%_zoneid" title="stop">■</a></td>
+            <td><a class="big" href="music.html?command=volumedown&zoneid=%_zoneid" title="volume down">▼</a></td>
+            <td><a class="big" href="music.html?command=volumeup&zoneid=%_zoneid" title="volume up">▲</a></td>
+            <td><a class="big" href="music.html?command=next&zoneid=%_zoneid" title="next">►►</a></td>
+            
+        </tr>
+        </table>
+        <table>
+        <tr>
+            <td><a class="med" href="music.html?command=pause&zoneid=%_zoneid">‖</a></td>
+            <td><a class="med" href="music.html?command=previous&zoneid=%_zoneid">◄◄</a></td>
+            <td><a class="med" href="music.html?command=musicclone&zoneid=%_zoneid">©</a></td>
+            <td><a class="med" href="monitor.html">«</a>&nbsp;</td>
+            <td><a class="med" href="status.html">←</a></td>
+        </tr>
+        </table>
+        <table>
+        <tr>
+            <td><a href="music.html?zoneid=%_zoneid">#~HTMLZones.ZoneState,%_zoneid#</a></td>
+            <td>#~HTMLZones.PositionPercent,%_zoneid#%</td>
+            <td>#~HTMLZones.VolumeLevel,%_zoneid#</td>
+            <td><a href="music.html?command=repeat&zoneid=%_zoneid">Playmode</a></td>
+            <td><a href="music.html?command=followmemusic&zoneid=%_zoneid">☻ </a>#~HTMLMZPState.IsFollowMeMusic#</td>
+        </tr>
+        
+    </table>
+    
+    <table>
+        
+        <tr>
+            <td>Title</td>
+            <td>#~HTMLZones.Title,%_zoneid#</td>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=artist">Hold</a></td>
+            <td>#~HTMLZones.Author,%_zoneid#</td>
+        </tr>
+        <tr>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=genre">Hold</a></td>
+            <td>#~HTMLZones.Genre,%_zoneid#</td>
+            <td>Year</td>
+            <td>#~HTMLZones.Year,%_zoneid#</td>
+        </tr>
+        <tr>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=album">Hold</a></td>
+            <td>#~HTMLZones.Album,%_zoneid#</td>
+        </tr>
+        <tr>
+            <td>Playcount</td>
+            <td>#~HTMLZones.Playcount,%_zoneid#</td>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=rating">Hold</a></td>
+            <td>#~HTMLZones.Rating,%_zoneid# 
+                <a href="music.html?command=up&zoneid=%_zoneid">Up</a> /
+                <a href="music.html?command=down&zoneid=%_zoneid">Down</a></td>
+        </tr>
+        <tr>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=folder">Hold Folder</a></td>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=nothing">Hold Nothing</a></td>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid">Hold Toggle</a></td>
+            <td>
+                <a href="musicselect.html?zoneid=%_zoneid">Select</a>
+                <a href="musicplaylist.html?zoneid=%_zoneid">Playlist</a></td>
+        </tr>
+        <tr>
+            <td>Playlist</td>
+            <td>#~HTMLZones.Playlist,%_zoneid#</td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td>Folder</td>
+            <td>#~HTMLZones.SourceURL,%_zoneid#</td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td>Wake Time (#~HTMLZones.WakeTime,%_zoneid# #~HTMLZones.WakeWeekDay,%_zoneid#)</td>
+        </tr>
+        <tr>
+            <td>
+                <form id="wake" action="music.html?zoneid=%_zoneid" method="post">
+                <input name="command" type="hidden" value="setwaketimer"/>
+                <input name="datetime" type="text" value="hh:mm"/>
+                <br />
+                <input name="weekday" type="radio" value="MoTuWeThFr"/>Week
+                <input name="weekday" type="radio" value="SaSu"/>Weekend
+                <input id="Submit1" type="submit" value="Set Wake Time" />
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td>Sleep Time (#~HTMLZones.SleepHourMin,%_zoneid#)</td>
+        </tr>
+        <tr>
+            <td>
+                <form id="Form2" action="music.html?zoneid=%_zoneid" method="post">
+                <input name="command" type="hidden" value="sleeptimer"/>
+                <input name="datetime" type="text" value="hh:mm"/>
+                <input id="Submit2" type="submit" value="Set Sleep Time" />
+                </form>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
