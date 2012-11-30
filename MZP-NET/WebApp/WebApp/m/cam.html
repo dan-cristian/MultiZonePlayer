@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head id="Head1">
+    <meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+    <meta name="robots" content="index, follow, noodp" />
+    <title>
+      Watch all Cameras
+    </title>
+      <script type="text/javascript">
+        var delay = 1000;
+        var firsterror=null;
+        var winw, winh, imgw, imgh;
+        
+
+        
+        
+
+        function nextimage(obj) {
+            
+            setTimeout(function () { getnextframe(obj) }, delay);
+        }
+
+        function nextimageerror(obj) {
+            
+            if (firsterror == "" || firsterror==null) {
+                firsterror=new Date();
+                //document.getElementById("STATUSID").innerHTML="ERROR since "+firsterror.toUTCString();
+            }
+            
+            setTimeout(function(){getnextframe(obj)}, 3000);
+        }
+
+
+        function getnextframe(obj)
+        {
+            //document.getElementById("DEBUGID").innerHTML=firsterror + " complete: " + obj.complete;
+            getSize();
+            if (obj.src.indexOf("camoff") == -1)            {
+                var _url = obj.src;
+                _url = _url.substring(0, _url.indexOf('&r='));
+                _url += "&r=" + Math.random();
+                
+                obj.src = _url;
+                scaleSize(winw-20, winh-20, obj.width, obj.height);
+
+                //alert("ini w="+obj.width+" ini h="+obj.height + " NEW w="+imgw+" NEW h="+imgh + "maxw="+winw+" maxh="+winh);
+                obj.width=imgw;
+                obj.height=imgh;
+                //document.getElementById("DEBUGID2").innerHTML=firsterror + " complete: " + obj.complete;
+                if (obj.complete)                {
+                    firsterror=null;
+                    //document.getElementById("STATUSID").innerHTML="Loaded OK at " + new Date().toUTCString();
+                }
+
+            }
+        }
+
+          function errorthumb(obj) {
+          if (obj.src.indexOf("camoff") == -1)
+          obj.src = "/content/camoff.png";
+          }
+
+          function getSize() {
+          var myWidth = 0, myHeight = 0;
+          if( typeof( window.innerWidth ) == 'number' ) {
+          //Non-IE
+          myWidth = window.innerWidth;
+          myHeight = window.innerHeight;
+          } else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+          //IE 6+ in 'standards compliant mode'
+          myWidth = document.documentElement.clientWidth;
+          myHeight = document.documentElement.clientHeight;
+          } else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+          //IE 4 compatible
+          myWidth = document.body.clientWidth;
+          myHeight = document.body.clientHeight;
+          }
+          winw=myWidth;
+          winh=myHeight;
+
+          }
+
+          function scaleSize(maxW, maxH, currW, currH){
+          var ratio = Math.min(maxW / currW, maxH / currH);
+          if((ratio == maxH/currH )){
+          imgw= currW* ratio;
+          imgh= maxH;
+          } else 
+          {
+          imgw= maxW;
+          imgh= currH * ratio;
+          }
+          
+          }
+        </script>
+    </head>
+  <body>
+    <div id="ObjectContainer">
+      <img src="http://#~HTMLDVRServerPort#/livefeed?oid=%_oid&amp;full&amp;r=#!HTMLRandom#&amp;" id="CAMID"
+        title="Camera" onerror="nextimageerror(this)"
+        onload="nextimage(this)"
+        alt="cam"/>
+      </div>
+      <br />
+      
+      <form name="refreshform">
+      <input id="RadioRefresh1"  name="RadioRefresh" type="radio" value="100" onclick="delay=100"/>Fast
+      <input id="RadioRefresh2" name="RadioRefresh" type="radio" value="1000" onclick="delay=1000"/>Medium
+      <input id="RadioRefresh3"  name="RadioRefresh" type="radio" value="10000" onclick="delay=10000"/>Slow
+      </form>
+      <br />
+    
+      
+      
+  </BODY>
+</html>

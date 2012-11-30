@@ -1,0 +1,4 @@
+C:\Development\MZP\MZP-NET\WebApp\WebApp\bin\WebApp.dll
+C:\Development\MZP\MZP-NET\WebApp\WebApp\bin\WebApp.pdb
+C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Release\WebApp.dll
+C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Release\WebApp.pdb

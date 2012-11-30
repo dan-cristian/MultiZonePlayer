@@ -1,0 +1,870 @@
+﻿namespace MultiZonePlayer
+{
+    partial class FormOptions
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            this.btnSave = new System.Windows.Forms.Button();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.tabParams = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.dgvZones = new System.Windows.Forms.DataGridView();
+            this.tabControl = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtLastControlDevice = new System.Windows.Forms.TextBox();
+            this.dgvControl = new System.Windows.Forms.DataGridView();
+            this.Control_ZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Control_DeviceName = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Control_Identify = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.tabMusic = new System.Windows.Forms.TabPage();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.dgvMusic = new System.Windows.Forms.DataGridView();
+            this.Playlist_UserId = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Playlist_FullPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Playlist_Mood = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Playlist_OpenPlaylist = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.Playlist_OpenFolder = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.dgvMusicMood = new System.Windows.Forms.DataGridView();
+            this.Music_MoodName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_MoodGenres = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_MoodAuthors = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_MoodRatings = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_AgeInWeeks = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.MusicMood_LogicalOperation = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.MusicMood_GroupByTop = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.MusicMood_GroupByTopCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.MusicMood_Random = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.dgvMusicSchedule = new System.Windows.Forms.DataGridView();
+            this.Music_ScheduleZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_ScheduleStartTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_ScheduleEndTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_ScheduleWeekDay = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Music_ScheduleMood = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tabVideo = new System.Windows.Forms.TabPage();
+            this.dgvVideo = new System.Windows.Forms.DataGridView();
+            this.Video_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Video_PlaylistFullPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tabInput = new System.Windows.Forms.TabPage();
+            this.dgvInputs = new System.Windows.Forms.DataGridView();
+            this.InputId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.InputName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.InputTypeId_Inputs = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.InZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.InputDeviceName = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.tabUsers = new System.Windows.Forms.TabPage();
+            this.dgvUsers = new System.Windows.Forms.DataGridView();
+            this.UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.UserName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.UserCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.button1 = new System.Windows.Forms.Button();
+            this.dgvParams = new System.Windows.Forms.DataGridView();
+            this.ParamName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ParamValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dgvDisplay = new System.Windows.Forms.DataGridView();
+            this.Display_ZoneID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Display_Type = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Display_ConnectionName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ZoneName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_OutputKeywords = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.OutputDevice = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Zones_PowerIndexDK = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_DefaultVolume = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_CameraId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_AlarmZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_ParentZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tabParams.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvZones)).BeginInit();
+            this.tabControl.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvControl)).BeginInit();
+            this.tabMusic.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMusic)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMusicMood)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMusicSchedule)).BeginInit();
+            this.tabVideo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvVideo)).BeginInit();
+            this.tabInput.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvInputs)).BeginInit();
+            this.tabUsers.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).BeginInit();
+            this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvParams)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvDisplay)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // btnSave
+            // 
+            this.btnSave.Location = new System.Drawing.Point(2, 355);
+            this.btnSave.Margin = new System.Windows.Forms.Padding(2);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(62, 28);
+            this.btnSave.TabIndex = 7;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // tabParams
+            // 
+            this.tabParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabParams.Controls.Add(this.tabPage1);
+            this.tabParams.Controls.Add(this.tabControl);
+            this.tabParams.Controls.Add(this.tabMusic);
+            this.tabParams.Controls.Add(this.tabVideo);
+            this.tabParams.Controls.Add(this.tabInput);
+            this.tabParams.Controls.Add(this.tabUsers);
+            this.tabParams.Controls.Add(this.tabPage2);
+            this.tabParams.Location = new System.Drawing.Point(2, 11);
+            this.tabParams.Margin = new System.Windows.Forms.Padding(2);
+            this.tabParams.Name = "tabParams";
+            this.tabParams.SelectedIndex = 0;
+            this.tabParams.Size = new System.Drawing.Size(1070, 340);
+            this.tabParams.TabIndex = 1;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.dgvZones);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(2);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(2);
+            this.tabPage1.Size = new System.Drawing.Size(1062, 314);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Zones";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // dgvZones
+            // 
+            this.dgvZones.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
+            this.dgvZones.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.dgvZones.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvZones.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.ZoneId,
+            this.ZoneName,
+            this.Zones_OutputKeywords,
+            this.OutputDevice,
+            this.Zones_PowerIndexDK,
+            this.Zones_DefaultVolume,
+            this.Zones_CameraId,
+            this.Zones_AlarmZoneId,
+            this.Zones_ParentZoneId});
+            this.dgvZones.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvZones.Location = new System.Drawing.Point(2, 2);
+            this.dgvZones.Margin = new System.Windows.Forms.Padding(2);
+            this.dgvZones.Name = "dgvZones";
+            this.dgvZones.RowTemplate.Height = 24;
+            this.dgvZones.Size = new System.Drawing.Size(1058, 310);
+            this.dgvZones.TabIndex = 6;
+            this.dgvZones.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvZones_CellContentClick);
+            this.dgvZones.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvZones_DataError);
+            // 
+            // tabControl
+            // 
+            this.tabControl.Controls.Add(this.label1);
+            this.tabControl.Controls.Add(this.txtLastControlDevice);
+            this.tabControl.Controls.Add(this.dgvControl);
+            this.tabControl.Location = new System.Drawing.Point(4, 22);
+            this.tabControl.Margin = new System.Windows.Forms.Padding(2);
+            this.tabControl.Name = "tabControl";
+            this.tabControl.Padding = new System.Windows.Forms.Padding(2);
+            this.tabControl.Size = new System.Drawing.Size(1062, 314);
+            this.tabControl.TabIndex = 5;
+            this.tabControl.Text = "Control";
+            this.tabControl.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(4, 230);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(77, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Control Device";
+            // 
+            // txtLastControlDevice
+            // 
+            this.txtLastControlDevice.Location = new System.Drawing.Point(96, 228);
+            this.txtLastControlDevice.Margin = new System.Windows.Forms.Padding(2);
+            this.txtLastControlDevice.Name = "txtLastControlDevice";
+            this.txtLastControlDevice.Size = new System.Drawing.Size(644, 20);
+            this.txtLastControlDevice.TabIndex = 1;
+            this.txtLastControlDevice.TextChanged += new System.EventHandler(this.txtLastControlDevice_TextChanged);
+            // 
+            // dgvControl
+            // 
+            this.dgvControl.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            this.dgvControl.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvControl.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Control_ZoneId,
+            this.Control_DeviceName,
+            this.Control_Identify});
+            this.dgvControl.Location = new System.Drawing.Point(4, 5);
+            this.dgvControl.Margin = new System.Windows.Forms.Padding(2);
+            this.dgvControl.Name = "dgvControl";
+            this.dgvControl.RowTemplate.Height = 24;
+            this.dgvControl.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvControl.Size = new System.Drawing.Size(1042, 218);
+            this.dgvControl.TabIndex = 0;
+            this.dgvControl.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvControl_CellContentClick);
+            this.dgvControl.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvControl_DataError);
+            // 
+            // Control_ZoneId
+            // 
+            this.Control_ZoneId.HeaderText = "ZoneId";
+            this.Control_ZoneId.Name = "Control_ZoneId";
+            this.Control_ZoneId.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Control_ZoneId.Width = 66;
+            // 
+            // Control_DeviceName
+            // 
+            this.Control_DeviceName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Control_DeviceName.HeaderText = "DeviceName";
+            this.Control_DeviceName.Name = "Control_DeviceName";
+            this.Control_DeviceName.Width = 75;
+            // 
+            // Control_Identify
+            // 
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.Control_Identify.DefaultCellStyle = dataGridViewCellStyle2;
+            this.Control_Identify.HeaderText = "Identify";
+            this.Control_Identify.Items.AddRange(new object[] {
+            "Manual",
+            "Auto"});
+            this.Control_Identify.Name = "Control_Identify";
+            this.Control_Identify.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Control_Identify.Width = 47;
+            // 
+            // tabMusic
+            // 
+            this.tabMusic.Controls.Add(this.tableLayoutPanel1);
+            this.tabMusic.Location = new System.Drawing.Point(4, 22);
+            this.tabMusic.Margin = new System.Windows.Forms.Padding(2);
+            this.tabMusic.Name = "tabMusic";
+            this.tabMusic.Padding = new System.Windows.Forms.Padding(2);
+            this.tabMusic.Size = new System.Drawing.Size(1062, 314);
+            this.tabMusic.TabIndex = 1;
+            this.tabMusic.Text = "Music";
+            this.tabMusic.UseVisualStyleBackColor = true;
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.ColumnCount = 1;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.dgvMusic, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.dgvMusicMood, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.dgvMusicSchedule, 0, 2);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(2, 2);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1058, 310);
+            this.tableLayoutPanel1.TabIndex = 1;
+            // 
+            // dgvMusic
+            // 
+            this.dgvMusic.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvMusic.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Playlist_UserId,
+            this.Playlist_FullPath,
+            this.Playlist_Mood,
+            this.Playlist_OpenPlaylist,
+            this.Playlist_OpenFolder});
+            this.dgvMusic.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvMusic.Location = new System.Drawing.Point(2, 2);
+            this.dgvMusic.Margin = new System.Windows.Forms.Padding(2);
+            this.dgvMusic.Name = "dgvMusic";
+            this.dgvMusic.RowTemplate.Height = 24;
+            this.dgvMusic.Size = new System.Drawing.Size(1054, 58);
+            this.dgvMusic.TabIndex = 0;
+            this.dgvMusic.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvMusic_CellContentClick);
+            // 
+            // Playlist_UserId
+            // 
+            this.Playlist_UserId.HeaderText = "UserId";
+            this.Playlist_UserId.Items.AddRange(new object[] {
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"});
+            this.Playlist_UserId.Name = "Playlist_UserId";
+            // 
+            // Playlist_FullPath
+            // 
+            this.Playlist_FullPath.HeaderText = "PlaylistFullPath";
+            this.Playlist_FullPath.Name = "Playlist_FullPath";
+            this.Playlist_FullPath.Width = 300;
+            // 
+            // Playlist_Mood
+            // 
+            this.Playlist_Mood.HeaderText = "Mood";
+            this.Playlist_Mood.Name = "Playlist_Mood";
+            // 
+            // Playlist_OpenPlaylist
+            // 
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.ButtonFace;
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.Playlist_OpenPlaylist.DefaultCellStyle = dataGridViewCellStyle3;
+            this.Playlist_OpenPlaylist.HeaderText = "Add Playlist";
+            this.Playlist_OpenPlaylist.Name = "Playlist_OpenPlaylist";
+            this.Playlist_OpenPlaylist.Text = "Open";
+            // 
+            // Playlist_OpenFolder
+            // 
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.Playlist_OpenFolder.DefaultCellStyle = dataGridViewCellStyle4;
+            this.Playlist_OpenFolder.HeaderText = "Add Directory";
+            this.Playlist_OpenFolder.Name = "Playlist_OpenFolder";
+            // 
+            // dgvMusicMood
+            // 
+            this.dgvMusicMood.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvMusicMood.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Music_MoodName,
+            this.Music_MoodGenres,
+            this.Music_MoodAuthors,
+            this.Music_MoodRatings,
+            this.Music_AgeInWeeks,
+            this.MusicMood_LogicalOperation,
+            this.MusicMood_GroupByTop,
+            this.MusicMood_GroupByTopCount,
+            this.MusicMood_Random});
+            this.dgvMusicMood.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvMusicMood.Location = new System.Drawing.Point(3, 65);
+            this.dgvMusicMood.Name = "dgvMusicMood";
+            this.dgvMusicMood.Size = new System.Drawing.Size(1052, 118);
+            this.dgvMusicMood.TabIndex = 1;
+            this.dgvMusicMood.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvMusicMood_CellContentClick);
+            // 
+            // Music_MoodName
+            // 
+            this.Music_MoodName.HeaderText = "MoodName";
+            this.Music_MoodName.Name = "Music_MoodName";
+            // 
+            // Music_MoodGenres
+            // 
+            this.Music_MoodGenres.HeaderText = "MoodGenres";
+            this.Music_MoodGenres.Name = "Music_MoodGenres";
+            this.Music_MoodGenres.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            // 
+            // Music_MoodAuthors
+            // 
+            this.Music_MoodAuthors.HeaderText = "MoodAuthors";
+            this.Music_MoodAuthors.Name = "Music_MoodAuthors";
+            // 
+            // Music_MoodRatings
+            // 
+            this.Music_MoodRatings.HeaderText = "MoodRatings";
+            this.Music_MoodRatings.Name = "Music_MoodRatings";
+            // 
+            // Music_AgeInWeeks
+            // 
+            this.Music_AgeInWeeks.HeaderText = "AgeInWeeks";
+            this.Music_AgeInWeeks.Name = "Music_AgeInWeeks";
+            // 
+            // MusicMood_LogicalOperation
+            // 
+            this.MusicMood_LogicalOperation.HeaderText = "LogicalOperation";
+            this.MusicMood_LogicalOperation.Items.AddRange(new object[] {
+            "Union",
+            "Intersect"});
+            this.MusicMood_LogicalOperation.Name = "MusicMood_LogicalOperation";
+            // 
+            // MusicMood_GroupByTop
+            // 
+            this.MusicMood_GroupByTop.HeaderText = "GroupByTop";
+            this.MusicMood_GroupByTop.Name = "MusicMood_GroupByTop";
+            // 
+            // MusicMood_GroupByTopCount
+            // 
+            this.MusicMood_GroupByTopCount.HeaderText = "TopCount";
+            this.MusicMood_GroupByTopCount.Name = "MusicMood_GroupByTopCount";
+            // 
+            // MusicMood_Random
+            // 
+            this.MusicMood_Random.HeaderText = "Random";
+            this.MusicMood_Random.Name = "MusicMood_Random";
+            // 
+            // dgvMusicSchedule
+            // 
+            this.dgvMusicSchedule.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvMusicSchedule.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Music_ScheduleZoneId,
+            this.Music_ScheduleStartTime,
+            this.Music_ScheduleEndTime,
+            this.Music_ScheduleWeekDay,
+            this.Music_ScheduleMood});
+            this.dgvMusicSchedule.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvMusicSchedule.Location = new System.Drawing.Point(3, 189);
+            this.dgvMusicSchedule.Name = "dgvMusicSchedule";
+            this.dgvMusicSchedule.Size = new System.Drawing.Size(1052, 118);
+            this.dgvMusicSchedule.TabIndex = 2;
+            // 
+            // Music_ScheduleZoneId
+            // 
+            this.Music_ScheduleZoneId.HeaderText = "ZoneId";
+            this.Music_ScheduleZoneId.Name = "Music_ScheduleZoneId";
+            // 
+            // Music_ScheduleStartTime
+            // 
+            this.Music_ScheduleStartTime.HeaderText = "StartTime";
+            this.Music_ScheduleStartTime.Name = "Music_ScheduleStartTime";
+            // 
+            // Music_ScheduleEndTime
+            // 
+            this.Music_ScheduleEndTime.HeaderText = "EndTime";
+            this.Music_ScheduleEndTime.Name = "Music_ScheduleEndTime";
+            // 
+            // Music_ScheduleWeekDay
+            // 
+            this.Music_ScheduleWeekDay.HeaderText = "WeekDay";
+            this.Music_ScheduleWeekDay.Name = "Music_ScheduleWeekDay";
+            // 
+            // Music_ScheduleMood
+            // 
+            this.Music_ScheduleMood.HeaderText = "Mood";
+            this.Music_ScheduleMood.Name = "Music_ScheduleMood";
+            // 
+            // tabVideo
+            // 
+            this.tabVideo.Controls.Add(this.dgvDisplay);
+            this.tabVideo.Controls.Add(this.dgvVideo);
+            this.tabVideo.Location = new System.Drawing.Point(4, 22);
+            this.tabVideo.Margin = new System.Windows.Forms.Padding(2);
+            this.tabVideo.Name = "tabVideo";
+            this.tabVideo.Padding = new System.Windows.Forms.Padding(2);
+            this.tabVideo.Size = new System.Drawing.Size(1062, 314);
+            this.tabVideo.TabIndex = 6;
+            this.tabVideo.Text = "Video";
+            this.tabVideo.UseVisualStyleBackColor = true;
+            // 
+            // dgvVideo
+            // 
+            this.dgvVideo.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvVideo.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Video_UserId,
+            this.Video_PlaylistFullPath});
+            this.dgvVideo.Location = new System.Drawing.Point(2, 2);
+            this.dgvVideo.Margin = new System.Windows.Forms.Padding(2);
+            this.dgvVideo.Name = "dgvVideo";
+            this.dgvVideo.RowTemplate.Height = 24;
+            this.dgvVideo.Size = new System.Drawing.Size(1058, 161);
+            this.dgvVideo.TabIndex = 0;
+            // 
+            // Video_UserId
+            // 
+            this.Video_UserId.HeaderText = "UserId";
+            this.Video_UserId.Name = "Video_UserId";
+            // 
+            // Video_PlaylistFullPath
+            // 
+            this.Video_PlaylistFullPath.HeaderText = "Playlist";
+            this.Video_PlaylistFullPath.Name = "Video_PlaylistFullPath";
+            // 
+            // tabInput
+            // 
+            this.tabInput.Controls.Add(this.dgvInputs);
+            this.tabInput.Location = new System.Drawing.Point(4, 22);
+            this.tabInput.Margin = new System.Windows.Forms.Padding(2);
+            this.tabInput.Name = "tabInput";
+            this.tabInput.Padding = new System.Windows.Forms.Padding(2);
+            this.tabInput.Size = new System.Drawing.Size(1062, 314);
+            this.tabInput.TabIndex = 2;
+            this.tabInput.Text = "Input";
+            this.tabInput.UseVisualStyleBackColor = true;
+            // 
+            // dgvInputs
+            // 
+            this.dgvInputs.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvInputs.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.InputId,
+            this.InputName,
+            this.InputTypeId_Inputs,
+            this.InZoneId,
+            this.InputDeviceName});
+            this.dgvInputs.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvInputs.Location = new System.Drawing.Point(2, 2);
+            this.dgvInputs.Margin = new System.Windows.Forms.Padding(2);
+            this.dgvInputs.Name = "dgvInputs";
+            this.dgvInputs.RowTemplate.Height = 24;
+            this.dgvInputs.Size = new System.Drawing.Size(1058, 310);
+            this.dgvInputs.TabIndex = 0;
+            this.dgvInputs.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvInputs_DataError);
+            // 
+            // InputId
+            // 
+            this.InputId.HeaderText = "InputId";
+            this.InputId.Name = "InputId";
+            this.InputId.Width = 50;
+            // 
+            // InputName
+            // 
+            this.InputName.HeaderText = "InputName";
+            this.InputName.Name = "InputName";
+            // 
+            // InputTypeId_Inputs
+            // 
+            this.InputTypeId_Inputs.HeaderText = "InputTypeId";
+            this.InputTypeId_Inputs.Items.AddRange(new object[] {
+            "Radio",
+            "TV",
+            "DVD",
+            "AUX",
+            "Microphone",
+            "Other"});
+            this.InputTypeId_Inputs.Name = "InputTypeId_Inputs";
+            // 
+            // InZoneId
+            // 
+            dataGridViewCellStyle5.NullValue = "N/A";
+            this.InZoneId.DefaultCellStyle = dataGridViewCellStyle5;
+            this.InZoneId.HeaderText = "InZoneId";
+            this.InZoneId.Name = "InZoneId";
+            this.InZoneId.Width = 75;
+            // 
+            // InputDeviceName
+            // 
+            this.InputDeviceName.HeaderText = "InputDeviceName";
+            this.InputDeviceName.Name = "InputDeviceName";
+            this.InputDeviceName.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.InputDeviceName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.InputDeviceName.Width = 500;
+            // 
+            // tabUsers
+            // 
+            this.tabUsers.Controls.Add(this.dgvUsers);
+            this.tabUsers.Location = new System.Drawing.Point(4, 22);
+            this.tabUsers.Margin = new System.Windows.Forms.Padding(2);
+            this.tabUsers.Name = "tabUsers";
+            this.tabUsers.Padding = new System.Windows.Forms.Padding(2);
+            this.tabUsers.Size = new System.Drawing.Size(1062, 314);
+            this.tabUsers.TabIndex = 3;
+            this.tabUsers.Text = "Users";
+            this.tabUsers.UseVisualStyleBackColor = true;
+            // 
+            // dgvUsers
+            // 
+            this.dgvUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvUsers.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.UserId,
+            this.UserName,
+            this.UserCode});
+            this.dgvUsers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvUsers.Location = new System.Drawing.Point(2, 2);
+            this.dgvUsers.Margin = new System.Windows.Forms.Padding(2);
+            this.dgvUsers.Name = "dgvUsers";
+            this.dgvUsers.RowTemplate.Height = 24;
+            this.dgvUsers.Size = new System.Drawing.Size(1058, 310);
+            this.dgvUsers.TabIndex = 0;
+            // 
+            // UserId
+            // 
+            this.UserId.HeaderText = "UserId";
+            this.UserId.Name = "UserId";
+            // 
+            // UserName
+            // 
+            this.UserName.HeaderText = "UserName";
+            this.UserName.Name = "UserName";
+            // 
+            // UserCode
+            // 
+            this.UserCode.HeaderText = "UserCode";
+            this.UserCode.Name = "UserCode";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.button1);
+            this.tabPage2.Controls.Add(this.dgvParams);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(2);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(2);
+            this.tabPage2.Size = new System.Drawing.Size(1062, 314);
+            this.tabPage2.TabIndex = 4;
+            this.tabPage2.Text = "Parameters";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(13, 232);
+            this.button1.Margin = new System.Windows.Forms.Padding(2);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(70, 24);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "LocateApp";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // dgvParams
+            // 
+            this.dgvParams.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvParams.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.ParamName,
+            this.ParamValue});
+            this.dgvParams.Location = new System.Drawing.Point(13, 14);
+            this.dgvParams.Margin = new System.Windows.Forms.Padding(2);
+            this.dgvParams.Name = "dgvParams";
+            this.dgvParams.RowTemplate.Height = 24;
+            this.dgvParams.Size = new System.Drawing.Size(942, 206);
+            this.dgvParams.TabIndex = 2;
+            // 
+            // ParamName
+            // 
+            this.ParamName.HeaderText = "Name";
+            this.ParamName.Name = "ParamName";
+            this.ParamName.Width = 300;
+            // 
+            // ParamValue
+            // 
+            this.ParamValue.HeaderText = "Value";
+            this.ParamValue.Name = "ParamValue";
+            this.ParamValue.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.ParamValue.Width = 500;
+            // 
+            // dgvDisplay
+            // 
+            this.dgvDisplay.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvDisplay.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Display_ZoneID,
+            this.Display_Type,
+            this.Display_ConnectionName});
+            this.dgvDisplay.Location = new System.Drawing.Point(3, 176);
+            this.dgvDisplay.Name = "dgvDisplay";
+            this.dgvDisplay.Size = new System.Drawing.Size(449, 133);
+            this.dgvDisplay.TabIndex = 1;
+            // 
+            // Display_ZoneID
+            // 
+            this.Display_ZoneID.HeaderText = "ZoneId";
+            this.Display_ZoneID.Name = "Display_ZoneID";
+            // 
+            // Display_Type
+            // 
+            this.Display_Type.HeaderText = "Type";
+            this.Display_Type.Items.AddRange(new object[] {
+            "LGTV"});
+            this.Display_Type.Name = "Display_Type";
+            // 
+            // Display_ConnectionName
+            // 
+            this.Display_ConnectionName.HeaderText = "Connection";
+            this.Display_ConnectionName.Name = "Display_ConnectionName";
+            // 
+            // ZoneId
+            // 
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ZoneId.DefaultCellStyle = dataGridViewCellStyle1;
+            this.ZoneId.HeaderText = "ZoneId";
+            this.ZoneId.Name = "ZoneId";
+            this.ZoneId.Width = 66;
+            // 
+            // ZoneName
+            // 
+            this.ZoneName.HeaderText = "ZoneName";
+            this.ZoneName.Name = "ZoneName";
+            this.ZoneName.Width = 85;
+            // 
+            // Zones_OutputKeywords
+            // 
+            this.Zones_OutputKeywords.HeaderText = "OutputKeywords";
+            this.Zones_OutputKeywords.Name = "Zones_OutputKeywords";
+            this.Zones_OutputKeywords.Width = 110;
+            // 
+            // OutputDevice
+            // 
+            this.OutputDevice.HeaderText = "OutputDevice";
+            this.OutputDevice.Name = "OutputDevice";
+            this.OutputDevice.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.OutputDevice.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.OutputDevice.Width = 98;
+            // 
+            // Zones_PowerIndexDK
+            // 
+            this.Zones_PowerIndexDK.HeaderText = "PowerIndex";
+            this.Zones_PowerIndexDK.Name = "Zones_PowerIndexDK";
+            this.Zones_PowerIndexDK.Width = 88;
+            // 
+            // Zones_DefaultVolume
+            // 
+            this.Zones_DefaultVolume.HeaderText = "DefaultVolume%";
+            this.Zones_DefaultVolume.Name = "Zones_DefaultVolume";
+            this.Zones_DefaultVolume.Width = 109;
+            // 
+            // Zones_CameraId
+            // 
+            this.Zones_CameraId.HeaderText = "CameraId";
+            this.Zones_CameraId.Name = "Zones_CameraId";
+            this.Zones_CameraId.Width = 77;
+            // 
+            // Zones_AlarmZoneId
+            // 
+            this.Zones_AlarmZoneId.HeaderText = "AlarmZoneId";
+            this.Zones_AlarmZoneId.Name = "Zones_AlarmZoneId";
+            this.Zones_AlarmZoneId.Width = 92;
+            // 
+            // Zones_ParentZoneId
+            // 
+            this.Zones_ParentZoneId.HeaderText = "ParentId";
+            this.Zones_ParentZoneId.Name = "Zones_ParentZoneId";
+            this.Zones_ParentZoneId.Width = 72;
+            // 
+            // FormOptions
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1083, 394);
+            this.Controls.Add(this.tabParams);
+            this.Controls.Add(this.btnSave);
+            this.Margin = new System.Windows.Forms.Padding(2);
+            this.Name = "FormOptions";
+            this.Text = "FormOptions";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormOptions_FormClosing);
+            this.Load += new System.EventHandler(this.FormOptions_Load);
+            this.tabParams.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvZones)).EndInit();
+            this.tabControl.ResumeLayout(false);
+            this.tabControl.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvControl)).EndInit();
+            this.tabMusic.ResumeLayout(false);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMusic)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMusicMood)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMusicSchedule)).EndInit();
+            this.tabVideo.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvVideo)).EndInit();
+            this.tabInput.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvInputs)).EndInit();
+            this.tabUsers.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).EndInit();
+            this.tabPage2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvParams)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvDisplay)).EndInit();
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.TabControl tabParams;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.DataGridView dgvZones;
+        private System.Windows.Forms.TabPage tabControl;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtLastControlDevice;
+        private System.Windows.Forms.DataGridView dgvControl;
+        private System.Windows.Forms.TabPage tabMusic;
+        private System.Windows.Forms.DataGridView dgvMusic;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Playlist_UserId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Playlist_FullPath;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Playlist_Mood;
+        private System.Windows.Forms.DataGridViewButtonColumn Playlist_OpenPlaylist;
+        private System.Windows.Forms.DataGridViewButtonColumn Playlist_OpenFolder;
+        private System.Windows.Forms.TabPage tabVideo;
+        private System.Windows.Forms.DataGridView dgvVideo;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Video_UserId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Video_PlaylistFullPath;
+        private System.Windows.Forms.TabPage tabInput;
+        private System.Windows.Forms.DataGridView dgvInputs;
+        private System.Windows.Forms.DataGridViewTextBoxColumn InputId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn InputName;
+        private System.Windows.Forms.DataGridViewComboBoxColumn InputTypeId_Inputs;
+        private System.Windows.Forms.DataGridViewTextBoxColumn InZoneId;
+        private System.Windows.Forms.DataGridViewComboBoxColumn InputDeviceName;
+        private System.Windows.Forms.TabPage tabUsers;
+        private System.Windows.Forms.DataGridView dgvUsers;
+        private System.Windows.Forms.DataGridViewTextBoxColumn UserId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn UserName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn UserCode;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.DataGridView dgvParams;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ParamName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ParamValue;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Control_ZoneId;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Control_DeviceName;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Control_Identify;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.DataGridView dgvMusicMood;
+        private System.Windows.Forms.DataGridView dgvMusicSchedule;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_ScheduleZoneId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_ScheduleStartTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_ScheduleEndTime;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_ScheduleWeekDay;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_ScheduleMood;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_MoodName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_MoodGenres;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_MoodAuthors;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_MoodRatings;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Music_AgeInWeeks;
+        private System.Windows.Forms.DataGridViewComboBoxColumn MusicMood_LogicalOperation;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn MusicMood_GroupByTop;
+        private System.Windows.Forms.DataGridViewTextBoxColumn MusicMood_GroupByTopCount;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn MusicMood_Random;
+        private System.Windows.Forms.DataGridView dgvDisplay;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Display_ZoneID;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Display_Type;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Display_ConnectionName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ZoneId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ZoneName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Zones_OutputKeywords;
+        private System.Windows.Forms.DataGridViewComboBoxColumn OutputDevice;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Zones_PowerIndexDK;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Zones_DefaultVolume;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Zones_CameraId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Zones_AlarmZoneId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Zones_ParentZoneId;
+    }
+}

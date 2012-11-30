@@ -1,0 +1,86 @@
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\ResolveAssemblyReference.cache
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\Interop.WMPLib.dll
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\AxInterop.WMPLib.dll
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.csproj.ResolveComReference.cache
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ControlCenter.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.FormOptions.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.MainScreen.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Properties.Resources.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Test.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayList.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayMenu.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ZonesForm.resources
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\GenerateResource.read.1.tlog
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\GenerateResource.write.1.tlog
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.exe.config
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.exe.manifest
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.application
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.exe
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.pdb
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\DirectShowLib-2008.dll
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\Interop.WMPLib.dll
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\AxInterop.WMPLib.dll
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.exe.manifest
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.application
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.exe
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.pdb
+C:\Users\dan\Documents\SharpDevelop Projects\MultiZonePlayer\MultiZonePlayer\bin\Release\taglib-sharp.dll
+Z:\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.exe.config
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\Interop.WMPLib.dll
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\AxInterop.WMPLib.dll
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.csproj.ResolveComReference.cache
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.exe
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.pdb
+c:\development\mzp\bin\Release\MultiZonePlayer.exe.config
+c:\development\mzp\bin\Release\MultiZonePlayer.exe
+c:\development\mzp\bin\Release\MultiZonePlayer.pdb
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\ResolveAssemblyReference.cache
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ControlCenter.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.FormOptions.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.MainScreen.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Properties.Resources.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Test.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayList.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayMenu.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ZonesForm.resources
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\GenerateResource.read.1.tlog
+Z:\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\GenerateResource.write.1.tlog
+c:\Development\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.exe.config
+c:\Development\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.exe
+c:\Development\MultiZonePlayer\MultiZonePlayer\bin\Release\MultiZonePlayer.pdb
+c:\Development\MultiZonePlayer\MultiZonePlayer\bin\Release\DirectShowLib-2008.dll
+c:\Development\MultiZonePlayer\MultiZonePlayer\bin\Release\taglib-sharp.dll
+c:\Development\MultiZonePlayer\MultiZonePlayer\bin\Release\Interop.WMPLib.dll
+c:\Development\MultiZonePlayer\MultiZonePlayer\bin\Release\AxInterop.WMPLib.dll
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\ResolveAssemblyReference.cache
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\Interop.WMPLib.dll
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\AxInterop.WMPLib.dll
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.csproj.ResolveComReference.cache
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ControlCenter.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.FormOptions.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.MainScreen.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Properties.Resources.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Test.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayList.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayMenu.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ZonesForm.resources
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\GenerateResource.read.1.tlog
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\GenerateResource.write.1.tlog
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.exe
+c:\Development\MultiZonePlayer\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.pdb
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\Interop.WMPLib.dll
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\AxInterop.WMPLib.dll
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.csproj.ResolveComReference.cache
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ControlCenter.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.FormOptions.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.MainScreen.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Properties.Resources.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.Test.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayList.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.VideoPlayMenu.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.ZonesForm.resources
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.exe
+c:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.pdb
+C:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.AudioManagement.resources
+C:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.csprojResolveAssemblyReference.cache
+C:\Development\MZP\MZP-NET\MultiZonePlayer\obj\x86\Release\MultiZonePlayer.csproj.GenerateResource.Cache

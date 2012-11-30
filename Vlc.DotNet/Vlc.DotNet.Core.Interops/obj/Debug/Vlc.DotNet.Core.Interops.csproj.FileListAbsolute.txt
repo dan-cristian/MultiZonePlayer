@@ -1,0 +1,10 @@
+C:\Development\misc\vlc\vlcdotnet\Vlc.DotNet\Vlc.DotNet.Core.Interops\bin\Debug\Vlc.DotNet.Core.Interops.dll
+C:\Development\misc\vlc\vlcdotnet\Vlc.DotNet\Vlc.DotNet.Core.Interops\bin\Debug\Vlc.DotNet.Core.Interops.pdb
+C:\Development\misc\vlc\vlcdotnet\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Debug\ResolveAssemblyReference.cache
+C:\Development\misc\vlc\vlcdotnet\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Debug\Vlc.DotNet.Core.Interops.dll
+C:\Development\misc\vlc\vlcdotnet\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Debug\Vlc.DotNet.Core.Interops.pdb
+c:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\bin\Debug\Vlc.DotNet.Core.Interops.dll
+c:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\bin\Debug\Vlc.DotNet.Core.Interops.pdb
+c:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Debug\Vlc.DotNet.Core.Interops.dll
+c:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Debug\Vlc.DotNet.Core.Interops.pdb
+C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Debug\Vlc.DotNet.Core.Interops.csprojResolveAssemblyReference.cache

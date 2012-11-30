@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Stream #~HTMLZones.ZoneName,%_zoneid#</title>
+    <style type="text/css">
+        .style1
+        {
+            height: 23px;
+        }
+        .style2
+        {
+            width: 32px;
+        }
+    </style>
+</head>
+<body>
+
+    <table style="">
+        <tr>
+            <td>
+                <a href="streammp3.html?command=play&zoneid=%_zoneid">Play</a>
+                </td>
+            <td>
+                <a href="streammp3.html?command=pause&zoneid=%_zoneid">Pause</a>
+                </td>
+            <td class="style2">
+                <a href="streammp3.html?command=previous&zoneid=%_zoneid">Previous</a>
+                </td>
+             <td>
+                <a href="streammp3.html?command=next&zoneid=%_zoneid">Next</a>
+                </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="streammp3.html?command=stop&zoneid=%_zoneid">Stop</a>
+                </td>
+            <td>
+               
+                </td>
+            <td>
+                
+            </td>
+            <td>
+                <a href="status.html">Back</a>
+                </td>
+            
+        </tr>
+        <tr>
+            <td>
+                <a href="streammp3.html?command=volumedown&zoneid=%_zoneid">Vol-</a></td>
+            <td>
+                <a href="streammp3.html?command=volumeup&zoneid=%_zoneid">Vol+</a></td>
+            <td class="style2">
+                #~HTMLZones.VolumeLevel,%_zoneid#</td>
+        </tr>
+        <tr>
+            <td>
+                </td>
+            <td>
+                </td>
+            <td>
+                </td>
+            <td>
+                <a href="musicselect.html?zoneid=%_zoneid">Playlist</a></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td class="style1">
+                <a href="streammp3.html?zoneid=%_zoneid">Status</a></td>
+            <td class="style1">
+                #~HTMLZones.ZoneState,%_zoneid#</td>
+            <td class="style1">
+                </td>
+        </tr>
+        <tr>
+            <td class="style1">
+                Playlist</td>
+            <td class="style1">
+                #~HTMLZones.Playlist,%_zoneid#</td>
+            <td class="style1">
+                </td>
+        </tr>
+        <tr>
+            <td class="style1">
+                Title</td>
+            <td class="style1">
+                #~HTMLZones.Title,%_zoneid#</td>
+            <td class="style1">
+                </td>
+        </tr>
+        <tr>
+            <td class="style1">
+                Genre</td>
+            <td class="style1">
+                #~HTMLZones.Genre,%_zoneid#</td>
+            <td class="style1">
+                </td>
+        </tr>
+        <tr>
+            <td class="style1">
+                Author</td>
+            <td class="style1">
+                #~HTMLZones.Author,%_zoneid#</td>
+            <td class="style1">
+                </td>
+        </tr>
+        
+    </table>
+    <br />
+    <table style="">
+        <tr>
+            <td>
+                Wake Time (#~HTMLZones.WakeTime,%_zoneid# #~HTMLZones.WakeWeekDay,%_zoneid#)
+            </td>
+            
+        </tr>
+        <tr>
+            <td>
+                <form id="wake" action="streammp3.html?zoneid=%_zoneid" method="post">
+                <input name="command" type="hidden" value="setwaketimer"/>
+                <input name="datetime" type="text" value="hh:mm"/>
+                <input name="weekday" type="radio" value="MoTuWeThFr"/>Week
+                <input name="weekday" type="radio" value="SaSu"/>Weekend
+                <input id="Submit1" type="submit" value="Set Wake Time" />
+                </form>
+            </td>
+            
+        </tr>
+        <tr>
+        <td>
+        Sleep Time (#~HTMLZones.SleepHourMin,%_zoneid#)
+        </td>
+        </tr>
+        <tr>
+            <td>
+                <form id="Form2" action="streammp3.html?zoneid=%_zoneid" method="post">
+                <input name="command" type="hidden" value="sleeptimer"/>
+                <input name="datetime" type="text" value="hh:mm"/>
+                <input id="Submit2" type="submit" value="Set Sleep Time" />
+                </form>
+            </td>
+            
+        </tr>
+    </table>
+    
+</body>
+</html>

@@ -1,0 +1,1 @@
+"C:\Program Files\IrfanView\i_view32.exe" /one /fs /slideshow=c:\slideshow.txt
