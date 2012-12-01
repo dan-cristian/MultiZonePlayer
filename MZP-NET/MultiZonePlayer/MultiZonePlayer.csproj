@@ -83,12 +83,6 @@
     <Reference Include="DirectShowLib-2008">
       <HintPath>ThirdParty\DirectShowLib-2008.dll</HintPath>
     </Reference>
-    <Reference Include="Idaligo.Time">
-      <HintPath>ThirdParty\Idaligo.Time.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio">
-      <HintPath>ThirdParty\NAudio\NAudio.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
@@ -167,8 +161,6 @@
     <Compile Include="ThirdParty\HtmlParser.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="PowerControl.cs" />
-    <Compile Include="ThirdParty\naudiomp3stream\ReadFullyStream.cs" />
-    <Compile Include="ThirdParty\naudiomp3stream\VolumeWaveProvider16.cs" />
     <Compile Include="ThirdParty\RawInputDevice.cs" />
     <Compile Include="IZoneActivity.cs" />
     <Compile Include="MainScreen.cs">
@@ -216,7 +208,6 @@
     <Compile Include="ZonesForm.Designer.cs">
       <DependentUpon>ZonesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ZoneStreamMp3.cs" />
     <Compile Include="ZoneStreamVLC.cs" />
     <Compile Include="ZoneVideoApp.cs" />
     <EmbeddedResource Include="AudioManagement.resx">

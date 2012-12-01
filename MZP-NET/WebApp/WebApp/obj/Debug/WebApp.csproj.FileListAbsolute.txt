@@ -3,3 +3,8 @@ C:\Development\MZP\MZP-NET\WebApp\WebApp\bin\WebApp.pdb
 C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.dll
 C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.pdb
 C:\Development\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.csprojResolveAssemblyReference.cache
+c:\Development\GIT\MZP\MZP-NET\WebApp\WebApp\bin\WebApp.dll
+c:\Development\GIT\MZP\MZP-NET\WebApp\WebApp\bin\WebApp.pdb
+c:\Development\GIT\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.csprojResolveAssemblyReference.cache
+c:\Development\GIT\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.dll
+c:\Development\GIT\MZP\MZP-NET\WebApp\WebApp\obj\Debug\WebApp.pdb

@@ -21,3 +21,14 @@ c:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Core.xml
 c:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Debug\Vlc.DotNet.Forms.dll
 c:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Debug\Vlc.DotNet.Forms.pdb
 C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Debug\Vlc.DotNet.Forms.csprojResolveAssemblyReference.cache
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Forms.dll
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Forms.pdb
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Core.dll
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Core.Interops.dll
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Core.Interops.pdb
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Core.Interops.xml
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Core.pdb
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\bin\Debug\Vlc.DotNet.Core.xml
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Debug\Vlc.DotNet.Forms.csprojResolveAssemblyReference.cache
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Debug\Vlc.DotNet.Forms.dll
+c:\Development\GIT\MZP\Vlc.DotNet\Vlc.DotNet.Forms\obj\Debug\Vlc.DotNet.Forms.pdb

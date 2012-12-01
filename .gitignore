@@ -1,0 +1,5 @@
+Debug/
+obj/
+bin/
+MZP-NET/MultiZonePlayer/bin/Debug/MultiZonePlayer.vshost.exe
+MZP-NET/MultiZonePlayer/obj/x86/Debug/AxInterop.WMPLib.dll

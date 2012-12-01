@@ -21,7 +21,6 @@ using Microsoft.Win32;
 using System.Management; // need to add System.Management to your project references.
 
 
-using NAudio;
 using System.Text.RegularExpressions;
 using Vlc.DotNet.Core;
 using Vlc.DotNet.Core.Medias;
