@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FreeFileSync XmlType="GUI">
+    <MainConfig>
+        <Comparison>
+            <Variant>ByTimeAndSize</Variant>
+            <HandleSymlinks>FollowLink</HandleSymlinks>
+        </Comparison>
+        <SyncConfig>
+            <Variant>Update</Variant>
+            <CustomDirections>
+                <LeftOnly>right</LeftOnly>
+                <RightOnly>left</RightOnly>
+                <LeftNewer>right</LeftNewer>
+                <RightNewer>left</RightNewer>
+                <Different>none</Different>
+                <Conflict>none</Conflict>
+            </CustomDirections>
+            <DeletionPolicy>RecycleBin</DeletionPolicy>
+            <VersioningFolder Limit="-1"/>
+        </SyncConfig>
+        <GlobalFilter>
+            <Include>*</Include>
+            <Exclude>\System Volume Information\&#x0A;\$Recycle.Bin\&#x0A;\RECYCLER\&#x0A;\RECYCLED\&#x0A;\agsXMPP.xml&#x0A;\MultiZonePlayer.exe.config&#x0A;*.pdb;&#x0A;\MultiZonePlayer.vshost.exe&#x0A;\MultiZonePlayer.vshost.exe.config&#x0A;\Vlc.DotNet.Core.Interops.xml&#x0A;\Vlc.DotNet.Core.xml&#x0A;\webroot\Properties\&#x0A;\webroot\obj\&#x0A;*.csproj;&#x0A;*\WebApp.csproj.user&#x0A;*.log;&#x0A;\Vlc.DotNet.Forms.xml&#x0A;\WebApp.dll&#x0A;\webroot\Web.config&#x0A;\webroot\Web.Debug.config&#x0A;\webroot\Web.Release.config</Exclude>
+            <TimeSpan Type="Inactive">0</TimeSpan>
+            <SizeMin Unit="Inactive">0</SizeMin>
+            <SizeMax Unit="Inactive">0</SizeMax>
+        </GlobalFilter>
+        <FolderPairs>
+            <Pair>
+                <Left>C:\Development\GIT\MZP\MZP-NET\MultiZonePlayer\bin\Debug</Left>
+                <Right>\\server\MZP</Right>
+            </Pair>
+        </FolderPairs>
+        <OnCompletion>Close progress dialog</OnCompletion>
+    </MainConfig>
+    <GuiConfig>
+        <ShowFiltered>true</ShowFiltered>
+        <HandleError>Popup</HandleError>
+        <SyncPreviewActive>true</SyncPreviewActive>
+    </GuiConfig>
+</FreeFileSync>

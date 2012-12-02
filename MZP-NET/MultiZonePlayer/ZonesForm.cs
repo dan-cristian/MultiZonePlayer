@@ -91,12 +91,12 @@ namespace MultiZonePlayer
                 if (childZone == null || !childZone.IsActive)
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
                 else
-                    MLog.Log(this, "Not powering off zone, there are active childs using it");
+                    MLog.Log(this, "Not powering off zone " + m_zoneDetails.ZoneName+", there are active childs using it, firstchild=" + childZone.ZoneName);
 
                 Metadata.ZoneDetails parentZone = MZPState.Instance.GetZoneById(m_zoneDetails.ParentZoneId);
                 if (parentZone != null && !parentZone.IsActive)
                 {
-                    MLog.Log(this, "Closing child zone, power off parent zone as well");
+                    MLog.Log(this, "Closing child zone " +m_zoneDetails.ZoneName+" , power off parent zone " + parentZone.ZoneName+ " as well");
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ParentZoneId);
                 }
 

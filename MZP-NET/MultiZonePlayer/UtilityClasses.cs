@@ -340,6 +340,7 @@ namespace MultiZonePlayer
             public String Title;
             public int Rating = 0;
             public int Playcount = 0;
+            public int PlaylistCount = 0;
             public String Playlist;
             public String Author;
             public String Genre;

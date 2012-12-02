@@ -16,5 +16,10 @@ if WinExist("Optional update delivery is not working")
 
 }
 
+if WinExist("ahk_class TWinloadMSG")
+{
+	WinActivate
+	Send {y}
+}
 }
 

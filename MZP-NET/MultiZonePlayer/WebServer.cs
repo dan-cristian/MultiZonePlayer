@@ -111,7 +111,7 @@ namespace MultiZonePlayer
                 }
                 catch (Exception ex)
                 {
-                    MLog.Log(ex, "Exception on web server listener");
+                    MLog.Log(null, "Exception on web server listener " + ex.ToString());
                     break;
                 }
             }

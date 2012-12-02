@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
+using System.Reflection;
+
 
 using System.Threading;
 
@@ -42,7 +45,13 @@ namespace MultiZonePlayer
             INPUTSELECT_xb
         };
         public enum InputTypeEnum {AV, HDMI };
+        public enum InputCodesEnum
+        {
+            [Description("AV 1")] x_90,
+            [Description("HDMI 1")] x_a0
+        };
         private int DISPLAY_ID=0;
+        private string m_input;
         
 
         public DisplayLGTV(String connection)
@@ -71,21 +80,61 @@ namespace MultiZonePlayer
             return result;
         }
 
+        public void NextInput()
+        {
+            InputCodesEnum currentInput, nextInput;
+            bool found = false;
+            String inputEnumCode = "x_" + m_input;
+            if (Enum.IsDefined(typeof(InputCodesEnum), inputEnumCode))
+            {
+                currentInput = (InputCodesEnum)Enum.Parse(typeof(InputCodesEnum), inputEnumCode);
+                foreach (InputCodesEnum en in Enum.GetValues(typeof(InputCodesEnum)))
+                {
+                    if (found)
+                    {
+                        nextInput = en;
+                        break;
+                    }
+
+                    if (en.ToString().Equals(currentInput)) found = true;
+                }
+                if (!found)
+                    currentInput = InputCodesEnum.x_90;
+                Input = currentInput.ToString();
+            }
+            else
+                MLog.Log(this, "Error on next input, input code not defined=" + inputEnumCode);
+        }
+
         public String InputType
         {
             get
             {
-                String res=GetCommandStatus(DisplayLGTV.LGCommandsEnum.INPUTSELECT_xb);
+                String res=Input;
                 switch (res)
                 {
                     case "20":
                         return InputTypeEnum.AV.ToString();
                     case "90":
-                    case "0a":
+                    case "a0":
                         return InputTypeEnum.HDMI.ToString();
                     default:
                         return "Unknown:" + res;
                 }
+            }
+        }
+
+        public String Input
+        {
+            get
+            {
+                String res = GetCommandStatus(DisplayLGTV.LGCommandsEnum.INPUTSELECT_xb);
+                m_input = res;
+                return res;
+            }
+            set
+            {
+                SendCommand(DisplayLGTV.LGCommandsEnum.INPUTSELECT_xb, value);
             }
         }
 

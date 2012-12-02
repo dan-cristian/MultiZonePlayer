@@ -140,6 +140,7 @@ namespace MultiZonePlayer
 
                 if (mood != null)
                     SetPlayMode(mood.IsRandom ? PlayMode.Random2 : PlayMode.Default1);
+                m_zoneDetails.PlaylistCount = m_songList.Count;
             }
 
             private void SetPlayMode(PlayMode playMode)

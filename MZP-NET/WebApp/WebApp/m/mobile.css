@@ -1,0 +1,6 @@
+        table {width: 100%;text-align:left;}
+        tr {text-align:left;}
+        td {text-align:left;table-layout:auto;}
+        a {text-decoration: none;}
+        a.big {font-size:96px;}
+        a.med {font-size:48px;}

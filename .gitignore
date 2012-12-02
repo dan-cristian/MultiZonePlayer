@@ -2,7 +2,7 @@ Debug/
 obj/x86/Debug
 obj/
 bin/
-MZP-NET/MultiZonePlayer/bin/Debug/MultiZonePlayer.vshost.exe
-MZP-NET/MultiZonePlayer/obj/x86/Debug/AxInterop.WMPLib.dll
-MZP-NET/MultiZonePlayer/obj/x86/Debug/MultiZonePlayer.exe
-MZP-NET/MultiZonePlayer/obj/x86/Debug/MultiZonePlayer.pdb
+MZP-NET/MultiZonePlayer/bin/Debug/
+MZP-NET/MultiZonePlayer/obj/x86/Debug/
+MZP-NET/WebApp/WebApp/obj/
+MZP-NET/WebApp/WebApp/obj/Debug

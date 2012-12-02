@@ -13,13 +13,15 @@ namespace MultiZonePlayer
         public virtual void Stop()
         {
             m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
+            m_zoneDetails.IsActive = false;
         }
 
         public void Close()
         {
-            
+            m_zoneDetails.ZoneState = Metadata.ZoneState.NotInitialised;
+            m_zoneDetails.IsActive = false;
         }
-        public void Next()
+        public virtual void Next()
         {
         }
 
@@ -46,9 +48,12 @@ namespace MultiZonePlayer
         public virtual void Play()
         {
             m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
+            m_zoneDetails.IsActive = true;
+
         }
         public void Pause()
         {
+            m_zoneDetails.ZoneState = Metadata.ZoneState.Paused;
         }
         public void Mute()
         {
@@ -160,6 +165,7 @@ namespace MultiZonePlayer
 
         public override void VolumeUp()
         {
+            base.VolumeUp();
             m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
             m_zoneDetails.VolumeLevel++;
             m_tv.VolumeLevel = m_zoneDetails.VolumeLevel;
@@ -167,17 +173,27 @@ namespace MultiZonePlayer
 
         public override void VolumeDown()
         {
+            base.VolumeDown();
             m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
             m_zoneDetails.VolumeLevel--;
             m_tv.VolumeLevel = m_zoneDetails.VolumeLevel;
         }
 
+        public override void Next()
+        {
+            base.Next();
+            m_tv.NextInput();
+        }
+
         private void CacheCurrentState()
         {
-            m_inputType = m_tv.InputType;
-            m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
-            m_zoneDetails.Title = InputType;
-            m_isOn = m_tv.IsOn;
+            if (!m_tv.IsBusy)
+            {
+                m_inputType = m_tv.InputType;
+                m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
+                m_zoneDetails.Title = InputType;
+                m_isOn = m_tv.IsOn;
+            }
         }
 
         public override void Tick()
@@ -194,15 +210,19 @@ namespace MultiZonePlayer
                 {
                     m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
                     m_zoneDetails.IsActive = true;
-                    if (m_inputType.Equals(DisplayLGTV.InputTypeEnum.HDMI.ToString()))
+                    if (m_inputType.Equals(DisplayLGTV.InputTypeEnum.HDMI.ToString()) && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
                     {
+                        MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for child " + m_zoneDetails.ZoneName);
                         MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ParentZoneId);
                     }
+                    //else
+                    //    MLog.Log(this, "Power on Display not needed, input="+m_inputType + " IsPowerOnParent="+MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId));
                 }
                 else
                 {
                     m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
                     m_zoneDetails.IsActive = false;
+                    MLog.Log(this, "DisplayTV is off");
 
                 }
 

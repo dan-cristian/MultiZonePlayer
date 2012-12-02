@@ -23,12 +23,15 @@ namespace MultiZonePlayer
     {
         public String Connection;
         protected CommunicationManager comm;
-        protected Boolean m_waitForResponse = false;
+        protected Boolean m_waitForResponse = false, m_isProcessing = false;
         protected Boolean m_lastOperationWasOK = true;
         protected String m_lastMessageResponse;
 
         public abstract String SendCommand(Enum cmd, String value);
         public abstract String GetCommandStatus(Enum cmd);
+
+        private System.Object lockThisSend = new System.Object();
+        private System.Object lockThisReceive = new System.Object();
         
         public void Initialise(String baud, String parity, String stopbits, String databits, String port)
         {
@@ -46,44 +49,82 @@ namespace MultiZonePlayer
 
         protected bool WriteCommand(String cmd)
         {
-            if (m_waitForResponse == true)
+
+            lock (lockThisSend)
             {
-                MLog.Log(this, "Error, trying to write "+this.ToString()+" command: " + cmd + " while waiting for response");
-                return false;
+                int i = 0;
+                if (m_waitForResponse == true)
+                {
+                    MLog.Log(this, "Error, trying to write " + this.ToString() + " command: " + cmd + " while waiting for response, now looping");
+                    do
+                    {
+                        Thread.Sleep(10);
+                        System.Windows.Forms.Application.DoEvents();
+                        i++;
+                    }
+                    while (m_waitForResponse && i < 500);
+                    if (i >= 300)
+                    {
+                        MLog.Log(this, "WARNING no response received while looping");
+                        return false;
+                    }
+                }
+                m_isProcessing = true;
+                //MLog.Log(this, "Write LG comm=" + cmd);
+                comm.WriteData(cmd);
+                
+                //WAIT FOR RESPONSE - ----------------------
+                m_waitForResponse = true;
+                i = 0;
+                do
+                {
+                    Thread.Sleep(10);
+                    System.Windows.Forms.Application.DoEvents();
+                    i++;
+                }
+                while (m_waitForResponse && i < 500);
+
+                if (m_waitForResponse == true)
+                {
+                    MLog.Log(this, "Error WaitForOK " + this.ToString() + " exit with timeout");
+                    m_lastMessageResponse = "timeout";
+                    m_waitForResponse = false;
+                }
+                m_isProcessing = false;
+                return m_lastOperationWasOK;
             }
-            //MLog.Log(this, "Write LG comm=" + cmd);
-            comm.WriteData(cmd);
-            WaitForOK();
-            return m_lastOperationWasOK;
         }
 
-        protected void WaitForOK()
-        {
-            m_waitForResponse = true;
-            int i = 0;
-            do
-            {
-                Thread.Sleep(50);
-                System.Windows.Forms.Application.DoEvents();
-                i++;
-            }
-            while (m_waitForResponse == true && i < 100);
-
-            if (m_waitForResponse == true)
-            {
-                MLog.Log(this, "Error WaitForOK " + this.ToString() + " exit with timeout");
-                m_lastMessageResponse = "timeout";
-            }
-            m_waitForResponse = false;
-        }
 
         protected int handler(String message)
         {
-            //MLog.Log(this, "received LG response=" + message);
-            m_lastMessageResponse = message.ToLower();
-            m_lastOperationWasOK = m_lastMessageResponse.Contains("ok");
-            m_waitForResponse = false;
-            return 0;
+            lock (lockThisReceive)
+            {
+                //MLog.Log(this, "received LG response=" + message);
+                m_lastMessageResponse = message.ToLower();
+                m_lastOperationWasOK = m_lastMessageResponse.Contains("ok");
+                m_waitForResponse = false;
+                int i = 0;
+                do
+                {
+                    Thread.Sleep(10);
+                    System.Windows.Forms.Application.DoEvents();
+                    i++;
+                }
+                while (m_isProcessing && i<500);
+                if (m_isProcessing)
+                {
+                    MLog.Log(this, "ERROR on receive handler, timeout");
+                    m_isProcessing = false;
+                }
+
+                return 0;
+            }
+        }
+
+        public Boolean IsBusy
+        {
+            get { return m_waitForResponse; }
         }
     }
 
@@ -334,6 +375,7 @@ namespace MultiZonePlayer
         public bool TestConnection()
         {
             //bool result = false ;
+            
             if (m_waitForResponse == true)
             {
                 MLog.Log(this, "Trying to test SMS conn while waiting for response, skip test");

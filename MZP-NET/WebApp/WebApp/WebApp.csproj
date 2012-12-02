@@ -18,11 +18,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\..\MultiZonePlayer\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PackageAsSingleFile>false</PackageAsSingleFile>
+    <DesktopBuildPackageLocation>..\..\MultiZonePlayer\bin\Debug\</DesktopBuildPackageLocation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -68,6 +69,7 @@
     <Content Include="m\slide.html" />
     <Content Include="m\status.html" />
     <Content Include="m\streammp3.html" />
+    <Content Include="m\tv.html" />
     <Content Include="m\utilities.js" />
     <Content Include="m\Wami.swf" />
     <Content Include="m\galleria\galleria-1.2.8.js" />

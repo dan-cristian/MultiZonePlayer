@@ -1,5 +1,5 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>Music</title>
     <style type="text/css">
@@ -27,10 +27,41 @@
         <input type="submit" value="Play Title" />
         </form>
     </td>
- 
-    
-            <tr><td><a href="music.html?zoneid=%_zoneid">Back</a></td></tr>
+            
     </table>
+
+    <table>
+        
+        <tr>
+            <td>Title</td>
+            <td>#~HTMLZones.Title,%_zoneid#</td>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=artist">Hold Artist</a></td>
+            <td>#~HTMLZones.Author,%_zoneid#</td>
+        </tr>
+        <tr>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=genre">Hold Genre</a></td>
+            <td>#~HTMLZones.Genre,%_zoneid#</td>
+            <td>Year</td>
+            <td>#~HTMLZones.Year,%_zoneid#</td>
+        </tr>
+        <tr>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=album">Hold Album</a></td>
+            <td>#~HTMLZones.Album,%_zoneid#</td>
+        </tr>
+        <tr>
+            
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=rating">Hold Rating</a></td>
+            <td>#~HTMLZones.Rating,%_zoneid# </td>
+        </tr>
+        <tr>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=folder">Hold Folder</a></td>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=nothing">Hold Nothing</a></td>
+            <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid">Hold Toggle</a></td>
+        </tr>
+
+        <tr><td><a href="music.html?zoneid=%_zoneid">Back</a></td></tr>
+    </table>
+
     <br />
     
 </body>

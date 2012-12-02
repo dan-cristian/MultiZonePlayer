@@ -80,9 +80,9 @@ namespace MultiZonePlayer
                     TargetFile_Changed(null, null);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MLog.Log(ex, this, "Tail thread got exception");
+                //MLog.Log(ex, this, "Tail thread got exception");
             }
             MLog.Log(this, "file watcher thread exit");
         }

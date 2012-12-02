@@ -190,10 +190,8 @@ namespace MultiZonePlayer
                     m_lastOpenDateTime = DateTime.Now;
                     status = m_usb8Relay.SetBitMode(255, 1);
                     status = m_usb8Relay.SetTimeouts(1000, 1000);
-                    if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                        MLog.Log(null,"Open OK device serial= " + m_deviceSerial);
-                    else
-                        MLog.Log(null,"Setbit failed, status = " + status);
+                    if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+                        MLog.Log(null, "Setbit failed on Open, status = " + status);
                 }
                 else
                     MLog.Log(null,"Open failed, status = " + status);
@@ -224,7 +222,7 @@ namespace MultiZonePlayer
                 if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
                 {
                     SaveToIni();
-                    MLog.Log(null,"Close OK device serial= " + m_deviceSerial);
+                    //MLog.Log(null,"Close OK device serial= " + m_deviceSerial);
                 }
                 else
                     MLog.Log(null,"Close failed, status = " + status);
@@ -288,7 +286,7 @@ namespace MultiZonePlayer
             m_socketsStatus = m_socketsStatus.PadLeft(8, '0');
             m_socketsStatus = Utilities.ReverseString(m_socketsStatus);
 
-            MLog.Log(this, "SocketsOnStatus=" + m_socketsStatus);
+            //MLog.Log(this, "SocketsOnStatus=" + m_socketsStatus);
         }
 
         public override void PowerOn(int zoneId)
@@ -315,7 +313,7 @@ namespace MultiZonePlayer
             String status = SendPowerCommand(zoneId, "1").ToString();
             LogDebugInfo();
             Close();
-            MLog.Log(null,"Power ON completed status = " + status + " state=" + m_relayState);
+            //MLog.Log(null,"Power ON completed status = " + status + " state=" + m_relayState);
             return true;
         }
 
@@ -355,7 +353,7 @@ namespace MultiZonePlayer
             String status = SendPowerCommand(zoneId, "0").ToString();
             LogDebugInfo();
             Close();
-            MLog.Log(null,"Power OFF completed status = " + status + " state=" + m_relayState);
+            //MLog.Log(null,"Power OFF completed status = " + status + " state=" + m_relayState);
             return true;
         }
 
@@ -419,7 +417,7 @@ namespace MultiZonePlayer
                 // checking if this zone is still active, if active and bool param is false will ignore
                 //TODO
 
-                MLog.Log(null,"Sending power command "+state+" to zoneindex " + zoneIndex);
+                //MLog.Log(null,"Sending power command "+state+" to zoneindex " + zoneIndex);
                 initialState = initialState.Substring(0, zoneIndex - 1) + state + initialState.Substring(zoneIndex);
                 m_relayState = initialState;
 
@@ -428,7 +426,7 @@ namespace MultiZonePlayer
                 status = SendPowerCommand(stateToSend);
                 if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
                 {
-                    MLog.Log(null,"Error send command, status=" + status);
+                    MLog.Log(null,"Error send command " +state+ ", status=" + status);
                     if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_IO_ERROR)
                     {
                         //MLog.Log(null,"Reseting device started");
