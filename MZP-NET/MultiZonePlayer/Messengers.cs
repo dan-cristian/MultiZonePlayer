@@ -26,6 +26,7 @@ namespace MultiZonePlayer
         protected Boolean m_waitForResponse = false, m_isProcessing = false;
         protected Boolean m_lastOperationWasOK = true;
         protected String m_lastMessageResponse;
+        private Boolean m_isSerialDeviceOn = true;
 
         public abstract String SendCommand(Enum cmd, String value);
         public abstract String GetCommandStatus(Enum cmd);
@@ -84,7 +85,7 @@ namespace MultiZonePlayer
                 }
                 while (m_waitForResponse && i < 500);
 
-                if (m_waitForResponse == true)
+                if (m_waitForResponse == true && m_isSerialDeviceOn)
                 {
                     MLog.Log(this, "Error WaitForOK " + this.ToString() + " exit with timeout");
                     m_lastMessageResponse = "timeout";
@@ -100,24 +101,32 @@ namespace MultiZonePlayer
         {
             lock (lockThisReceive)
             {
+                if (message.Length == 1 && Convert.ToByte(message[0]) == 0)
+                {//lost connection with TV
+                    MLog.Log(this, "Serial connection potentially lost to " + comm.PortName);
+                    m_isSerialDeviceOn = false;
+                }
+                else
+                    m_isSerialDeviceOn = true;
+
                 //MLog.Log(this, "received LG response=" + message);
                 m_lastMessageResponse = message.ToLower();
                 m_lastOperationWasOK = m_lastMessageResponse.Contains("ok");
                 m_waitForResponse = false;
-                int i = 0;
+                /*int i = 0;
                 do
                 {
                     Thread.Sleep(10);
                     System.Windows.Forms.Application.DoEvents();
                     i++;
                 }
-                while (m_isProcessing && i<500);
+                while (m_isProcessing && i<700);
                 if (m_isProcessing)
                 {
                     MLog.Log(this, "ERROR on receive handler, timeout");
                     m_isProcessing = false;
                 }
-
+                */
                 return 0;
             }
         }
@@ -126,6 +135,8 @@ namespace MultiZonePlayer
         {
             get { return m_waitForResponse; }
         }
+
+        
     }
 
     class GTalkMessengers:IMessenger

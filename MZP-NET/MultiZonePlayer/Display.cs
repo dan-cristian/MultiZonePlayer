@@ -47,11 +47,13 @@ namespace MultiZonePlayer
         public enum InputTypeEnum {AV, HDMI };
         public enum InputCodesEnum
         {
-            [Description("AV 1")] x_90,
-            [Description("HDMI 1")] x_a0
+            [Description("AV 1")] x_20,
+            [Description("HDMI 1")] x_a0,
+            [Description("HDMI 1")] x_90
         };
         private int DISPLAY_ID=0;
         private string m_input;
+        
         
 
         public DisplayLGTV(String connection)
@@ -75,16 +77,17 @@ namespace MultiZonePlayer
                 result = m_lastMessageResponse.Substring(m_lastMessageResponse.IndexOf("ok") + 2, 2);
             }
             else
-                result = "error for status:" + cmd.ToString() + " " + m_lastMessageResponse;
+                result = "ERR";
 
             return result;
         }
 
         public void NextInput()
         {
-            InputCodesEnum currentInput, nextInput;
+            InputCodesEnum currentInput, nextInput = InputCodesEnum.x_20;
             bool found = false;
             String inputEnumCode = "x_" + m_input;
+            
             if (Enum.IsDefined(typeof(InputCodesEnum), inputEnumCode))
             {
                 currentInput = (InputCodesEnum)Enum.Parse(typeof(InputCodesEnum), inputEnumCode);
@@ -96,11 +99,12 @@ namespace MultiZonePlayer
                         break;
                     }
 
-                    if (en.ToString().Equals(currentInput)) found = true;
+                    if (en.Equals(currentInput)) found = true;
                 }
-                if (!found)
-                    currentInput = InputCodesEnum.x_90;
-                Input = currentInput.ToString();
+
+                MLog.Log(this, "Next input current=" + currentInput + " next=" + nextInput);
+
+                Input = nextInput.ToString().Substring(2);
             }
             else
                 MLog.Log(this, "Error on next input, input code not defined=" + inputEnumCode);
@@ -136,6 +140,12 @@ namespace MultiZonePlayer
             {
                 SendCommand(DisplayLGTV.LGCommandsEnum.INPUTSELECT_xb, value);
             }
+        }
+
+        public String InputCached
+        {
+            get
+            { return m_input; }
         }
 
         public Boolean IsOn

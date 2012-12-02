@@ -155,8 +155,8 @@ namespace MultiZonePlayer
                 MLog.Log(this, "Error, COM port " + comPort.PortName+ " was not open at WriteData, opening, cmd="+msg);
                 comPort.Open();
             }
-
-            MLog.LogModem(DateTime.Now.ToString()+"\t["+msg+"]\r\n");
+            
+            MLog.LogModem(DateTime.Now.ToString()+" WRITE ["+msg+"] wbuff=" + comPort.BytesToWrite+ " break="+comPort.BreakState+ " \r\n");
 
             switch (CurrentTransmissionType)
             {
@@ -336,48 +336,58 @@ namespace MultiZonePlayer
         /// <param name="e"></param>
         void comPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            //determine the mode the user selected (binary/string)
-            switch (CurrentTransmissionType)
+            try
             {
-                //user chose string
-                case TransmissionType.Text:
-                    while (comPort.BytesToRead > 0)
-                    {
-                        string msg;
+            //determine the mode the user selected (binary/string)
+                switch (CurrentTransmissionType)
+                {
+                    //user chose string
+                    case TransmissionType.Text:
+                        while (comPort!=null && comPort.BytesToRead > 0)
+                        {
+                            string msg;
+                            //read data waiting in the buffer
+                            try
+                            {
+                                msg = comPort.ReadLine();//comPort.ReadExisting();
+
+                            }
+                            catch (TimeoutException)
+                            {
+                                msg = comPort.ReadExisting();
+                            }
+                            MLog.LogModem(DateTime.Now.ToString() + " READ   [" + msg+"] "+msg.Length+"\r\n\r\n");
+                            if (msg.Length == 1)
+                                MLog.LogModem(DateTime.Now.ToString() + " READ 1 CHAR CODE [" + Convert.ToByte(msg[0]) + "]\r\n\r\n");
+                            _callback(msg);
+                        }
+                        //string msg = comPort.ReadLine();
+                        //display the data to the user
+                        //DisplayData(MessageType.Incoming, msg + "\n");
+                        break;
+                    //user chose binary
+                    case TransmissionType.Hex:
+                        //retrieve number of bytes in the buffer
+                        int bytes = comPort.BytesToRead;
+                        //create a byte array to hold the awaiting data
+                        byte[] comBuffer = new byte[bytes];
+                        //read the data and store it
+                        comPort.Read(comBuffer, 0, bytes);
+                        //display the data to the user
+                        //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
+                        break;
+                    default:
                         //read data waiting in the buffer
-                        try
-                        {
-                            msg = comPort.ReadLine();//comPort.ReadExisting();
-                            
-                        }
-                        catch (TimeoutException)
-                        {
-                            msg = comPort.ReadExisting();
-                        }
-                        MLog.LogModem(DateTime.Now.ToString()+"\t"+msg);
-                        _callback(msg);
-                    }
-                    //string msg = comPort.ReadLine();
-                    //display the data to the user
-                    //DisplayData(MessageType.Incoming, msg + "\n");
-                    break;
-                //user chose binary
-                case TransmissionType.Hex:
-                    //retrieve number of bytes in the buffer
-                    int bytes = comPort.BytesToRead;
-                    //create a byte array to hold the awaiting data
-                    byte[] comBuffer = new byte[bytes];
-                    //read the data and store it
-                    comPort.Read(comBuffer, 0, bytes);
-                    //display the data to the user
-                    //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
-                    break;
-                default:
-                    //read data waiting in the buffer
-                    string str = comPort.ReadExisting();
-                    //display the data to the user
-                    //DisplayData(MessageType.Incoming, str + "\n");
-                    break;
+                        string str = comPort.ReadExisting();
+                        //display the data to the user
+                        //DisplayData(MessageType.Incoming, str + "\n");
+                        break;
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                MLog.Log(ex, "Error com port data received com="+comPort.PortName);
             }
         }
         void comPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)

@@ -60,6 +60,7 @@
     <Content Include="m\cmd.html" />
     <Content Include="m\gui.js" />
     <Content Include="m\mic.html" />
+    <Content Include="m\mobile.css" />
     <Content Include="m\monitor.html" />
     <Content Include="m\music.html" />
     <Content Include="m\music.png" />

@@ -125,7 +125,7 @@ namespace MultiZonePlayer
 
     public class ZoneDisplayLG:ZoneDisplay
     {
-        private String m_inputType;
+        private String m_inputType, m_input;
         private Boolean m_isOn;
         private DateTime m_lastSlowTickDateTime = DateTime.Now;
         DisplayLGTV m_tv;
@@ -190,8 +190,9 @@ namespace MultiZonePlayer
             if (!m_tv.IsBusy)
             {
                 m_inputType = m_tv.InputType;
+                m_input = m_tv.InputCached;
                 m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
-                m_zoneDetails.Title = InputType;
+                m_zoneDetails.Title = InputType + " ("+ m_input + ")";
                 m_isOn = m_tv.IsOn;
             }
         }
@@ -201,7 +202,7 @@ namespace MultiZonePlayer
             base.Tick();
 
             // SLOW TICK
-            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 15)
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
             {
                 m_lastSlowTickDateTime = DateTime.Now;
                 CacheCurrentState();
