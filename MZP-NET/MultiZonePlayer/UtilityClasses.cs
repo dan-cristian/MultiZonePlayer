@@ -99,8 +99,9 @@ namespace MultiZonePlayer
             zonearm,
             zonedisarm,
             makebuzz,
-            powerevent
-            
+            powerevent,
+            tvsetinput,
+            cyclepower
 
         }
         public enum GlobalParams
@@ -127,6 +128,23 @@ namespace MultiZonePlayer
             areaid,
             weekday
 
+        }
+
+        public enum GlobalCommandsUniversal
+        {
+            volumedown = GlobalCommands.volumedown,
+            volumeup = GlobalCommands.volumeup,
+            mute = GlobalCommands.mute,
+            chup = GlobalCommands.chup,
+            chdown = GlobalCommands.chdown,
+            enter = GlobalCommands.enter,
+            next = GlobalCommands.next,
+            previous = GlobalCommands.previous,
+            stop = GlobalCommands.stop,
+            up = GlobalCommands.up,
+            down = GlobalCommands.down,
+            right = GlobalCommands.right,
+            left = GlobalCommands.left,
         }
 
         public enum CommandSources

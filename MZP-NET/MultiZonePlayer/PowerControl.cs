@@ -120,7 +120,7 @@ namespace MultiZonePlayer
         private const String STATE_ALL_ON  = "11111111";
         private const String STATE_ALL_OFF = "00000000";
         private String m_relayState = STATE_ALL_OFF;
-        private Hashtable m_zoneIndexes = null;
+        //private Hashtable m_zoneIndexes = null;
         private DateTime m_lastOpenDateTime;
         private static List<Thread> m_threadList;
 
@@ -241,8 +241,11 @@ namespace MultiZonePlayer
         public override bool IsPowerOn(int zoneId)
         {
             int[] index = GetSocketIndexForZone(zoneId);
+            //MLog.Log(this, "index len="+index.Length);
+            
             for (int r = 0; r < index.Length; r++)
             {
+                //MLog.Log(this, "check r=" + r + "=" + m_socketsStatus[index[r] - 1]);
                 if (m_socketsStatus[index[r]-1] == '0')
                     return false;
             }
@@ -303,7 +306,8 @@ namespace MultiZonePlayer
                 MLog.Log(null, "Running async power on completed, active thread count=" + m_threadList.Count);
             }
             else
-                MLog.Log(this, "Power already on, power on ignored zoneid="+zoneId);
+                MLog.Log(this, "Power already on, power on ignored zoneid=" + zoneId 
+                    + " status=" + m_socketsStatus + " socketindex=" + GetSocketIndexForZone(zoneId));
         }
 
         private bool PowerOnSync(int zoneId)
@@ -417,7 +421,7 @@ namespace MultiZonePlayer
                 // checking if this zone is still active, if active and bool param is false will ignore
                 //TODO
 
-                //MLog.Log(null,"Sending power command "+state+" to zoneindex " + zoneIndex);
+                MLog.Log(null,"Sending power command "+state+" to zoneindex " + zoneIndex);
                 initialState = initialState.Substring(0, zoneIndex - 1) + state + initialState.Substring(zoneIndex);
                 m_relayState = initialState;
 
@@ -489,19 +493,12 @@ namespace MultiZonePlayer
             return status;
         }
 
-        /*protected override bool IsSocketOn(String zoneId)
-        {
-            return (m_relayState[GetIndexForZone(zoneId)]=='1');
-        }
-
-        protected override String GetSocketStatus(String zoneId)
-        {
-            return m_relayState[GetIndexForZone(zoneId)].ToString();
-        }*/
 
         private int[] GetSocketIndexForZone(int zoneId)
         {
-            int[] result;
+            //int[] result;
+            List<int> res=new List<int>();
+            /*
             if (m_zoneIndexes.ContainsKey(zoneId))
             {
                 List<Object> value = Utilities.ParseStringForValues(m_zoneIndexes[zoneId].ToString(), ',', typeof(int));
@@ -514,31 +511,20 @@ namespace MultiZonePlayer
             }
             else
                 result = new int[0];
-            
-            return result;
+            */
+            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+            {
+                if (zone.ZoneId == zoneId && zone.PowerIndex>0)
+                    res.Add(zone.PowerIndex);
+            }
+            return res.ToArray();
         }
 
-        /*private int[] GetZoneForIndex(int index)
-        {
-            int[] indexes;
-            int[] result;
-            int i;
-
-            foreach (String str in SystemState.GetInstance.Zones.Keys)
-            {
-                indexes = GetIndexForZone(str);
-                for (i=0; i<indexes.Length;i++)
-                {
-                    if (indexes[i] == index)
-                    {
-                    }
-                }
-            }
-        }*/
+        
 
         public override void LoadFromIni()
         {
-            m_zoneIndexes = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEPOWERCTRLINDEX_DK);
+            //m_zoneIndexes = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEPOWERCTRLINDEX_DK);
         }
 
         public override void SaveToIni()

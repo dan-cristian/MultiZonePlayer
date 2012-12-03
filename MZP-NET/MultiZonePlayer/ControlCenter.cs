@@ -217,26 +217,14 @@ namespace MultiZonePlayer
             }
         }
 
-        public int CurrentZoneMusicId
+        public int MostRecentZoneWithContext
         {
             get
             {
-                Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.OrderByDescending(x=>x.LastLocalCommandDateTime).ToList().Find(x => 
-                    x.ActivityType.Equals(Metadata.GlobalCommands.music) && x.IsActive);
+                Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.OrderByDescending(x=>x.LastLocalCommandDateTime).ToList().Find(x =>
+                    (x.ActivityType.Equals(Metadata.GlobalCommands.music) || x.ActivityType.Equals(Metadata.GlobalCommands.streammp3)) 
+                    && x.IsActive);
                 if (zone != null) 
-                    return zone.ZoneId;
-                else
-                    return -1;
-            }
-        }
-
-        public int CurrentZoneStreamId
-        {
-            get
-            {
-                Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
-                    x.ActivityType.Equals(Metadata.GlobalCommands.streammp3) && x.IsActive);
-                if (zone != null)
                     return zone.ZoneId;
                 else
                     return -1;
@@ -271,34 +259,40 @@ namespace MultiZonePlayer
                 MLog.Log(null,"Current Zone  is null, problem");
         }*/
 
-        public void OpenZone(int zoneId, String cmd)
+        public void OpenZone(int zoneId)
         {
-            //MLog.Log(this, "Opening zone " + zoneId + " for cmd="+cmd);
-            
-            Metadata.ZoneDetails zDetails = MZPState.Instance.ZoneDetails.Find(item => item.ZoneId == zoneId);
-
-            if (zDetails != null)
+            if (!ControlCenter.Instance.IsZoneActive(zoneId))
             {
-                ZonesForm newZoneForm = new ZonesForm(zoneId, this, zDetails);
-                if (cmd != null)
-                    newZoneForm.SetActivity(cmd);
+                Metadata.ZoneDetails zDetails = MZPState.Instance.ZoneDetails.Find(item => item.ZoneId == zoneId);
 
-                m_zoneFormsList.Find(item => item.ZoneId == zoneId).ZonesForm = newZoneForm;
-                //parentForm.LayoutMdi(MdiLayout.Cascade);
-                m_currentZone = GetZone(zoneId);
-                zDetails.IsActive = true;
-                newZoneForm.MdiParent = parentForm;
-                newZoneForm.WindowState = FormWindowState.Minimized;
-                newZoneForm.Text = "Zone " + zoneId;
-                newZoneForm.Show();
+                if (zDetails != null)
+                {
+                    ZonesForm newZoneForm = new ZonesForm(zoneId, this, zDetails);
+                    m_zoneFormsList.Find(item => item.ZoneId == zoneId).ZonesForm = newZoneForm;
+                    //parentForm.LayoutMdi(MdiLayout.TileHorizontal);
+                    m_currentZone = GetZone(zoneId);
+                    newZoneForm.MdiParent = parentForm;
+                    newZoneForm.WindowState = FormWindowState.Minimized;
+                    newZoneForm.Text = "Zone " + zoneId;
+                    newZoneForm.Show();
+                }
+                else
+                    MLog.Log(this, "Unable to open zone " + zoneId);
             }
-            else
-                MLog.Log(this, "Unable to open zone " + zoneId);
         }
 
         public static int GetActiveZonesCount()
         {
             return m_zoneFormsList.Count;
+        }
+
+        public ZonesForm GetZoneIfActive(int zoneId)
+        {
+            ZonesFormPair zp = m_zoneFormsList.Find(item => item.ZoneId == zoneId);
+            if (zp != null && IsZoneActive(zoneId))
+                return zp.ZonesForm;
+            else
+                return null;
         }
 
         public ZonesForm GetZone(int zoneId)
@@ -331,9 +325,6 @@ namespace MultiZonePlayer
             return null;
         }
 
-        
-
-        
         #region USBEvents
         private void RegisterDriveDetector()
         {

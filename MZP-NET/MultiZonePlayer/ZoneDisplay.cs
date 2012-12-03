@@ -185,6 +185,14 @@ namespace MultiZonePlayer
             m_tv.NextInput();
         }
 
+        public String Input
+        {
+            get
+            { return m_tv.Input; }
+            set
+            { m_tv.Input = value; }
+        }
+
         private void CacheCurrentState()
         {
             if (!m_tv.IsBusy)
@@ -195,6 +203,20 @@ namespace MultiZonePlayer
                 m_zoneDetails.Title = InputType + " ("+ m_input + ")";
                 m_isOn = m_tv.IsOn;
             }
+        }
+
+
+        public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
+        {
+            Metadata.ValueList result = new Metadata.ValueList();
+            String action = action = vals.GetValue(Metadata.GlobalParams.action);
+            switch (cmdRemote)
+            {
+                case Metadata.GlobalCommands.tvsetinput:
+                    Input = action;
+                    break;
+            }
+            return result;
         }
 
         public override void Tick()

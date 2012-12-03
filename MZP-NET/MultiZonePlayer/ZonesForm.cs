@@ -42,7 +42,7 @@ namespace MultiZonePlayer
             this.Text = "Zone " + m_zoneDetails.ZoneName;
         }
 
-        public void SetActivity(String cmd)
+        /*public void SetActivity(String cmd)
         {
             Metadata.GlobalCommands enumcmd = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), cmd);
             switch (enumcmd)
@@ -71,7 +71,7 @@ namespace MultiZonePlayer
                     break;
             }
             ShowPlayList();
-        }
+        }*/
 
         private void CloseZone()
         {
@@ -122,10 +122,12 @@ namespace MultiZonePlayer
             MLog.Log(this,"Initialising music");
             if ((m_mainZoneActivity == null) || (m_mainZoneActivity.GetType() != typeof(ZoneMusic)))
             {
+                //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
                 StopRemoveClonedZones();
 
                 m_mainZoneActivity = new ZoneMusic(this);
                 m_zoneDetails.ActivityType = Metadata.GlobalCommands.music;
+                m_zoneDetails.IsActive = true;
                 
                 AddClonedZone(m_mainZoneActivity);
                 
@@ -142,66 +144,77 @@ namespace MultiZonePlayer
         private void InitZoneMusicClone()
         {
             MLog.Log(null, "Initialising music clone");
-            
+            ///ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             StopRemoveClonedZones();
 
             m_mainZoneActivity = new ZoneMusicClone(this, ControlCenter.GetFirstZoneMusic());
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.musicclone;
+            m_zoneDetails.IsActive = true;
         }
 
         private void InitZoneRadio()
         {
             MLog.Log(null,"Initialising radio");
             // input zone 0 is Radio
+            //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs["0"];
             m_mainZoneActivity = new ZoneRadio(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted);
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.radio;
+            m_zoneDetails.IsActive = true;
             m_mainZoneActivity.Play();
         }
 
         private void InitZoneStreamVLC()
         {
             MLog.Log(null, "Initialising mp3 VLC stream");
-
+            //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             m_mainZoneActivity = new ZoneStreamVLC(m_zoneDetails);
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.streammp3;
+            m_zoneDetails.IsActive = true;
             //m_mainZoneActivity.Play();
         }
 
         private void InitZoneMic()
         {
             MLog.Log(null,"Initialising microphone");
+            //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs[m_zoneDetails.ZoneId];
             m_mainZoneActivity = new ZoneMic(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted);
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.microphone;
+            m_zoneDetails.IsActive = true;
         }
 
         private void InitZoneVideoApp()
         {
             MLog.Log(null,"Initialising video");
+            //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             //m_mainZoneActivity = new ZoneVideoVlc(this);
             m_mainZoneActivity = new ZoneVideoMPC(this);
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.video;
+            m_zoneDetails.IsActive = true;
         }
 
         private void InitZoneDisplayTV()
         {
             MLog.Log(null, "Initialising TV");
+            //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             //m_mainZoneActivity = new ZoneVideoVlc(this);
             m_mainZoneActivity = new ZoneDisplayLG(this.ZoneDetails);
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.tv;
+            m_zoneDetails.IsActive = true;
         }
         
         public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
         {
-            Metadata.ValueList result = new Metadata.ValueList();;
+            Metadata.ValueList result = new Metadata.ValueList();
             //reset inactivity counter
             m_inactiveCyclesCount = -1;
 
             m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
 
             String date,weekday,action;
-            //commands without activity
+
+            #region commands without activity
             switch (cmdRemote)
             {
                 case Metadata.GlobalCommands.cameraevent://video camera event
@@ -268,9 +281,11 @@ namespace MultiZonePlayer
                     result.Add(Metadata.GlobalParams.msg, "Zone " + m_zoneDetails.ZoneName + " armed status=" + m_zoneDetails.IsArmed);
                     break;
             }
+            #endregion
 
             action = vals.GetValue(Metadata.GlobalParams.action);
 
+            #region Zone init commands
             switch (cmdRemote)
             {
                 case Metadata.GlobalCommands.music:
@@ -391,10 +406,14 @@ namespace MultiZonePlayer
                     break;
             }
 
-            if (m_mainZoneActivity == null)
-                return result;
+            #endregion
 
-            // generic commands
+            if (m_mainZoneActivity == null)
+            {
+                MLog.Log(this, "Null activity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName);
+                return result;
+            }
+            #region Generic commands
             switch (cmdRemote)
             {
                 case Metadata.GlobalCommands.play:
@@ -540,9 +559,7 @@ namespace MultiZonePlayer
                     //specific commands only to TV
                     if (m_mainZoneActivity.GetType() == typeof(ZoneDisplayLG))
                     {
-                        ZoneDisplayLG zTV = (ZoneDisplayLG)m_mainZoneActivity;
-
-                        
+                        ((ZoneDisplayLG)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
                     }
 
                     //specific commands only to Video
@@ -579,6 +596,8 @@ namespace MultiZonePlayer
                     }
                     break;
             }
+
+            #endregion
 
             this.m_currentCmd = cmdRemote.ToString();
             m_mainZoneActivity.Tick();//update zone details after command

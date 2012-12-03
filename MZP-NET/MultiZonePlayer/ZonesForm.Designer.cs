@@ -85,6 +85,9 @@
             this.progressBarBuffer = new System.Windows.Forms.ProgressBar();
             this.label22 = new System.Windows.Forms.Label();
             this.textBoxStreamingUrl = new System.Windows.Forms.TextBox();
+            this.tabTV = new System.Windows.Forms.TabPage();
+            this.label25 = new System.Windows.Forms.Label();
+            this.txtInput = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.txtInactiveCycles = new System.Windows.Forms.TextBox();
             this.txtUser = new System.Windows.Forms.TextBox();
@@ -123,16 +126,13 @@
             this.label14 = new System.Windows.Forms.Label();
             this.txAlarm = new System.Windows.Forms.TextBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.tabTV = new System.Windows.Forms.TabPage();
-            this.txtInput = new System.Windows.Forms.TextBox();
-            this.label25 = new System.Windows.Forms.Label();
             this.tabZone.SuspendLayout();
             this.tabMusic.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPlayList)).BeginInit();
             this.tabRadio.SuspendLayout();
             this.tabStream.SuspendLayout();
-            this.flowLayoutPanel1.SuspendLayout();
             this.tabTV.SuspendLayout();
+            this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -701,6 +701,35 @@
             this.textBoxStreamingUrl.TabIndex = 12;
             this.textBoxStreamingUrl.Text = "http://radio.reaper.fm/stream/";
             // 
+            // tabTV
+            // 
+            this.tabTV.Controls.Add(this.label25);
+            this.tabTV.Controls.Add(this.txtInput);
+            this.tabTV.Location = new System.Drawing.Point(4, 22);
+            this.tabTV.Name = "tabTV";
+            this.tabTV.Padding = new System.Windows.Forms.Padding(3);
+            this.tabTV.Size = new System.Drawing.Size(687, 261);
+            this.tabTV.TabIndex = 6;
+            this.tabTV.Text = "TV";
+            this.tabTV.UseVisualStyleBackColor = true;
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(24, 38);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(31, 13);
+            this.label25.TabIndex = 1;
+            this.label25.Text = "Input";
+            this.label25.Click += new System.EventHandler(this.label25_Click);
+            // 
+            // txtInput
+            // 
+            this.txtInput.Location = new System.Drawing.Point(61, 35);
+            this.txtInput.Name = "txtInput";
+            this.txtInput.Size = new System.Drawing.Size(100, 20);
+            this.txtInput.TabIndex = 0;
+            // 
             // label10
             // 
             this.label10.AutoSize = true;
@@ -1152,35 +1181,6 @@
             // 
             this.timer1.Interval = 250;
             // 
-            // tabTV
-            // 
-            this.tabTV.Controls.Add(this.label25);
-            this.tabTV.Controls.Add(this.txtInput);
-            this.tabTV.Location = new System.Drawing.Point(4, 22);
-            this.tabTV.Name = "tabTV";
-            this.tabTV.Padding = new System.Windows.Forms.Padding(3);
-            this.tabTV.Size = new System.Drawing.Size(687, 261);
-            this.tabTV.TabIndex = 6;
-            this.tabTV.Text = "TV";
-            this.tabTV.UseVisualStyleBackColor = true;
-            // 
-            // txtInput
-            // 
-            this.txtInput.Location = new System.Drawing.Point(61, 35);
-            this.txtInput.Name = "txtInput";
-            this.txtInput.Size = new System.Drawing.Size(100, 20);
-            this.txtInput.TabIndex = 0;
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(24, 38);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(31, 13);
-            this.label25.TabIndex = 1;
-            this.label25.Text = "Input";
-            this.label25.Click += new System.EventHandler(this.label25_Click);
-            // 
             // ZonesForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1215,7 +1215,6 @@
             this.Controls.Add(this.txGenPosition);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(2);
-            this.MaximizeBox = false;
             this.Name = "ZonesForm";
             this.Text = "ZonesForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ZonesForm_FormClosing);
@@ -1228,9 +1227,9 @@
             this.tabRadio.PerformLayout();
             this.tabStream.ResumeLayout(false);
             this.tabStream.PerformLayout();
-            this.flowLayoutPanel1.ResumeLayout(false);
             this.tabTV.ResumeLayout(false);
             this.tabTV.PerformLayout();
+            this.flowLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

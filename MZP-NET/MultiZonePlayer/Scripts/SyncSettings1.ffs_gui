@@ -2,7 +2,7 @@
 <FreeFileSync XmlType="GUI">
     <MainConfig>
         <Comparison>
-            <Variant>ByTimeAndSize</Variant>
+            <Variant>ByContent</Variant>
             <HandleSymlinks>FollowLink</HandleSymlinks>
         </Comparison>
         <SyncConfig>
@@ -20,7 +20,7 @@
         </SyncConfig>
         <GlobalFilter>
             <Include>*</Include>
-            <Exclude>\System Volume Information\&#x0A;\$Recycle.Bin\&#x0A;\RECYCLER\&#x0A;\RECYCLED\&#x0A;\agsXMPP.xml&#x0A;\MultiZonePlayer.exe.config&#x0A;*.pdb;&#x0A;\MultiZonePlayer.vshost.exe&#x0A;\MultiZonePlayer.vshost.exe.config&#x0A;\Vlc.DotNet.Core.Interops.xml&#x0A;\Vlc.DotNet.Core.xml&#x0A;\webroot\Properties\&#x0A;\webroot\obj\&#x0A;*.csproj;&#x0A;*\WebApp.csproj.user&#x0A;*.log;&#x0A;\Vlc.DotNet.Forms.xml&#x0A;\WebApp.dll&#x0A;\webroot\Web.config&#x0A;\webroot\Web.Debug.config&#x0A;\webroot\Web.Release.config</Exclude>
+            <Exclude>\System Volume Information\&#x0A;\$Recycle.Bin\&#x0A;\RECYCLER\&#x0A;\RECYCLED\&#x0A;\agsXMPP.xml&#x0A;\MultiZonePlayer.exe.config&#x0A;*.pdb;&#x0A;\MultiZonePlayer.vshost.exe&#x0A;\MultiZonePlayer.vshost.exe.config&#x0A;\Vlc.DotNet.Core.Interops.xml&#x0A;\Vlc.DotNet.Core.xml&#x0A;\webroot\Properties\&#x0A;\webroot\obj\&#x0A;*.csproj;&#x0A;*\WebApp.csproj.user&#x0A;*.log;&#x0A;\Vlc.DotNet.Forms.xml&#x0A;\WebApp.dll&#x0A;\webroot\Web.config&#x0A;\webroot\Web.Debug.config&#x0A;\webroot\Web.Release.config&#x0A;\MultiZonePlayer.ini</Exclude>
             <TimeSpan Type="Inactive">0</TimeSpan>
             <SizeMin Unit="Inactive">0</SizeMin>
             <SizeMax Unit="Inactive">0</SizeMax>
@@ -36,6 +36,6 @@
     <GuiConfig>
         <ShowFiltered>true</ShowFiltered>
         <HandleError>Popup</HandleError>
-        <SyncPreviewActive>true</SyncPreviewActive>
+        <SyncPreviewActive>false</SyncPreviewActive>
     </GuiConfig>
 </FreeFileSync>

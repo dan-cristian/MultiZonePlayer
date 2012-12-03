@@ -31,48 +31,34 @@ namespace MultiZonePlayer
 
             try
             {
-                MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device);
+                
                 RemotePipiCommand cmdRemote;
                 cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
+                MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " apicmd="+cmdRemote);
                 if (cmdRemote == null)
                 {
                     MLog.Log(null, "Hook command not found key=" + kd.Key);
-                    //ControlCenter.PlayBeepError();
                     return;
                 }
-                
-                //ControlCenter.PlayBeepOK();
 
                 zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
-                //set current zone
-                /*
+                
                 if (zoneId == -1)
                 {
-                    zoneId = ControlCenter.Instance.CurrentZoneMusicId;
-                    if (zoneId == -1)
-                        zoneId = ControlCenter.Instance.CurrentZoneStreamId;
-                    MLog.Log(null, "Switch to default music zone id="+zoneId+" , unknown input device " + kd.Key + " device=" + kd.Device);
+                    MLog.Log(null,"Unknown zone, device name=" + kd.Device + " key=" + kd.Key);
                 }
-                */
-                if (zoneId == -1)
-                {
-                    MLog.Log(null,"Unknown zone, device name=" + kd.Device + " key=" + kd.Key, null);
-                }
-                //else
-                //{
-                    MLog.Log(null, "Event is on zoneid=" + zoneId);
-                    int index = GetResultIndex();
-                    //ControlCenter.Instance.CurrentZoneId = zoneId;
-                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.RawInput);
-                    val.Add(Metadata.GlobalParams.command, cmdRemote.CommandName.ToLower());
-                    Thread th = new Thread(() => DoCommandAsynch(index, val));
-                    th.Start();
-                //}
+               
+                MLog.Log(null, "Event is on zoneid=" + zoneId);
+                int index = GetResultIndex();
+                Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.RawInput);
+                val.Add(Metadata.GlobalParams.command, cmdRemote.CommandName.ToLower());
+                Thread th = new Thread(() => DoCommandAsynch(index, val));
+                th.Start();
             }
             catch (Exception ex)
             {
                 MLog.Log(ex, "Error keypressed key=" + kd.Key + " zoneid=" + zoneId.ToString()
-                    + " currentzonemusic=" + ControlCenter.Instance.CurrentZoneMusicId + " currzonestreamid=" + ControlCenter.Instance.CurrentZoneStreamId);
+                    + " mostrecentzone=" + ControlCenter.Instance.MostRecentZoneWithContext);
             }
         }
 
@@ -163,11 +149,12 @@ namespace MultiZonePlayer
             Metadata.CommandResult cmdres;
             String cmdName;
             String result,err,detailedStatus="";
+            int zoneId;
 
             try
             {
                 MZPState.Instance.PowerControl.ResumeFromPowerSaving();
-
+                zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
                 cmdName = vals.GetValue(Metadata.GlobalParams.command);
                 if (Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName))
                 {
@@ -184,7 +171,7 @@ namespace MultiZonePlayer
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case Metadata.GlobalCommands.selectzone:
-                            SelectZone(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid)), vals.GetValue(Metadata.GlobalParams.activity));
+                            ControlCenter.Instance.OpenZone(zoneId);//vals.GetValue(Metadata.GlobalParams.activity));
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case Metadata.GlobalCommands.cameraevent:
@@ -299,6 +286,12 @@ namespace MultiZonePlayer
                             }
                             result = JsonResult(Metadata.ResultEnum.OK, "power failure=" + failure, null);
                             break;
+                        case Metadata.GlobalCommands.cyclepower:
+                            MZPState.Instance.PowerControl.PowerOn(zoneId);
+                            Thread.Sleep(1000);
+                            MZPState.Instance.PowerControl.PowerOff(zoneId);
+                            result = JsonResult(Metadata.ResultEnum.OK, "power status=" + MZPState.Instance.PowerControl.SocketsStatus, null);
+                            break;
                         default:
                             res = DoZoneCommand(apicmd, vals, out err, out values);
                             resvalue = values;
@@ -340,37 +333,54 @@ namespace MultiZonePlayer
                     if (zonename != null)
                     {
                         zonedetails = MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.ToLower().Contains(zonename.ToLower()));
-                        if (zonedetails != null)
-                            zoneId = zonedetails.ZoneId;
+                        if (zonedetails != null) zoneId = zonedetails.ZoneId;
                     }
                 }
                 if (zoneId == -1)
                 {
-                    zoneId = ControlCenter.Instance.CurrentZoneMusicId;
-                    if (zoneId == -1)
-                        zoneId = ControlCenter.Instance.CurrentZoneStreamId;
+                    zoneId = ControlCenter.Instance.MostRecentZoneWithContext;
                     MLog.Log(null, "Zoneid in command was -1, found active zone " + zoneId);
+                    if (zoneId == -1)
+                    {
+                        errorMessage = "ERROR no zone found to process command" + apicmd;
+                        MLog.Log(null, errorMessage);
+                        values = null;
+                        return Metadata.ResultEnum.ERR;;
+                    }
                 }
 
-                //vals.Values.RemoveAt(0);
                 ZonesForm zone;
-                SelectZone(zoneId, null);
+                //zone for cmd received is not active
+                if (ControlCenter.Instance.GetZoneIfActive(zoneId) == null)
+                {
+                    if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
+                    {
+                        MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
+                        zoneId = ControlCenter.Instance.MostRecentZoneWithContext;
+                    }
+                    else
+                    {
+                        if (ControlCenter.Instance.GetZone(zoneId) == null) ControlCenter.Instance.OpenZone(zoneId);
+                    }
+                }
+
+                
+
                 zone = ControlCenter.Instance.GetZone(zoneId);
                 if (zone == null)
                 {
-                    
                     MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
-                    //ControlCenter.PlayErrorMessage("Select a zone first", null);
                     errorMessage = "Zone not active " + zoneId;
                     values = null;
                     return Metadata.ResultEnum.ERR;
                 }
-                
-                
-                values = zone.ProcessAction(apicmd, vals);
-                ControlCenter.Instance.RefreshState();
-                errorMessage = "";
-                return Metadata.ResultEnum.OK;
+                else
+                {
+                    values = zone.ProcessAction(apicmd, vals);
+                    ControlCenter.Instance.RefreshState();
+                    errorMessage = "";
+                    return Metadata.ResultEnum.OK;
+                }
             }
             catch (Exception ex)
             {
@@ -381,14 +391,7 @@ namespace MultiZonePlayer
             }
         }
 
-        private static void SelectZone(int zoneId, string cmd)
-        {
-            //MLog.Log(null, "API selecting zone " + zoneId);
-            if (!ControlCenter.Instance.IsZoneActive(zoneId))
-            {
-                ControlCenter.Instance.OpenZone(zoneId, cmd);
-            }
-        }
+        
 
         private static Metadata.ResultEnum GoToSleep(out String errMessage)
         {
