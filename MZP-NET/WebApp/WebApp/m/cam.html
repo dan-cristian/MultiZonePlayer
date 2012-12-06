@@ -3,17 +3,12 @@
   <head id="Head1">
     <meta http-equiv="content-type" content="text/html;charset=utf-8;" />
     <meta name="robots" content="index, follow, noodp" />
-    <title>
-      Watch all Cameras
-    </title>
+    <link href="mobile.css" rel="stylesheet" type="text/css" />
+    <title>Watch Camera</title>
       <script type="text/javascript">
         var delay = 1000;
         var firsterror=null;
         var winw, winh, imgw, imgh;
-        
-
-        
-        
 
         function nextimage(obj) {
             
@@ -95,22 +90,25 @@
         </script>
     </head>
   <body>
+  <table><tr><td>
     <div id="ObjectContainer">
       <img src="http://#~HTMLDVRServerPort#/livefeed?oid=%_oid&amp;full&amp;r=#!HTMLRandom#&amp;" id="CAMID"
         title="Camera" onerror="nextimageerror(this)"
         onload="nextimage(this)"
         alt="cam"/>
       </div>
-      <br />
-      
+      </td>
+      <td>
       <form name="refreshform">
-      <input id="RadioRefresh1"  name="RadioRefresh" type="radio" value="100" onclick="delay=100"/>Fast
-      <input id="RadioRefresh2" name="RadioRefresh" type="radio" value="1000" onclick="delay=1000"/>Medium
-      <input id="RadioRefresh3"  name="RadioRefresh" type="radio" value="10000" onclick="delay=10000"/>Slow
+      <input id="RadioRefresh1"  name="RadioRefresh" type="radio" value="100" onclick="delay=100"/>Fast<br />
+      <input id="RadioRefresh2" name="RadioRefresh" type="radio" value="1000" onclick="delay=1000"/>Medium<br />
+      <input id="RadioRefresh3"  name="RadioRefresh" type="radio" value="10000" onclick="delay=10000"/>Slow<br />
       </form>
-      <br />
-    
+      <a href="cam.html?command=cyclepower&zoneid=14&oid=%_oid">Toggle Gate</a><br />
+      <a class="med" href="monitor.html">«M</a><br />
+      <a class="med" href="status.html">←S</a>
+      </td></tr>
+</table>
       
-      
-  </BODY>
-</html>
+      </body>
+      </html>
