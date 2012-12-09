@@ -219,7 +219,8 @@ namespace MultiZonePlayer
             {
                 case Metadata.GlobalCommands.cameraevent://video camera event
                     MZPState.Instance.ZoneEvents.AddCamAlert(vals);
-                    if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed))
+                    if (m_zoneDetails.IsArmed || 
+                        (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)&&(m_zoneDetails.AlarmAreaId==MZPState.Instance.SystemAlarm.AreaId)))
                     {
                         String msg =  "CAM event on " + m_zoneDetails.ZoneName + " when zone armed";
                         MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, msg, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
@@ -235,7 +236,8 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.alarmevent://alarm sensor event
                     String zonestate = vals.GetValue(Metadata.GlobalParams.status);
                     m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());
-                    if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed  || MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)))
+                    if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed  || 
+                        (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)&&(m_zoneDetails.AlarmAreaId==MZPState.Instance.SystemAlarm.AreaId))))
                     {
                         String msg = "ALARM event on " + m_zoneDetails.ZoneName + " when zone armed";
                         MZPState.Instance.LogEvent(MZPEvent.EventSource.Alarm, msg, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);

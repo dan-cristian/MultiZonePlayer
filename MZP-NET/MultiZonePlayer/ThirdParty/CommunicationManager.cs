@@ -358,7 +358,10 @@ namespace MultiZonePlayer
                             }
                             MLog.LogModem(DateTime.Now.ToString() + " READ   [" + msg+"] "+msg.Length+"\r\n\r\n");
                             if (msg.Length == 1)
-                                MLog.LogModem(DateTime.Now.ToString() + " READ 1 CHAR CODE [" + Convert.ToByte(msg[0]) + "]\r\n\r\n");
+                            {
+                                MLog.LogModem(DateTime.Now.ToString() + " READ 1 CHAR CODE [" + Convert.ToByte(msg[0]) + "], closing PORT\r\n\r\n");
+                                comPort.Close();
+                            }
                             _callback(msg);
                         }
                         //string msg = comPort.ReadLine();

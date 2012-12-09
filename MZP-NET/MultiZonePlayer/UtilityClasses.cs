@@ -101,7 +101,7 @@ namespace MultiZonePlayer
             makebuzz,
             powerevent,
             tvsetinput,
-            cyclepower
+            powercycle
 
         }
         public enum GlobalParams
@@ -155,6 +155,112 @@ namespace MultiZonePlayer
             Event,
             Internal
         }
+
+        public class CommandSyntax
+        {
+            GlobalCommands Command;
+            List<GlobalParams> Params;
+            
+            public CommandSyntax(GlobalCommands command)
+            {
+                Command = command;
+            }
+
+            public CommandSyntax(GlobalCommands command, params GlobalParams[] parameters)
+            {
+                Command = command;
+                Params = new List<GlobalParams>();
+                foreach (GlobalParams param in parameters)
+                {
+                    Params.Add(param);
+                }
+            }
+
+            public static Boolean Validate(ValueList vals)
+            {
+                String cmdName = vals.GetValue(Metadata.GlobalParams.command);
+                if (Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName))
+                {
+                    Metadata.GlobalCommands apicmd = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), cmdName);
+                    CommandSyntax cmdSynt = SystemCommands.Find(x => x.Command.Equals(apicmd));
+                    if (cmdSynt != null)
+                    {
+                        foreach (GlobalParams param in cmdSynt.Params)
+                        {
+                            if (vals.GetValue(param) == null)
+                            {
+                                MLog.Log(null, "Expected parameter not found in cmd=" + cmdName + " param=" + param.ToString());
+                                break;
+                            }
+                        }
+                        return true;
+                    }
+                    else
+                        return true;//cmd without parameters
+                }
+                else MLog.Log(null, "Invalid command=" + cmdName);
+                return false;
+            }
+        }
+
+        public static List<CommandSyntax> SystemCommands = new List<CommandSyntax>(){
+            new CommandSyntax(GlobalCommands.alarmarm,          GlobalParams.areaid),
+            new CommandSyntax(GlobalCommands.alarmdisarm,       GlobalParams.areaid),
+            new CommandSyntax(GlobalCommands.alarmevent,        GlobalParams.status, GlobalParams.datetime),
+            new CommandSyntax(GlobalCommands.alarmkeypadbeep,   GlobalParams.areaid),
+            new CommandSyntax(GlobalCommands.alarmstay,         GlobalParams.areaid),
+            new CommandSyntax(GlobalCommands.selectzone,        GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.music,             GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.video,             GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.tv,                GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.volumeset,         GlobalParams.volumelevel),
+            new CommandSyntax(GlobalCommands.ratingset,         GlobalParams.ratingvalue),
+            new CommandSyntax(GlobalCommands.photo,             GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.dvd,               GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.radio,             GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.streammp3,         GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.musicclone,        GlobalParams.zoneid),
+            new CommandSyntax(GlobalCommands.microphone,        GlobalParams.zoneid),
+
+            /*
+            genrelist,
+            setgenrelist,
+            sleeptimer,
+            artistlist,
+            setartistlist,
+            setwaketimer,
+            medialist,
+            setmediaitem,
+            cameraevent,
+            dismisscameraalert,
+            togglecameraalert,
+            setmoodmusic,
+            getmoodmusiclist,
+            searchmediaitem,
+            musicalarm,
+            alarmevent,
+            alarmarm,
+            alarmdisarm,
+            alarmkeypadbeep,
+            alarmstay,
+            alarmautoarm,
+            micrecord,
+            micplay,
+            followmemusic,
+            restartispy,
+            restartwinload,
+            holdcriteria,
+            setnotify,
+            restartsystem,
+            sendsms,
+            zonearm,
+            zonedisarm,
+            makebuzz,
+            powerevent,
+            tvsetinput,
+            powercycle
+             */
+        };
 
         public class CommandResult
         {
@@ -345,6 +451,7 @@ namespace MultiZonePlayer
             public Boolean HasCamera = false;
             public Boolean IsArmed = false;
             public int AlarmZoneId = -1;
+            public int AlarmAreaId=-1;
             public Boolean HasMotionSensor = false;
             public Boolean HasMicrophone = false;
             public Boolean HasDisplay = false;
@@ -498,13 +605,7 @@ namespace MultiZonePlayer
             public static void LoadFromIni(ref List<ZoneDetails> zones)
             {
                 Hashtable zoneValues = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONES);
-                /*Hashtable zonePowerIndex = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEPOWERCTRLINDEX_DK);
-                Hashtable defaultVolume = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEDEFAULTVOLUMEPERCENT);
-                Hashtable outputKeywords = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEOUTPUTDEVICEKEYWORDS);
-                Hashtable outputDeviceNames = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEDEVICE);
-                Hashtable cameraIds = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONECAMERAID);
-                Hashtable alarmZoneIds = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEALARMZONEID);
-                */
+               
                 ZoneDetails zone;
 
                 m_intervalImmediate = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[0]);
@@ -514,23 +615,7 @@ namespace MultiZonePlayer
                 foreach (int id in zoneValues.Keys)
                 {
                     zone = new ZoneDetails(id, zoneValues[id].ToString());
-                    /*zone.PowerIndex = zonePowerIndex[id] != null && !zonePowerIndex[id].Equals("") ? Convert.ToInt16(zonePowerIndex[id]) : 0;
-                    zone.DefaultVolumePercent = defaultVolume[id] != null && !defaultVolume[id].Equals("") ? Convert.ToInt16(defaultVolume[id]) : 0;
-                    zone.OutputKeywords = outputKeywords[id] != null && !outputKeywords[id].Equals("") ? outputKeywords[id].ToString() : "";
-                    zone.OutputDeviceUserSelected = outputDeviceNames[id] != null && !outputDeviceNames[id].Equals("") ? outputDeviceNames[id].ToString() : "";
-                    zone.CameraId = (cameraIds[id] != null && !cameraIds[id].Equals("") ? cameraIds[id].ToString() : "");
-                    if (zone.CameraId != "")
-                        zone.HasCamera = true;
-                    zone.AlarmZoneId = ((alarmZoneIds[id] != null) && (!alarmZoneIds[id].ToString().Equals("")) ? Convert.ToInt16(alarmZoneIds[id]) : -1);
                     
-                    zone.OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(zone.OutputDeviceUserSelected, zone.OutputKeywords);
-                    zone.WavedeviceIndex = GetWaveOutDeviceIndex(zone.OutputKeywords);
-                    zone.OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(zone.WavedeviceIndex);
-                    
-                    if (!zone.OutputDeviceAutoCompleted.Equals(""))
-                        zone.HasSpeakers = true;
-                    
-                     */
                     zones.Add(zone);
                 }
 
@@ -557,6 +642,7 @@ namespace MultiZonePlayer
                     if (CameraId != "") HasCamera = true;
                     AlarmZoneId = zonestorage.AlarmZoneId;
                     if (AlarmZoneId != -1) HasMotionSensor = true;
+                    AlarmAreaId = zonestorage.AlarmAreaId;
 
                     OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
                     OutputKeywords = zonestorage.OutputKeywords;
@@ -1054,12 +1140,17 @@ namespace MultiZonePlayer
         public enum EnumZoneAction
         { new_, restore };
 
-        public EnumAreaState AreaState = EnumAreaState.ready;
+        public int AreaId;
 
+        public EnumAreaState AreaState = EnumAreaState.ready;
         public Boolean IsMonitoringActive = false;
         public DateTime LastAlarmEventDateTime = DateTime.MinValue;
         public DateTime LastAreaStateChange = DateTime.MinValue;
 
+        public Alarm(int areaid)
+        {
+            AreaId = areaid;
+        }
     }
 
     public class MZPEvent

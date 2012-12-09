@@ -6,3 +6,6 @@ MZP-NET/MultiZonePlayer/bin/Debug/
 MZP-NET/MultiZonePlayer/obj/x86/Debug/
 MZP-NET/WebApp/WebApp/obj/
 MZP-NET/WebApp/WebApp/obj/Debug
+MZP-NET/MultiZonePlayer/ThirdParty/pstools/*.exe
+MZP-NET/MultiZonePlayer/ThirdParty/pstools/*.chm
+MZP-NET/MultiZonePlayer/ThirdParty/pstools/*.txt

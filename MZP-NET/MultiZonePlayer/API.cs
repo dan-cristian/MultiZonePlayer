@@ -159,6 +159,11 @@ namespace MultiZonePlayer
                 if (Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName))
                 {
                     Metadata.GlobalCommands apicmd = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), cmdName);
+                    if (!Metadata.CommandSyntax.Validate(vals))
+                    {
+                        MLog.Log(null, "ERROR, potential invalid command");
+                    }
+                    
                     //global commands are processed here, zone based commands are delegated to zones
                     switch (apicmd)
                     {
@@ -204,7 +209,8 @@ namespace MultiZonePlayer
                             result = JsonResult(Metadata.ResultEnum.OK, "", resvalue);
                             break;
                         case Metadata.GlobalCommands.alarmarm:
-                            cmdres = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Arm, vals.GetValue(Metadata.GlobalParams.areaid));
+                            String areaid = vals.GetValue(Metadata.GlobalParams.areaid);
+                            cmdres = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Arm, areaid);
                             result = JsonResult(cmdres.Result, cmdres.ErrorMessage, null);
                             break;
                         case Metadata.GlobalCommands.alarmdisarm:
@@ -286,7 +292,7 @@ namespace MultiZonePlayer
                             }
                             result = JsonResult(Metadata.ResultEnum.OK, "power failure=" + failure, null);
                             break;
-                        case Metadata.GlobalCommands.cyclepower:
+                        case Metadata.GlobalCommands.powercycle:
                             MZPState.Instance.PowerControl.PowerOn(zoneId);
                             Thread.Sleep(1000);
                             MZPState.Instance.PowerControl.PowerOff(zoneId);

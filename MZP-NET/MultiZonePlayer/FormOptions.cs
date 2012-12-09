@@ -15,9 +15,7 @@ namespace MultiZonePlayer
 {
     public partial class FormOptions : Form, IPlayEvent
     {
-        
         private String m_lastControlDevice;
-        
 
         public FormOptions()
         {
@@ -131,7 +129,7 @@ namespace MultiZonePlayer
             foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
             {
                 dgvZones.Rows.Add(zone.ZoneId, zone.ZoneName, zone.OutputKeywords, zone.OutputDeviceUserSelected, 
-                    zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.ParentZoneId);
+                    zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId);
 
                 if (zone.HasDisplay)
                 {
@@ -189,6 +187,7 @@ namespace MultiZonePlayer
                     zone.DefaultVolumePercent = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_DefaultVolume.Name].Value ?? "0");
                     zone.CameraId = (dgvZones.Rows[r].Cells[Zones_CameraId.Name].Value ?? "").ToString();
                     zone.AlarmZoneId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmZoneId.Name].Value ?? "-1");
+                    zone.AlarmAreaId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmAreadId.Name].Value ?? "-1");
                     zone.SaveStateToIni();
                 }
             }

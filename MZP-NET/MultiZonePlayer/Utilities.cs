@@ -18,6 +18,8 @@ using System.ComponentModel;
 using System.Threading;
 using System.Globalization;
 
+using System.Web;
+
 namespace MultiZonePlayer
 {
     public class Utilities
@@ -546,6 +548,58 @@ namespace MultiZonePlayer
             Url= Url.Split('/')[0];
             return Url.Split(':')[0];
         }
+
+        public static String PostURLMessage(String url, String form)
+        {
+            WebPostRequest post = new WebPostRequest("http://192.168.0.10:12347/jsonrpc?SendRemoteKey");
+            String msg = @"{""jsonrpc"": ""2.0"", ""method"": ""Application.SetVolume"", ""params"": { ""volume"": 54 }, ""id"": 1}";
+            post.Add(msg,"");
+            MessageBox.Show(msg);
+            String res = post.GetResponse();
+            MLog.Log(null, res);
+            return res;
+
+        }
+    }
+
+    public class WebPostRequest
+    {
+        WebRequest theRequest;
+        HttpWebResponse theResponse;
+        ArrayList theQueryData;
+
+        public WebPostRequest(string url)
+        {
+            theRequest = WebRequest.Create(url);
+            theRequest.Method = "POST";
+            theQueryData = new ArrayList();
+        }
+
+        public void Add(string key, string value)
+        {
+            theQueryData.Add(String.Format("{0}={1}", key, HttpUtility.UrlEncode(value)));
+        }
+
+        public string GetResponse()
+        {
+            // Set the encoding type
+            theRequest.ContentType = "application/x-www-form-urlencoded";
+
+            // Build a string containing all the parameters
+            string Parameters = String.Join("&", (String[])theQueryData.ToArray(typeof(string)));
+            theRequest.ContentLength = Parameters.Length;
+
+            // We write the parameters into the request
+            StreamWriter sw = new StreamWriter(theRequest.GetRequestStream());
+            sw.Write(Parameters);
+            sw.Close();
+
+            // Execute the query
+            theResponse = (HttpWebResponse)theRequest.GetResponse();
+            StreamReader sr = new StreamReader(theResponse.GetResponseStream());
+            return sr.ReadToEnd();
+        }
+
     }
 
     public enum VoicePriority

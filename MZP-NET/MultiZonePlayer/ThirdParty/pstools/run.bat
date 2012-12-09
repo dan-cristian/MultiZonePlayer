@@ -1,0 +1,1 @@
+psexec \\server -d "c:\program files (x86)\MZP\multizoneplayer.exe"

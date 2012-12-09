@@ -1,0 +1,1 @@
+pskill \\server multizoneplayer.exe

@@ -187,7 +187,7 @@ namespace MultiZonePlayer
             
         }
 
-        public Metadata.CommandResult SendCommand_PARADOX(EnumParadoxCommands cmd, string areaid)
+        public Metadata.CommandResult SendCommand_PARADOX(EnumParadoxCommands cmd, String areaid)
         {
             Metadata.CommandResult res = new Metadata.CommandResult();
             IntPtr handle = Utilities.FindWindow("TMainForm", "WinLoad");

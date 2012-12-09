@@ -83,7 +83,7 @@ namespace MultiZonePlayer
                 m_notifyState = new NotifyState();
 
 
-                m_systemAlarm = new Alarm();
+                m_systemAlarm = new Alarm(1);
                 InitRemotes();
                 m_powerControl = new DenkoviPowerControl("8 Relay Brd USB");
 
@@ -544,7 +544,7 @@ namespace MultiZonePlayer
                         if ((DateTime.Now.Subtract(SystemAlarm.LastAreaStateChange).Duration().TotalDays > 1)
                             && (DateTime.Now.Subtract(SystemAlarm.LastAlarmEventDateTime).Duration().TotalDays > 1) )
                         {
-                            MLog.Log(this, "WINLOAD suspected to be not connected");
+                            //MLog.Log(this, "WINLOAD suspected to be not connected");
                         }
 
                         DateTime lastCamEvent = m_initMZPStateDateTime;
