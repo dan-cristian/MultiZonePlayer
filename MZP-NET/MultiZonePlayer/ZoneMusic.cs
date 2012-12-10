@@ -688,27 +688,6 @@ namespace MultiZonePlayer
                 return index;
             }
 
-        /*
-            public int GetHashValueIndex(Hashtable hash)
-            {
-                //identify new index of current file
-                IDictionaryEnumerator enumerator = songList.GetEnumerator();
-                int valueIndex = 0;
-                Object value = GetCurrentMusicFileFullPath();
-
-                while (enumerator.MoveNext())
-                {
-                    if (enumerator.Value.Equals(value))
-                    {
-                        MLog.Log(this,"Located value index " + currentSongKey + " at " + valueIndex);
-                        break;
-                    }
-                    valueIndex++;
-                }
-                return valueIndex;
-            }
-          */  
-
             public List<MediaItem> GetRandomisedSongList()
             {
                 return m_songList;
@@ -747,7 +726,7 @@ namespace MultiZonePlayer
         private ZonesForm m_parentZoneForm;
         private ZonesForm m_clonedZoneForm;
         private ZoneMusic m_clonedZoneMusic;
-
+        private Metadata.ZoneDetails m_zoneDetails;
         private Metadata.ZoneState m_zoneState;
 
         public ZoneMusicClone(ZonesForm p_zoneForm, ZonesForm p_clonedZoneForm)
@@ -755,6 +734,7 @@ namespace MultiZonePlayer
             m_clonedZoneForm = p_clonedZoneForm;
             m_parentZoneForm = p_zoneForm;
             m_zoneState = Metadata.ZoneState.NotInitialised;
+            m_zoneDetails = p_zoneForm.ZoneDetails;
 
             if (m_clonedZoneForm != null)
             {
@@ -899,6 +879,22 @@ namespace MultiZonePlayer
                 return Metadata.VolumeLevels.VolumeSilence;
         }
 
+        public int RatingUp()
+        {
+            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+                return m_clonedZoneMusic.RatingUp();
+            else
+                return -1;
+        }
+
+        public int RatingDown()
+        {
+            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+                return m_clonedZoneMusic.RatingDown();
+            else
+                return -1;
+        }
+
         public long Position
         {
             get
@@ -921,12 +917,27 @@ namespace MultiZonePlayer
             }
         }
 
-        
+        public void HoldCriteriaToggle()
+        {
+            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+                m_clonedZoneMusic.HoldCriteriaToggle();
+        }
 
         public void Tick()
         {
             //not implemented
-            
+            if (m_clonedZoneMusic != null && m_clonedZoneMusic.CurrentItem != null)
+            {
+                m_zoneDetails.Title = m_clonedZoneMusic.CurrentItem.Title;
+                m_zoneDetails.Rating = m_clonedZoneMusic.CurrentItem.Rating;
+                m_zoneDetails.Playcount = m_clonedZoneMusic.CurrentItem.PlayCount;
+                m_zoneDetails.Author = m_clonedZoneMusic.CurrentItem.Author;
+                m_zoneDetails.Genre = m_clonedZoneMusic.CurrentItem.Genre;
+                m_zoneDetails.Year = m_clonedZoneMusic.CurrentItem.Year;
+                m_zoneDetails.Album = m_clonedZoneMusic.CurrentItem.Album;
+                m_zoneDetails.SourceURL = m_clonedZoneMusic.CurrentItem.SourceURL;
+                m_zoneDetails.Playlist = "cloned zone";
+            }
         }
     }
 }

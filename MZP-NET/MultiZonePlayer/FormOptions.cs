@@ -151,12 +151,7 @@ namespace MultiZonePlayer
             {
                 zoneId = dgvZones.Rows[r].Cells[ZoneId.Name].Value;
                 zoneName = dgvZones.Rows[r].Cells[ZoneName.Name].Value;
-                /*outputDevice = dgvZones.Rows[r].Cells[OutputDevice.Name].Value ?? "";
-                outputKeywords = dgvZones.Rows[r].Cells[Zones_OutputKeywords.Name].Value ?? "";
-                powerControlIndexDK = dgvZones.Rows[r].Cells[Zones_PowerIndexDK.Name].Value ?? "";
-                defaultVolume = dgvZones.Rows[r].Cells[Zones_DefaultVolume.Name].Value ?? "";
-                cameraId= dgvZones.Rows[r].Cells[Zones_CameraId.Name].Value ?? "";
-                alarmZoneId = dgvZones.Rows[r].Cells[Zones_AlarmZoneId.Name].Value ?? "";*/
+                
                
                 if (zoneId != null && zoneName != null)
                 {
@@ -164,14 +159,7 @@ namespace MultiZonePlayer
 
                     
                     IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONES, zoneId.ToString(), zoneName.ToString());
-                    /*
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONEDEVICE, zoneId.ToString(), outputDevice.ToString());
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONEOUTPUTDEVICEKEYWORDS, zoneId.ToString(), outputKeywords.ToString());
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONEPOWERCTRLINDEX_DK, zoneId.ToString(), powerControlIndexDK.ToString());
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONEDEFAULTVOLUMEPERCENT, zoneId.ToString(), defaultVolume.ToString());
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONECAMERAID, zoneId.ToString(), cameraId.ToString());
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONEALARMZONEID, zoneId.ToString(), alarmZoneId.ToString());
-                    */
+                    
 
                     if (zone == null)
                     {

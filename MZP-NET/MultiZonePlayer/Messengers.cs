@@ -66,7 +66,7 @@ namespace MultiZonePlayer
                     while (m_waitForResponse && i < 500);
                     if (i >= 300)
                     {
-                        MLog.Log(this, "WARNING no response received while looping");
+                        //MLog.Log(this, "WARNING no response received while looping");
                         return false;
                     }
                 }

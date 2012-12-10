@@ -2087,11 +2087,11 @@ namespace FTD2XX_NET
 			// Check for our required function pointers being set up
 			if (pFT_Close != IntPtr.Zero)
 			{
-                MultiZonePlayer.MLog.Log(null,"Low level close call get function ptr started");
+                //MultiZonePlayer.MLog.Log(null,"Low level close call get function ptr started");
 				tFT_Close FT_Close = (tFT_Close)Marshal.GetDelegateForFunctionPointer(pFT_Close, typeof(tFT_Close));
 
 				// Call FT_Close
-                MultiZonePlayer.MLog.Log(null,"Low level close call started");
+                //MultiZonePlayer.MLog.Log(null,"Low level close call started");
 				ftStatus = FT_Close(ftHandle);
 
 				if (ftStatus == FT_STATUS.FT_OK)

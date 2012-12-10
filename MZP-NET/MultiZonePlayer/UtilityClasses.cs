@@ -222,6 +222,8 @@ namespace MultiZonePlayer
             new CommandSyntax(GlobalCommands.musicclone,        GlobalParams.zoneid),
             new CommandSyntax(GlobalCommands.microphone,        GlobalParams.zoneid),
 
+
+            new CommandSyntax(GlobalCommands.followmemusic,     GlobalParams.zoneid),
             /*
             genrelist,
             setgenrelist,

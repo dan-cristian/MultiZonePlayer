@@ -58,6 +58,7 @@ namespace MultiZonePlayer
             private WinEventLogReader m_winEventLogReader;
 
             private List<Display> m_displayList = new List<Display>();
+            //private List<ZoneExternalPlayerBase>
 
             public List<Display> DisplayList
             {

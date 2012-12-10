@@ -225,6 +225,11 @@ namespace MultiZonePlayer
                         String msg =  "CAM event on " + m_zoneDetails.ZoneName + " when zone armed";
                         MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, msg, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
                     }
+
+                    if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
+                    {
+                        cmdRemote = Metadata.GlobalCommands.musicclone;
+                    }
                     //TODO
                     break;
                 case Metadata.GlobalCommands.dismisscameraalert:
@@ -378,7 +383,7 @@ namespace MultiZonePlayer
                 //check if photo (clone zone)
                 case Metadata.GlobalCommands.photo:
                 case Metadata.GlobalCommands.musicclone:
-                    if (!this.Equals(ControlCenter.GetFirstZoneMusic()))//cannot close myself
+                    if (!this.Equals(ControlCenter.GetFirstZoneMusic()))//cannot clone myself
                     {
                         if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneMusicClone)))
                         {
@@ -412,7 +417,7 @@ namespace MultiZonePlayer
 
             if (m_mainZoneActivity == null)
             {
-                MLog.Log(this, "Null activity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName);
+                //MLog.Log(this, "Null activity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName);
                 return result;
             }
             #region Generic commands
@@ -460,7 +465,7 @@ namespace MultiZonePlayer
                 
                 //specific commands
                 default:
-                    //specific commands only to Music
+                    //specific commands only to Music / Clone
                     if (m_mainZoneActivity.GetType() == typeof(ZoneMusic))
                     {
                         ZoneMusic zMusic = ((ZoneMusic)m_mainZoneActivity);
@@ -469,7 +474,7 @@ namespace MultiZonePlayer
                         switch (cmdRemote)
                         {
                             case Metadata.GlobalCommands.enter://for numpads
-                                zMusic.Next();
+                                m_mainZoneActivity.Next();
                                 break;
                             case Metadata.GlobalCommands.ffwd:
                                 zMusic.Ffwd();
@@ -496,11 +501,9 @@ namespace MultiZonePlayer
                                 break;
                             case Metadata.GlobalCommands.up:
                                 rating = zMusic.RatingUp();
-                                //ControlCenter.PlayInfoMessage("Rating Up " + rating, this);
                                 break;
                             case Metadata.GlobalCommands.down:
                                 rating = zMusic.RatingDown();
-                                //ControlCenter.PlayInfoMessage("Rating Down " + rating, this);
                                 break;
                             case Metadata.GlobalCommands.ratingset:
                                 zMusic.SetRating(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.ratingvalue)));
@@ -540,6 +543,40 @@ namespace MultiZonePlayer
                                     zMusic.SetHoldCriteria(vals.GetValue(Metadata.GlobalParams.action).ToLower());
                                 else
                                     zMusic.HoldCriteriaToggle();
+                                ShowPlayList();
+                                break;
+                        }
+                    }
+
+                    //music clone commands
+                    if (m_mainZoneActivity.GetType() == typeof(ZoneMusicClone))
+                    {
+                        ZoneMusicClone zMusic = ((ZoneMusicClone)m_mainZoneActivity);
+
+                        int rating;
+                        switch (cmdRemote)
+                        {
+                            case Metadata.GlobalCommands.enter://for numpads
+                                m_mainZoneActivity.Next();
+                                break;
+                            case Metadata.GlobalCommands.right:
+                                NextPlaylist();
+                                break;
+                            case Metadata.GlobalCommands.left:
+                                zMusic.PreviousPlaylist();
+                                break;
+                            case Metadata.GlobalCommands.up:
+                                rating = zMusic.RatingUp();
+                                break;
+                            case Metadata.GlobalCommands.down:
+                                rating = zMusic.RatingDown();
+                                break;
+                            case Metadata.GlobalCommands.followmemusic:
+                                MZPState.Instance.ToogleFollowMeMusic();
+                                break;
+                            case Metadata.GlobalCommands.back:
+                            case Metadata.GlobalCommands.holdcriteria:
+                                zMusic.HoldCriteriaToggle();
                                 ShowPlayList();
                                 break;
                         }
