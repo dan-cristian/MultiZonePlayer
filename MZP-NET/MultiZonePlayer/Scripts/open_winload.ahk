@@ -26,11 +26,12 @@ if WinExist("ahk_class TPasswordDlg")
 			Send {F6}
 			;Sleep 3000
 			WinActivate
-			WinMaximize
+			;WinMaximize
 			;Click 263, 136
 			;Sleep 1000
 			;WinActivate
-			Click 292,173
+			;Click 292,173
+			ControlClick, X264 Y140
 			Sleep 1000
 			WinRestore
 			WinMinimize
