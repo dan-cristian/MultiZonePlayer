@@ -30,7 +30,7 @@
     <td>
         <form action="musicselect.html?zoneid=%_zoneid" method="post">
         <input name="command" type="hidden" value="setartistlist"/>
-        <select multiple="yes" size="3" name="selectedindex">
+        <select multiple="yes" size="6" name="selectedindex">
         #~HTMLGetCmdValues,%_zoneid,artistlist,option#
         </select><br />
         <input type="submit" value="Select Artists" />
@@ -43,7 +43,7 @@
         <td>
         <form action="musicselect.html?zoneid=%_zoneid" method="post">
         <input name="command" type="hidden" value="setgenrelist"/>
-        <select multiple="yes" size="3" name="selectedindex">
+        <select multiple="yes" size="6" name="selectedindex">
         #~HTMLGetCmdValues,%_zoneid,genrelist,option#
         </select><br />
         <input type="submit" value="Select Genres" />
@@ -54,7 +54,7 @@
       <td>
       <form action="musicselect.html?zoneid=%_zoneid" method="post">
         <input name="command" type="hidden" value="setmoodmusic"/>
-        <select multiple="no" size="3" name="selectedindex">
+        <select multiple="no" size="6" name="selectedindex">
          #~HTMLGetCmdValues,%_zoneid,getmoodmusiclist,option#
         </select><br />
         <input type="submit" value="Select Mood" />

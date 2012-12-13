@@ -309,24 +309,25 @@ namespace MultiZonePlayer
                         Banshee.Streaming.StreamRatingTagger.GetRatingAndPlayCount(tg, ref p_rating, ref p_playcount);
                         Title = tg.Tag.Title;
                         if (Title== null) Title = SourceURL.Substring(Math.Max(0, SourceURL.Length - 35)).Replace("\\", "/");
-                        Title = Utilities.SanitiseInternational(Title);
+                        Title = Utilities.SanitiseInternationalAndTrim(Title);
                         Genre = Utilities.ToTitleCase(tg.Tag.FirstGenre);
-                        Genre = Utilities.SanitiseInternational(Genre);
+                        Genre = Utilities.SanitiseInternationalAndTrim(Genre);
                         if (Genre == null) Genre = "Not Set";
                         PlayCount = p_playcount;
                         Rating = p_rating;
-                        Author = Utilities.SanitiseInternational(Utilities.ToTitleCase(tg.Tag.FirstAlbumArtist));
+                        Author = Utilities.SanitiseInternationalAndTrim(Utilities.ToTitleCase(tg.Tag.FirstAlbumArtist));
                         if ((Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
                         {
-                            Author = Utilities.SanitiseInternational(Utilities.ToTitleCase(tg.Tag.FirstPerformer));
+                            Author = Utilities.SanitiseInternationalAndTrim(Utilities.ToTitleCase(tg.Tag.FirstPerformer));
                             if ((Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
                             {
-                                Author = Utilities.SanitiseInternational(Utilities.ToTitleCase(tg.Tag.FirstComposer));
+                                Author = Utilities.SanitiseInternationalAndTrim(Utilities.ToTitleCase(tg.Tag.FirstComposer));
                             }
                             //MLog.Log(null, tg.ToString());
                         }
                         if (Author == "") Author = "Not Set";
-                        
+                        Album = Utilities.SanitiseInternationalAndTrim(tg.Tag.Album);
+                        Year = tg.Tag.Year.ToString();
                         MediaType = "audio";
                         Created = Utilities.GetFileInfo(SourceURL).CreationTime;
                         Comment = tg.Tag.Comment == null ? "" : tg.Tag.Comment;

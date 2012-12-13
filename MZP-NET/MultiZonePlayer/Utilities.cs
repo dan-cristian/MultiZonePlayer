@@ -445,10 +445,10 @@ namespace MultiZonePlayer
             else return null;
         }
 
-        public static String SanitiseInternational(String text)
+        public static String SanitiseInternationalAndTrim(String text)
         {
-            String charsource = "ăşîâĂÎŞȚ";
-            String chardest =   "asiiAIST";
+            String charsource = "ăşîâĂÎŞȚéÖöëü";
+            String chardest =   "asiiAISTeOoeu";
 
             StringBuilder sb = new StringBuilder(text);
 
@@ -460,7 +460,7 @@ namespace MultiZonePlayer
                 }
             }
             
-            return sb.ToString();
+            return sb.ToString().Trim();
         }
 
         public static List<Object> ParseStringForValues(String parseValue, char delimitator, Type convertToType)
