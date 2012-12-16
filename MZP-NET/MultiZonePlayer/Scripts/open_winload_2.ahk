@@ -17,6 +17,7 @@ IfWinExist, ahk_class TPasswordDlg
 		Send {Enter}
 		Sleep 5000
 		;WinMinimize
+		WinMove ,,100,100,300,300
 	}
 	
 }

@@ -82,6 +82,12 @@ namespace MultiZonePlayer
             return result;
         }
 
+        protected override void ReceiveSerialResponse(string response)
+        {
+            m_lastMessageResponse = response.ToLower();
+            m_lastOperationWasOK = m_lastMessageResponse.Contains("ok");
+        }
+
         public void NextInput()
         {
             InputCodesEnum currentInput, nextInput = InputCodesEnum.x_20;

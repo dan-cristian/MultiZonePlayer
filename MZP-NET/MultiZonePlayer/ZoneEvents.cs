@@ -149,7 +149,7 @@ namespace MultiZonePlayer
                             int zoneId = MZPState.Instance.GetZoneIdByAlarmZoneId(Convert.ToInt16(alarmzoneid));
                             if (zoneId != -1)
                             {
-                                vals = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.alarmevent.ToString(), Metadata.CommandSources.Event);
+                                vals = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.alarmevent.ToString(), Metadata.CommandSources.events);
                                 vals.Add(Metadata.GlobalParams.zoneid, zoneId.ToString());
                                 vals.Add(Metadata.GlobalParams.datetime, date + " " + time);
                                 vals.Add(Metadata.GlobalParams.action, action);
@@ -324,7 +324,7 @@ namespace MultiZonePlayer
 
                 if (failure != MZPState.Instance.IsPowerFailure)
                 {
-                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.powerevent.ToString(), Metadata.CommandSources.Internal);
+                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.powerevent.ToString(), Metadata.CommandSources.system);
                     val.Add(Metadata.GlobalParams.action, failure.ToString());
                     val.Add(Metadata.GlobalParams.datetime, datetime.ToString());
                     Metadata.ValueList retval;

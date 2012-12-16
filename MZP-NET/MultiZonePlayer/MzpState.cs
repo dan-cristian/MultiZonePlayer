@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
@@ -491,6 +492,32 @@ namespace MultiZonePlayer
 
             }
 
+            public int MostRecentZoneWithContext
+            {
+                get
+                {
+                    Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
+                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) || x.ActivityType.Equals(Metadata.GlobalCommands.streammp3))
+                        && x.IsActive);
+                    if (zone != null)
+                    {
+                        MLog.Log(this, "Found most recent active zone id=" + zone.ZoneId);
+                        return zone.ZoneId;
+                    }
+                    else
+                    {
+                        zone = ZoneDetails.OrderByDescending(x => x.LastAlarmMovementDateTime).ToList().Find(x => x.HasSpeakers);
+                        if (zone != null)
+                        {
+                            MLog.Log(this, "Found most recent zone with speakers id=" + zone.ZoneId);
+                            return zone.ZoneId;
+                        }
+                        else
+                            return -1;
+                    }
+                }
+            }
+
             public MoodMusic GetScheduledMood(int zoneId)
             {
                 String time, weekday;
@@ -668,7 +695,7 @@ namespace MultiZonePlayer
                     if ((zone.WakeTime.Length > 0) && (zone.WakeTime.CompareTo(dt) == 0) && zone.WakeWeekDay.Contains(weekday))
                     {
                         Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, 
-                            Metadata.GlobalCommands.musicalarm.ToString(), Metadata.CommandSources.Internal);
+                            Metadata.GlobalCommands.musicalarm.ToString(), Metadata.CommandSources.system);
                         val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
                         Metadata.ValueList retval;
                         API.DoCommandFromWeb(val, out retval);
@@ -699,7 +726,7 @@ namespace MultiZonePlayer
                             if (((DisplayLGTV)display).IsOn)
                             {
                                 Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, 
-                                    Metadata.GlobalCommands.tv.ToString(), Metadata.CommandSources.Internal);
+                                    Metadata.GlobalCommands.tv.ToString(), Metadata.CommandSources.system);
                                 val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
                                 Metadata.ValueList retval;
                                 API.DoCommandFromWeb(val, out retval);

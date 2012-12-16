@@ -655,7 +655,7 @@ namespace MultiZonePlayer
 
             public Metadata.ValueList GetSongValueList()
             {
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.Internal);
+                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
                 var titles = m_songList.Select(i => i.Author+" | "+i.Title).ToList();
                 //val.Values = titles.ToList();
                 var indexes = m_songList.Select(i => i.Index.ToString()).ToList();
@@ -666,7 +666,7 @@ namespace MultiZonePlayer
 
             public Metadata.ValueList GetMoodValueList()
             {
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.Internal);
+                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
                 var names = MZPState.Instance.MoodMusicList.Select(m => m.Name);
                 var indexes = MZPState.Instance.MoodMusicList.Select(m => m.Index.ToString());
                 val.SetBulk(indexes.ToList(), names.ToList());

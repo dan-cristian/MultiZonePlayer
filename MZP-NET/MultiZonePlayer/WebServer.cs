@@ -127,10 +127,11 @@ namespace MultiZonePlayer
                 String cmdResult = "";
                 byte[] binaryBuffer = null;
                 Metadata.ValueList resvalue=null;
-                Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.Web);
+                Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.web);
 
                 String requestServer;
 
+                MLog.LogWeb(context.Request);
                 requestServer = Utilities.ExtractServerNameFromURL(request.Url.AbsoluteUri);
                 String localPath = request.Url.LocalPath.Replace("..", "");//.Replace("/", "");
 
@@ -171,7 +172,7 @@ namespace MultiZonePlayer
                                 System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
                                 post = reader.ReadToEnd();
                                 post = System.Uri.UnescapeDataString(post);
-                                post = post.Replace("%20", " ");
+                                post = post.Replace("%20", " ").Replace("+"," ");
                                 body.Close();
                                 reader.Close();
                                 break;
@@ -200,11 +201,22 @@ namespace MultiZonePlayer
                     }
                 }
 
+                String cmdSource = vals.GetValue(Metadata.GlobalParams.cmdsource);
+                Metadata.CommandSources cmdSourceEnum;
+                if (cmdSource == null)
+                {
+                    cmdSourceEnum = vals.CommandSource;
+                }
+                else
+                {
+                    cmdSourceEnum = (Metadata.CommandSources)Enum.Parse(typeof(Metadata.CommandSources), cmdSource);
+                }
+
                 if (localPath.Equals("/cmd"))//command from MZP clients
                 {
                     if (request.HttpMethod.Equals("GET"))
                     {
-                        cmdResult = API.DoCommandFromWeb(vals, out resvalue);
+                        cmdResult = API.DoCommandFromWeb(vals, cmdSourceEnum, out resvalue);
                     }
 
                     if (request.HttpMethod.Equals("POST"))
@@ -226,7 +238,7 @@ namespace MultiZonePlayer
                             String json = post.Substring(firstindex, lastindex - firstindex + 1);
 
                             Metadata.ValueList val = fastJSON.JSON.Instance.ToObject<Metadata.ValueList>(json);
-                            cmdResult = API.DoCommandFromWeb(val, out resvalue);
+                            cmdResult = API.DoCommandFromWeb(val, cmdSourceEnum, out resvalue);
                         }
                         else
                         {
@@ -234,6 +246,7 @@ namespace MultiZonePlayer
                         }
                     }
 
+                    
                     WriteResponse("text/html", cmdResult, response, null);
 
                 }
@@ -243,7 +256,7 @@ namespace MultiZonePlayer
                     byte[] binaryData;
                     
                     if (vals.ContainsKey(Metadata.GlobalParams.command))
-                        json = API.DoCommandFromWeb(vals, out resvalue);
+                        json = API.DoCommandFromWeb(vals, cmdSourceEnum, out resvalue);
                     String html = ServeDirectHtml(context, requestServer, resvalue, out contentType, out binaryData);
                     WriteResponse(contentType, html, response, binaryData);
                 }
@@ -512,7 +525,7 @@ namespace MultiZonePlayer
 
         public String HTMLGetCmdValues(HttpListenerContext context, String methodname, String zoneid, String command, String htmldelimiter)
         {
-            Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.Web);
+            Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.web);
             Metadata.ValueList resvalue;
             String result="";
             

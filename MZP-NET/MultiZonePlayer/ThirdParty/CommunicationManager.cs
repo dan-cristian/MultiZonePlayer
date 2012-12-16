@@ -2,6 +2,8 @@ using System;
 using System.Text;
 using System.Drawing;
 using System.IO.Ports;
+using System.Threading;
+
 //using System.Windows.Forms;
 //*****************************************************************************************
 //                           LICENSE INFORMATION
@@ -29,6 +31,126 @@ using System.IO.Ports;
 //*****************************************************************************************
 namespace MultiZonePlayer
 {
+    public abstract class SerialBase
+    {
+        public String Connection;
+        protected CommunicationManager comm;
+        protected Boolean m_waitForResponse = false, m_isProcessing = false;
+        protected Boolean m_lastOperationWasOK = true;
+        protected String m_lastMessageResponse;
+        private Boolean m_isSerialDeviceOn = true;
+
+        public abstract String SendCommand(Enum cmd, String value);
+        public abstract String GetCommandStatus(Enum cmd);
+        protected abstract void ReceiveSerialResponse(String response);
+
+        private System.Object lockThisSend = new System.Object();
+        private System.Object lockThisReceive = new System.Object();
+
+        public void Initialise(String baud, String parity, String stopbits, String databits, String port)
+        {
+            comm = new CommunicationManager(baud, parity, stopbits, databits, port, this.handler);
+            comm.OpenPort();
+            m_waitForResponse = false;
+            m_lastOperationWasOK = true;
+            Connection = port;
+        }
+
+        public void Disconnect()
+        {
+            comm.ClosePort();
+        }
+
+        protected bool WriteCommand(String cmd)
+        {
+            lock (lockThisSend)
+            {
+                int i = 0;
+                if (m_waitForResponse == true)
+                {
+                    MLog.Log(this, "Error, trying to write " + this.ToString() + " command: " + cmd + " while waiting for response, now looping");
+                    do
+                    {
+                        Thread.Sleep(10);
+                        System.Windows.Forms.Application.DoEvents();
+                        i++;
+                    }
+                    while (m_waitForResponse && i < 500);
+                    if (i >= 300)
+                    {
+                        //MLog.Log(this, "WARNING no response received while looping");
+                        return false;
+                    }
+                }
+                m_isProcessing = true;
+                //MLog.Log(this, "Write LG comm=" + cmd);
+                comm.WriteData(cmd);
+
+                //WAIT FOR RESPONSE - ----------------------
+                m_waitForResponse = true;
+                i = 0;
+                do
+                {
+                    Thread.Sleep(10);
+                    System.Windows.Forms.Application.DoEvents();
+                    i++;
+                }
+                while (m_waitForResponse && i < 500);
+
+                if (m_waitForResponse == true && m_isSerialDeviceOn)
+                {
+                    MLog.Log(this, "Error WaitForOK " + this.ToString() + " exit with timeout");
+                    m_lastMessageResponse = "timeout";
+                    m_waitForResponse = false;
+                }
+                m_isProcessing = false;
+                return m_lastOperationWasOK;
+            }
+        }
+
+
+        protected int handler(String message)
+        {
+            lock (lockThisReceive)
+            {
+                if (message.Length == 1 && Convert.ToByte(message[0]) == 0)
+                {//lost connection with TV
+                    MLog.Log(this, "Serial connection potentially lost to " + comm.PortName);
+                    m_isSerialDeviceOn = false;
+                }
+                else
+                    m_isSerialDeviceOn = true;
+
+                //MLog.Log(this, "received LG response=" + message);
+                m_waitForResponse = false;
+                ReceiveSerialResponse(message);
+                
+                /*int i = 0;
+                do
+                {
+                    Thread.Sleep(10);
+                    System.Windows.Forms.Application.DoEvents();
+                    i++;
+                }
+                while (m_isProcessing && i<700);
+                if (m_isProcessing)
+                {
+                    MLog.Log(this, "ERROR on receive handler, timeout");
+                    m_isProcessing = false;
+                }
+                */
+                return 0;
+            }
+        }
+
+        public Boolean IsBusy
+        {
+            get { return m_waitForResponse; }
+        }
+
+
+    }
+
     public class CommunicationManager
     {
         #region Manager Enums
@@ -156,7 +278,7 @@ namespace MultiZonePlayer
                 comPort.Open();
             }
             
-            MLog.LogModem(DateTime.Now.ToString()+" WRITE ["+msg+"] wbuff=" + comPort.BytesToWrite+ " break="+comPort.BreakState+ " \r\n");
+            MLog.LogModem(String.Format("{0} {1} WRITE [{2}] \r\n", DateTime.Now.ToString(), comPort.PortName, msg));
 
             switch (CurrentTransmissionType)
             {
@@ -258,6 +380,7 @@ namespace MultiZonePlayer
                 comPort.Open();
                 //display message
                 MLog.Log(this,"Port "+comPort.PortName +" opened with baud=" + comPort.BaudRate);
+                MLog.LogModem(comPort.PortName + " Opened with baud=" + comPort.BaudRate +"\r\n");
                 //return true
                 return true;
             }
@@ -279,6 +402,7 @@ namespace MultiZonePlayer
                 if (comPort.IsOpen == true) comPort.Close();
                 //display message
                 MLog.Log(this, "Port closed");
+                MLog.LogModem(comPort.PortName + " Closed\r\n");
                 //return true if port is closed
                 if (comPort.IsOpen == false) 
                     return true;
@@ -345,26 +469,28 @@ namespace MultiZonePlayer
                     case TransmissionType.Text:
                         while (comPort!=null && comPort.BytesToRead > 0)
                         {
-                            string msg;
+                            string msg,msgDisplay;
                             //read data waiting in the buffer
                             try
                             {
                                 msg = comPort.ReadLine();//comPort.ReadExisting();
-
                             }
                             catch (TimeoutException)
                             {
+                                MLog.Log(this, "Timeout comport " + comPort.PortName);
                                 msg = comPort.ReadExisting();
                             }
-                            MLog.LogModem(DateTime.Now.ToString() + " READ   [" + msg+"] "+msg.Length+"\r\n\r\n");
-                            if (msg.Length == 1)
+                            msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
+                            MLog.LogModem(String.Format("{0} {1} READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay,msg.Length));
+                            /*if (msg.Length == 1)
                             {
-                                MLog.LogModem(DateTime.Now.ToString() + " READ 1 CHAR CODE [" + Convert.ToByte(msg[0]) + "], closing PORT\r\n\r\n");
-                                comPort.Close();
-                            }
+                                MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
+                                //comPort.Close();
+                            }*/
                             _callback(msg);
                         }
                         //string msg = comPort.ReadLine();
+
                         //display the data to the user
                         //DisplayData(MessageType.Incoming, msg + "\n");
                         break;

@@ -126,7 +126,8 @@ namespace MultiZonePlayer
             scope,
             status,
             areaid,
-            weekday
+            weekday,
+            cmdsource
 
         }
 
@@ -149,11 +150,12 @@ namespace MultiZonePlayer
 
         public enum CommandSources
         {
-            Web,
-            RawInput,
-            GUI,
-            Event,
-            Internal
+            web,
+            rawinput,
+            gui,
+            events,
+            mobileslow,
+            system
         }
 
         public class CommandSyntax
@@ -209,21 +211,9 @@ namespace MultiZonePlayer
             new CommandSyntax(GlobalCommands.alarmevent,        GlobalParams.status, GlobalParams.datetime),
             new CommandSyntax(GlobalCommands.alarmkeypadbeep,   GlobalParams.areaid),
             new CommandSyntax(GlobalCommands.alarmstay,         GlobalParams.areaid),
-            new CommandSyntax(GlobalCommands.selectzone,        GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.music,             GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.video,             GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.tv,                GlobalParams.zoneid),
             new CommandSyntax(GlobalCommands.volumeset,         GlobalParams.volumelevel),
             new CommandSyntax(GlobalCommands.ratingset,         GlobalParams.ratingvalue),
-            new CommandSyntax(GlobalCommands.photo,             GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.dvd,               GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.radio,             GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.streammp3,         GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.musicclone,        GlobalParams.zoneid),
-            new CommandSyntax(GlobalCommands.microphone,        GlobalParams.zoneid),
-
-
-            new CommandSyntax(GlobalCommands.followmemusic,     GlobalParams.zoneid),
+            
             /*
             genrelist,
             setgenrelist,
@@ -1164,7 +1154,8 @@ namespace MultiZonePlayer
             Cam,
             System,
             Environment,
-            Modem
+            Modem,
+            Web
         }
 
         public enum EventType

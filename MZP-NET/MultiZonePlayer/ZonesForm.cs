@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Threading;
 
 
 namespace MultiZonePlayer
@@ -207,6 +208,17 @@ namespace MultiZonePlayer
         public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
         {
             Metadata.ValueList result = new Metadata.ValueList();
+            String cmdSource = vals.GetValue(Metadata.GlobalParams.cmdsource);
+            Metadata.CommandSources cmdSourceEnum;
+            if (cmdSource == null)
+            {
+                cmdSourceEnum = vals.CommandSource;
+            }
+            else
+            {
+                cmdSourceEnum = (Metadata.CommandSources)Enum.Parse(typeof(Metadata.CommandSources), cmdSource);
+            }
+
             //reset inactivity counter
             m_inactiveCyclesCount = -1;
 
@@ -287,6 +299,11 @@ namespace MultiZonePlayer
                     m_zoneDetails.IsArmed = (cmdRemote == Metadata.GlobalCommands.zonearm);
                     result.Add(Metadata.GlobalParams.msg, "Zone " + m_zoneDetails.ZoneName + " armed status=" + m_zoneDetails.IsArmed);
                     break;
+                case Metadata.GlobalCommands.powercycle:
+                    MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+                    Thread.Sleep(1000);
+                    MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
+                    break;
             }
             #endregion
 
@@ -327,13 +344,12 @@ namespace MultiZonePlayer
                                     zMusic.IsAlarm = true;
                                     //set musicalarm mood if exists
                                     MoodMusic mood = MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(Metadata.GlobalCommands.musicalarm.ToString()));
-                                    if (mood != null)
-                                        zMusic.SetMood(mood);
+                                    if (mood != null) zMusic.SetMood(mood);
                                     m_mainZoneActivity.Play();
                                 }
                                 break;
                             case Metadata.GlobalCommands.music://play once opened unless cmd is from web or explicit play
-                                if (!vals.CommandSource.Equals(Metadata.CommandSources.Web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
+                                if (!cmdSourceEnum.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
                                     zMusic.Play();
                                 break;
                         }
@@ -352,7 +368,7 @@ namespace MultiZonePlayer
                     if (m_mainZoneActivity == null)
                         InitZoneStreamVLC();
 
-                    if (!vals.CommandSource.Equals(Metadata.CommandSources.Web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
+                    if (!vals.CommandSource.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
                         m_mainZoneActivity.Play();
                     break;
                 case Metadata.GlobalCommands.dvd:
@@ -408,7 +424,7 @@ namespace MultiZonePlayer
                     if (m_mainZoneActivity == null)
                         InitZoneDisplayTV();
 
-                    if (!vals.CommandSource.Equals(Metadata.CommandSources.Web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
+                    if (!vals.CommandSource.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
                         m_mainZoneActivity.Play();
                     break;
             }
@@ -451,10 +467,18 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.chup:
                 case Metadata.GlobalCommands.volumeup:
                     m_mainZoneActivity.VolumeUp();
+                    if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                    {
+                        m_mainZoneActivity.VolumeUp();
+                    }
                     break;
                 case Metadata.GlobalCommands.chdown:
                 case Metadata.GlobalCommands.volumedown:
                     m_mainZoneActivity.VolumeDown();
+                    if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                    {
+                        m_mainZoneActivity.VolumeDown();
+                    }
                     break;
                 case Metadata.GlobalCommands.volumeset:
                     m_mainZoneActivity.SetVolumeLevel(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.volumelevel)));
@@ -947,7 +971,7 @@ namespace MultiZonePlayer
 
         private void txWakeTime_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.setwaketimer.ToString(), Metadata.CommandSources.GUI);
+            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.setwaketimer.ToString(), Metadata.CommandSources.gui);
             vals.Add(Metadata.GlobalParams.datetime, txWakeTime.Text);
             vals.Add(Metadata.GlobalParams.weekday, "WK");
             ProcessAction(Metadata.GlobalCommands.setwaketimer, vals);
@@ -960,7 +984,7 @@ namespace MultiZonePlayer
 
         private void cmbMoods_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, m_zoneDetails.ZoneId.ToString(), Metadata.CommandSources.GUI);
+            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, m_zoneDetails.ZoneId.ToString(), Metadata.CommandSources.gui);
             vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.setmoodmusic.ToString());
             vals.Add(Metadata.GlobalParams.selectedindex, MZPState.Instance.MoodMusicList.Find(x=>x.Name.Equals(cmbMoods.Text)).Index.ToString());
             API.DoCommandFromGUIInput(vals);

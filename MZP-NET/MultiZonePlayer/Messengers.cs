@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
+using System.ComponentModel;
 using agsXMPP;
 
 
@@ -17,126 +17,6 @@ namespace MultiZonePlayer
         void Reinitialise();
         Boolean IsTargetAvailable();
         void MakeBuzz();
-    }
-
-    public abstract class SerialBase
-    {
-        public String Connection;
-        protected CommunicationManager comm;
-        protected Boolean m_waitForResponse = false, m_isProcessing = false;
-        protected Boolean m_lastOperationWasOK = true;
-        protected String m_lastMessageResponse;
-        private Boolean m_isSerialDeviceOn = true;
-
-        public abstract String SendCommand(Enum cmd, String value);
-        public abstract String GetCommandStatus(Enum cmd);
-
-        private System.Object lockThisSend = new System.Object();
-        private System.Object lockThisReceive = new System.Object();
-        
-        public void Initialise(String baud, String parity, String stopbits, String databits, String port)
-        {
-            comm = new CommunicationManager(baud, parity, stopbits, databits, port, handler);
-            comm.OpenPort();
-            m_waitForResponse = false;
-            m_lastOperationWasOK = true;
-            Connection = port;
-        }
-
-        public void Disconnect()
-        {
-            comm.ClosePort();
-        }
-
-        protected bool WriteCommand(String cmd)
-        {
-
-            lock (lockThisSend)
-            {
-                int i = 0;
-                if (m_waitForResponse == true)
-                {
-                    MLog.Log(this, "Error, trying to write " + this.ToString() + " command: " + cmd + " while waiting for response, now looping");
-                    do
-                    {
-                        Thread.Sleep(10);
-                        System.Windows.Forms.Application.DoEvents();
-                        i++;
-                    }
-                    while (m_waitForResponse && i < 500);
-                    if (i >= 300)
-                    {
-                        //MLog.Log(this, "WARNING no response received while looping");
-                        return false;
-                    }
-                }
-                m_isProcessing = true;
-                //MLog.Log(this, "Write LG comm=" + cmd);
-                comm.WriteData(cmd);
-                
-                //WAIT FOR RESPONSE - ----------------------
-                m_waitForResponse = true;
-                i = 0;
-                do
-                {
-                    Thread.Sleep(10);
-                    System.Windows.Forms.Application.DoEvents();
-                    i++;
-                }
-                while (m_waitForResponse && i < 500);
-
-                if (m_waitForResponse == true && m_isSerialDeviceOn)
-                {
-                    MLog.Log(this, "Error WaitForOK " + this.ToString() + " exit with timeout");
-                    m_lastMessageResponse = "timeout";
-                    m_waitForResponse = false;
-                }
-                m_isProcessing = false;
-                return m_lastOperationWasOK;
-            }
-        }
-
-
-        protected int handler(String message)
-        {
-            lock (lockThisReceive)
-            {
-                if (message.Length == 1 && Convert.ToByte(message[0]) == 0)
-                {//lost connection with TV
-                    MLog.Log(this, "Serial connection potentially lost to " + comm.PortName);
-                    m_isSerialDeviceOn = false;
-                }
-                else
-                    m_isSerialDeviceOn = true;
-
-                //MLog.Log(this, "received LG response=" + message);
-                m_lastMessageResponse = message.ToLower();
-                m_lastOperationWasOK = m_lastMessageResponse.Contains("ok");
-                m_waitForResponse = false;
-                /*int i = 0;
-                do
-                {
-                    Thread.Sleep(10);
-                    System.Windows.Forms.Application.DoEvents();
-                    i++;
-                }
-                while (m_isProcessing && i<700);
-                if (m_isProcessing)
-                {
-                    MLog.Log(this, "ERROR on receive handler, timeout");
-                    m_isProcessing = false;
-                }
-                */
-                return 0;
-            }
-        }
-
-        public Boolean IsBusy
-        {
-            get { return m_waitForResponse; }
-        }
-
-        
     }
 
     class GTalkMessengers:IMessenger
@@ -274,7 +154,7 @@ namespace MultiZonePlayer
                 try
                 {
                     atoms = cmd.Split(' ');
-                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, atoms[0], Metadata.CommandSources.Web);
+                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, atoms[0], Metadata.CommandSources.web);
                     for (int i = 1; i < atoms.Length; i++)
                     {
                         pair = atoms[i].Split(':');
@@ -330,11 +210,17 @@ namespace MultiZonePlayer
         }
     }
 
-    class SMS : IMessenger
+    class SMS : SerialBase, IMessenger
     {
-        private CommunicationManager comm;
-        private Boolean m_waitForResponse = false;
-        private Boolean m_lastOperationWasOK = true;
+        public enum SMSCommandsEnum
+        {
+            [Description("AT+CMGF=1")] SMS_ENABLE,
+            [Description("ATD ")] SMS_CALL
+        };
+
+        //private CommunicationManager comm;
+        //private Boolean m_waitForResponse = false;
+        //private Boolean m_lastOperationWasOK = true;
         private String m_lastCommand, m_lastResponse;
         private bool m_CommandEchoReceived = false;
         private List<SMSCommand> m_commandList;
@@ -364,18 +250,28 @@ namespace MultiZonePlayer
 
         public void Reinitialise()
         {
-            comm = new CommunicationManager("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1], handler);
+            comm = new CommunicationManager("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1], this.handler);
             comm.OpenPort();
             m_waitForResponse = false;
             m_lastOperationWasOK = true;
             m_commandList = new List<SMSCommand>();
         }
 
+        public override string SendCommand(Enum cmd, string value)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SendMessage(String message, String targetId)
         {
-            WriteCommand("AT+CMGF=1");
+            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_ENABLE));
             WriteCommand("AT + CMGS = \"" + IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"");
             WriteCommand(message + (char)26);
+        }
+
+        public override string GetCommandStatus(Enum cmd)
+        {
+            throw new NotImplementedException();
         }
 
         public void ReceiveMessage(String message, String sender)
@@ -393,67 +289,34 @@ namespace MultiZonePlayer
                 return true;
             }
 
-            return comm.IsPortOpen();
+            if (!comm.IsPortOpen())
+                return false;
 
-            /*try
+            try
             {
-                result = WriteCommand("AT");
+                WriteCommand("AT");
+                return true;
             }
             catch (Exception ex)
             {
                 MLog.Log(ex, "Exception Test SMS");
-                result =false;
-            }
-
-            return result;*/
-        }
-
-        private bool WriteCommand(String cmd)
-        {
-            if (m_waitForResponse == true)
-            {
-                MLog.Log(this, "Error, trying to write SMS command: " + cmd + " while waiting for response");
                 return false;
             }
 
-            //String id = DateTime.Now.ToString() + cmd;
-            //m_commandList.Add(new SMSCommand(id, cmd, ""));
-
-            m_lastCommand = cmd.ToLower();
-            m_CommandEchoReceived = false;
-            comm.WriteData(cmd);
-            WaitForOK();
-            return m_lastOperationWasOK;
+           
         }
-
-        private void WaitForOK()
+        
+        protected override void ReceiveSerialResponse(string response)
         {
-            m_waitForResponse = true;
-            int i = 0;
-            do
-            {
-                Thread.Sleep(100);
-                System.Windows.Forms.Application.DoEvents();
-                i++;
-            }
-            while (m_waitForResponse == true && i<200);
-
-            if (m_waitForResponse == true)
-                MLog.Log(this, "Error WaitForOK exit with timeout, last cmd="+m_lastCommand+" lastresp=" + m_lastResponse);
-            m_waitForResponse = false;
-        }
-
-        private int handler(String message)
-        {
-            message = message.Replace("\r", "").Replace("\n","").ToLower();
+            String message = response.ToLower().Replace("\r", "").Replace("\n","").ToLower();
             if (m_waitForResponse == false)
                 MLog.Log(this, "Err, Response received unexpected:" + message + " last cmd=" + m_lastCommand + " resp=" + m_lastResponse);
             
-            if (message=="") return 0;
+            if (message=="") return;
             if (message.Equals(m_lastCommand))
             {
                 m_CommandEchoReceived = true;
-                return 0;
+                return;
             }
             
             m_lastResponse = message + " at " + DateTime.Now;
@@ -475,7 +338,6 @@ namespace MultiZonePlayer
                     MLog.Log(this, "SMS Unclear response=" + message);
 
             ReceiveMessage(message, "");
-            return 0;
         }
 
         public Boolean IsTargetAvailable()
@@ -486,7 +348,7 @@ namespace MultiZonePlayer
         public void MakeBuzz()
         {
             MLog.Log(this, "Calling target number " + IniFile.PARAM_SMS_TARGETNUMBER[1]);
-            WriteCommand("ATD " + IniFile.PARAM_SMS_TARGETNUMBER[1] + ";");
+            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CALL) + IniFile.PARAM_SMS_TARGETNUMBER[1] + ";");
         }
     }
 }

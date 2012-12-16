@@ -1075,7 +1075,7 @@ namespace MultiZonePlayer
             {
                 //var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
                 var unique = m_musicFiles.PlaylistItems.Select(i => i.Genre).Distinct().ToList();
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.Internal);
+                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
                 unique.Sort();
                 val.SetIndexValues(unique.ToList());
                 return val;
@@ -1090,7 +1090,7 @@ namespace MultiZonePlayer
                 var unique = m_musicFiles.PlaylistItems.Select(i => i.Author).Distinct().ToList();
                 unique.Sort();
 
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.Internal);
+                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
                 val.SetIndexValues(unique.ToList());
                 return val;
             }

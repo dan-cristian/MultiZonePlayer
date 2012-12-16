@@ -217,19 +217,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public int MostRecentZoneWithContext
-        {
-            get
-            {
-                Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.OrderByDescending(x=>x.LastLocalCommandDateTime).ToList().Find(x =>
-                    (x.ActivityType.Equals(Metadata.GlobalCommands.music) || x.ActivityType.Equals(Metadata.GlobalCommands.streammp3)) 
-                    && x.IsActive);
-                if (zone != null) 
-                    return zone.ZoneId;
-                else
-                    return -1;
-            }
-        }
+        
 
         /*private void SelectZone(int zoneId)
         {

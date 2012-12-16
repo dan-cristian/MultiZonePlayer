@@ -17,6 +17,7 @@ using Microsoft.Win32.SafeHandles;
 using System.ComponentModel;
 using System.Threading;
 using System.Globalization;
+using System.Reflection;
 
 using System.Web;
 
@@ -327,6 +328,9 @@ namespace MultiZonePlayer
                 case MZPEvent.EventSource.Modem:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_MODEM_FILE);
                     break;
+                case MZPEvent.EventSource.Web:
+                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_WEB_FILE);
+                    break;
                 default:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_EVENTS_FILE);
                     break;
@@ -560,6 +564,22 @@ namespace MultiZonePlayer
             return res;
 
         }
+
+        public static string GetEnumDescription(Enum value)
+        {
+            FieldInfo fi = value.GetType().GetField(value.ToString());
+
+            DescriptionAttribute[] attributes =
+                (DescriptionAttribute[])fi.GetCustomAttributes(
+                typeof(DescriptionAttribute),
+                false);
+
+            if (attributes != null &&
+                attributes.Length > 0)
+                return attributes[0].Description;
+            else
+                return value.ToString();
+        }
     }
 
     public class WebPostRequest
@@ -760,6 +780,19 @@ namespace MultiZonePlayer
             catch (Exception)
             { }
         }
+
+        public static void LogWeb(HttpListenerRequest request)
+        {
+            try
+            {
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r\n\r\n", DateTime.Now.ToString(),
+                    request.RemoteEndPoint.Address, request.Url.AbsoluteUri, request.Headers.ToString()), 
+                    MZPEvent.EventSource.Web);
+            }
+            catch (Exception)
+            { }
+        }
+
     }
 
     public class IMDBParser

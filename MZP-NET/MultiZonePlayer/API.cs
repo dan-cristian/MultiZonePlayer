@@ -50,7 +50,7 @@ namespace MultiZonePlayer
                
                 MLog.Log(null, "Event is on zoneid=" + zoneId);
                 int index = GetResultIndex();
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.RawInput);
+                Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
                 val.Add(Metadata.GlobalParams.command, cmdRemote.CommandName.ToLower());
                 Thread th = new Thread(() => DoCommandAsynch(index, val));
                 th.Start();
@@ -58,7 +58,7 @@ namespace MultiZonePlayer
             catch (Exception ex)
             {
                 MLog.Log(ex, "Error keypressed key=" + kd.Key + " zoneid=" + zoneId.ToString()
-                    + " mostrecentzone=" + ControlCenter.Instance.MostRecentZoneWithContext);
+                    + " mostrecentzone=" + MZPState.Instance.MostRecentZoneWithContext);
             }
         }
 
@@ -70,7 +70,7 @@ namespace MultiZonePlayer
         public static String DoCommandFromGUIInput(String cmdName, String zoneId)
         {
             int index = GetResultIndex();
-            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId, Metadata.CommandSources.GUI);
+            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId, Metadata.CommandSources.gui);
             vals.Add(Metadata.GlobalParams.command, cmdName);
             Thread th = new Thread(() => DoCommandAsynch(index, vals));
             th.Start();
@@ -86,6 +86,26 @@ namespace MultiZonePlayer
             th.Start();
             Metadata.ValueList resvalue;
             String result = WaitForResult(index, out resvalue);
+            return result;
+        }
+
+        public static String DoCommandFromWeb(Metadata.ValueList vals, Metadata.CommandSources cmdSourceEnum, out Metadata.ValueList resvalue)
+        {
+            int index;
+            String result;
+
+            if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+            {
+                DoCommandAsynch(-1, vals);
+                result = "async result not known";
+                resvalue = null;
+            }
+            else
+            {
+                index = GetResultIndex();
+                DoCommandAsynch(index, vals);
+                result = WaitForResult(index, out resvalue);
+            }
             return result;
         }
 
@@ -149,12 +169,11 @@ namespace MultiZonePlayer
             Metadata.CommandResult cmdres;
             String cmdName;
             String result,err,detailedStatus="";
-            int zoneId;
 
             try
             {
                 MZPState.Instance.PowerControl.ResumeFromPowerSaving();
-                zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
+                //zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
                 cmdName = vals.GetValue(Metadata.GlobalParams.command);
                 if (Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName))
                 {
@@ -172,13 +191,14 @@ namespace MultiZonePlayer
                             {
                                detailedStatus += item + ";" ;
                             }
-                            resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "Available commands: " + detailedStatus, Metadata.CommandSources.Web);
+                            resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "Available commands: " + detailedStatus, Metadata.CommandSources.web);
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
-                        case Metadata.GlobalCommands.selectzone:
+                        /*case Metadata.GlobalCommands.selectzone:
                             ControlCenter.Instance.OpenZone(zoneId);//vals.GetValue(Metadata.GlobalParams.activity));
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
+                         */
                         case Metadata.GlobalCommands.cameraevent:
                             //we don't have zoneid, add it from camera id
                             int oid = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.oid));
@@ -229,20 +249,12 @@ namespace MultiZonePlayer
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_PROCNAME[1]);
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
                             Utilities.RunProcessWait(IniFile.PARAM_ISPY_APP_PATH[1]);
-                            resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.Internal);
+                            resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case Metadata.GlobalCommands.restartwinload:
                             MZPState.RestartWinload();
-                            //Thread.Sleep(2000);
-                            //MZPState.Instance.ZoneEvents.SendLoginCmd();
-                            //Thread.Sleep(500);
-                            //MZPState.Instance.ZoneEvents.OpenDefaultAlarmAccount();
-                            //Thread.Sleep(500);
-                            //MZPState.Instance.ZoneEvents.ConnectDirect();
-                            //Thread.Sleep(5000);
-                            //MZPState.Instance.ZoneEvents.SelectMonitoringTab();
-                            resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.Internal);
+                            resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case Metadata.GlobalCommands.setnotify:
@@ -292,12 +304,7 @@ namespace MultiZonePlayer
                             }
                             result = JsonResult(Metadata.ResultEnum.OK, "power failure=" + failure, null);
                             break;
-                        case Metadata.GlobalCommands.powercycle:
-                            MZPState.Instance.PowerControl.PowerOn(zoneId);
-                            Thread.Sleep(1000);
-                            MZPState.Instance.PowerControl.PowerOff(zoneId);
-                            result = JsonResult(Metadata.ResultEnum.OK, "power status=" + MZPState.Instance.PowerControl.SocketsStatus, null);
-                            break;
+                        
                         default:
                             res = DoZoneCommand(apicmd, vals, out err, out values);
                             resvalue = values;
@@ -323,36 +330,43 @@ namespace MultiZonePlayer
             return result;
         }
 
+        private static int InferZone(String zoneidentifier, String zonename)
+        {
+            int zoneId =-1;
+
+            if (zoneidentifier != null)
+                zoneId = Convert.ToInt16(zoneidentifier);
+            else
+            {
+                Metadata.ZoneDetails zonedetails;
+                if (zonename != null)
+                {
+                    zonedetails = MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.ToLower().Contains(zonename.ToLower()));
+                    if (zonedetails != null) zoneId = zonedetails.ZoneId;
+                }
+            }
+            if (zoneId == -1)
+            {
+                zoneId = MZPState.Instance.MostRecentZoneWithContext;
+                MLog.Log(null, "Infered zoneid " + zoneId + " had zoneidentifier="+zoneidentifier + " zonename="+zonename);
+                
+            }
+            return zoneId;
+        }
+
         public static Metadata.ResultEnum DoZoneCommand(Metadata.GlobalCommands apicmd, Metadata.ValueList vals, out String errorMessage, out Metadata.ValueList values)
             //private static String DoZoneCommand(String cmdName, int zoneId, out String errorMessage)
         {
             try
             {
-                String zoneIdStr = vals.GetValue(Metadata.GlobalParams.zoneid);
-                int zoneId = -1;
-                if (zoneIdStr != null)
-                    zoneId = Convert.ToInt16(zoneIdStr);
-                else
-                {
-                    String zonename = vals.GetValue(Metadata.GlobalParams.zonename);
-                    Metadata.ZoneDetails zonedetails;
-                    if (zonename != null)
-                    {
-                        zonedetails = MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.ToLower().Contains(zonename.ToLower()));
-                        if (zonedetails != null) zoneId = zonedetails.ZoneId;
-                    }
-                }
+                int zoneId = InferZone(vals.GetValue(Metadata.GlobalParams.zoneid), vals.GetValue(Metadata.GlobalParams.zonename));
+
                 if (zoneId == -1)
                 {
-                    zoneId = ControlCenter.Instance.MostRecentZoneWithContext;
-                    MLog.Log(null, "Zoneid in command was -1, found active zone " + zoneId);
-                    if (zoneId == -1)
-                    {
-                        errorMessage = "ERROR no zone found to process command" + apicmd;
-                        MLog.Log(null, errorMessage);
-                        values = null;
-                        return Metadata.ResultEnum.ERR;;
-                    }
+                    errorMessage = "ERROR no zone found to process command" + apicmd;
+                    MLog.Log(null, errorMessage);
+                    values = null;
+                    return Metadata.ResultEnum.ERR; ;
                 }
 
                 ZonesForm zone;
@@ -362,7 +376,7 @@ namespace MultiZonePlayer
                     if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
                     {
                         MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
-                        zoneId = ControlCenter.Instance.MostRecentZoneWithContext;
+                        zoneId = MZPState.Instance.MostRecentZoneWithContext;
                     }
                     else
                     {
