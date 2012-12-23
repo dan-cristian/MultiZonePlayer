@@ -131,7 +131,7 @@ namespace MultiZonePlayer
                 dgvZones.Rows.Add(zone.ZoneId, zone.ZoneName, zone.OutputKeywords, zone.OutputDeviceUserSelected, 
                     zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId);
 
-                if (zone.HasDisplay)
+                if (zone.DisplayType!="")
                 {
                     dgvDisplay.Rows.Add(zone.ZoneId, zone.DisplayType, zone.DisplayConnection);
                 }

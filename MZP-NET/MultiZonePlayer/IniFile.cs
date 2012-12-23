@@ -109,6 +109,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_KEYBOARD_DEVICE_IDENTIFIER = new String[] { "PARAM_KEYBOARD_DEVICE_IDENTIFIER", "ACPI#PNP" };
 
             public static String[] PARAM_WEBSERVER_PORT_EXT = new String[] { "PARAM_WEBSERVER_PORT_EXT", "12345" };
+            public static String[] PARAM_WEBSERVER_PORT_EXT_SAFE = new String[] { "PARAM_WEBSERVER_PORT_EXT_SAFE", "12347" };
             public static String[] PARAM_WEBSERVER_PORT_INT = new String[] { "PARAM_WEBSERVER_PORT_INT", "888" };
             public static String[] PARAM_ISPY_PORT = new String[] { "PARAM_ISPY_PORT", "8080" };
             public static String[] PARAM_ISPY_PASS = new String[] { "PARAM_ISPY_PASS", "poi" };
@@ -136,15 +137,19 @@ namespace MultiZonePlayer
             public static String[] PARAM_SMS_TARGETNUMBER = new String[] { "PARAM_SMS_TARGETNUMBER", "+40726159521" };
             public static String[] PARAM_SMS_COMPORT = new String[] { "PARAM_SMS_COMPORT", "COM8" };
 
-            public static String[] PARAM_VLC_AUDIOOUT = new String[] { "PARAM_VLC_AUDIOOUT", "directx" };//DIRECTX or WAVEOUT
-            public static String[] PARAM_GENERIC_INTERVAL_SPLIT = new String[] { "PARAM_GENERIC_INTERVAL_SPLIT", "10-60-240" };//no of minutes separated by -
+            public static String[] PARAM_VLC_AUDIOOUT = new String[] { "PARAM_VLC_AUDIOOUT", "directx", "DIRECTX or WAVEOUT" };
+            public static String[] PARAM_GENERIC_INTERVAL_SPLIT = new String[] { "PARAM_GENERIC_INTERVAL_SPLIT", "10-60-240", "3 numbers, in minutes, separated by -" };
 
-            public static String[] PARAM_UPS_LOG_SOURCE = new String[] { "PARAM_UPS_LOG_SOURCE", "apc ups service" };//lowercase
+            public static String[] PARAM_UPS_LOG_SOURCE = new String[] { "PARAM_UPS_LOG_SOURCE", "apc ups service", "should be lowercase" };
             public static String[] PARAM_UPS_LOG_POWERFAILURE_ACTIVE = new String[] { "PARAM_UPS_LOG_POWERFAILURE_ACTIVE", "blackout" };
             public static String[] PARAM_UPS_LOG_POWERFAILURE_INACTIVE = new String[] { "PARAM_UPS_LOG_POWERFAILURE_INACTIVE", "ac utility power" };
 
+            public static String[] PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS = new String[] { "PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS", "BlackBerry 9360","list of values separated by |" };
+
+            public static String[] PARAM_XBMC_PROCESS_NAME = new String[] { "PARAM_XBMC_PROCESS_NAME", "XBMC" };
+            public static String[] PARAM_BOOT_TIME_SECONDS = new String[] { "PARAM_BOOT_TIME_SECONDS", "10" };
+
             public static String DATETIME_FORMAT = "HH:mm";
-            public static int BOOT_TIME_MINUTES = 1;
 
             public static Object[] PARAMS = new Object[]
             {
@@ -194,7 +199,10 @@ namespace MultiZonePlayer
                 PARAM_GENERIC_INTERVAL_SPLIT,
                 PARAM_UPS_LOG_SOURCE,
                 PARAM_UPS_LOG_POWERFAILURE_ACTIVE,
-                PARAM_UPS_LOG_POWERFAILURE_INACTIVE
+                PARAM_UPS_LOG_POWERFAILURE_INACTIVE,
+                PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS,
+                PARAM_XBMC_PROCESS_NAME,
+                PARAM_BOOT_TIME_SECONDS
 
              };
             private static string m_iniFinalPath =  null;

@@ -13,6 +13,10 @@ namespace MultiZonePlayer
     
     public abstract class Display:SerialBase
     {
+        public enum DisplayTypeEnum
+        {
+            LGTV, XBMC//not ok here, xbmc not a serial display
+        }
         //later,for various displays
     }
 
@@ -44,6 +48,7 @@ namespace MultiZonePlayer
             CONTROLBACKLIGHT_mg,
             INPUTSELECT_xb
         };
+        
         public enum InputTypeEnum {AV, HDMI };
         public enum InputCodesEnum
         {
@@ -53,7 +58,7 @@ namespace MultiZonePlayer
         };
         private int DISPLAY_ID=0;
         private string m_input;
-        
+        private int m_stdtimeout = 3000;
         
 
         public DisplayLGTV(String connection)
@@ -64,28 +69,31 @@ namespace MultiZonePlayer
         public override String SendCommand(Enum cmd, String value)
         {
             String command = cmd.ToString().Split('_')[1] + " " + DISPLAY_ID.ToString() + " " + value;
-            WriteCommand(command);
-            return "ok";
+            return WriteCommand(command, 1, m_stdtimeout);
         }
 
         public override String GetCommandStatus(Enum cmd)
         {
-            String result="n/a";
-            SendCommand(cmd, "FF");
-            if (m_lastOperationWasOK)
+            String result;
+            result = SendCommand(cmd, "FF").ToLower();
+
+            if (result.Contains("ok"))
             {
-                result = m_lastMessageResponse.Substring(m_lastMessageResponse.IndexOf("ok") + 2, 2);
+                result = result.Substring(result.IndexOf("ok") + 2, 2);
             }
             else
-                result = "ERR";
+            {
+                //MLog.Log(this, "Getstatus TV returned error, msg=" + result);
+            }
 
             return result;
         }
 
         protected override void ReceiveSerialResponse(string response)
         {
-            m_lastMessageResponse = response.ToLower();
-            m_lastOperationWasOK = m_lastMessageResponse.Contains("ok");
+            MLog.Log(this, "Received unexpected LGTV serial response: " + response);
+            //m_lastMessageResponse = response.ToLower();
+            //m_lastOperationWasOK = m_lastMessageResponse.Contains("ok");
         }
 
         public void NextInput()

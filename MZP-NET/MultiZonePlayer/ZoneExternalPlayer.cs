@@ -52,7 +52,7 @@ namespace MultiZonePlayer
             m_zoneDetails.IsActive = true;
 
         }
-        public void Pause()
+        public virtual void Pause()
         {
             m_zoneDetails.ZoneState = Metadata.ZoneState.Paused;
         }
@@ -115,22 +115,38 @@ namespace MultiZonePlayer
             }
         }
 
-
-
         public virtual void Tick()
         {
             //not implemented
-
         }
     }
 
     public class ZonePlayerXBMC:ZoneExternalPlayerBase
     {
+        //http://wiki.xbmc.org/index.php?title=JSON-RPC_API/v4
+        private int m_playerId = 1;
+        private String STATUS_URL = "/jsonrpc?UpdateState";
+        private String CMD_URL = "/jsonrpc?SendRemoteKey";
 
-        private static String PostURLMessage(String method, String paramName, String paramValue)
+        public ZonePlayerXBMC(Metadata.ZoneDetails zoneDetails)
         {
-            WebPostRequest post = new WebPostRequest("http://192.168.0.10:12347/jsonrpc?SendRemoteKey");
-            String msg = @"{""jsonrpc"": ""2.0"", ""method"": """+ method + @""", ""params"": { """ + paramName + @""": " + paramValue + @" }, ""id"": 1}";
+            m_zoneDetails = zoneDetails;
+        }
+
+        //shortcut for cmds
+        private String PostURLCmdMessage(String method, String paramName, String paramValue)
+        {
+            return PostURLMessage(CMD_URL, method, paramName, paramValue);
+        }
+
+        private String PostURLMessage(String URL, String method, String paramName, String paramValue)
+        {
+            WebPostRequest post = new WebPostRequest(m_zoneDetails.DisplayConnection+URL);//IniFile.PARAM_XBMC_COMMAND_URL[1]);
+            String msg;
+            if (paramName!="")
+                msg= @"{""jsonrpc"": ""2.0"", ""method"": """+ method + @""", ""params"": { """ + paramName + @""": " + paramValue + @" }, ""id"": 1}";
+            else
+                msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""id"": 1}";
             post.Add(msg, "");
             //MessageBox.Show(msg);
             String res = post.GetResponse();
@@ -138,18 +154,56 @@ namespace MultiZonePlayer
             return res;
         }
 
+        public override void Play()
+        {
+            base.Play();
+            PostURLCmdMessage("Player.PlayPause", "playerid", m_playerId.ToString());
+        }
+
         public override void VolumeDown()
         {
  	        base.VolumeDown();
-            m_zoneDetails.VolumeLevel++;
-            PostURLMessage("Application.SetVolume", "volume", m_zoneDetails.VolumeLevel.ToString());
+            m_zoneDetails.VolumeLevel = Math.Max(0, m_zoneDetails.VolumeLevel-1);
+            PostURLCmdMessage("Application.SetVolume", "volume", m_zoneDetails.VolumeLevel.ToString());
         }
 
         public override void VolumeUp()
         {
             base.VolumeUp();
-            m_zoneDetails.VolumeLevel--;
-            PostURLMessage("Application.SetVolume", "volume", m_zoneDetails.VolumeLevel.ToString());
+            m_zoneDetails.VolumeLevel++;
+            PostURLCmdMessage("Application.SetVolume", "volume", m_zoneDetails.VolumeLevel.ToString());
+        }
+
+        public override void  Stop()
+        {
+ 	        base.Stop();
+            PostURLCmdMessage("Player.Stop", "playerid", m_playerId.ToString());
+        }
+
+        public override void Pause()
+        {
+            base.Pause();
+            PostURLCmdMessage("Player.PlayPause", "playerid", m_playerId.ToString());
+        }
+
+        private void GetXBMCStatus()
+        {
+            String result=PostURLMessage(STATUS_URL, "Player.GetActivePlayers", "", "");
+            if (result.Contains("playerid"))
+            {
+                base.Play();
+            }
+            else
+            {
+                base.Stop();
+            }
+
+        }
+
+        public override void Tick()
+        {
+            base.Tick();
+            GetXBMCStatus();
         }
     }
 }

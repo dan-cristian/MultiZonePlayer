@@ -560,7 +560,7 @@ namespace MultiZonePlayer
 
             private void HealthCheckWinload()
             {
-                if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalMinutes > IniFile.BOOT_TIME_MINUTES)
+                if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
                 {
                     if (!Utilities.IsProcAlive(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1]))
                     {
@@ -590,9 +590,9 @@ namespace MultiZonePlayer
                         if (diff > 60)
                         {
                             MLog.Log(this, "WINLOAD potential error, not running, time dif in min=" + diff);
-                            LogEvent(MZPEvent.EventSource.System, "Winload restarting, was not responsive", MZPEvent.EventType.Security, MZPEvent.EventImportance.Error);
-                            m_systemAlarm.LastAlarmEventDateTime = DateTime.Now;
-                            RestartWinload();
+                            //LogEvent(MZPEvent.EventSource.System, "Winload restarting, was not responsive", MZPEvent.EventType.Security, MZPEvent.EventImportance.Error);
+                            //m//_systemAlarm.LastAlarmEventDateTime = DateTime.Now;
+                            //RestartWinload();
                         }
                         //else MLog.Log(this, "WINLOAD move diff OK, min=" + diff);
                     }
@@ -601,7 +601,7 @@ namespace MultiZonePlayer
 
             private void AutoArmCheck()
             {
-                if (SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.ready) && (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalMinutes>IniFile.BOOT_TIME_MINUTES))
+                if (SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.ready) && (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1])))
                 {
                     List<Metadata.ZoneDetails> openZones;
                     openZones = m_zoneList.FindAll(x => x.HasMotionSensor && (x.HasRecentMove || x.HasImmediateMove));
@@ -621,7 +621,7 @@ namespace MultiZonePlayer
 
             private void HealthCheckMessengers()
             {
-                if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalMinutes > IniFile.BOOT_TIME_MINUTES)
+                if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
                 {
                     Boolean ok;
                     foreach (IMessenger m in m_messengerList)
@@ -674,9 +674,9 @@ namespace MultiZonePlayer
 
             public void MessengerMakeBuzz()
             {
-                int lastBuzz = DateTime.Now.Subtract(m_lastBuzzDateTime).Minutes;
+                double lastBuzz = DateTime.Now.Subtract(m_lastBuzzDateTime).TotalSeconds;
 
-                if (lastBuzz >= 1)
+                if (lastBuzz >= 20)
                 {
                     foreach (IMessenger mess in MZPState.Instance.m_messengerList)
                     {
@@ -713,20 +713,35 @@ namespace MultiZonePlayer
                 Display display;
                 foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
                 {
-                    if (zone.HasDisplay && !zone.IsActive)
+                    if (!zone.IsActive)
                     {
-                        display = m_displayList.Find(x=>x.Connection.Equals(zone.DisplayConnection));
-                        if (display == null)
+                        if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString()))
                         {
-                            display = new DisplayLGTV(zone.DisplayConnection);
-                            m_displayList.Add(display);
-                        }
-                        if (display.GetType().Equals(typeof(DisplayLGTV)))
-                        {
-                            if (((DisplayLGTV)display).IsOn)
+                            display = m_displayList.Find(x => x.Connection.Equals(zone.DisplayConnection));
+                            if (display == null)
                             {
-                                Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, 
-                                    Metadata.GlobalCommands.tv.ToString(), Metadata.CommandSources.system);
+                                display = new DisplayLGTV(zone.DisplayConnection);
+                                m_displayList.Add(display);
+                            }
+                            if (display.GetType().Equals(typeof(DisplayLGTV)))
+                            {
+                                if (((DisplayLGTV)display).IsOn)
+                                {
+                                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
+                                        Metadata.GlobalCommands.tv.ToString(), Metadata.CommandSources.system);
+                                    val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+                                    Metadata.ValueList retval;
+                                    API.DoCommandFromWeb(val, out retval);
+                                }
+                            }
+                        }
+
+                        if (zone.DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
+                        {
+                            if (Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
+                            {
+                                Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
+                                        Metadata.GlobalCommands.xbmc.ToString(), Metadata.CommandSources.system);
                                 val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
                                 Metadata.ValueList retval;
                                 API.DoCommandFromWeb(val, out retval);

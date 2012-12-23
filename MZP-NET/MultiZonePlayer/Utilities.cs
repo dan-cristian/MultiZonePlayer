@@ -604,6 +604,7 @@ namespace MultiZonePlayer
         {
             // Set the encoding type
             theRequest.ContentType = "application/x-www-form-urlencoded";
+            theRequest.Timeout = 10000;
 
             // Build a string containing all the parameters
             string Parameters = String.Join("&", (String[])theQueryData.ToArray(typeof(string)));

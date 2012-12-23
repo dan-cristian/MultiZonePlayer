@@ -204,6 +204,16 @@ namespace MultiZonePlayer
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.tv;
             m_zoneDetails.IsActive = true;
         }
+
+        private void InitZonePlayerXBMC()
+        {
+            MLog.Log(null, "Initialising XBMC");
+            //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
+            //m_mainZoneActivity = new ZoneVideoVlc(this);
+            m_mainZoneActivity = new ZonePlayerXBMC(this.ZoneDetails);
+            m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
+            m_zoneDetails.IsActive = true;
+        }
         
         public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
         {
@@ -237,6 +247,9 @@ namespace MultiZonePlayer
                         String msg =  "CAM event on " + m_zoneDetails.ZoneName + " when zone armed";
                         MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, msg, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
                     }
+                    else
+                        MLog.Log(this, "Ignoring cam event on " + m_zoneDetails.ZoneName + " movementalert=" + m_zoneDetails.MovementAlert + " zonealarmareaid=" + m_zoneDetails.AlarmAreaId
+                                + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
 
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
@@ -253,12 +266,15 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.alarmevent://alarm sensor event
                     String zonestate = vals.GetValue(Metadata.GlobalParams.status);
                     m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());
-                    if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed  || 
-                        (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)&&(m_zoneDetails.AlarmAreaId==MZPState.Instance.SystemAlarm.AreaId))))
+                    if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed ||
+                        (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (m_zoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
                     {
                         String msg = "ALARM event on " + m_zoneDetails.ZoneName + " when zone armed";
                         MZPState.Instance.LogEvent(MZPEvent.EventSource.Alarm, msg, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
                     }
+                    else
+                        MLog.Log(this, "Ignoring alarm event on " + m_zoneDetails.ZoneName + " movementalert=" + m_zoneDetails.MovementAlert + " zonealarmareaid=" + m_zoneDetails.AlarmAreaId
+                                + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
                         cmdRemote = Metadata.GlobalCommands.musicclone;
@@ -424,7 +440,22 @@ namespace MultiZonePlayer
                     if (m_mainZoneActivity == null)
                         InitZoneDisplayTV();
 
-                    if (!vals.CommandSource.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
+                    if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))
+                        m_mainZoneActivity.Play();
+                    break;
+
+                //check if XBMC
+                case Metadata.GlobalCommands.xbmc:
+                    if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZonePlayerXBMC)))
+                    {
+                        m_mainZoneActivity.Close();
+                        m_mainZoneActivity = null;
+                    }
+
+                    if (m_mainZoneActivity == null)
+                        InitZonePlayerXBMC();
+
+                    if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))
                         m_mainZoneActivity.Play();
                     break;
             }

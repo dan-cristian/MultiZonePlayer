@@ -35,17 +35,18 @@ namespace MultiZonePlayer
     {
         public String Connection;
         protected CommunicationManager comm;
-        protected Boolean m_waitForResponse = false, m_isProcessing = false;
+        protected Boolean m_waitForResponse = false;
         protected Boolean m_lastOperationWasOK = true;
         protected String m_lastMessageResponse;
-        private Boolean m_isSerialDeviceOn = true;
 
         public abstract String SendCommand(Enum cmd, String value);
         public abstract String GetCommandStatus(Enum cmd);
         protected abstract void ReceiveSerialResponse(String response);
 
-        private System.Object lockThisSend = new System.Object();
-        private System.Object lockThisReceive = new System.Object();
+        private System.Object m_lockThisSend = new System.Object();
+        
+        private AutoResetEvent m_autoEventSend = new AutoResetEvent(false);
+        private AutoResetEvent m_autoEventReceive = new AutoResetEvent(false);
 
         public void Initialise(String baud, String parity, String stopbits, String databits, String port)
         {
@@ -61,9 +62,10 @@ namespace MultiZonePlayer
             comm.ClosePort();
         }
 
-        protected bool WriteCommand(String cmd)
+        protected String WriteCommand(String cmd, int responseLinesCountExpected, int timeoutms)
         {
-            lock (lockThisSend)
+            String responseMessage="";
+            lock (m_lockThisSend)
             {
                 int i = 0;
                 if (m_waitForResponse == true)
@@ -79,68 +81,63 @@ namespace MultiZonePlayer
                     if (i >= 300)
                     {
                         //MLog.Log(this, "WARNING no response received while looping");
-                        return false;
+                        return "[no response]";
                     }
                 }
-                m_isProcessing = true;
-                //MLog.Log(this, "Write LG comm=" + cmd);
+
+                m_autoEventSend.Reset();
+                m_lastMessageResponse = "";
+                m_waitForResponse = true;
                 comm.WriteData(cmd);
 
                 //WAIT FOR RESPONSE - ----------------------
-                m_waitForResponse = true;
+                bool signalReceived;
+                
                 i = 0;
+                int responseCount = 0;
                 do
                 {
-                    Thread.Sleep(10);
-                    System.Windows.Forms.Application.DoEvents();
-                    i++;
-                }
-                while (m_waitForResponse && i < 500);
+                    signalReceived = m_autoEventSend.WaitOne(timeoutms);
 
-                if (m_waitForResponse == true && m_isSerialDeviceOn)
-                {
-                    MLog.Log(this, "Error WaitForOK " + this.ToString() + " exit with timeout");
-                    m_lastMessageResponse = "timeout";
-                    m_waitForResponse = false;
+                    if (!signalReceived)
+                    {
+                        MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp="+m_lastMessageResponse);
+                        m_lastMessageResponse += "[timeout]";
+                    }
+                    else
+                    {
+                        responseCount++;
+                        if (responseCount < responseLinesCountExpected)
+                            m_waitForResponse = true;
+                        responseMessage = m_lastMessageResponse;
+                    }
+                    m_autoEventReceive.Set();
                 }
-                m_isProcessing = false;
-                return m_lastOperationWasOK;
+                while (responseCount<responseLinesCountExpected && signalReceived);
+                m_lastMessageResponse = "";
+                m_waitForResponse = false;
+                return responseMessage;
             }
         }
 
 
         protected int handler(String message)
         {
-            lock (lockThisReceive)
+            bool signalReceived;
+            if (m_waitForResponse)
             {
-                if (message.Length == 1 && Convert.ToByte(message[0]) == 0)
-                {//lost connection with TV
-                    MLog.Log(this, "Serial connection potentially lost to " + comm.PortName);
-                    m_isSerialDeviceOn = false;
-                }
-                else
-                    m_isSerialDeviceOn = true;
+                m_lastMessageResponse += message;
+                m_autoEventSend.Set();
 
-                //MLog.Log(this, "received LG response=" + message);
-                m_waitForResponse = false;
-                ReceiveSerialResponse(message);
-                
-                /*int i = 0;
-                do
-                {
-                    Thread.Sleep(10);
-                    System.Windows.Forms.Application.DoEvents();
-                    i++;
-                }
-                while (m_isProcessing && i<700);
-                if (m_isProcessing)
-                {
-                    MLog.Log(this, "ERROR on receive handler, timeout");
-                    m_isProcessing = false;
-                }
-                */
-                return 0;
+                signalReceived = m_autoEventReceive.WaitOne(500);
+                if (!signalReceived)
+                    MLog.Log(this, "Unexpected timeout at serial handler after response=" + message);
             }
+            else
+                ReceiveSerialResponse(message);
+            
+            return 0;
+            
         }
 
         public Boolean IsBusy
@@ -177,6 +174,7 @@ namespace MultiZonePlayer
         //private RichTextBox _displayWindow;
         //global manager variables
         private SerialPort comPort = new SerialPort();
+        private System.Object m_lockThisReceive = new System.Object();
         #endregion
 
         #region Manager Properties
@@ -460,63 +458,66 @@ namespace MultiZonePlayer
         /// <param name="e"></param>
         void comPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            try
+            lock (m_lockThisReceive)
             {
-            //determine the mode the user selected (binary/string)
-                switch (CurrentTransmissionType)
+                try
                 {
-                    //user chose string
-                    case TransmissionType.Text:
-                        while (comPort!=null && comPort.BytesToRead > 0)
-                        {
-                            string msg,msgDisplay;
-                            //read data waiting in the buffer
-                            try
+                    //determine the mode the user selected (binary/string)
+                    switch (CurrentTransmissionType)
+                    {
+                        //user chose string
+                        case TransmissionType.Text:
+                            while (comPort != null && comPort.BytesToRead > 0)
                             {
-                                msg = comPort.ReadLine();//comPort.ReadExisting();
+                                string msg, msgDisplay;
+                                //read data waiting in the buffer
+                                try
+                                {
+                                    msg = comPort.ReadLine();//comPort.ReadExisting();
+                                }
+                                catch (TimeoutException)
+                                {
+                                    //MLog.Log(this, "Timeout comport " + comPort.PortName);
+                                    msg = comPort.ReadExisting();
+                                }
+                                msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
+                                MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
+                                /*if (msg.Length == 1)
+                                {
+                                    MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
+                                    //comPort.Close();
+                                }*/
+                                _callback(msg);
                             }
-                            catch (TimeoutException)
-                            {
-                                MLog.Log(this, "Timeout comport " + comPort.PortName);
-                                msg = comPort.ReadExisting();
-                            }
-                            msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
-                            MLog.LogModem(String.Format("{0} {1} READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay,msg.Length));
-                            /*if (msg.Length == 1)
-                            {
-                                MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
-                                //comPort.Close();
-                            }*/
-                            _callback(msg);
-                        }
-                        //string msg = comPort.ReadLine();
+                            //string msg = comPort.ReadLine();
 
-                        //display the data to the user
-                        //DisplayData(MessageType.Incoming, msg + "\n");
-                        break;
-                    //user chose binary
-                    case TransmissionType.Hex:
-                        //retrieve number of bytes in the buffer
-                        int bytes = comPort.BytesToRead;
-                        //create a byte array to hold the awaiting data
-                        byte[] comBuffer = new byte[bytes];
-                        //read the data and store it
-                        comPort.Read(comBuffer, 0, bytes);
-                        //display the data to the user
-                        //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
-                        break;
-                    default:
-                        //read data waiting in the buffer
-                        string str = comPort.ReadExisting();
-                        //display the data to the user
-                        //DisplayData(MessageType.Incoming, str + "\n");
-                        break;
+                            //display the data to the user
+                            //DisplayData(MessageType.Incoming, msg + "\n");
+                            break;
+                        //user chose binary
+                        case TransmissionType.Hex:
+                            //retrieve number of bytes in the buffer
+                            int bytes = comPort.BytesToRead;
+                            //create a byte array to hold the awaiting data
+                            byte[] comBuffer = new byte[bytes];
+                            //read the data and store it
+                            comPort.Read(comBuffer, 0, bytes);
+                            //display the data to the user
+                            //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
+                            break;
+                        default:
+                            //read data waiting in the buffer
+                            string str = comPort.ReadExisting();
+                            //display the data to the user
+                            //DisplayData(MessageType.Incoming, str + "\n");
+                            break;
+                    }
+
                 }
-                
-            }
-            catch (Exception ex)
-            {
-                MLog.Log(ex, "Error com port data received com="+comPort.PortName);
+                catch (Exception ex)
+                {
+                    MLog.Log(ex, "Error com port data received com=" + comPort.PortName);
+                }
             }
         }
         void comPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)

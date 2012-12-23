@@ -36,6 +36,7 @@ namespace MultiZonePlayer
             music,
             video,
             tv,
+            xbmc,
             play,
             stop,
             pause,
@@ -102,7 +103,6 @@ namespace MultiZonePlayer
             powerevent,
             tvsetinput,
             powercycle
-
         }
         public enum GlobalParams
         {
@@ -449,6 +449,7 @@ namespace MultiZonePlayer
             public Boolean HasDisplay = false;
             public String DisplayConnection = "";
             public String DisplayType = "";
+            public Boolean NeedsPower = false;
             
             public int VolumeLevel;
             public long Position = 0;
@@ -639,7 +640,10 @@ namespace MultiZonePlayer
                     OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
                     OutputKeywords = zonestorage.OutputKeywords;
                     OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
-                    if (!OutputDeviceAutoCompleted.Equals("")) HasSpeakers = true;
+                    if (!OutputDeviceAutoCompleted.Equals(""))
+                    {
+                        HasSpeakers = true;
+                    }
 
                     WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);
                     OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(WavedeviceIndex);
@@ -650,7 +654,10 @@ namespace MultiZonePlayer
 
                     DisplayType = zonestorage.DisplayType;
                     DisplayConnection = zonestorage.DisplayConnection;
-                    if (DisplayType != "") HasDisplay = true;
+                    if (DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString()))
+                    {
+                        HasDisplay = true;
+                    }
                     //IsArmed = zonestorage.IsArmed;
                 }
 
@@ -775,6 +782,7 @@ namespace MultiZonePlayer
                 IsActive = false;
                 ActivityType = GlobalCommands.nul;
                 ZoneState = Metadata.ZoneState.NotInitialised;
+                NeedsPower = false;
             }
         }
 

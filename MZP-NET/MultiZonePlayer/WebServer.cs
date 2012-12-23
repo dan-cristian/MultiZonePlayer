@@ -17,6 +17,7 @@ namespace MultiZonePlayer
     class WebServer
     {
         private static HttpListener m_extlistener = new HttpListener();
+        private static HttpListener m_extlistenersafe = new HttpListener();
         private static HttpListener m_intlistener = new HttpListener();
         private static WebServer m_instance;
         private static List<String> CONTENT_TYPES = new List<string>(new String[] {
@@ -38,6 +39,7 @@ namespace MultiZonePlayer
         {
             m_instance = new WebServer();
             String extlistener = "https://*:" + IniFile.PARAM_WEBSERVER_PORT_EXT[1] + "/";
+            String extlistener_safe = "http://*:" + IniFile.PARAM_WEBSERVER_PORT_EXT_SAFE[1] + "/";
             String intlistener = "http://*:" + IniFile.PARAM_WEBSERVER_PORT_INT[1] + "/";
             
             MLog.Log(null, "Initialising ext web servers " +extlistener);
@@ -45,6 +47,13 @@ namespace MultiZonePlayer
             m_extlistener.AuthenticationSchemes = AuthenticationSchemes.Basic;
             Thread th = new Thread(() => m_instance.RunMainThread(m_extlistener));
             th.Name = "WebListener External";
+            th.Start();
+
+            MLog.Log(null, "Initialising ext safe web servers " + extlistener_safe);
+            m_extlistenersafe.Prefixes.Add(extlistener_safe);
+            m_extlistenersafe.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+            th = new Thread(() => m_instance.RunMainThread(m_extlistenersafe));
+            th.Name = "WebListener External Safe";
             th.Start();
 
             MLog.Log(null, "Initialising int web servers " + intlistener);
@@ -59,6 +68,7 @@ namespace MultiZonePlayer
         {
             m_extlistener.Stop();
             m_intlistener.Stop();
+            m_extlistenersafe.Stop();
             m_instance = null;
         }
 
@@ -104,9 +114,31 @@ namespace MultiZonePlayer
                     }
                     else
                     {
-                        Thread th = new Thread(() => ProcessRequest(ctx));
-                        th.Name = "Web work thread " + ctx.Request.Url.AbsoluteUri;
-                        th.Start();
+                        bool safe = false;
+                        if (ctx.Request.LocalEndPoint.Port.ToString().Equals(IniFile.PARAM_WEBSERVER_PORT_EXT_SAFE[1]))
+                        {
+                            foreach (String atom in IniFile.PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS[1].Split('|'))
+                            {
+                                if (ctx.Request.Headers.ToString().Contains(atom))
+                                {
+                                    safe = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else safe = true;
+
+                        if (safe)
+                        {
+                            Thread th = new Thread(() => ProcessRequest(ctx));
+                            th.Name = "Web work thread " + ctx.Request.Url.AbsoluteUri;
+                            th.Start();
+                        }
+                        else
+                        {
+                            MLog.Log(this, "Unsafe device on ext port " + ctx.Request.Headers);
+                            Thread.Sleep(3000);//anti brute force attack
+                        }
                     }
                 }
                 catch (Exception ex)

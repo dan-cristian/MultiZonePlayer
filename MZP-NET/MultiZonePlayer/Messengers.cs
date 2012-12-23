@@ -215,15 +215,13 @@ namespace MultiZonePlayer
         public enum SMSCommandsEnum
         {
             [Description("AT+CMGF=1")] SMS_ENABLE,
-            [Description("ATD ")] SMS_CALL
+            [Description("ATD ")] SMS_CALL,
+            [Description("AT")] SMS_CHECK,
         };
 
-        //private CommunicationManager comm;
-        //private Boolean m_waitForResponse = false;
-        //private Boolean m_lastOperationWasOK = true;
-        private String m_lastCommand, m_lastResponse;
-        private bool m_CommandEchoReceived = false;
         private List<SMSCommand> m_commandList;
+        private int m_stdtimeout = 2000;
+        private int m_calltimeout = 80000;
 
         public class SMSCommand
         {
@@ -264,9 +262,9 @@ namespace MultiZonePlayer
 
         public void SendMessage(String message, String targetId)
         {
-            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_ENABLE));
-            WriteCommand("AT + CMGS = \"" + IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"");
-            WriteCommand(message + (char)26);
+            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_ENABLE), 3,m_stdtimeout);
+            WriteCommand("AT + CMGS = \"" + IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"", 3, m_stdtimeout);
+            WriteCommand(message + (char)26, 3, m_calltimeout);
         }
 
         public override string GetCommandStatus(Enum cmd)
@@ -283,32 +281,39 @@ namespace MultiZonePlayer
         {
             //bool result = false ;
             
-            if (m_waitForResponse == true)
+            /*if (m_waitForResponse == true)
             {
                 MLog.Log(this, "Trying to test SMS conn while waiting for response, skip test");
                 return true;
-            }
+            }*/
 
             if (!comm.IsPortOpen())
                 return false;
 
             try
             {
-                WriteCommand("AT");
-                return true;
+                String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CHECK), 3, m_stdtimeout).ToLower();
+                if (res.Contains("ok") || res.Contains("at"))
+                    return true;
+                else
+                {
+                    MLog.Log(this, "Error health check res=" + res);
+                    return true;
+                }
             }
             catch (Exception ex)
             {
                 MLog.Log(ex, "Exception Test SMS");
                 return false;
             }
-
-           
         }
         
         protected override void ReceiveSerialResponse(string response)
         {
+            MLog.Log(this, "Received unexpected CELL MODEM serial response: " + response);
+
             String message = response.ToLower().Replace("\r", "").Replace("\n","").ToLower();
+            /*
             if (m_waitForResponse == false)
                 MLog.Log(this, "Err, Response received unexpected:" + message + " last cmd=" + m_lastCommand + " resp=" + m_lastResponse);
             
@@ -336,7 +341,7 @@ namespace MultiZonePlayer
                 }
                 else
                     MLog.Log(this, "SMS Unclear response=" + message);
-
+            */
             ReceiveMessage(message, "");
         }
 
@@ -348,7 +353,8 @@ namespace MultiZonePlayer
         public void MakeBuzz()
         {
             MLog.Log(this, "Calling target number " + IniFile.PARAM_SMS_TARGETNUMBER[1]);
-            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CALL) + IniFile.PARAM_SMS_TARGETNUMBER[1] + ";");
+            String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CALL) + IniFile.PARAM_SMS_TARGETNUMBER[1] + ";", 3, m_calltimeout);
+            MLog.Log(this, "Calling target number done, res=" + res);
         }
     }
 }

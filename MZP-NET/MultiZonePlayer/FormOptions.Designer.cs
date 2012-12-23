@@ -28,17 +28,27 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnSave = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.tabParams = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.dgvZones = new System.Windows.Forms.DataGridView();
+            this.ZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ZoneName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_OutputKeywords = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.OutputDevice = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Zones_PowerIndexDK = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_DefaultVolume = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_CameraId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_AlarmZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_AlarmAreadId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Zones_ParentZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControl = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
             this.txtLastControlDevice = new System.Windows.Forms.TextBox();
@@ -72,9 +82,6 @@
             this.Music_ScheduleMood = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabVideo = new System.Windows.Forms.TabPage();
             this.dgvDisplay = new System.Windows.Forms.DataGridView();
-            this.Display_ZoneID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Display_Type = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.Display_ConnectionName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dgvVideo = new System.Windows.Forms.DataGridView();
             this.Video_UserId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Video_PlaylistFullPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -95,16 +102,9 @@
             this.dgvParams = new System.Windows.Forms.DataGridView();
             this.ParamName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ParamValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ZoneName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Zones_OutputKeywords = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.OutputDevice = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.Zones_PowerIndexDK = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Zones_DefaultVolume = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Zones_CameraId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Zones_AlarmZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Zones_AlarmAreadId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Zones_ParentZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Display_ZoneID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Display_Type = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.Display_ConnectionName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabParams.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvZones)).BeginInit();
@@ -196,6 +196,71 @@
             this.dgvZones.TabIndex = 6;
             this.dgvZones.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvZones_CellContentClick);
             this.dgvZones.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvZones_DataError);
+            // 
+            // ZoneId
+            // 
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ZoneId.DefaultCellStyle = dataGridViewCellStyle1;
+            this.ZoneId.HeaderText = "ZoneId";
+            this.ZoneId.Name = "ZoneId";
+            this.ZoneId.Width = 66;
+            // 
+            // ZoneName
+            // 
+            this.ZoneName.HeaderText = "ZoneName";
+            this.ZoneName.Name = "ZoneName";
+            this.ZoneName.Width = 85;
+            // 
+            // Zones_OutputKeywords
+            // 
+            this.Zones_OutputKeywords.HeaderText = "OutputKeywords";
+            this.Zones_OutputKeywords.Name = "Zones_OutputKeywords";
+            this.Zones_OutputKeywords.Width = 110;
+            // 
+            // OutputDevice
+            // 
+            this.OutputDevice.HeaderText = "OutputDevice";
+            this.OutputDevice.Name = "OutputDevice";
+            this.OutputDevice.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.OutputDevice.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.OutputDevice.Width = 98;
+            // 
+            // Zones_PowerIndexDK
+            // 
+            this.Zones_PowerIndexDK.HeaderText = "PowerIndex";
+            this.Zones_PowerIndexDK.Name = "Zones_PowerIndexDK";
+            this.Zones_PowerIndexDK.Width = 88;
+            // 
+            // Zones_DefaultVolume
+            // 
+            this.Zones_DefaultVolume.HeaderText = "DefaultVolume%";
+            this.Zones_DefaultVolume.Name = "Zones_DefaultVolume";
+            this.Zones_DefaultVolume.Width = 109;
+            // 
+            // Zones_CameraId
+            // 
+            this.Zones_CameraId.HeaderText = "CameraId";
+            this.Zones_CameraId.Name = "Zones_CameraId";
+            this.Zones_CameraId.Width = 77;
+            // 
+            // Zones_AlarmZoneId
+            // 
+            this.Zones_AlarmZoneId.HeaderText = "AlarmZoneId";
+            this.Zones_AlarmZoneId.Name = "Zones_AlarmZoneId";
+            this.Zones_AlarmZoneId.Width = 92;
+            // 
+            // Zones_AlarmAreadId
+            // 
+            this.Zones_AlarmAreadId.HeaderText = "AlarmAreaId";
+            this.Zones_AlarmAreadId.Name = "Zones_AlarmAreadId";
+            this.Zones_AlarmAreadId.Width = 89;
+            // 
+            // Zones_ParentZoneId
+            // 
+            this.Zones_ParentZoneId.HeaderText = "ParentId";
+            this.Zones_ParentZoneId.Name = "Zones_ParentZoneId";
+            this.Zones_ParentZoneId.Width = 72;
             // 
             // tabControl
             // 
@@ -500,23 +565,6 @@
             this.dgvDisplay.Size = new System.Drawing.Size(449, 133);
             this.dgvDisplay.TabIndex = 1;
             // 
-            // Display_ZoneID
-            // 
-            this.Display_ZoneID.HeaderText = "ZoneId";
-            this.Display_ZoneID.Name = "Display_ZoneID";
-            // 
-            // Display_Type
-            // 
-            this.Display_Type.HeaderText = "Type";
-            this.Display_Type.Items.AddRange(new object[] {
-            "LGTV"});
-            this.Display_Type.Name = "Display_Type";
-            // 
-            // Display_ConnectionName
-            // 
-            this.Display_ConnectionName.HeaderText = "Connection";
-            this.Display_ConnectionName.Name = "Display_ConnectionName";
-            // 
             // dgvVideo
             // 
             this.dgvVideo.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -700,70 +748,23 @@
             this.ParamValue.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.ParamValue.Width = 500;
             // 
-            // ZoneId
+            // Display_ZoneID
             // 
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.ZoneId.DefaultCellStyle = dataGridViewCellStyle1;
-            this.ZoneId.HeaderText = "ZoneId";
-            this.ZoneId.Name = "ZoneId";
-            this.ZoneId.Width = 66;
+            this.Display_ZoneID.HeaderText = "ZoneId";
+            this.Display_ZoneID.Name = "Display_ZoneID";
             // 
-            // ZoneName
+            // Display_Type
             // 
-            this.ZoneName.HeaderText = "ZoneName";
-            this.ZoneName.Name = "ZoneName";
-            this.ZoneName.Width = 85;
+            this.Display_Type.HeaderText = "Type";
+            this.Display_Type.Items.AddRange(new object[] {
+            "LGTV",
+            "XBMC"});
+            this.Display_Type.Name = "Display_Type";
             // 
-            // Zones_OutputKeywords
+            // Display_ConnectionName
             // 
-            this.Zones_OutputKeywords.HeaderText = "OutputKeywords";
-            this.Zones_OutputKeywords.Name = "Zones_OutputKeywords";
-            this.Zones_OutputKeywords.Width = 110;
-            // 
-            // OutputDevice
-            // 
-            this.OutputDevice.HeaderText = "OutputDevice";
-            this.OutputDevice.Name = "OutputDevice";
-            this.OutputDevice.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.OutputDevice.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.OutputDevice.Width = 98;
-            // 
-            // Zones_PowerIndexDK
-            // 
-            this.Zones_PowerIndexDK.HeaderText = "PowerIndex";
-            this.Zones_PowerIndexDK.Name = "Zones_PowerIndexDK";
-            this.Zones_PowerIndexDK.Width = 88;
-            // 
-            // Zones_DefaultVolume
-            // 
-            this.Zones_DefaultVolume.HeaderText = "DefaultVolume%";
-            this.Zones_DefaultVolume.Name = "Zones_DefaultVolume";
-            this.Zones_DefaultVolume.Width = 109;
-            // 
-            // Zones_CameraId
-            // 
-            this.Zones_CameraId.HeaderText = "CameraId";
-            this.Zones_CameraId.Name = "Zones_CameraId";
-            this.Zones_CameraId.Width = 77;
-            // 
-            // Zones_AlarmZoneId
-            // 
-            this.Zones_AlarmZoneId.HeaderText = "AlarmZoneId";
-            this.Zones_AlarmZoneId.Name = "Zones_AlarmZoneId";
-            this.Zones_AlarmZoneId.Width = 92;
-            // 
-            // Zones_AlarmAreadId
-            // 
-            this.Zones_AlarmAreadId.HeaderText = "AlarmAreaId";
-            this.Zones_AlarmAreadId.Name = "Zones_AlarmAreadId";
-            this.Zones_AlarmAreadId.Width = 89;
-            // 
-            // Zones_ParentZoneId
-            // 
-            this.Zones_ParentZoneId.HeaderText = "ParentId";
-            this.Zones_ParentZoneId.Name = "Zones_ParentZoneId";
-            this.Zones_ParentZoneId.Width = 72;
+            this.Display_ConnectionName.HeaderText = "Connection";
+            this.Display_ConnectionName.Name = "Display_ConnectionName";
             // 
             // FormOptions
             // 
@@ -862,9 +863,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn MusicMood_GroupByTopCount;
         private System.Windows.Forms.DataGridViewCheckBoxColumn MusicMood_Random;
         private System.Windows.Forms.DataGridView dgvDisplay;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Display_ZoneID;
-        private System.Windows.Forms.DataGridViewComboBoxColumn Display_Type;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Display_ConnectionName;
         private System.Windows.Forms.DataGridViewTextBoxColumn ZoneId;
         private System.Windows.Forms.DataGridViewTextBoxColumn ZoneName;
         private System.Windows.Forms.DataGridViewTextBoxColumn Zones_OutputKeywords;
@@ -875,5 +873,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Zones_AlarmZoneId;
         private System.Windows.Forms.DataGridViewTextBoxColumn Zones_AlarmAreadId;
         private System.Windows.Forms.DataGridViewTextBoxColumn Zones_ParentZoneId;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Display_ZoneID;
+        private System.Windows.Forms.DataGridViewComboBoxColumn Display_Type;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Display_ConnectionName;
     }
 }
