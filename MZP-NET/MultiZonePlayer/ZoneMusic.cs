@@ -32,7 +32,7 @@ namespace MultiZonePlayer
       
             private DCPlayer m_dcPlay = null;
             //private String outputDevice =null;
-            private ZonesForm m_zoneForm = null;
+            private ZoneGeneric m_zoneForm = null;
             //private PlaylistBase m_currentPlayList = null;
             private String m_currentPlaylistName;
             //private String currentSongPath;
@@ -52,7 +52,7 @@ namespace MultiZonePlayer
             private Metadata.ZoneDetails m_zoneDetails;
             private String m_alarmStartMinute = "";
 
-            public ZoneMusic(ZonesForm zoneForm)//, String outputDevice)
+            public ZoneMusic(ZoneGeneric zoneForm)//, String outputDevice)
             {
                 this.m_zoneForm = zoneForm;
                 ////this.outputDevice = zoneForm.GetOutputDevice();
@@ -66,7 +66,7 @@ namespace MultiZonePlayer
             }
 
             // used to play beeps and other notification signals
-            public ZoneMusic(ZonesForm p_zoneForm, String p_fileName)
+            public ZoneMusic(ZoneGeneric p_zoneForm, String p_fileName)
             {
                 m_zoneForm = p_zoneForm;
                 m_zoneDetails = p_zoneForm.ZoneDetails;
@@ -96,7 +96,7 @@ namespace MultiZonePlayer
 
                 if (m_songList == null)
                 {
-                    ControlCenter.PlayErrorMessage("Unable to find a playlist", m_zoneForm);
+                    //ControlCenter.PlayErrorMessage("Unable to find a playlist", m_zoneForm);
                     m_currentPlaylistName = "No files in playlist";
                 }
                 else
@@ -195,6 +195,12 @@ namespace MultiZonePlayer
                         //init amp power if needed
                         MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
                         m_dcPlay.OpenClip(m_zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted, musicFile, this.m_zoneForm);
+
+                        if (m_dcPlay.GetState() == Metadata.ZoneState.Running)
+                        {
+                            m_zoneDetails.IsActive = true;
+                            m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
+                        }
                     }
                     else
                     {
@@ -235,15 +241,21 @@ namespace MultiZonePlayer
                 SaveStateIni();
                 //dcPlay.StopClip();
                 m_dcPlay.CloseClip();
+                m_zoneDetails.IsActive = false;
+                m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
             }
 
-           
-
+            delegate void DelegateClose();
             public void Close()
             {
-                SaveStateIni();
-                m_dcPlay.CloseClip();
-                m_dcPlay.Close();
+                Stop();
+                if (m_dcPlay.InvokeRequired)
+                {
+                    DelegateClose dlg = new DelegateClose(Close);
+                    m_dcPlay.BeginInvoke(dlg);
+                }
+                else
+                    m_dcPlay.Close();
             }
 
             public void DeleteCurrentFile()
@@ -283,10 +295,10 @@ namespace MultiZonePlayer
                 int sepIndex = songName.LastIndexOf("\\")+1;
                 songName = songName.Substring(sepIndex, songName.Length-sepIndex);
                 Pause();
-                ControlCenter.PlayInfoMessage("User is " + m_zoneForm.GetUser().Name, m_zoneForm);
+                //ControlCenter.PlayInfoMessage("User is " + m_zoneForm.GetUser().Name, m_zoneForm);
                 //ControlCenter.PlayInfoMessage("Delegated zone is " + zoneForm.GetDelegatedZoneName(), zoneForm);
-                ControlCenter.PlayInfoMessageClean(songName, m_zoneForm);
-                ControlCenter.PlayInfoMessageClean("Play mode is " + m_playMode.ToString(), m_zoneForm);
+                //ControlCenter.PlayInfoMessageClean(songName, m_zoneForm);
+                //ControlCenter.PlayInfoMessageClean("Play mode is " + m_playMode.ToString(), m_zoneForm);
                 Pause();
             }
 
@@ -718,18 +730,20 @@ namespace MultiZonePlayer
                     m_zoneDetails.SourceURL = CurrentItem.SourceURL;
                     m_zoneDetails.Playlist = m_currentPlaylistName;
                 }
+
+                if (m_dcPlay!=null) m_dcPlay.Tick();
             }
     }
 
     public class ZoneMusicClone : IZoneActivity
     {
-        private ZonesForm m_parentZoneForm;
-        private ZonesForm m_clonedZoneForm;
+        private ZoneGeneric m_parentZoneForm;
+        private ZoneGeneric m_clonedZoneForm;
         private ZoneMusic m_clonedZoneMusic;
         private Metadata.ZoneDetails m_zoneDetails;
         private Metadata.ZoneState m_zoneState;
 
-        public ZoneMusicClone(ZonesForm p_zoneForm, ZonesForm p_clonedZoneForm)
+        public ZoneMusicClone(ZoneGeneric p_zoneForm, ZoneGeneric p_clonedZoneForm)
         {
             m_clonedZoneForm = p_clonedZoneForm;
             m_parentZoneForm = p_zoneForm;
@@ -938,6 +952,8 @@ namespace MultiZonePlayer
                 m_zoneDetails.SourceURL = m_clonedZoneMusic.CurrentItem.SourceURL;
                 m_zoneDetails.Playlist = "cloned zone";
             }
+
+            
         }
     }
 }

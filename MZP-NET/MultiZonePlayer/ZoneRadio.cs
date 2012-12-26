@@ -16,7 +16,7 @@ namespace MultiZonePlayer
         private int appHandle = 0;
         private String inputDeviceName;
 
-        public ZoneRadio(ZonesForm zoneForm, String inputDeviceName, String outputDeviceName):base(zoneForm,inputDeviceName,outputDeviceName)
+        public ZoneRadio(ZoneGeneric zoneForm, String inputDeviceName, String outputDeviceName):base(zoneForm,inputDeviceName,outputDeviceName)
         {
             this.inputDeviceName = inputDeviceName;
             LaunchExtApp(IniFile.PARAM_RADIO_APP[1]);

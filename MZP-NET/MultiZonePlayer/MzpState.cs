@@ -59,7 +59,13 @@ namespace MultiZonePlayer
             private WinEventLogReader m_winEventLogReader;
 
             private List<Display> m_displayList = new List<Display>();
-            //private List<ZoneExternalPlayerBase>
+            private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
+
+            public List<ZoneGeneric> ActiveZones
+            {
+                get { return m_activeZones; }
+                set { m_activeZones = value; }
+            }
 
             public List<Display> DisplayList
             {
@@ -84,6 +90,7 @@ namespace MultiZonePlayer
                 m_sysState = this;
                 m_notifyState = new NotifyState();
 
+                MLog.Log(this, "\r\n-----------------START--------------------");
 
                 m_systemAlarm = new Alarm(1);
                 InitRemotes();
@@ -189,6 +196,10 @@ namespace MultiZonePlayer
                     foreach (Display disp in m_displayList)
                     {
                         disp.Disconnect();
+                    }
+                    foreach (IMessenger msg in m_messengerList)
+                    {
+                        msg.Close();
                     }
                     m_sysState = null;
                 }

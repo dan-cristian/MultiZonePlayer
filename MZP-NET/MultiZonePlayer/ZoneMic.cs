@@ -7,7 +7,7 @@ namespace MultiZonePlayer
 {
     class ZoneMic:ZoneAux
     {
-        public ZoneMic(ZonesForm zoneForm, String inputDeviceName, String outputDeviceName):base(zoneForm,inputDeviceName,outputDeviceName)
+        public ZoneMic(ZoneGeneric zoneForm, String inputDeviceName, String outputDeviceName):base(zoneForm,inputDeviceName,outputDeviceName)
         {
         }
     }

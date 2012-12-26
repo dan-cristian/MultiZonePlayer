@@ -37,7 +37,6 @@ namespace MultiZonePlayer
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.txtError = new System.Windows.Forms.RichTextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.cmbCurrentZone = new System.Windows.Forms.ComboBox();
@@ -52,7 +51,6 @@ namespace MultiZonePlayer
             this.txtInactivityCycles = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.txtZoneCount = new System.Windows.Forms.TextBox();
-            this.timerStatus = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.txtPwrControl = new System.Windows.Forms.TextBox();
             this.txtPowerSaving = new System.Windows.Forms.TextBox();
@@ -74,6 +72,7 @@ namespace MultiZonePlayer
             this.btRadio = new System.Windows.Forms.Button();
             this.btVideo = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.btTV = new System.Windows.Forms.Button();
             this.chkPowerControl = new System.Windows.Forms.CheckBox();
             this.label9 = new System.Windows.Forms.Label();
             this.txPwrName = new System.Windows.Forms.TextBox();
@@ -87,7 +86,6 @@ namespace MultiZonePlayer
             this.label12 = new System.Windows.Forms.Label();
             this.txAlarm = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
-            this.btTV = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             this.tbButtons.SuspendLayout();
             this.SuspendLayout();
@@ -228,11 +226,6 @@ namespace MultiZonePlayer
             this.txtZoneCount.TabIndex = 0;
             this.txtZoneCount.Leave += new System.EventHandler(this.txtCommand_Leave);
             // 
-            // timerStatus
-            // 
-            this.timerStatus.Interval = 1000;
-            this.timerStatus.Tick += new System.EventHandler(this.timerStatus_Tick);
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -304,7 +297,7 @@ namespace MultiZonePlayer
             this.bt1.Location = new System.Drawing.Point(2, 2);
             this.bt1.Margin = new System.Windows.Forms.Padding(2);
             this.bt1.Name = "bt1";
-            this.bt1.Size = new System.Drawing.Size(14, 19);
+            this.bt1.Size = new System.Drawing.Size(13, 19);
             this.bt1.TabIndex = 23;
             this.bt1.Text = "1";
             this.bt1.UseVisualStyleBackColor = true;
@@ -312,7 +305,7 @@ namespace MultiZonePlayer
             // 
             // bt2
             // 
-            this.bt2.Location = new System.Drawing.Point(20, 2);
+            this.bt2.Location = new System.Drawing.Point(19, 2);
             this.bt2.Margin = new System.Windows.Forms.Padding(2);
             this.bt2.Name = "bt2";
             this.bt2.Size = new System.Drawing.Size(15, 19);
@@ -328,7 +321,7 @@ namespace MultiZonePlayer
             this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 51.92308F));
             this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 16F));
             this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 16F));
-            this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 17F));
+            this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 18F));
             this.tbButtons.Controls.Add(this.bt1, 0, 0);
             this.tbButtons.Controls.Add(this.bt2, 1, 0);
             this.tbButtons.Controls.Add(this.bt3, 2, 0);
@@ -359,7 +352,7 @@ namespace MultiZonePlayer
             // 
             // bt3
             // 
-            this.bt3.Location = new System.Drawing.Point(39, 2);
+            this.bt3.Location = new System.Drawing.Point(38, 2);
             this.bt3.Margin = new System.Windows.Forms.Padding(2);
             this.bt3.Name = "bt3";
             this.bt3.Size = new System.Drawing.Size(12, 19);
@@ -373,7 +366,7 @@ namespace MultiZonePlayer
             this.bt4.Location = new System.Drawing.Point(2, 26);
             this.bt4.Margin = new System.Windows.Forms.Padding(2);
             this.bt4.Name = "bt4";
-            this.bt4.Size = new System.Drawing.Size(14, 19);
+            this.bt4.Size = new System.Drawing.Size(13, 19);
             this.bt4.TabIndex = 23;
             this.bt4.Text = "4";
             this.bt4.UseVisualStyleBackColor = true;
@@ -381,7 +374,7 @@ namespace MultiZonePlayer
             // 
             // bt5
             // 
-            this.bt5.Location = new System.Drawing.Point(20, 26);
+            this.bt5.Location = new System.Drawing.Point(19, 26);
             this.bt5.Margin = new System.Windows.Forms.Padding(2);
             this.bt5.Name = "bt5";
             this.bt5.Size = new System.Drawing.Size(15, 19);
@@ -392,7 +385,7 @@ namespace MultiZonePlayer
             // 
             // bt6
             // 
-            this.bt6.Location = new System.Drawing.Point(39, 26);
+            this.bt6.Location = new System.Drawing.Point(38, 26);
             this.bt6.Margin = new System.Windows.Forms.Padding(2);
             this.bt6.Name = "bt6";
             this.bt6.Size = new System.Drawing.Size(12, 19);
@@ -406,7 +399,7 @@ namespace MultiZonePlayer
             this.bt7.Location = new System.Drawing.Point(2, 50);
             this.bt7.Margin = new System.Windows.Forms.Padding(2);
             this.bt7.Name = "bt7";
-            this.bt7.Size = new System.Drawing.Size(14, 19);
+            this.bt7.Size = new System.Drawing.Size(13, 19);
             this.bt7.TabIndex = 23;
             this.bt7.Text = "7";
             this.bt7.UseVisualStyleBackColor = true;
@@ -414,7 +407,7 @@ namespace MultiZonePlayer
             // 
             // bt8
             // 
-            this.bt8.Location = new System.Drawing.Point(20, 50);
+            this.bt8.Location = new System.Drawing.Point(19, 50);
             this.bt8.Margin = new System.Windows.Forms.Padding(2);
             this.bt8.Name = "bt8";
             this.bt8.Size = new System.Drawing.Size(15, 19);
@@ -425,7 +418,7 @@ namespace MultiZonePlayer
             // 
             // bt9
             // 
-            this.bt9.Location = new System.Drawing.Point(39, 50);
+            this.bt9.Location = new System.Drawing.Point(38, 50);
             this.bt9.Margin = new System.Windows.Forms.Padding(2);
             this.bt9.Name = "bt9";
             this.bt9.Size = new System.Drawing.Size(12, 19);
@@ -439,7 +432,7 @@ namespace MultiZonePlayer
             this.bt0.Location = new System.Drawing.Point(2, 75);
             this.bt0.Margin = new System.Windows.Forms.Padding(2);
             this.bt0.Name = "bt0";
-            this.bt0.Size = new System.Drawing.Size(14, 19);
+            this.bt0.Size = new System.Drawing.Size(13, 19);
             this.bt0.TabIndex = 23;
             this.bt0.Text = "0";
             this.bt0.UseVisualStyleBackColor = true;
@@ -450,7 +443,7 @@ namespace MultiZonePlayer
             this.btMusic.Location = new System.Drawing.Point(2, 99);
             this.btMusic.Margin = new System.Windows.Forms.Padding(2);
             this.btMusic.Name = "btMusic";
-            this.btMusic.Size = new System.Drawing.Size(14, 19);
+            this.btMusic.Size = new System.Drawing.Size(13, 19);
             this.btMusic.TabIndex = 24;
             this.btMusic.Tag = "music";
             this.btMusic.Text = "M";
@@ -459,7 +452,7 @@ namespace MultiZonePlayer
             // 
             // btRadio
             // 
-            this.btRadio.Location = new System.Drawing.Point(20, 99);
+            this.btRadio.Location = new System.Drawing.Point(19, 99);
             this.btRadio.Margin = new System.Windows.Forms.Padding(2);
             this.btRadio.Name = "btRadio";
             this.btRadio.Size = new System.Drawing.Size(15, 19);
@@ -471,7 +464,7 @@ namespace MultiZonePlayer
             // 
             // btVideo
             // 
-            this.btVideo.Location = new System.Drawing.Point(39, 99);
+            this.btVideo.Location = new System.Drawing.Point(38, 99);
             this.btVideo.Margin = new System.Windows.Forms.Padding(2);
             this.btVideo.Name = "btVideo";
             this.btVideo.Size = new System.Drawing.Size(12, 19);
@@ -483,7 +476,7 @@ namespace MultiZonePlayer
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(55, 99);
+            this.button1.Location = new System.Drawing.Point(54, 99);
             this.button1.Margin = new System.Windows.Forms.Padding(2);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(12, 19);
@@ -492,6 +485,18 @@ namespace MultiZonePlayer
             this.button1.Text = "S";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.btCommand_Click);
+            // 
+            // btTV
+            // 
+            this.btTV.Location = new System.Drawing.Point(2, 123);
+            this.btTV.Margin = new System.Windows.Forms.Padding(2);
+            this.btTV.Name = "btTV";
+            this.btTV.Size = new System.Drawing.Size(12, 19);
+            this.btTV.TabIndex = 24;
+            this.btTV.Tag = "tv";
+            this.btTV.Text = "T";
+            this.btTV.UseVisualStyleBackColor = true;
+            this.btTV.Click += new System.EventHandler(this.btCommand_Click);
             // 
             // chkPowerControl
             // 
@@ -625,18 +630,6 @@ namespace MultiZonePlayer
             this.label13.TabIndex = 16;
             this.label13.Text = "Alarm State";
             // 
-            // btTV
-            // 
-            this.btTV.Location = new System.Drawing.Point(2, 123);
-            this.btTV.Margin = new System.Windows.Forms.Padding(2);
-            this.btTV.Name = "btTV";
-            this.btTV.Size = new System.Drawing.Size(12, 19);
-            this.btTV.TabIndex = 24;
-            this.btTV.Tag = "tv";
-            this.btTV.Text = "T";
-            this.btTV.UseVisualStyleBackColor = true;
-            this.btTV.Click += new System.EventHandler(this.btCommand_Click);
-            // 
             // ControlCenter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -707,7 +700,6 @@ namespace MultiZonePlayer
         private System.Windows.Forms.TextBox txtInactivityCycles;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox txtZoneCount;
-        private System.Windows.Forms.Timer timerStatus;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtPwrControl;
         private System.Windows.Forms.Label label6;

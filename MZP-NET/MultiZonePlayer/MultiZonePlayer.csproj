@@ -201,6 +201,7 @@
     <Compile Include="ZoneDisplay.cs" />
     <Compile Include="ZoneEvents.cs" />
     <Compile Include="ZoneExternalPlayer.cs" />
+    <Compile Include="ZoneGeneric.cs" />
     <Compile Include="ZoneMic.cs" />
     <Compile Include="ZoneMusic.cs" />
     <Compile Include="ZoneAux.cs" />

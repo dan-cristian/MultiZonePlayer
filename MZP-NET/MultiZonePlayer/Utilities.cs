@@ -615,6 +615,8 @@ namespace MultiZonePlayer
             sw.Write(Parameters);
             sw.Close();
 
+            MLog.LogWeb(theRequest);
+
             // Execute the query
             theResponse = (HttpWebResponse)theRequest.GetResponse();
             StreamReader sr = new StreamReader(theResponse.GetResponseStream());
@@ -632,12 +634,12 @@ namespace MultiZonePlayer
 
     class Text2Speech
     {
-        public static void PlayError(String text, ZonesForm zone)
+        public static void PlayError(String text, ZoneGeneric zone)
         {
             PlayMessageClean(text, zone);
         }
 
-        public static void PlayMessage2(String text, ZonesForm zone)
+        public static void PlayMessage2(String text, ZoneGeneric zone)
         {
 
             try
@@ -663,7 +665,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public static void PlayMessage(String text, ZonesForm zone)
+        public static void PlayMessage(String text, ZoneGeneric zone)
         {
 
             try
@@ -686,7 +688,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public static void PlayMessageClean(String text, ZonesForm zone)
+        public static void PlayMessageClean(String text, ZoneGeneric zone)
         {
             PlayMessage(CleanMessage(text), zone);
         }
@@ -788,6 +790,19 @@ namespace MultiZonePlayer
             {
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r\n\r\n", DateTime.Now.ToString(),
                     request.RemoteEndPoint.Address, request.Url.AbsoluteUri, request.Headers.ToString()), 
+                    MZPEvent.EventSource.Web);
+            }
+            catch (Exception)
+            { }
+        }
+
+        public static void LogWeb(WebRequest request)
+        {
+            try
+            {
+                
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r\n\r\n", DateTime.Now.ToString(),
+                    request.RequestUri.AbsoluteUri, request.Headers.ToString()),
                     MZPEvent.EventSource.Web);
             }
             catch (Exception)

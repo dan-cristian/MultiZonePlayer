@@ -134,8 +134,10 @@ namespace MultiZonePlayer
             public static String[] PARAM_GTALK_USERPASS = new String[] { "PARAM_GTALK_USERPASS", "S9mRs4vm" };
             //public static String[] PARAM_GTALK_SERVER = new String[] { "PARAM_GTALK_SERVER", "gmail.com" };
             public static String[] PARAM_GTALK_TARGETUSER = new String[] { "PARAM_GTALK_TARGETUSER", "dan.cristian@gmail.com" };
-            public static String[] PARAM_SMS_TARGETNUMBER = new String[] { "PARAM_SMS_TARGETNUMBER", "+40726159521" };
+            public static String[] PARAM_SMS_TARGETNUMBER = new String[] { "PARAM_SMS_TARGETNUMBER", "0040726159521" };
             public static String[] PARAM_SMS_COMPORT = new String[] { "PARAM_SMS_COMPORT", "COM8" };
+            public static String[] PARAM_SMS_AT_LINES_COUNT = new String[] { "PARAM_SMS_AT_LINES_COUNT", "2", "Number of new lines expected to be received after an AT command" };
+            public static String[] PARAM_SMS_ATD_LINES_COUNT = new String[] { "PARAM_SMS_ATD_LINES_COUNT", "5", "Number of new lines expected to be received after an ATD (dial) command" };
 
             public static String[] PARAM_VLC_AUDIOOUT = new String[] { "PARAM_VLC_AUDIOOUT", "directx", "DIRECTX or WAVEOUT" };
             public static String[] PARAM_GENERIC_INTERVAL_SPLIT = new String[] { "PARAM_GENERIC_INTERVAL_SPLIT", "10-60-240", "3 numbers, in minutes, separated by -" };
@@ -195,6 +197,7 @@ namespace MultiZonePlayer
                 PARAM_GTALK_TARGETUSER,
                 PARAM_SMS_TARGETNUMBER,
                 PARAM_SMS_COMPORT,
+                PARAM_SMS_AT_LINES_COUNT,
                 PARAM_VLC_AUDIOOUT,
                 PARAM_GENERIC_INTERVAL_SPLIT,
                 PARAM_UPS_LOG_SOURCE,

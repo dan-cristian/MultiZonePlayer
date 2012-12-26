@@ -9,11 +9,11 @@ namespace MultiZonePlayer
     class ZoneAux : IZoneActivity
     {
         private AuxPlayer auxPlayer = null;
-        private ZonesForm zoneForm;
+        private ZoneGeneric zoneForm;
         private String inputDeviceName;
         private String outputDeviceName;
 
-        public ZoneAux(ZonesForm zoneForm, String inputDeviceName, String outputDeviceName)
+        public ZoneAux(ZoneGeneric zoneForm, String inputDeviceName, String outputDeviceName)
         {
             auxPlayer = new AuxPlayer();
             this.zoneForm = zoneForm;

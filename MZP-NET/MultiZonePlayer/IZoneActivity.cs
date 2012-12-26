@@ -6,7 +6,6 @@ using System.Text;
 namespace MultiZonePlayer
 {
     
-
     public interface IZoneActivity
     {
         void Stop();
@@ -41,5 +40,10 @@ namespace MultiZonePlayer
         void SetVolumeLevel(int volume);
         int GetVolumeLevel();
         void Tick();
+    }
+
+    public class ZoneBase
+    {
+        protected DateTime m_lastSlowTickDateTime = DateTime.Now;
     }
 }

@@ -43,7 +43,7 @@ namespace MultiZonePlayer
      * Graph creation and destruction methods
      */
 
-             public override void OpenClip(String outputDevice, String inputDevice, ZonesForm zoneForm)
+             public override void OpenClip(String outputDevice, String inputDevice, ZoneGeneric zoneForm)
              {
                  try
                  {
@@ -105,7 +105,7 @@ namespace MultiZonePlayer
                  this.basicAudio = this.graphBuilder as IBasicAudio;
 
                  // Is this an audio-only file (no video component)?
-                 CheckVisibility();
+                 ////CheckVisibility();
 
                  // Have the graph signal event via window callbacks for performance
                  hr = this.mediaEventEx.SetNotifyWindow(this.Handle, WMGraphNotify, IntPtr.Zero);
@@ -120,7 +120,7 @@ namespace MultiZonePlayer
                      hr = this.videoWindow.put_WindowStyle(WindowStyle.Child | WindowStyle.ClipSiblings | WindowStyle.ClipChildren);
                      DsError.ThrowExceptionForHR(hr);
 
-                     hr = InitVideoWindow(1, 1);
+                     //hr = InitVideoWindow(1, 1);
                      DsError.ThrowExceptionForHR(hr);
 
                      GetFrameStepInterface();
@@ -128,17 +128,11 @@ namespace MultiZonePlayer
                  else
                  {
                      // Initialize the default player size and enable playback menu items
-                     hr = InitPlayerWindow();
-                     DsError.ThrowExceptionForHR(hr);
-
-                     EnablePlaybackMenu(true, MediaType.Audio);
                  }
 
                  // Complete window initialization
-                 CheckSizeMenu(menuFileSizeNormal);
                  this.isFullScreen = false;
                  this.currentPlaybackRate = 1.0;
-                 UpdateMainTitle();
 
 #if DEBUG
       //rot = new DsROTEntry(this.graphBuilder);

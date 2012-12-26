@@ -103,7 +103,7 @@ namespace MultiZonePlayer
                             identity.Name.Equals(IniFile.PARAM_WEB_USER[1]) && (identity.Password.Equals(IniFile.PARAM_WEB_PASS[1])))
                         {
                             Thread th = new Thread(() => ProcessRequest(ctx));
-                            th.Name = "Web work thread " + ctx.Request.Url.AbsoluteUri;
+                            th.Name = "Web-work-thread-" + DateTime.Now.ToString() + ":"+ ctx.Request.RawUrl;
                             th.Start();
                         }
                         else
@@ -131,7 +131,7 @@ namespace MultiZonePlayer
                         if (safe)
                         {
                             Thread th = new Thread(() => ProcessRequest(ctx));
-                            th.Name = "Web work thread " + ctx.Request.Url.AbsoluteUri;
+                            th.Name = "Web-work-thread-" + DateTime.Now.ToString() + ":" + ctx.Request.RawUrl;
                             th.Start();
                         }
                         else

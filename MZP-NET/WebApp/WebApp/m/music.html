@@ -20,18 +20,18 @@
         </table>
         <table>
         <tr>
-            <td><a class="med" href="music.html?command=pause&zoneid=%_zoneid">‖</a></td>
+            <td><a class="med" href="music.html?command=pause&zoneid=%_zoneid">&#x258C;&#x258C;</a></td>
             <td><a class="med" href="music.html?command=previous&zoneid=%_zoneid">◄◄</a></td>
             <td><a class="med" href="music.html?command=musicclone&zoneid=%_zoneid">©</a></td>
             <td><a class="med" href="monitor.html">«</a>&nbsp;</td>
-            <td><a class="med" href="status.html">←</a></td>
+            <td><a class="med" href="status.html">◄█</a></td>
         </tr>
         </table>
         <table>
         <tr>
             <td><a href="music.html?zoneid=%_zoneid">#~HTMLZones.ZoneState,%_zoneid#</a></td>
             <td>#~HTMLZones.PositionPercent,%_zoneid#% &nbsp; #~HTMLZones.VolumeLevel,%_zoneid#</td>
-            <td><a href="music.html?command=repeat&zoneid=%_zoneid">Playmode</a></td>
+            <td><a href="music.html?command=repeat&zoneid=%_zoneid">♪</a></td>
             <td><a href="music.html?command=followmemusic&zoneid=%_zoneid">☻ </a>#~HTMLMZPState.IsFollowMeMusic#</td>
         </tr>
         
@@ -48,14 +48,14 @@
             <td>Year #~HTMLZones.Year,%_zoneid#</td>
             <td>Playcount #~HTMLZones.Playcount,%_zoneid#
                 Rating #~HTMLZones.Rating,%_zoneid# 
-                <a href="music.html?command=up&zoneid=%_zoneid">Up</a>
-                <a href="music.html?command=down&zoneid=%_zoneid">Down</a></td>
+                <a href="music.html?command=up&zoneid=%_zoneid">▲</a>
+                <a href="music.html?command=down&zoneid=%_zoneid">▼</a></td>
             <td>#~HTMLZones.Album,%_zoneid#</td>
         </tr>
         <tr>
             <td>
-                <a href="musicselect.html?zoneid=%_zoneid">Select</a>&nbsp;
-                <a href="musicplaylist.html?zoneid=%_zoneid">Playlist</a></td>
+                <a href="musicselect.html?zoneid=%_zoneid">♯</a>&nbsp;
+                <a href="musicplaylist.html?zoneid=%_zoneid">≡</a></td>
             <td>Playlist #~HTMLZones.Playlist,%_zoneid#</td>
             <td>PlaylistCount #~HTMLZones.PlaylistCount,%_zoneid#</td>
         </tr>
@@ -74,7 +74,7 @@
                 <input name="command" type="hidden" value="setwaketimer"/>
                 Wake Time (#~HTMLZones.WakeTime,%_zoneid# #~HTMLZones.WakeWeekDay,%_zoneid#)
                 <input name="datetime" type="text" value="hh:mm"/>
-                <br />
+                
                 <input name="weekday" type="radio" value="MoTuWeThFr"/>Week
                 <input name="weekday" type="radio" value="SaSu"/>Weekend
                 <input id="Submit1" type="submit" value="Set Wake Time" />

@@ -66,6 +66,11 @@ namespace MultiZonePlayer
             Initialise("9600", "None", "One", "8", connection);
         }
 
+        ~DisplayLGTV()
+        {
+            Disconnect();
+        }
+
         public override String SendCommand(Enum cmd, String value)
         {
             String command = cmd.ToString().Split('_')[1] + " " + DISPLAY_ID.ToString() + " " + value;

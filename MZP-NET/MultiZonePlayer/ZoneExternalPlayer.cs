@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MultiZonePlayer
 {
-    public class ZoneExternalPlayerBase : IZoneActivity
+    public class ZoneExternalPlayerBase :ZoneBase, IZoneActivity
     {
 
         protected Metadata.ZoneDetails m_zoneDetails;
@@ -56,7 +56,7 @@ namespace MultiZonePlayer
         {
             m_zoneDetails.ZoneState = Metadata.ZoneState.Paused;
         }
-        public void Mute()
+        public virtual void Mute()
         {
         }
         public virtual void VolumeUp()
@@ -95,6 +95,7 @@ namespace MultiZonePlayer
 
         public void SetVolumeLevel(int volume)
         {
+            m_zoneDetails.VolumeLevel = volume;
         }
 
         public int GetVolumeLevel()
@@ -128,25 +129,117 @@ namespace MultiZonePlayer
         private String STATUS_URL = "/jsonrpc?UpdateState";
         private String CMD_URL = "/jsonrpc?SendRemoteKey";
 
+        public class XBMCLimits
+        {
+            public int end;
+            public int start;
+            public int total;
+
+            public XBMCLimits()
+            { }
+        }
+
+        public class XBMCItems
+        {
+            public int episode;
+            public int id;
+            public string label;
+            public string plot;
+            public string runtime;
+            public int season;
+            public string showtitle;
+            public string thumbnail;
+            public string title;
+            public string type;
+
+            public XBMCItems()
+            { }
+
+        }
+        public class XBMCResult
+        {
+            public int playerid;
+            public string type;
+            public int volume;
+            public XBMCItems[] items;
+            public XBMCLimits limits;
+   
+            public XBMCResult()
+            {}
+        }
+        /*
+        public class XBMCSimpleResult
+        {
+            public int playerid;
+            public string type;
+            public int volume;
+
+            public XBMCSimpleResult()
+            { }
+        }*/
+
+        public class XBMCResponse
+        {
+            public int id;
+            public string jsonrpc;
+            public XBMCResult result;
+            public XBMCResponse()
+            {}
+        }
+
+        public class XBMCSimpleResponse
+        {
+            public int id;
+            public string jsonrpc;
+            public XBMCResult[] result;
+            public XBMCSimpleResponse()
+            { }
+        }
+        
+
         public ZonePlayerXBMC(Metadata.ZoneDetails zoneDetails)
         {
             m_zoneDetails = zoneDetails;
         }
 
         //shortcut for cmds
-        private String PostURLCmdMessage(String method, String paramName, String paramValue)
+        private String PostURLCmdMessage(String method, params String[] parameters)
         {
-            return PostURLMessage(CMD_URL, method, paramName, paramValue);
+            return PostURLMessage(CMD_URL, method, parameters);
         }
 
-        private String PostURLMessage(String URL, String method, String paramName, String paramValue)
+        private String PostURLMessage(String URL, String method, params String[] parameters)
         {
             WebPostRequest post = new WebPostRequest(m_zoneDetails.DisplayConnection+URL);//IniFile.PARAM_XBMC_COMMAND_URL[1]);
+            String paramName,paramValue;
+
             String msg;
-            if (paramName!="")
-                msg= @"{""jsonrpc"": ""2.0"", ""method"": """+ method + @""", ""params"": { """ + paramName + @""": " + paramValue + @" }, ""id"": 1}";
+            if (parameters.Length>0)
+                msg = @"{""jsonrpc"": ""2.0"", ""method"": ""<M>"", ""params"": { <P> }, ""id"": 1}";
             else
-                msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""id"": 1}";
+                msg = @"{""jsonrpc"": ""2.0"", ""method"": ""<M>"", ""id"": 1}"; ;
+            String pair = @"""<N>"": <V>,<P>";
+            msg = msg.Replace("<M>", method);
+
+            for (int i = 0; i < parameters.Length; i=i+2)
+            {
+                paramName = parameters[i];
+                paramValue = parameters[i+1];
+                
+                msg = msg.Replace("<P>",pair);
+                msg = msg.Replace("<N>", paramName);
+                msg = msg.Replace("<V>", paramValue);
+                /*if (paramName != "")
+                {
+
+                    msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""params"": { """ + paramName + @""": " + paramValue + @" }, ""id"": 1}";
+
+                }
+                else
+                    msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""id"": 1}";
+                 * */
+            }
+            msg = msg.Replace(",<P>", "");
             post.Add(msg, "");
             //MessageBox.Show(msg);
             String res = post.GetResponse();
@@ -163,18 +256,18 @@ namespace MultiZonePlayer
         public override void VolumeDown()
         {
  	        base.VolumeDown();
-            m_zoneDetails.VolumeLevel = Math.Max(0, m_zoneDetails.VolumeLevel-1);
+            m_zoneDetails.VolumeLevel = Math.Max(0, m_zoneDetails.VolumeLevel-2);
             PostURLCmdMessage("Application.SetVolume", "volume", m_zoneDetails.VolumeLevel.ToString());
         }
 
         public override void VolumeUp()
         {
             base.VolumeUp();
-            m_zoneDetails.VolumeLevel++;
+            m_zoneDetails.VolumeLevel += 2;
             PostURLCmdMessage("Application.SetVolume", "volume", m_zoneDetails.VolumeLevel.ToString());
         }
 
-        public override void  Stop()
+        public override void Stop()
         {
  	        base.Stop();
             PostURLCmdMessage("Player.Stop", "playerid", m_playerId.ToString());
@@ -186,24 +279,51 @@ namespace MultiZonePlayer
             PostURLCmdMessage("Player.PlayPause", "playerid", m_playerId.ToString());
         }
 
+        public override void Mute()
+        {
+            base.Mute();
+            PostURLCmdMessage("Application.SetMute", "mute", "toggle");
+        }
+
         private void GetXBMCStatus()
         {
-            String result=PostURLMessage(STATUS_URL, "Player.GetActivePlayers", "", "");
-            if (result.Contains("playerid"))
+            XBMCResponse resp;
+            XBMCSimpleResponse sresp;
+            String result=PostURLMessage(STATUS_URL, "Player.GetActivePlayers");
+            sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
+
+            if (sresp.result!=null && sresp.result.Length>0 && sresp.result[0].playerid == 1)
             {
                 base.Play();
+                result = PostURLMessage(STATUS_URL, "Application.GetProperties", "properties", @"[""volume""]");
+                resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                if (resp.result != null)
+                {
+                    SetVolumeLevel(resp.result.volume);
+                }
+
+                result = PostURLMessage(STATUS_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
+                resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
+                {
+                    m_zoneDetails.Title = resp.result.items[0].label;
+                }
             }
             else
             {
                 base.Stop();
             }
-
         }
 
         public override void Tick()
         {
             base.Tick();
-            GetXBMCStatus();
+            //slower tick
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 1)
+            {
+                GetXBMCStatus();
+                m_lastSlowTickDateTime = DateTime.Now;
+            }
         }
     }
 }

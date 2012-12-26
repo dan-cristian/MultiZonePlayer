@@ -19,24 +19,14 @@ namespace MultiZonePlayer
     
     public  partial class ControlCenter : Form
     {
-        public class ZonesFormPair
-        {
-            public int ZoneId;
-            public ZonesForm ZonesForm;
-
-            public ZonesFormPair(int zoneId, ZonesForm zone)
-            {
-                ZoneId = zoneId;
-                ZonesForm = zone;
-            }
-        }
+        
 
         static MainScreen parentForm = null;
         public static bool IsPowerControlEnabled = false;
 
         private RawInputDevice m_rawDeviceId;
 
-        private static List<ZonesFormPair> m_zoneFormsList;
+        private static List<ZonesForm> m_zoneFormsList;
         private static Hashtable hsDelegatedZoneForms;
         private static ZonesForm m_currentZone = null;
         private static DriveDetector driveDetector = null;
@@ -49,13 +39,9 @@ namespace MultiZonePlayer
             InitializeComponent();
             parentForm = p_parentForm;
 
-            m_zoneFormsList = new List<ZonesFormPair>();
+            m_zoneFormsList = new List<ZonesForm>();
             hsDelegatedZoneForms = new Hashtable();
             
-            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
-            {
-                m_zoneFormsList.Add(new ZonesFormPair(zone.ZoneId, null));
-            }
             
         }
 
@@ -66,9 +52,11 @@ namespace MultiZonePlayer
             TXTLog3 = txtLog3;
             m_ctrlCenter = this;
 
+            Thread th = new Thread(() => TickLoop());
+            th.Name = "ControlCenter TickLoop";
+            th.Start();
+
             
-            timerStatus.Interval = IniFile.ZONE_INACTIVITY_CYCLE_DURATION;
-            timerStatus.Start();
 
             //RegisterDriveDetector(); UNUSED
             RegisterRawInput();
@@ -117,24 +105,52 @@ namespace MultiZonePlayer
             m_rawDeviceId.KeyPressed += new RawInputDevice.DeviceEventHandler(m_KeyPressed);
         }
 
+        private void TickLoop()
+        {
+            Thread.Sleep(Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]) * 1000);
+            do
+            {
+                try
+                {
+                    Thread.Sleep(IniFile.ZONE_INACTIVITY_CYCLE_DURATION);
+                    // FAST TICK
+                    foreach (ZoneGeneric zone in MZPState.Instance.ActiveZones)
+                    {
+                        zone.Tick();
+                    }
+                    RefreshState();
+                    // SLOW TICK
+                    if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
+                    {
+                        m_lastSlowTickDateTime = DateTime.Now;
+                        MZPState.Instance.Tick();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MLog.Log(ex, this, "Error tickloop");
+                }
+            }
+            while (MZPState.Instance != null);
+            MLog.Log(this, "ControlCenter TickLoop EXIT");
+        }
 
+        delegate void RefreshStateDelegate();
         public void RefreshState()
         {
-            if (CurrentZone != null)
-            {       
-                cmbCurrentZone.Text = CurrentZone.GetZoneId().ToString();
-            }
-            else 
+            if (this.InvokeRequired)
             {
-                cmbCurrentZone.Text = "no zone";
+                RefreshStateDelegate dlg = new RefreshStateDelegate(RefreshState);
+                this.BeginInvoke(dlg);
+                return;
             }
+            
             if (MZPState.Instance != null)
             {
                 txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
                 txAlarm.Text = MZPState.Instance.SystemAlarm.IsMonitoringActive + ":" + MZPState.Instance.SystemAlarm.AreaState.ToString();
             }
             txtZoneCount.Text = m_zoneFormsList.Count.ToString();
-
 
             if (MediaLibrary.IsInitialised)
             {
@@ -144,6 +160,19 @@ namespace MultiZonePlayer
             }
             else
                 txAudioCount.Text = "loading " + MediaLibrary.AllAudioFiles.PlaylistFiles.Count;
+
+            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+            {
+                if (zone.IsActive)
+                {
+                    ZonesForm form = m_zoneFormsList.Find(x => x.ZoneDetails.ZoneId.Equals(zone.ZoneId));
+                    if (form == null)
+                    {
+                        MLog.Log(this, "Initialising ZoneForm " + zone.ZoneName);
+                        OpenZoneForm(zone.ZoneId);
+                    }
+                }
+            }
             ShowPowerControlStatus();
         }
 
@@ -151,10 +180,9 @@ namespace MultiZonePlayer
         {
             try
             {
-                foreach (ZonesFormPair zone in m_zoneFormsList)
+                foreach (ZonesForm zone in m_zoneFormsList)
                 {
-                    if (zone.ZonesForm!=null)
-                        zone.ZonesForm.Close();
+                     zone.Close();
                 }
             }
             catch (Exception ex)
@@ -163,109 +191,48 @@ namespace MultiZonePlayer
             }
         }
 
-        public void ZoneClosing(int zoneId)
+        public void CloseZone(int zoneId)
         {
             //MLog.Log(null,"Closing zone " + zoneId);
             try
             {
                 m_currentZone = null;
-                ZonesFormPair zone = m_zoneFormsList.Find(item => item.ZoneId == zoneId);
-                zone.ZonesForm = null;
-                Metadata.ZoneDetails zonedet = MZPState.Instance.ZoneDetails.Find(item => item.ZoneId == zoneId);
-                zonedet.Close();
+                ZonesForm zone = m_zoneFormsList.Find(item => item.ZoneDetails.ZoneId == zoneId);
+                m_zoneFormsList.Remove(zone);
             }
             catch (Exception ex)
             {
                 MLog.Log(ex, "Error closing zone " + zoneId);
             }
         }
-
-        public ZonesForm CurrentZone
-        {
-            get
-            {
-                ZonesForm zone = null; ;
-                if (m_currentZone != null)
-                    zone = m_currentZone;
-                else
-                {
-                    //set first zone
-                    if ((m_zoneFormsList != null) && (m_zoneFormsList.Count > 0))
-                    {
-                        zone = m_zoneFormsList[0].ZonesForm;
-                    }
-                }
-                return zone;
-            }
-        }
-
-        public int CurrentZoneId
-        {
-            get
-            {
-                if (CurrentZone != null)
-                    return CurrentZone.GetZoneId();
-                else
-                    if (m_zoneFormsList.Count > 0)
-                        return m_zoneFormsList[0].ZoneId;
-                    else
-                        return -1;
-            }
-            set
-            {
-                m_currentZone = m_zoneFormsList.Find(item => item.ZoneId==value).ZonesForm;
-            }
-        }
-
         
-
-        /*private void SelectZone(int zoneId)
-        {
-            int sourceZoneId=zoneId;
-            MLog.Log(this, "Selecting zone " + zoneId);
-            //check for delegated control
-            if (hsDelegatedZoneForms.ContainsKey(sourceZoneId))
-            {
-                zoneId = (int)hsDelegatedZoneForms[sourceZoneId];
-                MLog.Log(null,"Delegated zone selected for source zone " + sourceZoneId + " delegateid=" + zoneId);
-            }
-
-            if (!IsZoneActive(zoneId))
-            {
-                MLog.Log(null,"Zone " + zoneId + " not active, opening");
-                OpenZone(zoneId, null);
-            }
-            else
-            {
-                m_currentZone = GetZone(zoneId);
-                //MLog.Log(null,"Zone  " + zoneId + " is active");
-            }
-
-            if (m_currentZone != null)
-                m_currentZone.SetSourceZone(sourceZoneId);
-            else
-                MLog.Log(null,"Current Zone  is null, problem");
-        }*/
-
         public void OpenZone(int zoneId)
         {
             if (!ControlCenter.Instance.IsZoneActive(zoneId))
             {
-                Metadata.ZoneDetails zDetails = MZPState.Instance.ZoneDetails.Find(item => item.ZoneId == zoneId);
+                MZPState.Instance.ActiveZones.Add(new ZoneGeneric(zoneId));
+            }
+        }
 
-                if (zDetails != null)
+        private void OpenZoneForm(int zoneId)
+        {
+            if (ControlCenter.Instance.IsZoneActive(zoneId))
+            {
+                ZoneGeneric zone = MZPState.Instance.ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
+
+                if (zone != null)
                 {
-                    ZonesForm newZoneForm = new ZonesForm(zoneId, this, zDetails);
-                    m_zoneFormsList.Find(item => item.ZoneId == zoneId).ZonesForm = newZoneForm;
-                    //parentForm.LayoutMdi(MdiLayout.TileHorizontal);
-                    m_currentZone = GetZone(zoneId);
+                    ZonesForm newZoneForm = new ZonesForm(zone, this);
+                    m_zoneFormsList.Add(newZoneForm);
+                    zone.ZoneForm = newZoneForm;
+                    //parentForm.LayoutMdi(MdiLayout.TileHorizontal);m_currentZone = GetZone(zoneId);
                     newZoneForm.MdiParent = parentForm;
                     newZoneForm.WindowState = FormWindowState.Minimized;
                     newZoneForm.Text = "Zone " + zoneId;
                     newZoneForm.Show();
                 }
                 else
-                    MLog.Log(this, "Unable to open zone " + zoneId);
+                    MLog.Log(this, "Unable to open zone form" + zoneId);
             }
         }
 
@@ -274,22 +241,19 @@ namespace MultiZonePlayer
             return m_zoneFormsList.Count;
         }
 
-        public ZonesForm GetZoneIfActive(int zoneId)
+        public ZoneGeneric GetZoneIfActive(int zoneId)
         {
-            ZonesFormPair zp = m_zoneFormsList.Find(item => item.ZoneId == zoneId);
+            ZoneGeneric zp = MZPState.Instance.ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
             if (zp != null && IsZoneActive(zoneId))
-                return zp.ZonesForm;
+                return zp;
             else
                 return null;
         }
 
-        public ZonesForm GetZone(int zoneId)
+        public ZoneGeneric GetZone(int zoneId)
         {
-            ZonesFormPair zp = m_zoneFormsList.Find(item => item.ZoneId == zoneId);
-            if (zp != null)
-                return zp.ZonesForm;
-            else
-                return null;
+            ZoneGeneric zp = MZPState.Instance.ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
+            return zp;
         }
 
         public  bool IsZoneActive(int zoneId)
@@ -300,15 +264,13 @@ namespace MultiZonePlayer
             else return false;;
         }
 
-        public static ZonesForm GetFirstZoneMusic()
+        public static ZoneGeneric GetFirstZoneMusic()
         {
-            foreach (ZonesFormPair zone in m_zoneFormsList)
+            foreach (ZoneGeneric zone in MZPState.Instance.ActiveZones)
             {
-                if (zone.ZonesForm != null)
-                {
-                    if ((zone.ZonesForm.GetCurrentActivity() != null) && (zone.ZonesForm.GetCurrentActivity().GetType() == typeof(ZoneMusic)))
-                        return zone.ZonesForm;
-                }
+                    if ((zone.GetCurrentActivity() != null) && (zone.GetCurrentActivity().GetType() == typeof(ZoneMusic)))
+                        return zone;
+                
             }
             return null;
         }
@@ -394,30 +356,7 @@ namespace MultiZonePlayer
             MLog.Log(null,"PlayInfoMessageClean: " + infoMsg);
             //Text2Speech.PlayMessageClean(infoMsg, zone);
         }
-        /*
-        public static void PlayBeepOK()
-        {
-            if (m_currentZone != null)
-            {
-                m_currentZone.PlayBeepOK();
-            }
-            else
-            {
-                MLog.Log(null,"No current zone available to play beep OK on key pressed");
-            }
-        }
-        public static void PlayBeepError()
-        {
-            if (m_currentZone != null)
-            {
-                m_currentZone.PlayBeepError();
-            }
-            else
-            {
-                MLog.Log(null,"No current zone available to play beep Error on key pressed");
-            }
-        }
-         * */
+        
         #endregion
 
         #region FormEvents
@@ -426,47 +365,12 @@ namespace MultiZonePlayer
             txtCommand.Focus();
         }
 
-        private void timerStatus_Tick(object sender, EventArgs e)
-        {
-            try
-            {
-                
-                    Thread.Sleep(200);
-                    Application.DoEvents();
-                
-                
-
-                // FAST TICK
-                foreach (ZonesFormPair zone in m_zoneFormsList)
-                {
-                    if (zone.ZonesForm != null)
-                        zone.ZonesForm.Tick(sender, e);
-                }
-
-                // SLOW TICK
-                if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
-                {
-                    m_lastSlowTickDateTime = DateTime.Now;
-                    RefreshState();
-                    MZPState.Instance.Tick();
-                }
-            }
-            catch (Exception ex)
-            {
-                MLog.Log(ex, this, "Error timer");
-            }
-        }
-
-    
+      
         private void txtCommand_Leave(object sender, EventArgs e)
         {
             //if ((parentForm.m_formOptions==null) || (!parentForm.m_formOptions.Visible))
             //    txtCommand.Focus();
         }
-
-        
-
-        
 
         private void ShowPowerControlStatus()
         {
@@ -518,10 +422,9 @@ namespace MultiZonePlayer
         {
             try
             {
-                foreach (ZonesFormPair zone in m_zoneFormsList)
+                foreach (ZonesForm zone in m_zoneFormsList)
                 {
-                    if (zone.ZonesForm!=null)
-                        zone.ZonesForm.Close();
+                    zone.Close();
                 }
                 MZPState.Instance.Shutdown();
                 

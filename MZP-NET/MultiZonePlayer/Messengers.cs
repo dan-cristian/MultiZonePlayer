@@ -15,6 +15,7 @@ namespace MultiZonePlayer
         void ReceiveMessage(String message, String sender);
         Boolean TestConnection();
         void Reinitialise();
+        void Close();
         Boolean IsTargetAvailable();
         void MakeBuzz();
     }
@@ -35,6 +36,11 @@ namespace MultiZonePlayer
         }
 
         ~GTalkMessengers()
+        {
+            Close();
+        }
+
+        public void Close()
         {
             if (objXmpp != null)
                 objXmpp.Close();
@@ -215,6 +221,7 @@ namespace MultiZonePlayer
         public enum SMSCommandsEnum
         {
             [Description("AT+CMGF=1")] SMS_ENABLE,
+            [Description("AT+CMGS=")] SMS_SEND,
             [Description("ATD ")] SMS_CALL,
             [Description("AT")] SMS_CHECK,
         };
@@ -222,6 +229,7 @@ namespace MultiZonePlayer
         private List<SMSCommand> m_commandList;
         private int m_stdtimeout = 2000;
         private int m_calltimeout = 80000;
+        private int m_atlinescount, m_atdlinescount;
 
         public class SMSCommand
         {
@@ -243,12 +251,19 @@ namespace MultiZonePlayer
 
         ~SMS()
         {
-            comm.ClosePort();
+            Close();
+        }
+
+        public void Close()
+        {
+            Disconnect();
         }
 
         public void Reinitialise()
         {
             comm = new CommunicationManager("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1], this.handler);
+            m_atlinescount = Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]);
+            m_atdlinescount = Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]);
             comm.OpenPort();
             m_waitForResponse = false;
             m_lastOperationWasOK = true;
@@ -262,9 +277,9 @@ namespace MultiZonePlayer
 
         public void SendMessage(String message, String targetId)
         {
-            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_ENABLE), 3,m_stdtimeout);
-            WriteCommand("AT + CMGS = \"" + IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"", 3, m_stdtimeout);
-            WriteCommand(message + (char)26, 3, m_calltimeout);
+            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_ENABLE), m_atlinescount, m_stdtimeout);
+            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_SEND) + "\"" + IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"", m_atlinescount, m_stdtimeout);
+            WriteCommand(message + (char)26, 6, m_stdtimeout * 3);
         }
 
         public override string GetCommandStatus(Enum cmd)
@@ -292,7 +307,7 @@ namespace MultiZonePlayer
 
             try
             {
-                String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CHECK), 3, m_stdtimeout).ToLower();
+                String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CHECK), m_atlinescount, m_stdtimeout).ToLower();
                 if (res.Contains("ok") || res.Contains("at"))
                     return true;
                 else
@@ -353,7 +368,7 @@ namespace MultiZonePlayer
         public void MakeBuzz()
         {
             MLog.Log(this, "Calling target number " + IniFile.PARAM_SMS_TARGETNUMBER[1]);
-            String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CALL) + IniFile.PARAM_SMS_TARGETNUMBER[1] + ";", 3, m_calltimeout);
+            String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CALL) + IniFile.PARAM_SMS_TARGETNUMBER[1] + ";", m_atdlinescount, m_calltimeout);
             MLog.Log(this, "Calling target number done, res=" + res);
         }
     }

@@ -58,7 +58,7 @@ namespace MultiZonePlayer
 
     public abstract class ZoneVideoBase: IZoneActivity
     {
-        protected ZonesForm m_zoneForm;
+        protected ZoneGeneric m_zoneForm;
         protected VideoPlayList m_playlistForm;
         protected VideoPlayMenu m_playlistMenu;
         protected int m_videoAppWinHandle = -1;
@@ -66,7 +66,7 @@ namespace MultiZonePlayer
         protected String m_VideoAppTitleKey;
         protected String m_videoFilePath;
 
-        public ZoneVideoBase(ZonesForm zone)
+        public ZoneVideoBase(ZoneGeneric zone)
         {
             m_zoneForm = zone;
             m_playlistMenu = new VideoPlayMenu(this);
@@ -395,7 +395,7 @@ namespace MultiZonePlayer
 
     public class ZoneVideoMPC : ZoneVideoBase
     {
-         public ZoneVideoMPC(ZonesForm zone)
+         public ZoneVideoMPC(ZoneGeneric zone)
             : base(zone)
         {
             m_VideoAppTitleKey = IniFile.PARAM_VIDEO_APP_MPC_WINDOWTITLE_KEY[1];
@@ -469,7 +469,7 @@ namespace MultiZonePlayer
     public class ZoneVideoVlc:ZoneVideoBase
     {
 
-        public ZoneVideoVlc(ZonesForm zone)
+        public ZoneVideoVlc(ZoneGeneric zone)
             : base(zone)
         {
             m_VideoAppTitleKey = IniFile.PARAM_VIDEO_APP_VLC_WINDOWTITLE_KEY[1];

@@ -16,9 +16,6 @@ namespace MultiZonePlayer
 {
     public static class API
     {
-        private static Hashtable m_hsResult = new Hashtable();
-        private static int m_cmdIndex = 0;
-
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
             int zoneId = -1;
@@ -31,7 +28,6 @@ namespace MultiZonePlayer
 
             try
             {
-                
                 RemotePipiCommand cmdRemote;
                 cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
                 MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " apicmd="+cmdRemote);
@@ -42,17 +38,17 @@ namespace MultiZonePlayer
                 }
 
                 zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
-                
                 if (zoneId == -1)
                 {
                     MLog.Log(null,"Unknown zone, device name=" + kd.Device + " key=" + kd.Key);
                 }
                
                 MLog.Log(null, "Event is on zoneid=" + zoneId);
-                int index = GetResultIndex();
+                Metadata.ValueList retvalue = null;
                 Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
                 val.Add(Metadata.GlobalParams.command, cmdRemote.CommandName.ToLower());
-                Thread th = new Thread(() => DoCommandAsynch(index, val));
+                Thread th = new Thread(() => DoCommand(val, out retvalue));
+                th.Name = "RawInput Key press " + cmdRemote.CommandName;
                 th.Start();
             }
             catch (Exception ex)
@@ -64,106 +60,40 @@ namespace MultiZonePlayer
 
         public static String DoCommandDirect(Metadata.ValueList vals, out Metadata.ValueList retvalue)
         {
-            return DoCommand(-1, vals, out retvalue);
+            return DoCommand(vals, out retvalue);
         }
 
         public static String DoCommandFromGUIInput(String cmdName, String zoneId)
         {
-            int index = GetResultIndex();
             Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId, Metadata.CommandSources.gui);
             vals.Add(Metadata.GlobalParams.command, cmdName);
-            Thread th = new Thread(() => DoCommandAsynch(index, vals));
-            th.Start();
             Metadata.ValueList resvalue;
-            String result = WaitForResult(index, out resvalue);
+            
+            String result = DoCommand(vals, out resvalue);
             return result;
         }
 
         public static String DoCommandFromGUIInput(Metadata.ValueList vals)
         {
-            int index = GetResultIndex();
-            Thread th = new Thread(() => DoCommandAsynch(index, vals));
-            th.Start();
             Metadata.ValueList resvalue;
-            String result = WaitForResult(index, out resvalue);
+            String result = DoCommand(vals, out resvalue);
             return result;
         }
 
         public static String DoCommandFromWeb(Metadata.ValueList vals, Metadata.CommandSources cmdSourceEnum, out Metadata.ValueList resvalue)
         {
-            int index;
             String result;
-
-            if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
-            {
-                DoCommandAsynch(-1, vals);
-                result = "async result not known";
-                resvalue = null;
-            }
-            else
-            {
-                index = GetResultIndex();
-                DoCommandAsynch(index, vals);
-                result = WaitForResult(index, out resvalue);
-            }
+            result = DoCommand(vals, out resvalue);
             return result;
         }
 
         public static String DoCommandFromWeb(Metadata.ValueList vals, out Metadata.ValueList resvalue)
         {
-            int index = GetResultIndex();
-            DoCommandAsynch(index, vals);
-            String result = WaitForResult(index, out resvalue);
-            return result;
+            return DoCommand(vals, out resvalue);
         }
-
-        private static int GetResultIndex()
+        
+        private static String DoCommand(Metadata.ValueList vals, out Metadata.ValueList retvals)
         {
-            m_cmdIndex++;
-            return m_cmdIndex;
-        }
-
-        private static void AddResult(int index, String result, Metadata.ValueList resvalue)
-        {
-            m_hsResult.Add(index, new CmdParams(result, resvalue));
-        }
-
-        private static String WaitForResult(int index, out Metadata.ValueList resvalue)
-        {
-            do
-            {
-                Application.DoEvents();
-                Thread.Sleep(1);
-            }
-            while (!m_hsResult.ContainsKey(index) && MZPState.IsInitialised);
-
-            String result = (String)(m_hsResult[index] as CmdParams).Name;
-            resvalue = (Metadata.ValueList)(m_hsResult[index] as CmdParams).Value;
-            m_hsResult.Remove(index);
-            return result;
-        }
-
-        delegate void DoCommandAsynchDelegate(int cmdIndex, Metadata.ValueList vals);
-        private static void DoCommandAsynch(int cmdIndex, Metadata.ValueList vals)
-        {
-            
-            if (ControlCenter.Instance.InvokeRequired)
-            {
-                DoCommandAsynchDelegate dlg = new DoCommandAsynchDelegate(DoCommandAsynch);
-                //ControlCenter.Instance.Invoke(dlg, cmdIndex, vals, resvalue);
-                ControlCenter.Instance.BeginInvoke(dlg, cmdIndex, vals);//???????????????????
-                //dlg.EndInvoke(out resvalue, ar);
-            }
-            else
-            {
-                Metadata.ValueList unused;
-                DoCommand(cmdIndex, vals, out unused);
-            }
-        }
-
-        private static String DoCommand(int cmdIndex, Metadata.ValueList vals, out Metadata.ValueList retvals)
-        {
-
             Metadata.ResultEnum res;
             Metadata.ValueList values, resvalue=null;
             Metadata.CommandResult cmdres;
@@ -217,7 +147,6 @@ namespace MultiZonePlayer
                             {
                                 detailedStatus += "\r\n" + zone.SummaryStatus;
                             }
-
                             result = JsonResult(Metadata.ResultEnum.OK, detailedStatus, null);
                             break;
                         case Metadata.GlobalCommands.genrelist:
@@ -304,7 +233,6 @@ namespace MultiZonePlayer
                             }
                             result = JsonResult(Metadata.ResultEnum.OK, "power failure=" + failure, null);
                             break;
-                        
                         default:
                             res = DoZoneCommand(apicmd, vals, out err, out values);
                             resvalue = values;
@@ -317,7 +245,6 @@ namespace MultiZonePlayer
                     MLog.Log(null, "Error unknown docommand " + cmdName);
                     result = JsonResult(Metadata.ResultEnum.ERR, "Unhandled API Command " + cmdName, null);
                 }
-                
             }
             catch (Exception ex)
             {
@@ -325,8 +252,6 @@ namespace MultiZonePlayer
                 result = JsonResult(Metadata.ResultEnum.ERR, "Exception " + ex.Message, null);
             }
             retvals = resvalue;
-            if (cmdIndex >=0)
-                AddResult(cmdIndex, result, resvalue);
             return result;
         }
 
@@ -369,7 +294,7 @@ namespace MultiZonePlayer
                     return Metadata.ResultEnum.ERR; ;
                 }
 
-                ZonesForm zone;
+                ZoneGeneric zone;
                 //zone for cmd received is not active
                 if (ControlCenter.Instance.GetZoneIfActive(zoneId) == null)
                 {
@@ -384,8 +309,6 @@ namespace MultiZonePlayer
                     }
                 }
 
-                
-
                 zone = ControlCenter.Instance.GetZone(zoneId);
                 if (zone == null)
                 {
@@ -397,7 +320,6 @@ namespace MultiZonePlayer
                 else
                 {
                     values = zone.ProcessAction(apicmd, vals);
-                    ControlCenter.Instance.RefreshState();
                     errorMessage = "";
                     return Metadata.ResultEnum.OK;
                 }
@@ -444,8 +366,6 @@ namespace MultiZonePlayer
                 srv.CamAlertList = MZPState.Instance.ZoneEvents.CamAlertList;
             }
             cmdres.ServerStatus = srv;
-            //if (values != null)
-            //    values.Values.RemoveAll(delegate (String v) {return v == null;});
             cmdres.ValueList = values;
             return fastJSON.JSON.Instance.ToJSON(cmdres, true);
         }

@@ -60,6 +60,8 @@ namespace MultiZonePlayer
         public void Disconnect()
         {
             comm.ClosePort();
+            m_autoEventReceive.Set();
+            m_autoEventSend.Set();
         }
 
         protected String WriteCommand(String cmd, int responseLinesCountExpected, int timeoutms)
