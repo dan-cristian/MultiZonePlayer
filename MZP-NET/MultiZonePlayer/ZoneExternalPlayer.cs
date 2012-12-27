@@ -243,7 +243,7 @@ namespace MultiZonePlayer
             post.Add(msg, "");
             //MessageBox.Show(msg);
             String res = post.GetResponse();
-            MLog.Log(null, res);
+            //MLog.Log(null, res);
             return res;
         }
 
@@ -294,7 +294,12 @@ namespace MultiZonePlayer
 
             if (sresp.result!=null && sresp.result.Length>0 && sresp.result[0].playerid == 1)
             {
-                base.Play();
+                if (!m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.Running))
+                {
+                    MLog.Log(this, "XBMC has active player");
+                    base.Play();
+                }
+
                 result = PostURLMessage(STATUS_URL, "Application.GetProperties", "properties", @"[""volume""]");
                 resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
                 if (resp.result != null)
@@ -323,6 +328,12 @@ namespace MultiZonePlayer
             {
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;
+
+                if (m_zoneDetails.IsActive && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
+                {
+                    MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for XBMC child " + m_zoneDetails.ZoneName);
+                    MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ParentZoneId);
+                }
             }
         }
     }

@@ -508,7 +508,10 @@ namespace MultiZonePlayer
                 get {
                     String val = "#"+ ZoneId +" "+ ZoneName + (IsActive?" Active":"") 
                         + (ActivityType.Equals(GlobalCommands.nul)?"":" "+ActivityType.ToString()) 
-                        + (IsArmed?" Armed ":" ") + SourceURL;
+                        + (IsArmed?" Armed ":" ") 
+                        + (HasImmediateMove? " ImmediateMove ":" ")
+                        + (HasRecentMove? " RecentMove ":" ")
+                        + SourceURL;
                     return val;
                 }
             }
@@ -1186,14 +1189,16 @@ namespace MultiZonePlayer
         public String Message;
         public EventType TypeEv;
         public EventImportance Importance;
+        public Metadata.ZoneDetails ZoneDetails;
 
-        public MZPEvent(DateTime dateTime, EventSource source, String message, EventType type, EventImportance importance)
+        public MZPEvent(DateTime dateTime, EventSource source, String message, EventType type, EventImportance importance, Metadata.ZoneDetails zonedetails)
         {
             DateTime = dateTime;
             Source = source;
             Message = message;
             TypeEv = type;
             Importance = importance;
+            ZoneDetails = zonedetails;
         }
     }
 

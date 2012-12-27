@@ -198,6 +198,7 @@ namespace MultiZonePlayer
                 PARAM_SMS_TARGETNUMBER,
                 PARAM_SMS_COMPORT,
                 PARAM_SMS_AT_LINES_COUNT,
+                PARAM_SMS_ATD_LINES_COUNT,
                 PARAM_VLC_AUDIOOUT,
                 PARAM_GENERIC_INTERVAL_SPLIT,
                 PARAM_UPS_LOG_SOURCE,

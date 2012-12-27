@@ -188,7 +188,7 @@ namespace MultiZonePlayer
                 SendMessage(replymessage, sender);
             }
             else
-                MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Unknown gtalk sender " + sender, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
+                MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Unknown gtalk sender " + sender, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
         }
 
         public bool TestConnection()
@@ -224,6 +224,7 @@ namespace MultiZonePlayer
             [Description("AT+CMGS=")] SMS_SEND,
             [Description("ATD ")] SMS_CALL,
             [Description("AT")] SMS_CHECK,
+            [Description("AT+GMM")] SMS_DEVICEINFO,
         };
 
         private List<SMSCommand> m_commandList;
@@ -268,6 +269,8 @@ namespace MultiZonePlayer
             m_waitForResponse = false;
             m_lastOperationWasOK = true;
             m_commandList = new List<SMSCommand>();
+
+            //WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_DEVICEINFO), m_atlinescount, m_stdtimeout);
         }
 
         public override string SendCommand(Enum cmd, string value)

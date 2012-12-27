@@ -47,6 +47,11 @@ ifWinExist, ahk_class TMainForm
 			{
 				;MsgBox Monitoring not visible
 				ControlClick, X264 Y140
+				;Minimise
+				Sleep 1000
+				;WinWait ahk_class TMainForm
+				;Send {Alt}+{Space}
+				;Send n
 			}
 		}
 	}

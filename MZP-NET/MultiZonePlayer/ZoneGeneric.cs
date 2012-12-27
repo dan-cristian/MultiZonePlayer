@@ -238,7 +238,12 @@ namespace MultiZonePlayer
             {
                 case Metadata.GlobalCommands.cameraevent://video camera event
                     MZPState.Instance.ZoneEvents.AddCamAlert(vals);
-                    if (m_zoneDetails.IsArmed || 
+                    String camId = vals.GetValue(Metadata.GlobalParams.oid);
+                    string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
+                    m_zoneDetails.MovementAlert = true;
+                    MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
+                    m_zoneDetails.MovementAlert = false;
+                    /*if (m_zoneDetails.IsArmed || 
                         (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)&&(m_zoneDetails.AlarmAreaId==MZPState.Instance.SystemAlarm.AreaId)))
                     {
                         String msg =  "CAM event on " + m_zoneDetails.ZoneName + " when zone armed";
@@ -247,7 +252,7 @@ namespace MultiZonePlayer
                     else
                         MLog.Log(this, "Ignoring cam event on " + m_zoneDetails.ZoneName + " movementalert=" + m_zoneDetails.MovementAlert + " zonealarmareaid=" + m_zoneDetails.AlarmAreaId
                                 + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
-
+                    */
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
                         cmdRemote = Metadata.GlobalCommands.musicclone;
@@ -263,6 +268,13 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.alarmevent://alarm sensor event
                     String zonestate = vals.GetValue(Metadata.GlobalParams.status);
                     m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());
+                    DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(Metadata.GlobalParams.datetime));
+                    m_zoneDetails.LastAlarmMovementDateTime = eventDateTime;
+
+                    MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
+                            vals.GetValue(Metadata.GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(Metadata.GlobalParams.status),
+                            MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
+                    /*
                     if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed ||
                         (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (m_zoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
                     {
@@ -272,11 +284,11 @@ namespace MultiZonePlayer
                     else
                         MLog.Log(this, "Ignoring alarm event on " + m_zoneDetails.ZoneName + " movementalert=" + m_zoneDetails.MovementAlert + " zonealarmareaid=" + m_zoneDetails.AlarmAreaId
                                 + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
+                     */
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
                         cmdRemote = Metadata.GlobalCommands.musicclone;
                     }
-                    m_zoneDetails.LastAlarmMovementDateTime = Convert.ToDateTime(vals.GetValue(Metadata.GlobalParams.datetime));
                     break;
                 case Metadata.GlobalCommands.setwaketimer:
                     date = vals.GetValue(Metadata.GlobalParams.datetime);

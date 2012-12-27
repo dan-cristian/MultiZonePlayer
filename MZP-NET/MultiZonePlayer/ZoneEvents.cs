@@ -18,11 +18,12 @@ namespace MultiZonePlayer
 
         #region CamCode
 
+        
         public void AddCamAlert(Metadata.ValueList vals)
         {
             String camId = vals.GetValue(Metadata.GlobalParams.oid);
             Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.CameraId.Equals(camId));
-            string message = "Cam alert from camid=" + camId + " zone is " + zone.ZoneName;
+            
             //MLog.Log(this, message);
             if (zone != null)
             {
@@ -30,7 +31,7 @@ namespace MultiZonePlayer
                     vals.GetValue(Metadata.GlobalParams.msg), camId, zone.ZoneId, zone.CameraAlertActive);
                 zone.LastCamAlertDateTime = alarm.AlarmTime;
                 m_camAlarmList.Add(alarm);
-                MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative);
+                
             }
             else
                 MLog.Log(this, "error zone not found for camalert, oid="+camId);
@@ -158,9 +159,9 @@ namespace MultiZonePlayer
                                 vals.Add(Metadata.GlobalParams.alertsource, IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[0]);
                                 API.DoCommandFromWeb(vals, out resvalue);
 
-                                if (eventsBulkCount < 10)
-                                    MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " Zone " + MZPState.Instance.GetZoneById(zoneId).ZoneName + " is " + state,
-                                        MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative);
+                                //if (eventsBulkCount < 10)
+                                //    MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " ZoneEvent " + MZPState.Instance.GetZoneById(zoneId).ZoneName + " is " + state,
+                                //        MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative);
                             }
 
                             break;
@@ -168,11 +169,12 @@ namespace MultiZonePlayer
                             Alarm.EnumAreaState areastate = (Alarm.EnumAreaState)Enum.Parse(typeof(Alarm.EnumAreaState), state);
                             MZPState.Instance.SystemAlarm.AreaState = areastate;
                             MZPState.Instance.SystemAlarm.LastAreaStateChange = eventDateTime;
-                            MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " Area " + areastate.ToString() + " is " + state, 
-                                MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative);
+                            MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " AreaEvent " + areastate.ToString() + " is " + state, 
+                                MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, null);
                             break;
                         case Alarm.EnumScope.trouble:
-                            MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " Trouble " + state, MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative);
+                            MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " TroubleEvent " + state, MZPEvent.EventType.Security,
+                                MZPEvent.EventImportance.Informative, null);
                             break;
                         default:
                             MLog.Log(this, "unknown alarm scope " + scope + " action=" + action + " state=" + state);

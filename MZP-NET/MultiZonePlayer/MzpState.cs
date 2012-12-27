@@ -172,7 +172,7 @@ namespace MultiZonePlayer
                     IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
 
-                LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative);
+                LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
 
             public static void RestartWinload()
@@ -217,7 +217,7 @@ namespace MultiZonePlayer
             public static void RestartComputer(String reason)
             {
                 MLog.Log(null, "RESTARTING COMPUTER");
-                MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "RESTARTING COMPUTER for reason " + reason, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
+                MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "RESTARTING COMPUTER for reason " + reason, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical,null);
                 Thread.Sleep(3000);
                 System.Diagnostics.Process.Start("shutdown.exe", "-r -f -t 0");
             }
@@ -503,16 +503,18 @@ namespace MultiZonePlayer
 
             }
 
+            //return most recent zone that had an activity
             public int MostRecentZoneWithContext
             {
                 get
                 {
                     Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
-                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) || x.ActivityType.Equals(Metadata.GlobalCommands.streammp3))
+                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) || x.ActivityType.Equals(Metadata.GlobalCommands.streammp3) ||
+                        x.ActivityType.Equals(Metadata.GlobalCommands.tv) || x.ActivityType.Equals(Metadata.GlobalCommands.xbmc)) 
                         && x.IsActive);
                     if (zone != null)
                     {
-                        MLog.Log(this, "Found most recent active zone id=" + zone.ZoneId);
+                        MLog.Log(this, "Found most recent active zone id=" + zone.ZoneId + " name="+zone.ZoneName);
                         return zone.ZoneId;
                     }
                     else
@@ -527,6 +529,21 @@ namespace MultiZonePlayer
                             return -1;
                     }
                 }
+            }
+
+            public int GetChildZone(int parentZoneId)
+            {
+                Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x => x.ParentZoneId==parentZoneId);
+                if (zone != null)
+                {
+                    MLog.Log(this, "Found most recent child zone id=" + zone.ZoneId + " name=" + zone.ZoneName);
+                    return zone.ZoneId;
+                }
+                else
+                {
+                    return MostRecentZoneWithContext;
+                }
+               
             }
 
             public MoodMusic GetScheduledMood(int zoneId)
@@ -768,35 +785,56 @@ namespace MultiZonePlayer
                 String message = mzpevent.Source + " | " + mzpevent.Message + " | " + mzpevent.TypeEv + " | " + mzpevent.Importance + " | " + mzpevent.DateTime;
                 MLog.LogEvent(mzpevent);
 
+                if (mzpevent.ZoneDetails != null)
+                {
+                    if (mzpevent.ZoneDetails.IsArmed)
+                    {
+                        MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone is armed, buzz required");
+                        SendMessengerMessageToOne(message);
+                        MessengerMakeBuzz();
+                    }
+
+                    if (mzpevent.ZoneDetails != null && mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
+                            (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
+                    {
+                        MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone armed, hard notify required");
+                        SendMessengerMessageToOne(message);
+                        MessengerMakeBuzz();
+                    }
+                    else
+                        MLog.Log(this, "Ignoring alarm event on " + mzpevent.ZoneDetails.ZoneName + " movementalert=" + mzpevent.ZoneDetails.MovementAlert
+                            + " zonealarmareaid=" + mzpevent.ZoneDetails.AlarmAreaId + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId
+                            + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
+                }
+
                 if ((mzpevent.TypeEv.Equals(MZPEvent.EventType.Security) && mzpevent.Importance.Equals(MZPEvent.EventImportance.Critical)))
                 {
+                    MLog.Log(this, mzpevent.Source + " security critical event hard notify required");
                     SendMessengerMessageToOne(message);
                     MessengerMakeBuzz();
                 }
-                else
+
+                if (NotifyState.GTalkEnabled)
                 {
-                    if ((mzpevent.TypeEv.Equals(MZPEvent.EventType.Security) && m_systemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)))
-                    {
-                        SendMessengerMessageToOne(message);
-                    }
-                    else
-                    {
-                        if (NotifyState.GTalkEnabled)
-                            m_messengerList.Find(x => x.GetType().Equals(typeof(GTalkMessengers))).SendMessage(message, IniFile.PARAM_GTALK_TARGETUSER[1]);
-                        if (NotifyState.SMSEnabled)
-                            m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessage(message, IniFile.PARAM_SMS_TARGETNUMBER[1]);
-                    }
+                    MLog.Log(this, mzpevent.Source + " event optional GTalk notify required");
+                    m_messengerList.Find(x => x.GetType().Equals(typeof(GTalkMessengers))).SendMessage(message, IniFile.PARAM_GTALK_TARGETUSER[1]);
+                }
+
+                if (NotifyState.SMSEnabled)
+                {
+                    MLog.Log(this, mzpevent.Source + " event optional SMS notify required");
+                    m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessage(message, IniFile.PARAM_SMS_TARGETNUMBER[1]);
                 }
             }
 
-            public void LogEvent(DateTime dateTime, MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance)
+            public void LogEvent(DateTime dateTime, MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, Metadata.ZoneDetails zonedetails)
             {
-                LogEvent(new MZPEvent(dateTime, source, message, type, importance));
+                LogEvent(new MZPEvent(dateTime, source, message, type, importance, zonedetails));
             }
 
-            public void LogEvent(MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance)
+            public void LogEvent(MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, Metadata.ZoneDetails zonedetails)
             {
-                LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance));
+                LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance, zonedetails));
             }
 
             public void Tick()

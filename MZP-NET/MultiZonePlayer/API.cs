@@ -229,7 +229,7 @@ namespace MultiZonePlayer
                             {
                                 MZPState.Instance.IsPowerFailure = failure;
                                 MZPState.Instance.LogEvent(MZPEvent.EventSource.Environment, "Power Failure state is " + failure + " at " + datetime, 
-                                    MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
+                                    MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
                             }
                             result = JsonResult(Metadata.ResultEnum.OK, "power failure=" + failure, null);
                             break;
@@ -301,11 +301,12 @@ namespace MultiZonePlayer
                     if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
                     {
                         MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
-                        zoneId = MZPState.Instance.MostRecentZoneWithContext;
+                        zoneId = MZPState.Instance.GetChildZone(zoneId);
                     }
                     else
                     {
-                        if (ControlCenter.Instance.GetZone(zoneId) == null) ControlCenter.Instance.OpenZone(zoneId);
+                        if (ControlCenter.Instance.GetZone(zoneId) == null) 
+                            ControlCenter.Instance.OpenZone(zoneId);
                     }
                 }
 

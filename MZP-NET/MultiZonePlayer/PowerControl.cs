@@ -166,7 +166,7 @@ namespace MultiZonePlayer
 
         private void ResetBoard()
         {
-            MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Relay Action freezed, recovery needed", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Error);
+            MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Relay Action freezed, recovery needed", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Error, null);
             MZPState.RestartComputer("power control freezed");
             /*
             MLog.Log(this,"Reseting board");

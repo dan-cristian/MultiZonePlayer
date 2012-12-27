@@ -235,7 +235,7 @@ namespace MultiZonePlayer
                     m_zoneDetails.IsActive = true;
                     if (m_inputType.Equals(DisplayLGTV.InputTypeEnum.HDMI.ToString()) && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
                     {
-                        MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for child " + m_zoneDetails.ZoneName);
+                        MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for LGTV child " + m_zoneDetails.ZoneName);
                         MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ParentZoneId);
                     }
                     //else

@@ -112,13 +112,14 @@ namespace MultiZonePlayer
                 txSleepTimer.Text = m_zoneDetails.SleepHourMin;
                 txWakeTime.Text = m_zoneDetails.WakeTime;
                 txAlarm.Text = m_zoneDetails.MovementAlert + ":" + m_zoneDetails.LastAlarmMovementDateTime;
+                txtMusicStatus.Text = m_zone.MainZoneActivity.GetState().ToString();
 
                 if (m_zone.MainZoneActivity != null)
                 {
                     txGenPosition.Text = m_zone.MainZoneActivity.Position.ToString();
                     txPositionPercent.Text = m_zone.MainZoneActivity.PositionPercent.ToString();
                     txtVolumeLevel.Text = m_zone.MainZoneActivity.GetVolumeLevel().ToString();
-                    txtMusicStatus.Text = m_zone.MainZoneActivity.GetState().ToString();
+                    
 
                     if (m_zone.MainZoneActivity.GetType() == typeof(ZoneMusic))
                     {
@@ -169,6 +170,14 @@ namespace MultiZonePlayer
                         ZoneDisplayLG tv= (ZoneDisplayLG)m_zone.MainZoneActivity;
                         tabZone.SelectedTab = tabZone.TabPages[6];
                         txtInput.Text = tv.InputType;
+                    }
+
+                    if (m_zone.MainZoneActivity.GetType() == typeof(ZonePlayerXBMC))
+                    {
+                        ZonePlayerXBMC zXBMC = (ZonePlayerXBMC)m_zone.MainZoneActivity;
+
+                        tabZone.SelectedTab = tabZone.TabPages[0];
+                        txtMusicFile.Text = zXBMC.ZoneDetails.Title;
                     }
                 }
             }
