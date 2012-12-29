@@ -372,8 +372,9 @@ namespace MultiZonePlayer
                                     m_mainZoneActivity.Play();
                                 }
                                 break;
-                            case Metadata.GlobalCommands.music://play once opened unless cmd is from web or explicit play
-                                if (!cmdSourceEnum.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
+                            case Metadata.GlobalCommands.music://play once opened unless is playing, cmd is from web or explicit play
+                                if (zMusic.GetState()!=Metadata.ZoneState.Running 
+                                    && (!cmdSourceEnum.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))))
                                     zMusic.Play();
                                 break;
                         }
@@ -395,6 +396,7 @@ namespace MultiZonePlayer
                     if (!vals.CommandSource.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
                         m_mainZoneActivity.Play();
                     break;
+                    /*
                 case Metadata.GlobalCommands.dvd:
                     //check if Microphone
 
@@ -406,7 +408,7 @@ namespace MultiZonePlayer
                     if (m_mainZoneActivity == null)
                         InitZoneMic();
                     m_mainZoneActivity.Play();
-                    break;
+                    break;*/
 
                 //check if video
                 case Metadata.GlobalCommands.video:
@@ -454,6 +456,7 @@ namespace MultiZonePlayer
 
                 //check if XBMC
                 case Metadata.GlobalCommands.xbmc:
+                case Metadata.GlobalCommands.dvd:
                     if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZonePlayerXBMC)))
                     {
                         m_mainZoneActivity.Close();

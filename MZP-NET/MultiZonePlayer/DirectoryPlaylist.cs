@@ -230,6 +230,7 @@ namespace MultiZonePlayer
         public DateTime Created;
         public String Comment;
         public DateTime LibraryAddDate;
+        public Boolean IsFavorite = false;
 
         public abstract bool RetrieveMediaItemValues();
         
@@ -256,6 +257,19 @@ namespace MultiZonePlayer
         public void SetLibraryAddedComment()
         {
             Comment = Comment + IniFile.MEDIA_TAG_LIBRARY_ID + DateTime.Now.ToString("yyyy-MM-dd");
+            m_requireSave = true;
+        }
+
+        public void SetFavorite(bool isFavorite)
+        {
+            string currentIsFavorite;
+            if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE))
+            {
+                currentIsFavorite = Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1);
+                Comment = Comment.Replace(IniFile.MEDIA_TAG_FAVORITE + currentIsFavorite, IniFile.MEDIA_TAG_FAVORITE + (isFavorite ? "1" : "0"));
+            }
+            else
+                Comment = Comment + IniFile.MEDIA_TAG_FAVORITE + (isFavorite ? "1" : "0");
             m_requireSave = true;
         }
 
@@ -337,6 +351,7 @@ namespace MultiZonePlayer
                             this.SetRating(0);
                             this.SetPlayCount(0);
                             this.SetLibraryAddedComment();
+                            this.SetFavorite(false);
                             LibraryAddDate = Created;
                         }
                         else
@@ -344,6 +359,11 @@ namespace MultiZonePlayer
                             String librarydate = Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_LIBRARY_ID)
                                 +IniFile.MEDIA_TAG_LIBRARY_ID.Length, "yyyy-mm-dd".Length);
                             LibraryAddDate = DateTime.Parse(librarydate);
+
+                            if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE))
+                                this.IsFavorite = Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1) == "1";
+                            else
+                                this.SetFavorite(false);
                         }
                         result = true;
                     }

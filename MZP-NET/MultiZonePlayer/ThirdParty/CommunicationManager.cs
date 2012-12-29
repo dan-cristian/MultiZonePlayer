@@ -47,6 +47,12 @@ namespace MultiZonePlayer
         
         private AutoResetEvent m_autoEventSend = new AutoResetEvent(false);
         private AutoResetEvent m_autoEventReceive = new AutoResetEvent(false);
+        private int m_responseTimeoutsCount = 0;
+
+        public int ResponseTimeoutsCount
+        {
+            get { return m_responseTimeoutsCount; }
+        }
 
         public void Initialise(String baud, String parity, String stopbits, String databits, String port)
         {
@@ -103,11 +109,16 @@ namespace MultiZonePlayer
 
                     if (!signalReceived)
                     {
-                        MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp="+m_lastMessageResponse);
+                        int decim;
+                        m_responseTimeoutsCount++;
+                        Math.DivRem(m_responseTimeoutsCount, Math.Max(10, Math.Abs(m_responseTimeoutsCount/2)), out decim);
+                        if (m_responseTimeoutsCount < 5 || decim == 0 )
+                            MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp="+m_lastMessageResponse + " number of timeouts="+m_responseTimeoutsCount);
                         m_lastMessageResponse += "[timeout]";
                     }
                     else
                     {
+                        m_responseTimeoutsCount = 0;
                         responseCount++;
                         if (responseCount < responseLinesCountExpected)
                             m_waitForResponse = true;
@@ -116,6 +127,8 @@ namespace MultiZonePlayer
                     m_autoEventReceive.Set();
                 }
                 while (responseCount<responseLinesCountExpected && signalReceived);
+                if (responseMessage == "")
+                    responseMessage = m_lastMessageResponse;
                 m_lastMessageResponse = "";
                 m_waitForResponse = false;
                 return responseMessage;
@@ -386,7 +399,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-                MLog.Log(ex, "Error open port " + comPort.PortName);
+                MLog.Log(this, "Error open port " + comPort.PortName + " " + ex.Message);
                 return false;
             }
         }
@@ -524,7 +537,7 @@ namespace MultiZonePlayer
         }
         void comPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            MLog.Log(this, "ERROR received" + e.ToString());
+            MLog.Log(this, "ERROR received sender=" + sender.ToString() + " errtype="+e.ToString());
         }
         #endregion
     }

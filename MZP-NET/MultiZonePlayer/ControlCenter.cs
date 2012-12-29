@@ -74,7 +74,7 @@ namespace MultiZonePlayer
 
         private void m_KeyPressed(object sender, ref RawInputDevice.KeyControlEventArgs e)
         {
-            KeyDetail kd = new KeyDetail(e.Keyboard.vKey, e.Keyboard.deviceName);
+            KeyDetail kd = new KeyDetail(e.Keyboard.vKey, e.Keyboard.deviceName, e.Keyboard.isKeyDownWinMessage, e.Keyboard.isKeyUpWinMessage);
             if (parentForm.m_formOptions != null && parentForm.m_formOptions.Visible)
             {
                 parentForm.m_formOptions.m_KeyPressed(kd);

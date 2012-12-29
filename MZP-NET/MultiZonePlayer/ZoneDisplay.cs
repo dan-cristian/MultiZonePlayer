@@ -143,7 +143,7 @@ namespace MultiZonePlayer
             m_display = MZPState.Instance.DisplayList.Find(x => x.Connection.Equals(p_zoneDetails.DisplayConnection));
             if (m_display == null)
             {
-                m_display = new DisplayLGTV(p_zoneDetails.DisplayConnection);
+                m_display = new DisplayLGTV(p_zoneDetails.DisplayConnection, p_zoneDetails);
                 MLog.Log(this, "Warning, display " +p_zoneDetails.DisplayConnection+ " not found in MZPSTATE list, cmd done too fast");
             }
             m_tv = (DisplayLGTV)m_display;
@@ -197,7 +197,7 @@ namespace MultiZonePlayer
         {
             if (!m_tv.IsBusy)
             {
-                m_inputType = m_tv.InputType;
+                m_inputType = m_tv.InputTypeNative.ToString();
                 m_input = m_tv.InputCached;
                 m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
                 m_zoneDetails.Title = InputType + " ("+ m_input + ")";

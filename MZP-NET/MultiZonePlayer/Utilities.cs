@@ -331,6 +331,9 @@ namespace MultiZonePlayer
                 case MZPEvent.EventSource.Web:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_WEB_FILE);
                     break;
+                case MZPEvent.EventSource.Keyboard:
+                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_KEY_FILE);
+                    break;
                 default:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_EVENTS_FILE);
                     break;
@@ -809,6 +812,15 @@ namespace MultiZonePlayer
             { }
         }
 
+        public static void LogKey(String key)
+        {
+            try
+            {
+                Utilities.AppendToGenericLogFile(key, MZPEvent.EventSource.Keyboard);
+            }
+            catch (Exception)
+            { }
+        }
     }
 
     public class IMDBParser

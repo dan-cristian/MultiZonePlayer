@@ -22,6 +22,7 @@ namespace MultiZonePlayer
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";
             public const String LOG_MODEM_FILE = "\\MultiZonePlayerModem.log";
             public const String LOG_WEB_FILE = "\\MultiZonePlayerWeb.log";
+            public const String LOG_KEY_FILE = "\\MultiZonePlayerKeyboard.log";
             public const String TEMP_EXTENSION = ".temp.wav";
             public const String BEEP_OK_FILE_NAME = "\\BeepOK.wav";
             public const String BEEP_ERROR_FILE_NAME = "\\BeepError.wav";
@@ -74,6 +75,7 @@ namespace MultiZonePlayer
             public  const String VIDEO_INFO_IMDB_URL = "http://www.imdb.com/title/tt";
             public  const String VIDEO_INFO_IMDB_FIND_URL = "http://www.imdb.com/search/title?title=";
             public const String MEDIA_TAG_LIBRARY_ID = "MZPADDED:";
+            public const String MEDIA_TAG_FAVORITE = "MZPFAVORITE:";
             public const String PLAYLIST_DEFAULT = "default";
 
             public  const int VOLUME_STEP = 250;
@@ -149,6 +151,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS = new String[] { "PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS", "BlackBerry 9360","list of values separated by |" };
 
             public static String[] PARAM_XBMC_PROCESS_NAME = new String[] { "PARAM_XBMC_PROCESS_NAME", "XBMC" };
+            public static String[] PARAM_XBMC_APP_PATH = new String[] { "PARAM_XBMC_APP_PATH", "c:\\Program Files (x86)\\XBMC\\XBMC.exe" };
             public static String[] PARAM_BOOT_TIME_SECONDS = new String[] { "PARAM_BOOT_TIME_SECONDS", "10" };
 
             public static String DATETIME_FORMAT = "HH:mm";
@@ -206,6 +209,7 @@ namespace MultiZonePlayer
                 PARAM_UPS_LOG_POWERFAILURE_INACTIVE,
                 PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS,
                 PARAM_XBMC_PROCESS_NAME,
+                PARAM_XBMC_APP_PATH,
                 PARAM_BOOT_TIME_SECONDS
 
              };

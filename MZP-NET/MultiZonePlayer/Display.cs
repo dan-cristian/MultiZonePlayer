@@ -13,11 +13,32 @@ namespace MultiZonePlayer
     
     public abstract class Display:SerialBase
     {
+        protected Metadata.ZoneDetails m_zoneDetails;
+        public enum InputTypeEnum {AV, HDMI, Unknown };
+
+        public Metadata.ZoneDetails ZoneDetails
+        {
+            get { return m_zoneDetails; }
+            
+        }
+
         public enum DisplayTypeEnum
         {
             LGTV, XBMC//not ok here, xbmc not a serial display
         }
         //later,for various displays
+        public virtual Boolean IsOn
+        {
+            get;
+            set;
+        }
+
+        
+        public abstract InputTypeEnum InputType
+        {
+            get;
+            set;
+        }
     }
 
     public class DisplayLGTV: Display
@@ -49,21 +70,22 @@ namespace MultiZonePlayer
             INPUTSELECT_xb
         };
         
-        public enum InputTypeEnum {AV, HDMI };
+        
         public enum InputCodesEnum
         {
             [Description("AV 1")] x_20,
             [Description("HDMI 1")] x_a0,
-            [Description("HDMI 1")] x_90
+            [Description("HDMI 1a")] x_90
         };
         private int DISPLAY_ID=0;
         private string m_input;
-        private int m_stdtimeout = 3000;
+        private int m_stdtimeout = 5000;
         
 
-        public DisplayLGTV(String connection)
+        public DisplayLGTV(String connection, Metadata.ZoneDetails p_zoneDetails)
         {
             Initialise("9600", "None", "One", "8", connection);
+            m_zoneDetails = p_zoneDetails;
         }
 
         ~DisplayLGTV()
@@ -74,7 +96,8 @@ namespace MultiZonePlayer
         public override String SendCommand(Enum cmd, String value)
         {
             String command = cmd.ToString().Split('_')[1] + " " + DISPLAY_ID.ToString() + " " + value;
-            return WriteCommand(command, 1, m_stdtimeout);
+            String result = WriteCommand(command, 1, m_stdtimeout);
+            return result;
         }
 
         public override String GetCommandStatus(Enum cmd)
@@ -129,7 +152,7 @@ namespace MultiZonePlayer
                 MLog.Log(this, "Error on next input, input code not defined=" + inputEnumCode);
         }
 
-        public String InputType
+        public InputTypeEnum InputTypeNative
         {
             get
             {
@@ -137,12 +160,15 @@ namespace MultiZonePlayer
                 switch (res)
                 {
                     case "20":
-                        return InputTypeEnum.AV.ToString();
+                        return InputTypeEnum.AV;
                     case "90":
                     case "a0":
-                        return InputTypeEnum.HDMI.ToString();
+                        return InputTypeEnum.HDMI;
                     default:
-                        return "Unknown:" + res;
+                        {
+                            MLog.Log(this, "Unknown input type="+res);
+                            return InputTypeEnum.Unknown;
+                        }
                 }
             }
         }
@@ -161,13 +187,36 @@ namespace MultiZonePlayer
             }
         }
 
+        public override InputTypeEnum InputType
+        {
+            get
+            {
+                return InputTypeNative;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case InputTypeEnum.HDMI:
+                        Input = "90";
+                        break;
+                    case InputTypeEnum.AV:
+                        Input = "20";
+                        break;
+                    default:
+                        MLog.Log(this, "Unknown inputype value on set, val=" + value.ToString());
+                        break;
+                }
+            }
+        }
+
         public String InputCached
         {
             get
             { return m_input; }
         }
 
-        public Boolean IsOn
+        public override Boolean IsOn
         {
             get
             {

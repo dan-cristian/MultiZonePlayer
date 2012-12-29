@@ -848,11 +848,14 @@ namespace MultiZonePlayer
     {
         public String Key;
         public String Device;
-
-        public KeyDetail(String key, String device)
+        public bool IsKeyDown;
+        public bool IsKeyUp;
+        public KeyDetail(String key, String device, bool isKeyDown, bool isKeyUp)
         {
-            Key = key;
-            Device = device;
+            this.Key = key;
+            this.Device = device;
+            this.IsKeyDown = isKeyDown;
+            this.IsKeyUp = isKeyUp;
         }
     }
 
@@ -1166,7 +1169,8 @@ namespace MultiZonePlayer
             System,
             Environment,
             Modem,
-            Web
+            Web,
+            Keyboard
         }
 
         public enum EventType

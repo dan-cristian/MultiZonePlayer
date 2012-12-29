@@ -200,6 +200,16 @@ namespace MultiZonePlayer
         public ZonePlayerXBMC(Metadata.ZoneDetails zoneDetails)
         {
             m_zoneDetails = zoneDetails;
+            if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
+                MZPState.RestartXBMC();
+            Display displayZone = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == zoneDetails.ParentZoneId && x.ZoneDetails.HasDisplay);
+            if (displayZone != null && !displayZone.IsOn)
+            {
+                displayZone.IsOn = true;
+                System.Threading.Thread.Sleep(6000);
+                if (displayZone.InputType != Display.InputTypeEnum.HDMI)
+                    displayZone.InputType = Display.InputTypeEnum.HDMI;
+            }
         }
 
         //shortcut for cmds

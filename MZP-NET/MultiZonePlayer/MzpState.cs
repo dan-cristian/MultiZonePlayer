@@ -182,6 +182,13 @@ namespace MultiZonePlayer
                 Utilities.RunProcessWait(IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1]);
             }
 
+            public static void RestartXBMC()
+            {
+                MLog.Log(null, "Restarting XBMC");
+                Utilities.CloseProcSync(IniFile.PARAM_XBMC_PROCESS_NAME[1]);
+                Utilities.RunProcessWait(IniFile.PARAM_XBMC_APP_PATH[1]);
+            }
+
             public void Shutdown()
             {
                 try
@@ -748,9 +755,10 @@ namespace MultiZonePlayer
                             display = m_displayList.Find(x => x.Connection.Equals(zone.DisplayConnection));
                             if (display == null)
                             {
-                                display = new DisplayLGTV(zone.DisplayConnection);
+                                display = new DisplayLGTV(zone.DisplayConnection, zone);
                                 m_displayList.Add(display);
                             }
+
                             if (display.GetType().Equals(typeof(DisplayLGTV)))
                             {
                                 if (((DisplayLGTV)display).IsOn)
