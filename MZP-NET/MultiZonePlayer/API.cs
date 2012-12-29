@@ -19,6 +19,7 @@ namespace MultiZonePlayer
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
             int zoneId = -1;
+            MLog.LogKey(kd.Key+"|");
             //ignore console KEYBOARD commands
             if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1]))
             {
@@ -28,22 +29,23 @@ namespace MultiZonePlayer
 
             try
             {
+                
                 RemotePipiCommand cmdRemote;
                 cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
-                MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " apicmd="+cmdRemote);
+                zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
+                MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " keyup="+kd.IsKeyUp + " keydown="+kd.IsKeyDown
+                    +" apicmd="+cmdRemote+(cmdRemote==null?" IGNORING CMD":"") + " zoneid="+zoneId);
                 if (cmdRemote == null)
                 {
-                    MLog.Log(null, "Hook command not found key=" + kd.Key);
+                    //MLog.Log(null, "Hook command not found key=" + kd.Key);
                     return;
                 }
-
-                zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
+                
                 if (zoneId == -1)
                 {
-                    MLog.Log(null,"Unknown zone, device name=" + kd.Device + " key=" + kd.Key);
+                    //MLog.Log(null,"Unknown zone, device name=" + kd.Device + " key=" + kd.Key);
                 }
                
-                MLog.Log(null, "Event is on zoneid=" + zoneId);
                 Metadata.ValueList retvalue = null;
                 Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
                 val.Add(Metadata.GlobalParams.command, cmdRemote.CommandName.ToLower());
