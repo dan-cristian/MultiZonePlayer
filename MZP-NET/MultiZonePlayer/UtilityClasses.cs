@@ -1170,7 +1170,8 @@ namespace MultiZonePlayer
             Environment,
             Modem,
             Web,
-            Keyboard
+            Keyboard,
+            RawInput
         }
 
         public enum EventType

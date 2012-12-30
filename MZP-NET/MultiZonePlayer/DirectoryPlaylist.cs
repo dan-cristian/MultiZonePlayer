@@ -6,8 +6,6 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 
-//using MediaInfoLib;
-
 namespace MultiZonePlayer
 {
 
@@ -577,6 +575,7 @@ namespace MultiZonePlayer
 
     }
 
+    /*
     class WindowsMediaItem:MediaItem
     {
         public const String keyGenre = "wm/genre";
@@ -776,15 +775,7 @@ namespace MultiZonePlayer
             MLog.Log(null,"Retrieving all file list completed, loaded filecount="+m_fileList.Count);
         }
 
-        /*public IEnumerable<String> GetMusicPlaylistByCriteria(String genre)
-        {
-            var result = from value in RetrieveAllFileList().Values
-                         where value.Genre == genre && value.MediaType == "audio"
-                         orderby value.Rating descending
-                         select value.SourceURL;
-
-            return result;
-        }*/
+        
 
         // Attribute1=value;Attr2=value;...
         public List<MediaItem> GetMusicPlaylistByCriteria(String searchCriteria)
@@ -809,16 +800,7 @@ namespace MultiZonePlayer
                            && value.MediaType == "audio"
                         orderby value.Rating descending
                         select value;//.SourceURL;
-            /*int i = 0;
-            foreach (String s in songs)
-            {
-                if (!result.Contains(s))
-                {
-                    result.Add(i.ToString(),s);
-                    i++;
-                }
-            }
-             * */
+            
             MLog.Log(null,"Get files by criteria returns count=" + songs.Count());
             return songs.ToList<MediaItem>();
         }
@@ -848,7 +830,7 @@ namespace MultiZonePlayer
             return m_fileList[sourceURL];
         }
     }
-
+*/
 
     public class VideoCollection
     {

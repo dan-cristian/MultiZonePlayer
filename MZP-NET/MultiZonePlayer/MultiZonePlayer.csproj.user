@@ -10,12 +10,16 @@
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartWorkingDirectory>
-    </StartWorkingDirectory>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <StartProgram>C:\Program Files (x86)\MZP\multizoneplayer.exe</StartProgram>
+    <RemoteDebugMachine>dcristian@192.168.0.10</RemoteDebugMachine>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartWorkingDirectory>
-    </StartWorkingDirectory>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <StartProgram>C:\Program Files (x86)\MZP\multizoneplayer.exe</StartProgram>
+    <RemoteDebugMachine>dcristian@192.168.0.10</RemoteDebugMachine>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartProgram>C:\Program Files (x86)\MZP\multizoneplayer.exe</StartProgram>
+    <RemoteDebugMachine>dcristian@192.168.0.10</RemoteDebugMachine>
   </PropertyGroup>
 </Project>

@@ -89,6 +89,7 @@ namespace MultiZonePlayer
             public bool isRightButton = false;
             public bool isMiddleButton = false;
             public uint extraInformation;
+            public ushort flags;
             public uint message;
             public uint reserved;
             
@@ -106,8 +107,9 @@ namespace MultiZonePlayer
             public int dwType;
         }
 
+        
         [StructLayout(LayoutKind.Explicit)]
-        internal struct RAWINPUT
+        internal struct RAWINPUT //x86 only
         {
             [FieldOffset(0)]
             public RAWINPUTHEADER header;
@@ -118,7 +120,7 @@ namespace MultiZonePlayer
             [FieldOffset(16)]
             public RAWHID hid;
         }
-
+        /* ORIG CODE x86 only
         [StructLayout(LayoutKind.Sequential)]
         internal struct RAWINPUTHEADER
         {
@@ -129,6 +131,34 @@ namespace MultiZonePlayer
             public IntPtr hDevice;
             [MarshalAs(UnmanagedType.U4)]
             public int wParam;
+        }
+        */
+
+
+        //const int RAWSIZE = System.Runtime.InteropServices.Marshal.SizeOf(typeof(RAWINPUTHEADER));
+
+        [StructLayout(LayoutKind.Explicit)]
+        internal struct RAWINPUTx64
+        {
+            [FieldOffset(0)]
+            public RAWINPUTHEADER header;
+            [FieldOffset(24)]
+            public RAWMOUSE mouse;
+            [FieldOffset(24)]
+            public RAWKEYBOARD keyboard;
+            [FieldOffset(24)]
+            public RAWHID hid;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct RAWINPUTHEADER
+        {
+            [MarshalAs(UnmanagedType.U4)]
+            public int dwType;
+            [MarshalAs(UnmanagedType.U4)]
+            public int dwSize;
+            public IntPtr hDevice;
+            public IntPtr wParam;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -219,6 +249,7 @@ namespace MultiZonePlayer
 
         #endregion DllImports
 
+        
         #region Variables and event handling
         
         /// <summary>
@@ -286,6 +317,7 @@ namespace MultiZonePlayer
         /// <param name="hwnd">Handle of the window listening for key presses</param>
         public RawInputDevice( IntPtr hwnd )
         {
+            MLog.Log(this, "Registering RawInputDevice on handle "+hwnd + ", APP runs on 64 bit="+(IntPtr.Size==8));
             //Create an array of all the raw input devices we want to 
             //listen to. In this case, only keyboard devices.
             //RIDEV_INPUTSINK determines that the window will continue
@@ -318,8 +350,8 @@ namespace MultiZonePlayer
             //listen to. In this case, only mouse devices.
             //RIDEV_INPUTSINK determines that the window will continue
             //to receive messages even when it doesn't have the focus.
-            /*
-            RAWINPUTDEVICE[] rid_mouse = new RAWINPUTDEVICE[1];
+            
+            /*RAWINPUTDEVICE[] rid_mouse = new RAWINPUTDEVICE[1];
 
             rid_mouse[0].usUsagePage = 0x01;
             rid_mouse[0].usUsage = 0x02;
@@ -329,8 +361,8 @@ namespace MultiZonePlayer
             if (!RegisterRawInputDevices(rid_mouse, (uint)rid_mouse.Length, (uint)Marshal.SizeOf(rid_mouse[0])))
             {
                 throw new ApplicationException("Failed to register raw input mouse device(s).");
-            }
-             */
+            }*/
+            
 
             EnumerateDevices();
         }
@@ -418,7 +450,7 @@ namespace MultiZonePlayer
         /// <returns>The number of keyboard devices found.</returns>
         public static int EnumerateDevices()
         {
-            
+            MLog.Log(null, "Enumerating RawInput Devices");
             int NumberOfDevices = 0;
             uint deviceCount = 0;
             int dwSize = ( Marshal.SizeOf( typeof( RAWINPUTDEVICELIST )));
@@ -429,6 +461,8 @@ namespace MultiZonePlayer
             {
                 IntPtr pRawInputDeviceList = Marshal.AllocHGlobal((int)(dwSize * deviceCount));
                 GetRawInputDeviceList(pRawInputDeviceList, ref deviceCount, (uint)dwSize);
+
+                MLog.Log(null, "Enumerating RawInput Devices found potential devicecount="+deviceCount);
 
                 // Iterate through the list, discarding undesired items
                 // and retrieving further information on keyboard devices
@@ -481,17 +515,17 @@ namespace MultiZonePlayer
                             {
                                 NumberOfDevices++;
                                 deviceList.Add(rid.hDevice, dInfo);
+                                MLog.Log(null, "Added rawinput device name=" +dInfo.deviceName 
+                                    + " desc="+ dInfo.Name + " type=" + dInfo.deviceType);
                             }
                         }
                         Marshal.FreeHGlobal(pData);
                     }
                 }
 
-
                 Marshal.FreeHGlobal(pRawInputDeviceList);
-
+                MLog.Log(null, "Enumerating RawInput Devices completed with qualified devicecount=" + NumberOfDevices);
                 return NumberOfDevices;
-
             }
             else
             {
@@ -517,11 +551,13 @@ namespace MultiZonePlayer
             // First call to GetRawInputData sets the value of dwSize,
             // which can then be used to allocate the appropriate amount of memory,
             // storing the pointer in "buffer".
+            
             GetRawInputData( message.LParam, 
                              RID_INPUT, IntPtr.Zero, 
                              ref dwSize, 
                              (uint)Marshal.SizeOf( typeof( RAWINPUTHEADER )));
-
+            
+            
             IntPtr buffer = Marshal.AllocHGlobal( (int)dwSize );
             try
             {
@@ -539,134 +575,119 @@ namespace MultiZonePlayer
                     // that the input comes from a keyboard device before
                     // processing it to raise an appropriate KeyPressed event.
 
-                    RAWINPUT raw = (RAWINPUT)Marshal.PtrToStructure(buffer, typeof(RAWINPUT));
+                    RAWINPUT rawx86 = (RAWINPUT)Marshal.PtrToStructure(buffer, typeof(RAWINPUT));
+                    
                     #region keyboard
-                    if (raw.header.dwType == RIM_TYPEKEYBOARD)
+                    if (rawx86.header.dwType == RIM_TYPEKEYBOARD)
                     {
-                        // Filter for Key Down events and then retrieve information 
-                        // about the keystroke
-                        if (true) //(raw.keyboard.Message == WM_KEYDOWN || raw.keyboard.Message == WM_SYSKEYDOWN)
+                        // Retrieve information about the device and the
+                        // key that was pressed.
+                        DeviceInfo dInfo = null;
+                        Keys myKey;
+                        dInfo = (DeviceInfo)deviceList[rawx86.header.hDevice];
+                        if (dInfo == null)
                         {
+                            dInfo = new DeviceInfo();
+                        }
 
-                            ushort key = raw.keyboard.VKey;
+                        if (IntPtr.Size == 8)
+                        {
+                            RAWINPUTx64 rawx64 = (RAWINPUTx64)Marshal.PtrToStructure(buffer, typeof(RAWINPUTx64));
+                            dInfo.key = rawx64.keyboard.VKey;
+                            dInfo.message = rawx64.keyboard.Message;
+                            dInfo.flags = rawx64.keyboard.Flags;
+                            dInfo.extraInformation = rawx64.keyboard.ExtraInformation;
+                            dInfo.reserved = rawx64.keyboard.Reserved;
+                        }
+                        else
+                        {
+                            dInfo.key = rawx86.keyboard.VKey;
+                            dInfo.message = rawx86.keyboard.Message;
+                            dInfo.flags = rawx86.keyboard.Flags;
+                            dInfo.extraInformation = rawx86.keyboard.ExtraInformation;
+                            dInfo.reserved = rawx86.keyboard.Reserved;
+                        }
 
-                            //MLog.Log2(key.ToString());
+                        dInfo.isKeyDownWinMessage = (dInfo.message == WM_KEYDOWN) || (dInfo.message == WM_SYSKEYDOWN);
+                        dInfo.isKeyUpWinMessage = (dInfo.message == WM_KEYUP) || (dInfo.message == WM_SYSKEYUP);
+                        
+                        // On most keyboards, "extended" keys such as the arrow or 
+                        // page keys return two codes - the key's own code, and an
+                        // "extended key" flag, which translates to 255. This flag
+                        // isn't useful to us, so it can be disregarded.
+                        /*if (key > VK_LAST_KEY)
+                        {
+                            return;
+                        }*/
 
-                            // On most keyboards, "extended" keys such as the arrow or 
-                            // page keys return two codes - the key's own code, and an
-                            // "extended key" flag, which translates to 255. This flag
-                            // isn't useful to us, so it can be disregarded.
-                            if (key > VK_LAST_KEY)
+                        if (Enum.GetName(typeof(Keys), dInfo.key) != null)
+                        {
+                            myKey = (Keys)Enum.Parse(typeof(Keys), Enum.GetName(typeof(Keys), dInfo.key));
+                        }
+                        else
+                            myKey = Keys.NoName;
+
+                        //MLog.Log2(myKey.ToString());
+                        dInfo.vKey = myKey.ToString();
+                        //dInfo.isAppInForeground = ( == WM_INPUT);
+                        switch (dInfo.flags)
+                        {
+                            case RI_KEY_E0:
+                                dInfo.isLeftKey = true;
+                                break;
+                            case RI_KEY_E1:
+                                dInfo.isRightKey = true;
+                                break;
+                        }
+                        
+                        //update modifiers
+                        if (dInfo.vKey == MODIFIER_CONTROL || dInfo.vKey == MODIFIER_SHIFT 
+                            || dInfo.vKey == MODIFIER_ALT )//|| dInfo.vKey == MODIFIER_WIN)
+                        {
+                            if (dInfo.isKeyDownWinMessage && (!modifierOnState.ContainsKey(dInfo.vKey)))
                             {
-                                //return;
+                                modifierOnState.Add(dInfo.vKey, dInfo.isKeyDownWinMessage);
                             }
+                            if (dInfo.isKeyUpWinMessage)
+                                modifierOnState.Remove(dInfo.vKey);
+                        }
+                        else
+                        {
+                            //if (modifierOnState.ContainsKey(MODIFIER_WIN))
+                            //    dInfo.vKey = "Win, " + dInfo.vKey;
 
-                            // Retrieve information about the device and the
-                            // key that was pressed.
-                            DeviceInfo dInfo = null;
+                            if (modifierOnState.ContainsKey(MODIFIER_ALT))
+                                dInfo.vKey = "Alt, " + dInfo.vKey;
 
-                            //if (deviceList.Contains(raw.header.hDevice))
-                            //{
-                                Keys myKey; 
+                            if (modifierOnState.ContainsKey(MODIFIER_SHIFT))
+                                dInfo.vKey = "Shift, " + dInfo.vKey;
 
-                                dInfo = (DeviceInfo)deviceList[raw.header.hDevice];
+                            if (modifierOnState.ContainsKey(MODIFIER_CONTROL))
+                                dInfo.vKey = "Control, " + dInfo.vKey;
 
-                                if (dInfo == null)
-                                {
-                                    dInfo = new DeviceInfo();
-                                   
-                                }
-                                    dInfo.key = key;
-                                    if (Enum.GetName(typeof(Keys), key) != null)
-                                    {
-                                        myKey = (Keys)Enum.Parse(typeof(Keys), Enum.GetName(typeof(Keys), key));
-                                    }
-                                    else
-                                        myKey = Keys.NoName;
+                            MLog.LogRawInput(String.Format("KBD {0} vkey={1} \t msg={2} \t flags={3} \t makecode={4} \t extra={5} device={6}\r", DateTime.Now.ToString("hh:mm:ss-ff"),
+                                        dInfo.vKey, dInfo.message, dInfo.flags, "", dInfo.extraInformation, rawx86.header.hDevice));
 
-                                    //MLog.Log2(myKey.ToString());
-                                    dInfo.vKey = myKey.ToString();
-                                    dInfo.isKeyDownWinMessage = (raw.keyboard.Message == WM_KEYDOWN) || (raw.keyboard.Message == WM_SYSKEYDOWN);
-                                    //MLog.Log2("down="+dInfo.isKeyDownWinMessage+"\t");
-                                    //myKey = (Keys)Enum.Parse(typeof(Keys), Enum.GetName(typeof(Keys), key));
-                                    //dInfo.vKey = myKey.ToString();
-                                    dInfo.key = key;
-                                    dInfo.message = raw.keyboard.Message;
-
-                                    //dInfo.isKeyDownWinMessage = (raw.keyboard.Message == WM_KEYDOWN) || (raw.keyboard.Message == WM_SYSKEYDOWN);
-                                    dInfo.isKeyUpWinMessage = (raw.keyboard.Message == WM_KEYUP) || (raw.keyboard.Message == WM_SYSKEYUP);
-                                    //dInfo.isAppInForeground = ( == WM_INPUT);
-                                    switch (raw.keyboard.Flags)
-                                    {
-                                        case RI_KEY_E0:
-                                            dInfo.isLeftKey = true;
-                                            break;
-                                        case RI_KEY_E1:
-                                            dInfo.isRightKey = true;
-                                            break;
-                                    }
-                                    dInfo.extraInformation = raw.keyboard.ExtraInformation;
-                                    dInfo.reserved = raw.keyboard.Reserved;
-
-                                    if (key == 37 && dInfo.isKeyDownWinMessage==false)
-                                    {
-                                        //MLog.Log2("");
-                                    }
-                            //update modifiers
-
-                                if (dInfo.vKey == MODIFIER_CONTROL || dInfo.vKey == MODIFIER_SHIFT 
-                                    || dInfo.vKey == MODIFIER_ALT )//|| dInfo.vKey == MODIFIER_WIN)
-                                {
-                                    if (dInfo.isKeyDownWinMessage && (!modifierOnState.ContainsKey(dInfo.vKey)))
-                                    {
-                                        modifierOnState.Add(dInfo.vKey, dInfo.isKeyDownWinMessage);
-                                    }
-                                    if (dInfo.isKeyUpWinMessage)
-                                        modifierOnState.Remove(dInfo.vKey);
-                                }
-                                else
-                                {
-                                    //if (modifierOnState.ContainsKey(MODIFIER_WIN))
-                                    //    dInfo.vKey = "Win, " + dInfo.vKey;
-
-                                    if (modifierOnState.ContainsKey(MODIFIER_ALT))
-                                        dInfo.vKey = "Alt, " + dInfo.vKey;
-
-                                    if (modifierOnState.ContainsKey(MODIFIER_SHIFT))
-                                        dInfo.vKey = "Shift, " + dInfo.vKey;
-
-                                    if (modifierOnState.ContainsKey(MODIFIER_CONTROL))
-                                        dInfo.vKey = "Control, " + dInfo.vKey;
-
-                                    // }
-                                    // else
-                                    //{
-                                    //string errMessage = String.Format("Handle :{0} was not in hashtable. The device may support more than one handle or usage page, and is probably not a standard keyboard.", raw.header.hDevice);
-                                    //throw new ApplicationException(errMessage);
-                                    //}
-
-                                    // If the key that was pressed is valid and there
-                                    // was no problem retrieving information on the device,
-                                    // raise the KeyPressed event.
-                                    if (KeyPressed != null && dInfo != null)
-                                    {
-                                        KeyControlEventArgs keyArgs = new KeyControlEventArgs(dInfo, GetDevice(message.LParam.ToInt32()));
-                                        if (dInfo.isKeyDownWinMessage)
-                                            KeyPressed(this, ref keyArgs);
-                                        result = keyArgs.messageProcessedbyApp;
-                                        //MLog.Log(null,"rawinput message processed = " + result);
-                                    }
-                                    else
-                                    {
-                                        MLog.Log(null,"Received Unknown Key: {0}. Possibly an unknown device " + key);
-                                    }
-                                }
+                            // If the key that was pressed is valid and there
+                            // was no problem retrieving information on the device,
+                            // raise the KeyPressed event.
+                            if (KeyPressed != null && dInfo != null)
+                            {
+                                KeyControlEventArgs keyArgs = new KeyControlEventArgs(dInfo, GetDevice(message.LParam.ToInt32()));
+                                if (dInfo.isKeyDownWinMessage)
+                                    KeyPressed(this, ref keyArgs);
+                                result = keyArgs.messageProcessedbyApp;
+                            }
+                            else
+                            {
+                                MLog.Log(null,"Received Unknown Key: {0}. Possibly an unknown device " + dInfo.key);
+                            }
                         }
                     }
                     #endregion
 
                     #region mouse
-                    if (raw.header.dwType == RIM_TYPEMOUSE)
+                    if (rawx86.header.dwType == RIM_TYPEMOUSE)
                     {
                         /*BUTTONSSTR bt = raw.mouse.buttonsStr;
                         DeviceInfo dInfo = null;
@@ -678,13 +699,16 @@ namespace MultiZonePlayer
                             MLog.Log2("NO MOUSE DEV");
                         }
                          * */
+                        MLog.LogRawInput(String.Format("MOUSE btnstr={0} rawbtns={1} x={2} y={3} flags={4}\r",
+                            rawx86.mouse.buttonsStr, rawx86.mouse.ulRawButtons, rawx86.mouse.lLastX, rawx86.mouse.lLastY, rawx86.mouse.usFlags));
                     }
                     #endregion
 
                     #region HID
-                    if (raw.header.dwType == RIM_TYPEHID)
+                    if (rawx86.header.dwType == RIM_TYPEHID)
                     {
-                        RAWHID hid = raw.hid;
+                        RAWHID hid = rawx86.hid;
+                        MLog.LogRawInput(String.Format("HID count={0} device={1}\r", rawx86.hid.dwCount, rawx86.header.hDevice));
                     }
                     #endregion
                 }

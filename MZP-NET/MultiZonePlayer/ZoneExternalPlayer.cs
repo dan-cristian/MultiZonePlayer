@@ -88,7 +88,6 @@ namespace MultiZonePlayer
 
         public bool IsActive()
         {
-
             return m_zoneDetails.IsActive;
 
         }
@@ -206,7 +205,7 @@ namespace MultiZonePlayer
             if (displayZone != null && !displayZone.IsOn)
             {
                 displayZone.IsOn = true;
-                System.Threading.Thread.Sleep(6000);
+                System.Threading.Thread.Sleep(10000);
                 if (displayZone.InputType != Display.InputTypeEnum.HDMI)
                     displayZone.InputType = Display.InputTypeEnum.HDMI;
             }
@@ -252,7 +251,15 @@ namespace MultiZonePlayer
             msg = msg.Replace(",<P>", "");
             post.Add(msg, "");
             //MessageBox.Show(msg);
-            String res = post.GetResponse();
+            String res;
+            try
+            {
+                res = post.GetResponse();
+            }
+            catch (Exception ex)
+            {
+                res = "{xbmc web server error:" + ex.Message+"}";
+            }
             //MLog.Log(null, res);
             return res;
         }
@@ -299,34 +306,49 @@ namespace MultiZonePlayer
         {
             XBMCResponse resp;
             XBMCSimpleResponse sresp;
-            String result=PostURLMessage(STATUS_URL, "Player.GetActivePlayers");
-            sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
 
-            if (sresp.result!=null && sresp.result.Length>0 && sresp.result[0].playerid == 1)
+            if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
             {
-                if (!m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.Running))
-                {
-                    MLog.Log(this, "XBMC has active player");
-                    base.Play();
-                }
-
-                result = PostURLMessage(STATUS_URL, "Application.GetProperties", "properties", @"[""volume""]");
-                resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-                if (resp.result != null)
-                {
-                    SetVolumeLevel(resp.result.volume);
-                }
-
-                result = PostURLMessage(STATUS_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
-                resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-                if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
-                {
-                    m_zoneDetails.Title = resp.result.items[0].label;
-                }
+                Stop();
             }
             else
             {
-                base.Stop();
+                String result = PostURLMessage(STATUS_URL, "Player.GetActivePlayers");
+                try
+                {
+                    sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
+                    if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1)
+                    {
+                        if (!m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.Running))
+                        {
+                            MLog.Log(this, "XBMC has active player");
+                            base.Play();
+                        }
+
+                        result = PostURLMessage(STATUS_URL, "Application.GetProperties", "properties", @"[""volume""]");
+                        resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                        if (resp.result != null)
+                        {
+                            SetVolumeLevel(resp.result.volume);
+                        }
+
+                        result = PostURLMessage(STATUS_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
+                        resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                        if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
+                        {
+                            m_zoneDetails.Title = resp.result.items[0].label;
+                        }
+                    }
+                    else
+                    {
+                        base.Stop();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MLog.Log(this, "Unable to json parse XBMC response " + result + " err="+ex.Message);
+                    base.Stop();
+                }
             }
         }
 

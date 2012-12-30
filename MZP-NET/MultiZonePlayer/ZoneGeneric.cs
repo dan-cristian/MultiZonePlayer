@@ -478,9 +478,12 @@ namespace MultiZonePlayer
                 //MLog.Log(this, "Null activity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName);
                 return result;
             }
-            #region Generic commands
+            
+            
+
             switch (cmdRemote)
             {
+                #region Generic commands
                 case Metadata.GlobalCommands.play:
                     m_mainZoneActivity.Play();
                     break;
@@ -528,9 +531,10 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.guide:
                     m_mainZoneActivity.Guide();
                     break;
-                
-                //specific commands
+                #endregion
+
                 default:
+                    #region specific commands
                     //specific commands only to Music / Clone
                     if (m_mainZoneActivity.GetType() == typeof(ZoneMusic))
                     {
@@ -692,10 +696,12 @@ namespace MultiZonePlayer
                                 break;
                         }
                     }
+                    #endregion specific commands
                     break;
+                
             }
 
-            #endregion
+            
 
             this.m_currentCmd = cmdRemote.ToString();
             m_mainZoneActivity.Tick();//update zone details after command

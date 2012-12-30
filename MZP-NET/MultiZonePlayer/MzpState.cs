@@ -212,6 +212,7 @@ namespace MultiZonePlayer
                 }
                 catch (Exception)
                 {
+                    m_sysState = null;
                 }
 
             }
@@ -810,9 +811,12 @@ namespace MultiZonePlayer
                         MessengerMakeBuzz();
                     }
                     else
-                        MLog.Log(this, "Ignoring alarm event on " + mzpevent.ZoneDetails.ZoneName + " movementalert=" + mzpevent.ZoneDetails.MovementAlert
+                    { 
+                      /*  MLog.Log(this, "Ignoring alarm event on " + mzpevent.ZoneDetails.ZoneName + " movementalert=" + mzpevent.ZoneDetails.MovementAlert
                             + " zonealarmareaid=" + mzpevent.ZoneDetails.AlarmAreaId + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId
                             + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
+                       */
+                    }
                 }
 
                 if ((mzpevent.TypeEv.Equals(MZPEvent.EventType.Security) && mzpevent.Importance.Equals(MZPEvent.EventImportance.Critical)))

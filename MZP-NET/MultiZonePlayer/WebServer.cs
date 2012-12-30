@@ -45,21 +45,21 @@ namespace MultiZonePlayer
             MLog.Log(null, "Initialising ext web servers " +extlistener);
             m_extlistener.Prefixes.Add(extlistener);
             m_extlistener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-            Thread th = new Thread(() => m_instance.RunMainThread(m_extlistener));
+            Thread th = new Thread(() => m_instance.RunMainThread(m_extlistener, extlistener));
             th.Name = "WebListener External";
             th.Start();
 
             MLog.Log(null, "Initialising ext safe web servers " + extlistener_safe);
             m_extlistenersafe.Prefixes.Add(extlistener_safe);
             m_extlistenersafe.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-            th = new Thread(() => m_instance.RunMainThread(m_extlistenersafe));
+            th = new Thread(() => m_instance.RunMainThread(m_extlistenersafe, extlistener_safe));
             th.Name = "WebListener External Safe";
             th.Start();
 
             MLog.Log(null, "Initialising int web servers " + intlistener);
             m_intlistener.Prefixes.Add(intlistener);
             m_intlistener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-            th = new Thread(() => m_instance.RunMainThread(m_intlistener));
+            th = new Thread(() => m_instance.RunMainThread(m_intlistener, intlistener));
             th.Name = "WebListener Internal";
             th.Start();
         }
@@ -77,7 +77,7 @@ namespace MultiZonePlayer
             Shutdown();
         }
 
-        public void RunMainThread(HttpListener listener)
+        public void RunMainThread(HttpListener listener, String desc)
         {
             try
             {
@@ -85,7 +85,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-                MLog.Log(ex, this, "Error listening");
+                MLog.Log(ex, this, "Error listening " + desc);
             }
 
             while (listener.IsListening)

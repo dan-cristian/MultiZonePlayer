@@ -23,6 +23,7 @@ namespace MultiZonePlayer
             public const String LOG_MODEM_FILE = "\\MultiZonePlayerModem.log";
             public const String LOG_WEB_FILE = "\\MultiZonePlayerWeb.log";
             public const String LOG_KEY_FILE = "\\MultiZonePlayerKeyboard.log";
+            public const String LOG_RAWINPUT_FILE = "\\MultiZonePlayerRawInput.log";
             public const String TEMP_EXTENSION = ".temp.wav";
             public const String BEEP_OK_FILE_NAME = "\\BeepOK.wav";
             public const String BEEP_ERROR_FILE_NAME = "\\BeepError.wav";

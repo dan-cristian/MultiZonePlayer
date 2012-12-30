@@ -29,7 +29,6 @@ namespace MultiZonePlayer
 
             try
             {
-                
                 RemotePipiCommand cmdRemote;
                 cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
                 zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
@@ -286,45 +285,55 @@ namespace MultiZonePlayer
         {
             try
             {
+                values = null;
+                errorMessage = "";
                 int zoneId = InferZone(vals.GetValue(Metadata.GlobalParams.zoneid), vals.GetValue(Metadata.GlobalParams.zonename));
 
                 if (zoneId == -1)
                 {
                     errorMessage = "ERROR no zone found to process command" + apicmd;
                     MLog.Log(null, errorMessage);
-                    values = null;
                     return Metadata.ResultEnum.ERR; ;
                 }
 
                 ZoneGeneric zone;
                 //zone for cmd received is not active
-                if (ControlCenter.Instance.GetZoneIfActive(zoneId) == null)
+                if (ControlCenter.Instance != null)
                 {
-                    if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
+                    if (ControlCenter.Instance.GetZoneIfActive(zoneId) == null)
                     {
-                        MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
-                        zoneId = MZPState.Instance.GetChildZone(zoneId);
+                        if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
+                        {
+                            MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
+                            zoneId = MZPState.Instance.GetChildZone(zoneId);
+                        }
+                        else
+                        {
+                            if (ControlCenter.Instance.GetZone(zoneId) == null)
+                                ControlCenter.Instance.OpenZone(zoneId);
+                        }
+                    }
+
+                    zone = ControlCenter.Instance.GetZone(zoneId);
+                    if (zone == null)
+                    {
+                        MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
+                        errorMessage = "Zone not active " + zoneId;
+                        return Metadata.ResultEnum.ERR;
                     }
                     else
                     {
-                        if (ControlCenter.Instance.GetZone(zoneId) == null) 
-                            ControlCenter.Instance.OpenZone(zoneId);
+                        lock (zone)
+                        {
+                            values = zone.ProcessAction(apicmd, vals);
+                        }
+                        return Metadata.ResultEnum.OK;
                     }
-                }
-
-                zone = ControlCenter.Instance.GetZone(zoneId);
-                if (zone == null)
-                {
-                    MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
-                    errorMessage = "Zone not active " + zoneId;
-                    values = null;
-                    return Metadata.ResultEnum.ERR;
                 }
                 else
                 {
-                    values = zone.ProcessAction(apicmd, vals);
-                    errorMessage = "";
-                    return Metadata.ResultEnum.OK;
+                    errorMessage = "ControlCenter instance is null";
+                    return Metadata.ResultEnum.ERR;
                 }
             }
             catch (Exception ex)

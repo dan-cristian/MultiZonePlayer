@@ -1,4 +1,0 @@
-C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\bin\Release\Vlc.DotNet.Core.Interops.dll
-C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\bin\Release\Vlc.DotNet.Core.Interops.pdb
-C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Release\Vlc.DotNet.Core.Interops.dll
-C:\Development\MZP\Vlc.DotNet\Vlc.DotNet.Core.Interops\obj\Release\Vlc.DotNet.Core.Interops.pdb

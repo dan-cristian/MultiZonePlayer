@@ -334,6 +334,9 @@ namespace MultiZonePlayer
                 case MZPEvent.EventSource.Keyboard:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_KEY_FILE);
                     break;
+                case MZPEvent.EventSource.RawInput:
+                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_RAWINPUT_FILE);
+                    break;
                 default:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_EVENTS_FILE);
                     break;
@@ -593,6 +596,7 @@ namespace MultiZonePlayer
 
         public WebPostRequest(string url)
         {
+            MLog.LogWeb("WebPostRequest " + url);
             theRequest = WebRequest.Create(url);
             theRequest.Method = "POST";
             theQueryData = new ArrayList();
@@ -622,8 +626,11 @@ namespace MultiZonePlayer
 
             // Execute the query
             theResponse = (HttpWebResponse)theRequest.GetResponse();
+            MLog.LogWeb(theResponse);
             StreamReader sr = new StreamReader(theResponse.GetResponseStream());
-            return sr.ReadToEnd();
+            String response = sr.ReadToEnd();
+            MLog.LogWeb(response);
+            return response;
         }
 
     }
@@ -791,7 +798,7 @@ namespace MultiZonePlayer
         {
             try
             {
-                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r\n\r\n", DateTime.Now.ToString(),
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r", DateTime.Now.ToString(),
                     request.RemoteEndPoint.Address, request.Url.AbsoluteUri, request.Headers.ToString()), 
                     MZPEvent.EventSource.Web);
             }
@@ -804,9 +811,32 @@ namespace MultiZonePlayer
             try
             {
                 
-                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r\n\r\n", DateTime.Now.ToString(),
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r", DateTime.Now.ToString(),
                     request.RequestUri.AbsoluteUri, request.Headers.ToString()),
                     MZPEvent.EventSource.Web);
+            }
+            catch (Exception)
+            { }
+        }
+
+        public static void LogWeb(HttpWebResponse response)
+        {
+            try
+            {
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r", DateTime.Now.ToString(),
+                    response.ResponseUri.AbsoluteUri, response.Headers.ToString()),
+                    MZPEvent.EventSource.Web);
+            }
+            catch (Exception)
+            { }
+        }
+
+        public static void LogWeb(String streamResponse)
+        {
+            try
+            {
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} \r", DateTime.Now.ToString(),
+                    streamResponse), MZPEvent.EventSource.Web);
             }
             catch (Exception)
             { }
@@ -817,6 +847,16 @@ namespace MultiZonePlayer
             try
             {
                 Utilities.AppendToGenericLogFile(key, MZPEvent.EventSource.Keyboard);
+            }
+            catch (Exception)
+            { }
+        }
+
+        public static void LogRawInput(String key)
+        {
+            try
+            {
+                Utilities.AppendToGenericLogFile(key, MZPEvent.EventSource.RawInput);
             }
             catch (Exception)
             { }

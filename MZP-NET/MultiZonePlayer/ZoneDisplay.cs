@@ -133,7 +133,7 @@ namespace MultiZonePlayer
         public String InputType
         {
             get { return m_inputType; }
-            set { m_inputType = value; }
+            
         }
 
         public ZoneDisplayLG(Metadata.ZoneDetails p_zoneDetails)
@@ -183,6 +183,7 @@ namespace MultiZonePlayer
         {
             base.Next();
             m_tv.NextInput();
+            m_input = m_tv.InputCached;
         }
 
         public String Input
@@ -190,7 +191,10 @@ namespace MultiZonePlayer
             get
             { return m_tv.Input; }
             set
-            { m_tv.Input = value; }
+            { 
+                m_tv.Input = value;
+                m_input = m_tv.InputCached;
+            }
         }
 
         private void CacheCurrentState()
@@ -248,8 +252,6 @@ namespace MultiZonePlayer
                     MLog.Log(this, "DisplayTV is off");
 
                 }
-
-                
             }
         }
 

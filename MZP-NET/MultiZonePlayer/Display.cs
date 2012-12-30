@@ -79,6 +79,8 @@ namespace MultiZonePlayer
         };
         private int DISPLAY_ID=0;
         private string m_input;
+        private bool m_isOnValue = false;
+        private int m_volumeLevel = -1;
         private int m_stdtimeout = 5000;
         
 
@@ -100,6 +102,16 @@ namespace MultiZonePlayer
             return result;
         }
 
+        private bool SendCommandCheckResult(Enum cmd, String value, out String resultValue)
+        {
+            String response = SendCommand(cmd, value);
+            bool wasOk = response.ToLower().Contains("ok");
+            if (response.Length > 3)
+                resultValue = response.Substring(response.Length - 3, 2);
+            else
+                resultValue = "";
+            return wasOk;
+        }
         public override String GetCommandStatus(Enum cmd)
         {
             String result;
@@ -183,7 +195,9 @@ namespace MultiZonePlayer
             }
             set
             {
-                SendCommand(DisplayLGTV.LGCommandsEnum.INPUTSELECT_xb, value);
+                String inputValue;
+                if (SendCommandCheckResult(DisplayLGTV.LGCommandsEnum.INPUTSELECT_xb, value, out inputValue))
+                    m_input = inputValue;
             }
         }
 
@@ -225,7 +239,9 @@ namespace MultiZonePlayer
             set
             {
                 String cmdval = value ? "01" : "00";
-                SendCommand(DisplayLGTV.LGCommandsEnum.POWER_ka, cmdval);
+                String isOnValue;
+                if (SendCommandCheckResult(DisplayLGTV.LGCommandsEnum.POWER_ka, cmdval, out isOnValue))
+                    m_isOnValue = isOnValue=="01";
             }
         }
 
@@ -233,19 +249,26 @@ namespace MultiZonePlayer
         {
             get
             {
-                String volume = GetCommandStatus(DisplayLGTV.LGCommandsEnum.VOLUMECONTROL_kf);
-                int vol;
-                if (Int32.TryParse(volume, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out vol))
-                    return vol;
-                else
-                    return -1;
+                String volumeHex = GetCommandStatus(DisplayLGTV.LGCommandsEnum.VOLUMECONTROL_kf);
+                return ReturnVolume(volumeHex);
+                
             }
             set
             {
-                SendCommand(DisplayLGTV.LGCommandsEnum.VOLUMECONTROL_kf, value.ToString("X"));//hex
+                String volumeValue;
+                if (SendCommandCheckResult(DisplayLGTV.LGCommandsEnum.VOLUMECONTROL_kf, value.ToString("X"), out volumeValue))//hex
+                    m_volumeLevel = ReturnVolume(volumeValue);
             }
         }
 
+        private int ReturnVolume(String volumeHex)
+        {
+            int vol;
+            if (Int32.TryParse(volumeHex, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out vol))
+                return vol;
+            else
+                return -1;
+        }
         public Boolean VolumeMute
         {
             get
