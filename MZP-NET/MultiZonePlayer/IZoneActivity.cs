@@ -46,4 +46,14 @@ namespace MultiZonePlayer
     {
         protected DateTime m_lastSlowTickDateTime = DateTime.Now;
     }
+
+    public interface INavigableUI
+    {
+        void DirectionUp();
+        void DirectionDown();
+        void DirectionLeft();
+        void DirectionRight();
+        void Select();
+        void DirectionBack();
+    }
 }

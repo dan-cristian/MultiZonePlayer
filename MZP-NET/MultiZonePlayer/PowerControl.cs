@@ -299,7 +299,7 @@ namespace MultiZonePlayer
             if (!IsPowerOn(zoneId))
             {
                 Thread th = new Thread(() => PowerOnSync(zoneId));
-                th.Name = th.Name + " PowerOn";
+                th.Name = "PowerOn zoneid=" + zoneId;
                 m_threadList.Add(th);
                 th.Start();
                 WaitForThreadEnd(th);
@@ -326,7 +326,7 @@ namespace MultiZonePlayer
             //MLog.Log(null,"Running async power off ALL, active thread count=" + m_threadList.Count);
             //making an async call
             Thread th = new Thread(() => PowerOffSync());
-            th.Name = th.Name + " PowerOff";
+            th.Name = "PowerOff zoneid=all";
             m_threadList.Add(th);
             th.Start();
             WaitForThreadEnd(th);
@@ -340,7 +340,7 @@ namespace MultiZonePlayer
             if (IsPowerOn(zoneId))
             {
                 Thread th = new Thread(() => PowerOffSync(zoneId));
-                th.Name = th.Name + " PowerOff";
+                th.Name = "PowerOff zoneid="+zoneId;
                 m_threadList.Add(th);
                 th.Start();
                 WaitForThreadEnd(th);

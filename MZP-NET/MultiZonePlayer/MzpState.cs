@@ -488,6 +488,7 @@ namespace MultiZonePlayer
             private void InitMediaLibrary()
             {
                 Thread th = new Thread(() => MediaLibrary.Initialise());
+                th.Name = "MediaLibrary";
                 th.Start();
             }
 
@@ -866,7 +867,6 @@ namespace MultiZonePlayer
                 CheckForAlarm();
                 CheckForExternalZoneEvents();
                 PowerControl.timerPowerSaving_Tick();
-
             }
         }
 

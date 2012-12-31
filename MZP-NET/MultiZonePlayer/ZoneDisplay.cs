@@ -219,6 +219,9 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.tvsetinput:
                     Input = action;
                     break;
+                default:
+                    MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
+                    break;
             }
             return result;
         }

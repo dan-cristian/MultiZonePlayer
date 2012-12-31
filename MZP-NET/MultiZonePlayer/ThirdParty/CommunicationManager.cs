@@ -111,7 +111,7 @@ namespace MultiZonePlayer
                     {
                         int decim;
                         m_responseTimeoutsCount++;
-                        Math.DivRem(m_responseTimeoutsCount, Math.Max(10, Math.Abs(m_responseTimeoutsCount/2)), out decim);
+                        Math.DivRem(m_responseTimeoutsCount, 50, out decim);
                         if (m_responseTimeoutsCount < 5 || decim == 0 )
                             MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp="+m_lastMessageResponse + " number of timeouts="+m_responseTimeoutsCount);
                         m_lastMessageResponse += "[timeout]";

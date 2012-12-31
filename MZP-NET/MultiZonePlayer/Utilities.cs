@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Globalization;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 using System.Web;
 
@@ -472,7 +473,7 @@ namespace MultiZonePlayer
             
             return sb.ToString().Trim();
         }
-
+        
         public static List<Object> ParseStringForValues(String parseValue, char delimitator, Type convertToType)
         {
             int lastIndex;
@@ -616,13 +617,12 @@ namespace MultiZonePlayer
             // Build a string containing all the parameters
             string Parameters = String.Join("&", (String[])theQueryData.ToArray(typeof(string)));
             theRequest.ContentLength = Parameters.Length;
-
+            MLog.LogWeb(theRequest);
+            MLog.LogWeb(Parameters);
             // We write the parameters into the request
             StreamWriter sw = new StreamWriter(theRequest.GetRequestStream());
             sw.Write(Parameters);
             sw.Close();
-
-            MLog.LogWeb(theRequest);
 
             // Execute the query
             theResponse = (HttpWebResponse)theRequest.GetResponse();
@@ -632,7 +632,6 @@ namespace MultiZonePlayer
             MLog.LogWeb(response);
             return response;
         }
-
     }
 
     public enum VoicePriority
@@ -746,9 +745,9 @@ namespace MultiZonePlayer
         public static void Log(Exception e, Object o, String text)
         {
             if (e!=null)
-                Log(e, e.StackTrace + "|" + text + " from sender:" + o.ToString());
+                Log(e, e.StackTrace + "|" + text + " sender:" + o.ToString());
             else
-                Log(e, text + " from sender:" + o.ToString());
+                Log(e, text + " sender:" + o.ToString());
         }
 
         public static void Log(Object e, String text)
@@ -767,7 +766,8 @@ namespace MultiZonePlayer
             { }
             try
             {
-                Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString() + "-" + System.DateTime.Now.Millisecond + ": " + text + "\n", MZPEvent.EventSource.System);
+                Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM hh:mm:ss-ff [") 
+                    + Thread.CurrentThread.Name +"]:" + text + "\n", MZPEvent.EventSource.System);
             }
             catch (Exception)
             { }
@@ -846,7 +846,8 @@ namespace MultiZonePlayer
         {
             try
             {
-                Utilities.AppendToGenericLogFile(key, MZPEvent.EventSource.Keyboard);
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} \r", DateTime.Now.ToString("dd-MM hh:mm:ss-ff"), key), 
+                    MZPEvent.EventSource.Keyboard);
             }
             catch (Exception)
             { }

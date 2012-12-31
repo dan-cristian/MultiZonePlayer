@@ -88,6 +88,7 @@ namespace MultiZonePlayer
         {
             Initialise("9600", "None", "One", "8", connection);
             m_zoneDetails = p_zoneDetails;
+            m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
         }
 
         ~DisplayLGTV()

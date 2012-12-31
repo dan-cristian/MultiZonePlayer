@@ -333,10 +333,11 @@ namespace MultiZonePlayer
             #endregion
 
             action = vals.GetValue(Metadata.GlobalParams.action);
+            ZoneMusic zMusic;
 
-            #region Zone init commands
             switch (cmdRemote)
             {
+                #region Zone init commands
                 case Metadata.GlobalCommands.music:
                 case Metadata.GlobalCommands.musicalarm:
                     //if cmd is music, if not on Music already stop current activity and init Music
@@ -345,8 +346,6 @@ namespace MultiZonePlayer
                         m_mainZoneActivity.Close();
                         m_mainZoneActivity = null;
                     }
-
-                    ZoneMusic zMusic;
 
                     if (m_mainZoneActivity == null)
                     {
@@ -469,239 +468,241 @@ namespace MultiZonePlayer
                     if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))
                         m_mainZoneActivity.Play();
                     break;
-            }
-
-            #endregion
-
-            if (m_mainZoneActivity == null)
-            {
-                //MLog.Log(this, "Null activity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName);
-                return result;
-            }
-            
-            
-
-            switch (cmdRemote)
-            {
-                #region Generic commands
-                case Metadata.GlobalCommands.play:
-                    m_mainZoneActivity.Play();
-                    break;
-                case Metadata.GlobalCommands.stop:
-                    m_mainZoneActivity.Stop();
-                    //foreach (m_
-                    break;
-                case Metadata.GlobalCommands.pause:
-                    m_mainZoneActivity.Pause();
-                    break;
-                case Metadata.GlobalCommands.next:
-                    m_mainZoneActivity.Next();
-                    break;
-                case Metadata.GlobalCommands.previous:
-                    m_mainZoneActivity.Previous();
-                    break;
-                case Metadata.GlobalCommands.right:
-                    m_mainZoneActivity.NextPlaylist();
-                    break;
-                case Metadata.GlobalCommands.left:
-                    m_mainZoneActivity.PreviousPlaylist();
-                    break;
-                case Metadata.GlobalCommands.mute:
-                    m_mainZoneActivity.Mute();
-                    break;
-                case Metadata.GlobalCommands.chup:
-                case Metadata.GlobalCommands.volumeup:
-                    m_mainZoneActivity.VolumeUp();
-                    if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                default:
+                    if (m_mainZoneActivity == null)
                     {
-                        m_mainZoneActivity.VolumeUp();
+                        //MLog.Log(this, "Null activity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName);
+                        return result;
                     }
-                    break;
-                case Metadata.GlobalCommands.chdown:
-                case Metadata.GlobalCommands.volumedown:
-                    m_mainZoneActivity.VolumeDown();
-                    if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                    switch (cmdRemote)
                     {
-                        m_mainZoneActivity.VolumeDown();
+                        #region Generic commands
+                        case Metadata.GlobalCommands.play:
+                            m_mainZoneActivity.Play();
+                            break;
+                        case Metadata.GlobalCommands.stop:
+                            m_mainZoneActivity.Stop();
+                            //foreach (m_
+                            break;
+                        case Metadata.GlobalCommands.pause:
+                            m_mainZoneActivity.Pause();
+                            break;
+                        case Metadata.GlobalCommands.next:
+                            m_mainZoneActivity.Next();
+                            break;
+                        case Metadata.GlobalCommands.previous:
+                            m_mainZoneActivity.Previous();
+                            break;
+
+                        case Metadata.GlobalCommands.mute:
+                            m_mainZoneActivity.Mute();
+                            break;
+                        case Metadata.GlobalCommands.chup:
+                        case Metadata.GlobalCommands.volumeup:
+                            m_mainZoneActivity.VolumeUp();
+                            if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                            {
+                                m_mainZoneActivity.VolumeUp();
+                            }
+                            break;
+                        case Metadata.GlobalCommands.chdown:
+                        case Metadata.GlobalCommands.volumedown:
+                            m_mainZoneActivity.VolumeDown();
+                            if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                            {
+                                m_mainZoneActivity.VolumeDown();
+                            }
+                            break;
+                        case Metadata.GlobalCommands.volumeset:
+                            m_mainZoneActivity.SetVolumeLevel(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.volumelevel)));
+                            break;
+                        case Metadata.GlobalCommands.guide:
+                            m_mainZoneActivity.Guide();
+                            break;
+                        #endregion
+
+                        default:
+                            #region specific commands
+                            //specific commands only to Music / Clone
+                            if (m_mainZoneActivity.GetType() == typeof(ZoneMusic))
+                            {
+                                zMusic = ((ZoneMusic)m_mainZoneActivity);
+
+                                int rating;
+                                switch (cmdRemote)
+                                {
+                                    case Metadata.GlobalCommands.right:
+                                        m_mainZoneActivity.NextPlaylist();
+                                        break;
+                                    case Metadata.GlobalCommands.left:
+                                        m_mainZoneActivity.PreviousPlaylist();
+                                        break;
+                                    case Metadata.GlobalCommands.enter://for numpads
+                                        m_mainZoneActivity.Next();
+                                        break;
+                                    case Metadata.GlobalCommands.ffwd:
+                                        zMusic.Ffwd();
+                                        break;
+                                    case Metadata.GlobalCommands.rewind:
+                                        zMusic.Rewind();
+                                        break;
+                                    case Metadata.GlobalCommands.record:
+                                        if (m_zoneUser.Id != "0")
+                                        {
+                                            //ControlCenter.PlayInfoMessage("Deleting current file", this);
+                                            zMusic.DeleteCurrentFile();
+                                        }
+                                        break;
+                                    case Metadata.GlobalCommands.repeat:
+                                        zMusic.SwitchPlayMode();
+                                        break;
+                                    case Metadata.GlobalCommands.up:
+                                        rating = zMusic.RatingUp();
+                                        break;
+                                    case Metadata.GlobalCommands.down:
+                                        rating = zMusic.RatingDown();
+                                        break;
+                                    case Metadata.GlobalCommands.ratingset:
+                                        zMusic.SetRating(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.ratingvalue)));
+                                        break;
+                                    case Metadata.GlobalCommands.setgenrelist:
+                                        zMusic.SetGenreList(vals);
+                                        break;
+                                    case Metadata.GlobalCommands.setartistlist:
+                                        zMusic.SetArtistList(vals);
+                                        break;
+                                    case Metadata.GlobalCommands.medialist:
+                                        result = zMusic.GetSongValueList();
+                                        break;
+                                    case Metadata.GlobalCommands.setmediaitem:
+                                        zMusic.Play(Convert.ToInt16(vals.IndexValueList[0]));
+                                        break;
+                                    case Metadata.GlobalCommands.getmoodmusiclist:
+                                        result = zMusic.GetMoodValueList();
+                                        break;
+                                    case Metadata.GlobalCommands.setmoodmusic:
+                                        zMusic.SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.IndexValueList[0])));
+                                        zMusic.Play();
+                                        break;
+                                    case Metadata.GlobalCommands.searchmediaitem:
+                                        zMusic.Search(vals.GetValue(Metadata.GlobalParams.searchvalue));
+                                        break;
+                                    case Metadata.GlobalCommands.followmemusic:
+                                        MZPState.Instance.ToogleFollowMeMusic();
+                                        break;
+                                    case Metadata.GlobalCommands.back:
+                                    case Metadata.GlobalCommands.holdcriteria:
+                                        if (vals.GetValue(Metadata.GlobalParams.action) != null)
+                                            zMusic.SetHoldCriteria(vals.GetValue(Metadata.GlobalParams.action).ToLower());
+                                        else
+                                            zMusic.HoldCriteriaToggle();
+                                        break;
+                                }
+                            }
+
+                            //music clone commands
+                            if (m_mainZoneActivity.GetType() == typeof(ZoneMusicClone))
+                            {
+                                ZoneMusicClone zMusicClone = ((ZoneMusicClone)m_mainZoneActivity);
+
+                                int rating;
+                                switch (cmdRemote)
+                                {
+                                    case Metadata.GlobalCommands.enter://for numpads
+                                        m_mainZoneActivity.Next();
+                                        break;
+                                    case Metadata.GlobalCommands.right:
+                                        m_mainZoneActivity.NextPlaylist();
+                                        break;
+                                    case Metadata.GlobalCommands.left:
+                                        m_mainZoneActivity.PreviousPlaylist();
+                                        break;
+                                    case Metadata.GlobalCommands.up:
+                                        rating = zMusicClone.RatingUp();
+                                        break;
+                                    case Metadata.GlobalCommands.down:
+                                        rating = zMusicClone.RatingDown();
+                                        break;
+                                    case Metadata.GlobalCommands.followmemusic:
+                                        MZPState.Instance.ToogleFollowMeMusic();
+                                        break;
+                                    case Metadata.GlobalCommands.back:
+                                    case Metadata.GlobalCommands.holdcriteria:
+                                        zMusicClone.HoldCriteriaToggle();
+                                        break;
+                                }
+                            }
+
+                            //specific commands only to internettream
+                            if (m_mainZoneActivity.GetType() == typeof(ZoneStreamVLC))
+                            {
+                                ZoneStreamVLC zStream = (ZoneStreamVLC)m_mainZoneActivity;
+
+                                switch (cmdRemote)
+                                {
+                                    case Metadata.GlobalCommands.enter://for numpads
+                                        zStream.Next();
+                                        break;
+                                    case Metadata.GlobalCommands.right:
+                                        m_mainZoneActivity.NextPlaylist();
+                                        break;
+                                    case Metadata.GlobalCommands.left:
+                                        m_mainZoneActivity.PreviousPlaylist();
+                                        break;
+                                }
+                            }
+
+                            //specific commands only to TV
+                            if (m_mainZoneActivity.GetType() == typeof(ZoneDisplayLG))
+                            {
+                                ((ZoneDisplayLG)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
+                            }
+
+                            //specific commands only to XBMC
+                            if (m_mainZoneActivity.GetType() == typeof(ZonePlayerXBMC))
+                            {
+                                ((ZonePlayerXBMC)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
+                            }
+
+                            //specific commands only to Video
+                            if (m_mainZoneActivity.GetType() == typeof(ZoneVideoMPC))
+                            {
+                                ZoneVideoMPC zVideo = (ZoneVideoMPC)m_mainZoneActivity;
+                                switch (cmdRemote)
+                                {
+                                    case Metadata.GlobalCommands.fullscreen:
+                                        zVideo.GoToFullScreen();
+                                        break;
+                                    case Metadata.GlobalCommands.down:
+                                        zVideo.VideoSelectionDown();
+                                        break;
+                                    case Metadata.GlobalCommands.up:
+                                        zVideo.VideoSelectionUp();
+                                        break;
+                                    case Metadata.GlobalCommands.right:
+                                        zVideo.NextSearchCriteria();
+                                        break;
+                                    case Metadata.GlobalCommands.left:
+                                        zVideo.PreviousSearchCriteria();
+                                        break;
+                                    case Metadata.GlobalCommands.enter:
+                                        zVideo.ToggleSearchCriteria();
+                                        break;
+                                    case Metadata.GlobalCommands.ffwd:
+                                        zVideo.Ffwd();
+                                        break;
+                                    case Metadata.GlobalCommands.rewind:
+                                        zVideo.Rewind();
+                                        break;
+                                }
+                            }
+                            #endregion specific commands
+                            break;
+
                     }
-                    break;
-                case Metadata.GlobalCommands.volumeset:
-                    m_mainZoneActivity.SetVolumeLevel(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.volumelevel)));
-                    break;
-                case Metadata.GlobalCommands.guide:
-                    m_mainZoneActivity.Guide();
                     break;
                 #endregion
-
-                default:
-                    #region specific commands
-                    //specific commands only to Music / Clone
-                    if (m_mainZoneActivity.GetType() == typeof(ZoneMusic))
-                    {
-                        ZoneMusic zMusic = ((ZoneMusic)m_mainZoneActivity);
-
-                        int rating;
-                        switch (cmdRemote)
-                        {
-                            case Metadata.GlobalCommands.enter://for numpads
-                                m_mainZoneActivity.Next();
-                                break;
-                            case Metadata.GlobalCommands.ffwd:
-                                zMusic.Ffwd();
-                                break;
-                            case Metadata.GlobalCommands.rewind:
-                                zMusic.Rewind();
-                                break;
-                            case Metadata.GlobalCommands.record:
-                                if (m_zoneUser.Id != "0")
-                                {
-                                    //ControlCenter.PlayInfoMessage("Deleting current file", this);
-                                    zMusic.DeleteCurrentFile();
-                                }
-                                break;
-                            case Metadata.GlobalCommands.right:
-                                NextPlaylist();
-                                break;
-                            case Metadata.GlobalCommands.repeat:
-                                zMusic.SwitchPlayMode();
-                                break;
-                            case Metadata.GlobalCommands.left:
-                                zMusic.PreviousPlaylist();
-                                break;
-                            case Metadata.GlobalCommands.up:
-                                rating = zMusic.RatingUp();
-                                break;
-                            case Metadata.GlobalCommands.down:
-                                rating = zMusic.RatingDown();
-                                break;
-                            case Metadata.GlobalCommands.ratingset:
-                                zMusic.SetRating(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.ratingvalue)));
-                                break;
-                            case Metadata.GlobalCommands.setgenrelist:
-                                zMusic.SetGenreList(vals);
-                                break;
-                            case Metadata.GlobalCommands.setartistlist:
-                                zMusic.SetArtistList(vals);
-                                break;
-                            case Metadata.GlobalCommands.medialist:
-                                result = zMusic.GetSongValueList();
-                                break;
-                            case Metadata.GlobalCommands.setmediaitem:
-                                zMusic.Play(Convert.ToInt16(vals.IndexValueList[0]));
-                                break;
-                            case Metadata.GlobalCommands.getmoodmusiclist:
-                                result = zMusic.GetMoodValueList();
-                                break;
-                            case Metadata.GlobalCommands.setmoodmusic:
-                                zMusic.SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.IndexValueList[0])));
-                                zMusic.Play();
-                                break;
-                            case Metadata.GlobalCommands.searchmediaitem:
-                                zMusic.Search(vals.GetValue(Metadata.GlobalParams.searchvalue));
-                                break;
-                            case Metadata.GlobalCommands.followmemusic:
-                                MZPState.Instance.ToogleFollowMeMusic();
-                                break;
-                            case Metadata.GlobalCommands.back:
-                            case Metadata.GlobalCommands.holdcriteria:
-                                if (vals.GetValue(Metadata.GlobalParams.action) != null)
-                                    zMusic.SetHoldCriteria(vals.GetValue(Metadata.GlobalParams.action).ToLower());
-                                else
-                                    zMusic.HoldCriteriaToggle();
-                                break;
-                        }
-                    }
-
-                    //music clone commands
-                    if (m_mainZoneActivity.GetType() == typeof(ZoneMusicClone))
-                    {
-                        ZoneMusicClone zMusic = ((ZoneMusicClone)m_mainZoneActivity);
-
-                        int rating;
-                        switch (cmdRemote)
-                        {
-                            case Metadata.GlobalCommands.enter://for numpads
-                                m_mainZoneActivity.Next();
-                                break;
-                            case Metadata.GlobalCommands.right:
-                                NextPlaylist();
-                                break;
-                            case Metadata.GlobalCommands.left:
-                                zMusic.PreviousPlaylist();
-                                break;
-                            case Metadata.GlobalCommands.up:
-                                rating = zMusic.RatingUp();
-                                break;
-                            case Metadata.GlobalCommands.down:
-                                rating = zMusic.RatingDown();
-                                break;
-                            case Metadata.GlobalCommands.followmemusic:
-                                MZPState.Instance.ToogleFollowMeMusic();
-                                break;
-                            case Metadata.GlobalCommands.back:
-                            case Metadata.GlobalCommands.holdcriteria:
-                                zMusic.HoldCriteriaToggle();
-                                break;
-                        }
-                    }
-
-                    //specific commands only to internettream
-                    if (m_mainZoneActivity.GetType() == typeof(ZoneStreamVLC))
-                    {
-                        ZoneStreamVLC zStream = (ZoneStreamVLC)m_mainZoneActivity;
-
-                        switch (cmdRemote)
-                        {
-                            case Metadata.GlobalCommands.enter://for numpads
-                                zStream.Next();
-                                break;
-                        }
-                    }
-
-                    //specific commands only to TV
-                    if (m_mainZoneActivity.GetType() == typeof(ZoneDisplayLG))
-                    {
-                        ((ZoneDisplayLG)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
-                    }
-
-                    //specific commands only to Video
-                    if (m_mainZoneActivity.GetType() == typeof(ZoneVideoMPC))
-                    {
-                        ZoneVideoMPC zVideo = (ZoneVideoMPC)m_mainZoneActivity;
-                        switch (cmdRemote)
-                        {
-                            case Metadata.GlobalCommands.fullscreen:
-                                zVideo.GoToFullScreen();
-                                break;
-                            case Metadata.GlobalCommands.down:
-                                zVideo.VideoSelectionDown();
-                                break;
-                            case Metadata.GlobalCommands.up:
-                                zVideo.VideoSelectionUp();
-                                break;
-                            case Metadata.GlobalCommands.right:
-                                zVideo.NextSearchCriteria();
-                                break;
-                            case Metadata.GlobalCommands.left:
-                                zVideo.PreviousSearchCriteria();
-                                break;
-                            case Metadata.GlobalCommands.enter:
-                                zVideo.ToggleSearchCriteria();
-                                break;
-                            case Metadata.GlobalCommands.ffwd:
-                                zVideo.Ffwd();
-                                break;
-                            case Metadata.GlobalCommands.rewind:
-                                zVideo.Rewind();
-                                break;
-                        }
-                    }
-                    #endregion specific commands
-                    break;
-                
             }
-
-            
 
             this.m_currentCmd = cmdRemote.ToString();
             m_mainZoneActivity.Tick();//update zone details after command
@@ -718,8 +719,6 @@ namespace MultiZonePlayer
         {
             return m_zoneDetails.ZoneId;
         }
-
-        
 
         public String ZoneName
         {
@@ -763,20 +762,10 @@ namespace MultiZonePlayer
                 return m_zoneDetails.GetDefaultVolume();
         }
 
-        /*
-        public String GetDelegatedZoneName()
-        {
-            return m_targetZoneName;
-        }
-        */
+       
         public void EventNextAuto()
         {
             m_mainZoneActivity.Next();
-        }
-
-        public void NextPlaylist()
-        {
-            ((ZoneMusic)m_mainZoneActivity).NextPlaylist();
         }
 
         private void LoadZoneIni()
@@ -832,8 +821,9 @@ namespace MultiZonePlayer
                     if (m_zoneForm != null) m_zoneForm.CloseFormSafe();
                 }
 
-               
                 if (m_zoneForm != null) m_zoneForm.RefreshState();
+
+                //m_zoneForm.ShowPlayList();
             }
             catch (Exception ex)
             {

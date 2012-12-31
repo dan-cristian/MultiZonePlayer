@@ -156,11 +156,8 @@ namespace MultiZonePlayer
                 if (zoneId != null && zoneName != null)
                 {
                     Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(Convert.ToInt16(zoneId));
-
                     
                     IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONES, zoneId.ToString(), zoneName.ToString());
-                    
-
                     if (zone == null)
                     {
                         zone = new Metadata.ZoneDetails();
@@ -183,7 +180,6 @@ namespace MultiZonePlayer
             for (int r=0; r< dgvDisplay.Rows.Count;r++)
             {
                 zoneId = dgvDisplay.Rows[r].Cells[Display_ZoneID.Name].Value;
-
                 if (zoneId != null)
                 {
                     Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(Convert.ToInt16(zoneId));

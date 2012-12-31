@@ -112,14 +112,14 @@ namespace MultiZonePlayer
                 txSleepTimer.Text = m_zoneDetails.SleepHourMin;
                 txWakeTime.Text = m_zoneDetails.WakeTime;
                 txAlarm.Text = m_zoneDetails.MovementAlert + ":" + m_zoneDetails.LastAlarmMovementDateTime;
-                txtMusicStatus.Text = m_zone.MainZoneActivity.GetState().ToString();
+                txtActive.Text = m_zoneDetails.IsActive.ToString();
 
                 if (m_zone.MainZoneActivity != null)
                 {
                     txGenPosition.Text = m_zone.MainZoneActivity.Position.ToString();
                     txPositionPercent.Text = m_zone.MainZoneActivity.PositionPercent.ToString();
                     txtVolumeLevel.Text = m_zone.MainZoneActivity.GetVolumeLevel().ToString();
-                    
+                    txtMusicStatus.Text = m_zone.MainZoneActivity.GetState().ToString();
 
                     if (m_zone.MainZoneActivity.GetType() == typeof(ZoneMusic))
                     {
@@ -187,8 +187,15 @@ namespace MultiZonePlayer
             }
         }
 
+        delegate void ShowPlayListDelegate();
         public void ShowPlayList()
         {
+            if (this.InvokeRequired)
+            {
+                ShowPlayListDelegate dlg = new ShowPlayListDelegate(ShowPlayList);
+                this.BeginInvoke(dlg);
+                return;
+            }
             dgvPlayList.Rows.Clear();
             List<MediaItem> defaultSongList;
 

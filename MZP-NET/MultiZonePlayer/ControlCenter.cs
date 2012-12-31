@@ -12,7 +12,7 @@ using System.Runtime.Remoting.Lifetime;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
-
+using System.Text.RegularExpressions;
 
 namespace MultiZonePlayer
 {
@@ -55,8 +55,6 @@ namespace MultiZonePlayer
             Thread th = new Thread(() => TickLoop());
             th.Name = "ControlCenter TickLoop";
             th.Start();
-
-            
 
             //RegisterDriveDetector(); UNUSED
             RegisterRawInput();
@@ -114,11 +112,11 @@ namespace MultiZonePlayer
                 {
                     Thread.Sleep(IniFile.ZONE_INACTIVITY_CYCLE_DURATION);
                     // FAST TICK
+                    RefreshState();
                     foreach (ZoneGeneric zone in MZPState.Instance.ActiveZones)
                     {
                         zone.Tick();
                     }
-                    RefreshState();
                     // SLOW TICK
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
                     {
@@ -149,6 +147,20 @@ namespace MultiZonePlayer
             {
                 txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
                 txAlarm.Text = MZPState.Instance.SystemAlarm.IsMonitoringActive + ":" + MZPState.Instance.SystemAlarm.AreaState.ToString();
+
+                foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+                {
+                    if (zone.IsActive)
+                    {
+                        ZonesForm form = m_zoneFormsList.Find(x => x.ZoneDetails.ZoneId.Equals(zone.ZoneId));
+                        if (form == null)
+                        {
+                            MLog.Log(this, "Initialising ZoneForm " + zone.ZoneName);
+                            OpenZoneForm(zone.ZoneId);
+                        }
+                    }
+                }
+                ShowPowerControlStatus();
             }
             txtZoneCount.Text = m_zoneFormsList.Count.ToString();
 
@@ -160,20 +172,6 @@ namespace MultiZonePlayer
             }
             else
                 txAudioCount.Text = "loading " + MediaLibrary.AllAudioFiles.PlaylistFiles.Count;
-
-            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
-            {
-                if (zone.IsActive)
-                {
-                    ZonesForm form = m_zoneFormsList.Find(x => x.ZoneDetails.ZoneId.Equals(zone.ZoneId));
-                    if (form == null)
-                    {
-                        MLog.Log(this, "Initialising ZoneForm " + zone.ZoneName);
-                        OpenZoneForm(zone.ZoneId);
-                    }
-                }
-            }
-            ShowPowerControlStatus();
         }
 
         public void CloseAllZones()
@@ -427,7 +425,6 @@ namespace MultiZonePlayer
                     zone.Close();
                 }
                 MZPState.Instance.Shutdown();
-                
             }
             catch (Exception )
             {

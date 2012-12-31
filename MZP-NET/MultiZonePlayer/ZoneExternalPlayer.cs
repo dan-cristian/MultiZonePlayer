@@ -14,7 +14,6 @@ namespace MultiZonePlayer
         public virtual void Stop()
         {
             m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
-            m_zoneDetails.IsActive = false;
         }
 
         public void Close()
@@ -121,10 +120,11 @@ namespace MultiZonePlayer
         }
     }
 
-    public class ZonePlayerXBMC:ZoneExternalPlayerBase
+    public class ZonePlayerXBMC:ZoneExternalPlayerBase, INavigableUI
     {
         //http://wiki.xbmc.org/index.php?title=JSON-RPC_API/v4
-        private int m_playerId = 1;
+        private String m_playerId = "1";
+        private String m_playerIdParam = "playerid";
         private String STATUS_URL = "/jsonrpc?UpdateState";
         private String CMD_URL = "/jsonrpc?SendRemoteKey";
 
@@ -137,7 +137,6 @@ namespace MultiZonePlayer
             public XBMCLimits()
             { }
         }
-
         public class XBMCItems
         {
             public int episode;
@@ -166,17 +165,6 @@ namespace MultiZonePlayer
             public XBMCResult()
             {}
         }
-        /*
-        public class XBMCSimpleResult
-        {
-            public int playerid;
-            public string type;
-            public int volume;
-
-            public XBMCSimpleResult()
-            { }
-        }*/
-
         public class XBMCResponse
         {
             public int id;
@@ -185,7 +173,6 @@ namespace MultiZonePlayer
             public XBMCResponse()
             {}
         }
-
         public class XBMCSimpleResponse
         {
             public int id;
@@ -199,16 +186,52 @@ namespace MultiZonePlayer
         public ZonePlayerXBMC(Metadata.ZoneDetails zoneDetails)
         {
             m_zoneDetails = zoneDetails;
+            m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
             if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
                 MZPState.RestartXBMC();
-            Display displayZone = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == zoneDetails.ParentZoneId && x.ZoneDetails.HasDisplay);
+            Display displayZone = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
             if (displayZone != null && !displayZone.IsOn)
             {
+                MLog.Log(this, "XBMC initialising TV");
                 displayZone.IsOn = true;
                 System.Threading.Thread.Sleep(10000);
                 if (displayZone.InputType != Display.InputTypeEnum.HDMI)
+                {
+                    MLog.Log(this, "XBMC set input to HDMI");
                     displayZone.InputType = Display.InputTypeEnum.HDMI;
+                }
             }
+        }
+
+        public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
+        {
+            Metadata.ValueList result = new Metadata.ValueList();
+            String action = action = vals.GetValue(Metadata.GlobalParams.action);
+            switch (cmdRemote)
+            {
+                case Metadata.GlobalCommands.right:
+                    DirectionRight();
+                    break;
+                case Metadata.GlobalCommands.left:
+                    DirectionLeft();
+                    break;
+                case Metadata.GlobalCommands.up:
+                    DirectionUp();
+                    break;
+                case Metadata.GlobalCommands.down:
+                    DirectionDown();
+                    break;
+                case Metadata.GlobalCommands.enter:
+                    Select();
+                    break;
+                case Metadata.GlobalCommands.back:
+                    DirectionBack();
+                    break;
+                default:
+                    MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
+                    break;
+            }
+            return result;
         }
 
         //shortcut for cmds
@@ -267,7 +290,7 @@ namespace MultiZonePlayer
         public override void Play()
         {
             base.Play();
-            PostURLCmdMessage("Player.PlayPause", "playerid", m_playerId.ToString());
+            PostURLCmdMessage("Player.PlayPause", m_playerIdParam, m_playerId);
         }
 
         public override void VolumeDown()
@@ -287,19 +310,44 @@ namespace MultiZonePlayer
         public override void Stop()
         {
  	        base.Stop();
-            PostURLCmdMessage("Player.Stop", "playerid", m_playerId.ToString());
+            PostURLCmdMessage("Player.Stop", m_playerIdParam, m_playerId);
         }
 
         public override void Pause()
         {
             base.Pause();
-            PostURLCmdMessage("Player.PlayPause", "playerid", m_playerId.ToString());
+            PostURLCmdMessage("Player.PlayPause", m_playerIdParam, m_playerId);
         }
 
         public override void Mute()
         {
             base.Mute();
             PostURLCmdMessage("Application.SetMute", "mute", "toggle");
+        }
+
+        public void DirectionUp()
+        {
+            PostURLCmdMessage("Input.Up");
+        }
+        public void DirectionDown()
+        {
+            PostURLCmdMessage("Input.Down");
+        }
+        public void DirectionLeft()
+        {
+            PostURLCmdMessage("Input.Left");
+        }
+        public void DirectionRight()
+        {
+            PostURLCmdMessage("Input.Right");
+        }
+        public void Select()
+        {
+            PostURLCmdMessage("Input.Select");
+        }
+        public void DirectionBack()
+        {
+            PostURLCmdMessage("Input.Back");
         }
 
         private void GetXBMCStatus()
@@ -319,12 +367,11 @@ namespace MultiZonePlayer
                     sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
                     if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1)
                     {
-                        if (!m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.Running))
+                        if (m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.NotStarted))
                         {
                             MLog.Log(this, "XBMC has active player");
-                            base.Play();
+                            Play();
                         }
-
                         result = PostURLMessage(STATUS_URL, "Application.GetProperties", "properties", @"[""volume""]");
                         resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
                         if (resp.result != null)
@@ -339,15 +386,11 @@ namespace MultiZonePlayer
                             m_zoneDetails.Title = resp.result.items[0].label;
                         }
                     }
-                    else
-                    {
-                        base.Stop();
-                    }
                 }
                 catch (Exception ex)
                 {
                     MLog.Log(this, "Unable to json parse XBMC response " + result + " err="+ex.Message);
-                    base.Stop();
+                    Stop();
                 }
             }
         }
@@ -356,16 +399,16 @@ namespace MultiZonePlayer
         {
             base.Tick();
             //slower tick
-            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 1)
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 3)
             {
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;
 
-                if (m_zoneDetails.IsActive && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
+                /*if (m_zoneDetails.IsActive && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
                 {
                     MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for XBMC child " + m_zoneDetails.ZoneName);
                     MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ParentZoneId);
-                }
+                }*/
             }
         }
     }

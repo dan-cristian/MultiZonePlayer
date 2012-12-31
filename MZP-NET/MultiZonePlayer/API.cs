@@ -49,7 +49,7 @@ namespace MultiZonePlayer
                 Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
                 val.Add(Metadata.GlobalParams.command, cmdRemote.CommandName.ToLower());
                 Thread th = new Thread(() => DoCommand(val, out retvalue));
-                th.Name = "RawInput Key press " + cmdRemote.CommandName;
+                th.Name = "RawInput Key " + cmdRemote.CommandName;
                 th.Start();
             }
             catch (Exception ex)

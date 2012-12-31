@@ -18,6 +18,7 @@ namespace MultiZonePlayer
         {
             try
             {
+                System.Threading.Thread.CurrentThread.Name = "Main GUI";
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 initVLC();

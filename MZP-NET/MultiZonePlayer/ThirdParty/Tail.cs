@@ -21,6 +21,7 @@ namespace MultiZonePlayer
 		{
 			this.filename = filename;
             m_thread = new Thread(() => RunThread());
+            m_thread.Name = "Tail " + filename.Substring(Math.Max(0, filename.Length - 20));
             m_thread.Start();
 		}
 
