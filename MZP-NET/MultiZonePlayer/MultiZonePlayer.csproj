@@ -202,6 +202,7 @@
     <Compile Include="ThirdParty\HtmlParser.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="PowerControl.cs" />
+    <Compile Include="ThirdParty\Keyboard.cs" />
     <Compile Include="ThirdParty\RawInputDevice.cs" />
     <Compile Include="IZoneActivity.cs" />
     <Compile Include="MainScreen.cs">

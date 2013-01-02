@@ -169,7 +169,7 @@ namespace MultiZonePlayer
                     {
                         ZoneDisplayLG tv= (ZoneDisplayLG)m_zone.MainZoneActivity;
                         tabZone.SelectedTab = tabZone.TabPages[6];
-                        txtInput.Text = tv.InputType;
+                        txtInput.Text = tv.InputType.ToString();
                     }
 
                     if (m_zone.MainZoneActivity.GetType() == typeof(ZonePlayerXBMC))

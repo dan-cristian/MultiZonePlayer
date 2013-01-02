@@ -125,12 +125,13 @@ namespace MultiZonePlayer
 
     public class ZoneDisplayLG:ZoneDisplay
     {
-        private String m_inputType, m_input;
+        private DisplayLGTV.InputTypeEnum m_inputType;
+        private String m_input;
         private Boolean m_isOn;
         private DateTime m_lastSlowTickDateTime = DateTime.Now;
         DisplayLGTV m_tv;
 
-        public String InputType
+        public DisplayLGTV.InputTypeEnum InputType
         {
             get { return m_inputType; }
             
@@ -201,7 +202,7 @@ namespace MultiZonePlayer
         {
             if (!m_tv.IsBusy)
             {
-                m_inputType = m_tv.InputTypeNative.ToString();
+                m_inputType = m_tv.InputTypeNative;
                 m_input = m_tv.InputCached;
                 m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
                 m_zoneDetails.Title = InputType + " ("+ m_input + ")";
@@ -240,20 +241,20 @@ namespace MultiZonePlayer
                 {
                     m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
                     m_zoneDetails.IsActive = true;
-                    if (m_inputType.Equals(DisplayLGTV.InputTypeEnum.HDMI.ToString()) && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
+                    m_zoneDetails.RequirePower = m_inputType == DisplayLGTV.InputTypeEnum.HDMI;
+
+                    if (m_zoneDetails.RequirePower && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
                     {
                         MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for LGTV child " + m_zoneDetails.ZoneName);
                         MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ParentZoneId);
                     }
-                    //else
-                    //    MLog.Log(this, "Power on Display not needed, input="+m_inputType + " IsPowerOnParent="+MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId));
                 }
                 else
                 {
                     m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
                     m_zoneDetails.IsActive = false;
+                    m_zoneDetails.RequirePower = false;
                     MLog.Log(this, "DisplayTV is off");
-
                 }
             }
         }

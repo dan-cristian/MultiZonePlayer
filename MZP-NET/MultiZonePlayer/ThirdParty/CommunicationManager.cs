@@ -75,22 +75,10 @@ namespace MultiZonePlayer
             String responseMessage="";
             lock (m_lockThisSend)
             {
-                int i = 0;
                 if (m_waitForResponse == true)
                 {
-                    MLog.Log(this, "Error, trying to write " + this.ToString() + " command: " + cmd + " while waiting for response, now looping");
-                    do
-                    {
-                        Thread.Sleep(10);
-                        System.Windows.Forms.Application.DoEvents();
-                        i++;
-                    }
-                    while (m_waitForResponse && i < 500);
-                    if (i >= 300)
-                    {
-                        //MLog.Log(this, "WARNING no response received while looping");
-                        return "[no response]";
-                    }
+                    MLog.Log(this, "Error, trying to write " + this.ToString() + " command: " + cmd + " while waiting for response");
+                    return "[thread conflict]";
                 }
 
                 m_autoEventSend.Reset();
@@ -101,7 +89,6 @@ namespace MultiZonePlayer
                 //WAIT FOR RESPONSE - ----------------------
                 bool signalReceived;
                 
-                i = 0;
                 int responseCount = 0;
                 do
                 {
@@ -477,6 +464,7 @@ namespace MultiZonePlayer
             {
                 try
                 {
+                    Thread.CurrentThread.Name = "Serial Data Received " + comPort.PortName;
                     //determine the mode the user selected (binary/string)
                     switch (CurrentTransmissionType)
                     {
@@ -537,6 +525,7 @@ namespace MultiZonePlayer
         }
         void comPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
+            Thread.CurrentThread.Name = "Serial Error Received " + comPort.PortName;
             MLog.Log(this, "ERROR received sender=" + sender.ToString() + " errtype="+e.ToString());
         }
         #endregion

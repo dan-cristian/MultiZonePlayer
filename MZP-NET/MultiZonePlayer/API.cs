@@ -39,15 +39,18 @@ namespace MultiZonePlayer
                     //MLog.Log(null, "Hook command not found key=" + kd.Key);
                     return;
                 }
-                
-                if (zoneId == -1)
-                {
-                    //MLog.Log(null,"Unknown zone, device name=" + kd.Device + " key=" + kd.Key);
-                }
                
+                //check if is not a numeric key
+                short intResult;
+                string apicmd;
+                if (Int16.TryParse(cmdRemote.CommandName, out intResult))
+                    apicmd = "k" + intResult;
+                else
+                    apicmd = cmdRemote.CommandName.ToLower();
+
                 Metadata.ValueList retvalue = null;
                 Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
-                val.Add(Metadata.GlobalParams.command, cmdRemote.CommandName.ToLower());
+                val.Add(Metadata.GlobalParams.command, apicmd);
                 Thread th = new Thread(() => DoCommand(val, out retvalue));
                 th.Name = "RawInput Key " + cmdRemote.CommandName;
                 th.Start();
@@ -106,7 +109,9 @@ namespace MultiZonePlayer
                 MZPState.Instance.PowerControl.ResumeFromPowerSaving();
                 //zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
                 cmdName = vals.GetValue(Metadata.GlobalParams.command);
-                if (Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName))
+                bool isCmdDefined = Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName);
+                
+                if (isCmdDefined)
                 {
                     Metadata.GlobalCommands apicmd = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), cmdName);
                     if (!Metadata.CommandSyntax.Validate(vals))

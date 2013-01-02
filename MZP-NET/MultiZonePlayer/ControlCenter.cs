@@ -19,8 +19,6 @@ namespace MultiZonePlayer
     
     public  partial class ControlCenter : Form
     {
-        
-
         static MainScreen parentForm = null;
         public static bool IsPowerControlEnabled = false;
 

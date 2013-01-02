@@ -16,11 +16,13 @@ namespace MultiZonePlayer
             m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
         }
 
-        public void Close()
+        public virtual void Close()
         {
             m_zoneDetails.ZoneState = Metadata.ZoneState.NotInitialised;
+            m_zoneDetails.RequirePower = false;
             m_zoneDetails.IsActive = false;
         }
+
         public virtual void Next()
         {
         }
@@ -189,18 +191,28 @@ namespace MultiZonePlayer
             m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
             if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
                 MZPState.RestartXBMC();
+            
             Display displayZone = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
-            if (displayZone != null && !displayZone.IsOn)
+            if (displayZone != null)
             {
-                MLog.Log(this, "XBMC initialising TV");
-                displayZone.IsOn = true;
-                System.Threading.Thread.Sleep(10000);
+                if (!displayZone.IsOn)
+                {
+                    MLog.Log(this, "XBMC initialising display TV");
+                    displayZone.IsOn = true;
+                    System.Threading.Thread.Sleep(10000);
+                }
+                else
+                    MLog.Log(this, "Display is ON already for XBMC");
                 if (displayZone.InputType != Display.InputTypeEnum.HDMI)
                 {
                     MLog.Log(this, "XBMC set input to HDMI");
                     displayZone.InputType = Display.InputTypeEnum.HDMI;
                 }
+                else
+                    MLog.Log(this, "Display is set to HDMI already for XBMC");
             }
+            else
+                MLog.Log(this, "No display found for XBMC, CHECK!");
         }
 
         public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
@@ -287,6 +299,7 @@ namespace MultiZonePlayer
             return res;
         }
 
+
         public override void Play()
         {
             base.Play();
@@ -357,7 +370,7 @@ namespace MultiZonePlayer
 
             if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
             {
-                Stop();
+                Close();
             }
             else
             {
@@ -390,7 +403,7 @@ namespace MultiZonePlayer
                 catch (Exception ex)
                 {
                     MLog.Log(this, "Unable to json parse XBMC response " + result + " err="+ex.Message);
-                    Stop();
+                    Close();
                 }
             }
         }

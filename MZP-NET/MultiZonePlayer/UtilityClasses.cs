@@ -28,6 +28,16 @@ namespace MultiZonePlayer
         public enum GlobalCommands
         {
             nul,
+            k0,
+            k1,
+            k2,
+            k3,
+            k4,
+            k5,
+            k6,
+            k7,
+            k8,
+            k9,
             help,
             status,
             selectzone,
@@ -449,7 +459,7 @@ namespace MultiZonePlayer
             public Boolean HasDisplay = false;
             public String DisplayConnection = "";
             public String DisplayType = "";
-            public Boolean NeedsPower = false;
+            public Boolean RequirePower = false;
             
             public int VolumeLevel;
             public long Position = 0;
@@ -785,7 +795,7 @@ namespace MultiZonePlayer
                 IsActive = false;
                 ActivityType = GlobalCommands.nul;
                 ZoneState = Metadata.ZoneState.NotInitialised;
-                NeedsPower = false;
+                RequirePower = false;
             }
         }
 
@@ -882,6 +892,7 @@ namespace MultiZonePlayer
         }
         //private static int m_index = 0;
         public String Name;
+        public String NumericCode;//two numeric chars
         public int Index;
         public List<String> Genres;
         //public List<String> Albums;
@@ -903,7 +914,7 @@ namespace MultiZonePlayer
         }
 
         public MoodMusic(int index, String name, String genres_list, String authors_list, String ratings_list, String ageinweeks_list, 
-            String logicalOperation, String groupbytop, String topcount, String israndom)
+            String logicalOperation, String groupbytop, String topcount, String israndom, String numericcode)
         {
             Genres = new List<string>();
             Authors = new List<string>();
@@ -915,6 +926,7 @@ namespace MultiZonePlayer
             IsGroupByTop = groupbytop.ToLower().Equals("true");
             IsRandom = israndom.ToLower().Equals("true");
             TopCount = Convert.ToInt16(topcount);
+            NumericCode = numericcode;
 
             if (Enum.IsDefined(typeof(LogicalSearchOperatorEnum), logicalOperation))
                 LogicalSearchOperator = (LogicalSearchOperatorEnum)Enum.Parse(typeof(LogicalSearchOperatorEnum), logicalOperation);

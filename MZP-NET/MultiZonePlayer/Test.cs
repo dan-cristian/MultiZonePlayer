@@ -280,12 +280,29 @@ namespace MultiZonePlayer
           textBox1.Text = getvol().ToString();
       }
 
+      
+
       private void button8_Click(object sender, EventArgs e)
       {
-          int vol = getvol() - 1;
-          setvol(vol);
-          textBox1.Text = getvol().ToString();
+          Program.kh = new KeyboardHook("PassAllKeysToNextApp");
+          Program.kh.KeyIntercepted += new KeyboardHook.KeyboardHookEventHandler(kh_KeyIntercepted);
       }
+
+      void kh_KeyIntercepted(KeyboardHook.KeyboardHookEventArgs e)
+      {
+          //Check if this key event is being passed to
+          //other applications and disable TopMost in 
+          //case they need to come to the front
+          if (e.PassThrough)
+          {
+              this.TopMost = false;
+          }
+
+          MLog.LogKey(String.Format("KeyHook: code={0} name={1} pass={2} mods={3} up={4} \r",
+              e.KeyCode, e.KeyName, e.PassThrough, e.keySet, e.keyUp));
+          //ds.Draw(e.KeyName);
+      }
+
 
       private int getvol()
       {

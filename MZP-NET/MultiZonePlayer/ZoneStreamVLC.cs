@@ -99,6 +99,7 @@ namespace MultiZonePlayer
         {
             m_vlcControl.Stop();
             m_tickCount = 0;
+            m_zoneDetails.RequirePower = false;
         }
         public void Close()
         {
@@ -170,6 +171,7 @@ namespace MultiZonePlayer
                 MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
                 var media = new PathMedia(m_url);
                 m_vlcControl.Media = media;
+                m_zoneDetails.RequirePower = true;
             }
             else
                 MLog.Log(this, "error empty stream url");
@@ -177,7 +179,7 @@ namespace MultiZonePlayer
 
         public void Pause()
         {
-                m_vlcControl.Pause();
+            m_vlcControl.Pause();
         }
 
         public void Mute()
@@ -272,7 +274,6 @@ namespace MultiZonePlayer
         {
             return m_url;
         }
-        
 
         public void Tick()
         {
@@ -282,18 +283,9 @@ namespace MultiZonePlayer
                 m_zoneDetails.Genre = m_vlcControl.Media.Metadatas.Genre;
                 m_zoneDetails.Author = m_vlcControl.Media.Metadatas.Title;
                 m_zoneDetails.SourceURL = m_vlcControl.Media.MRL;
-                
-                //if (m_tickCount <1)
-                    //SetVolumeLevelNative(VOLUME_NATIVE_MAX);
-                //if (m_tickCount == 1)
-                //    SetVolumeLevel(m_zoneDetails.GetDefaultVolume());
-                //if (m_tickCount==2)
-                //    SetVolumeLevelNative(GetVolumeLevelNative());
                 m_tickCount++;
                  
             }
-            
         }
-
     }
 }

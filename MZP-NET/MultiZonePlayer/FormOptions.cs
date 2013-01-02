@@ -245,7 +245,7 @@ namespace MultiZonePlayer
             }
 
             List<MoodMusic> moodlist = new List<MoodMusic>();
-            Object name, authors, genres, ratings, ageinweeks, logical, group,topcount,random;
+            Object name, authors, genres, ratings, ageinweeks, logical, group,topcount,random,numericcode;
             for (int r = 0; r < dgvMusicMood.Rows.Count; r++)
             {
                 name = dgvMusicMood.Rows[r].Cells[Music_MoodName.Name].Value??"";
@@ -257,10 +257,11 @@ namespace MultiZonePlayer
                 group = dgvMusicMood.Rows[r].Cells[MusicMood_GroupByTop.Name].Value ?? "";
                 topcount = dgvMusicMood.Rows[r].Cells[MusicMood_GroupByTopCount.Name].Value ?? "";
                 random = dgvMusicMood.Rows[r].Cells[MusicMood_Random.Name].Value ?? "";
+                numericcode = dgvMusicMood.Rows[r].Cells[MusicMood_NumericCode.Name].Value ?? "";
                 if (!name.ToString().Equals(""))
                 {
                     moodlist.Add(new MoodMusic(r, name.ToString(), genres.ToString(), authors.ToString(), ratings.ToString(), ageinweeks.ToString(), 
-                        logical.ToString(), group.ToString(), topcount.ToString(), random.ToString()));
+                        logical.ToString(), group.ToString(), topcount.ToString(), random.ToString(), numericcode.ToString()));
                 }
             }
             MoodMusic.SaveToIni(moodlist);
@@ -375,13 +376,12 @@ namespace MultiZonePlayer
                     else loop = false;
                     r++;
                 }
-                
             }
 
             foreach (MoodMusic mood in MZPState.Instance.MoodMusicList)
             {
                 dgvMusicMood.Rows.Add(mood.Name, mood.GenreList(), mood.AuthorList(), mood.RatingList(), mood.AgeInWeeksList(), 
-                    mood.LogicalSearchOperator.ToString(), mood.IsGroupByTop, mood.TopCount, mood.IsRandom);
+                    mood.LogicalSearchOperator.ToString(), mood.IsGroupByTop, mood.TopCount, mood.IsRandom, mood.NumericCode);
             }
 
             foreach (MusicScheduleEntry entry in MZPState.Instance.MusicScheduleList)
