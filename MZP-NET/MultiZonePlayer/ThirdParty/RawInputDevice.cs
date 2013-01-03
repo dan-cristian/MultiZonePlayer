@@ -35,10 +35,10 @@ namespace MultiZonePlayer
         private const int RI_KEY_E1 = 4;//This is the right version of the key.
         private const int RI_KEY_MAKE = 0;//The key is down.
 
-        private const string MODIFIER_CONTROL = "ControlKey";
-        private const string MODIFIER_SHIFT     = "ShiftKey";
-        private const string MODIFIER_ALT = "Menu";
-        private const string MODIFIER_WIN = "LWin";
+        private const string MODIFIER_CONTROL = "controlkey";
+        private const string MODIFIER_SHIFT     = "shiftkey";
+        private const string MODIFIER_ALT = "menu";
+        private const string MODIFIER_WIN = "lwin";
 
         private const int RIDI_DEVICENAME   = 0x20000007;
 
@@ -628,7 +628,7 @@ namespace MultiZonePlayer
                             myKey = Keys.NoName;
 
                         //MLog.Log2(myKey.ToString());
-                        dInfo.vKey = myKey.ToString();
+                        dInfo.vKey = myKey.ToString().ToLower();
                         //dInfo.isAppInForeground = ( == WM_INPUT);
                         switch (dInfo.flags)
                         {
@@ -657,13 +657,13 @@ namespace MultiZonePlayer
                             //    dInfo.vKey = "Win, " + dInfo.vKey;
 
                             if (modifierOnState.ContainsKey(MODIFIER_ALT))
-                                dInfo.vKey = "Alt, " + dInfo.vKey;
+                                dInfo.vKey = "alt, " + dInfo.vKey;
 
                             if (modifierOnState.ContainsKey(MODIFIER_SHIFT))
-                                dInfo.vKey = "Shift, " + dInfo.vKey;
+                                dInfo.vKey = "shift, " + dInfo.vKey;
 
                             if (modifierOnState.ContainsKey(MODIFIER_CONTROL))
-                                dInfo.vKey = "Control, " + dInfo.vKey;
+                                dInfo.vKey = "control, " + dInfo.vKey;
 
                             MLog.LogRawInput(String.Format("KBD {0} vkey={1} \t msg={2} \t flags={3} \t makecode={4} \t extra={5} device={6}\r", DateTime.Now.ToString("hh:mm:ss-ff"),
                                         dInfo.vKey, dInfo.message, dInfo.flags, "", dInfo.extraInformation, rawx86.header.hDevice));

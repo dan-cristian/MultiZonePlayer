@@ -56,11 +56,10 @@ namespace MultiZonePlayer
 
             //RegisterDriveDetector(); UNUSED
             RegisterRawInput();
-            //hsHookKeys = new Hashtable();
+            Program.kh = new KeyboardHook(KeyboardHook.Parameters.PassAllKeysToNextApp);
+            Program.kh.KeyIntercepted += new KeyboardHook.KeyboardHookEventHandler(kh_KeyIntercepted);
             
             MLog.Log(null,"Using Ini path " + IniFile.CurrentPath());
-            Application.DoEvents();
-            
         }
 
         public static ControlCenter Instance
@@ -70,6 +69,7 @@ namespace MultiZonePlayer
 
         private void m_KeyPressed(object sender, ref RawInputDevice.KeyControlEventArgs e)
         {
+            MLog.LogKey(String.Format("Raw: {0} down={1}", e.Keyboard.vKey, e.Keyboard.isKeyDownWinMessage));
             KeyDetail kd = new KeyDetail(e.Keyboard.vKey, e.Keyboard.deviceName, e.Keyboard.isKeyDownWinMessage, e.Keyboard.isKeyUpWinMessage);
             if (parentForm.m_formOptions != null && parentForm.m_formOptions.Visible)
             {
@@ -99,6 +99,21 @@ namespace MultiZonePlayer
             // InputDevice KeyPressed event
             m_rawDeviceId = new RawInputDevice(Handle);
             m_rawDeviceId.KeyPressed += new RawInputDevice.DeviceEventHandler(m_KeyPressed);
+        }
+
+        void kh_KeyIntercepted(KeyboardHook.KeyboardHookEventArgs e)
+        {
+            //Check if this key event is being passed to
+            //other applications and disable TopMost in 
+            //case they need to come to the front
+            if (e.PassThrough)
+            {
+                this.TopMost = false;
+            }
+
+            MLog.LogKey(String.Format("KeyHook: {0} code={1} pass={2} name={3} up={4}",
+                e.keySet, e.KeyCode, e.PassThrough, e.KeyName, e.keyUp));
+            //ds.Draw(e.KeyName);
         }
 
         private void TickLoop()

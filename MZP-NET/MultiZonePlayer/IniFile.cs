@@ -382,6 +382,12 @@ namespace MultiZonePlayer
                     initPath();
                 return Utilities.IniReadValue(Section, Key, m_iniFinalPath);
             }
+
+			public static bool IsWhiteListed(string window)
+			{
+				MLog.Log(null, "whitelist:["+window+"]");
+				return window.Contains("WinLoad");
+			}
         }
 
 }

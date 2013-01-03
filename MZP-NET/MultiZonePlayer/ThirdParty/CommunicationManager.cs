@@ -275,7 +275,15 @@ namespace MultiZonePlayer
             if (!(comPort.IsOpen == true))
             {
                 MLog.Log(this, "Error, COM port " + comPort.PortName+ " was not open at WriteData, opening, cmd="+msg);
-                comPort.Open();
+				try
+				{
+					comPort.Open();
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, "Error, COM port " + comPort.PortName + " cannot be opened at WriteData, cmd=" + msg);
+					return;
+				}
             }
             
             MLog.LogModem(String.Format("{0} {1} WRITE [{2}] \r\n", DateTime.Now.ToString(), comPort.PortName, msg));

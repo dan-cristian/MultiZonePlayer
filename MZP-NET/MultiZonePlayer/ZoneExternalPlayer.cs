@@ -129,6 +129,7 @@ namespace MultiZonePlayer
         private String m_playerIdParam = "playerid";
         private String STATUS_URL = "/jsonrpc?UpdateState";
         private String CMD_URL = "/jsonrpc?SendRemoteKey";
+		private String GET_URL = "/jsonrpc?";
 
         public class XBMCLimits
         {
@@ -221,6 +222,7 @@ namespace MultiZonePlayer
             String action = action = vals.GetValue(Metadata.GlobalParams.action);
             switch (cmdRemote)
             {
+					/*
                 case Metadata.GlobalCommands.right:
                     DirectionRight();
                     break;
@@ -236,6 +238,7 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.enter:
                     Select();
                     break;
+					 */ 
                 case Metadata.GlobalCommands.back:
                     DirectionBack();
                     break;
@@ -254,15 +257,20 @@ namespace MultiZonePlayer
 
         private String PostURLMessage(String URL, String method, params String[] parameters)
         {
-            WebPostRequest post = new WebPostRequest(m_zoneDetails.DisplayConnection+URL);//IniFile.PARAM_XBMC_COMMAND_URL[1]);
+            WebPostRequest post;
             String paramName,paramValue;
 
-            String msg;
+            String msg, conn;
+			if (URL == GET_URL)
+				conn = m_zoneDetails.DisplayConnection + URL + method;
+			else
+				conn = m_zoneDetails.DisplayConnection + URL;
+			post = new WebPostRequest(conn, "application/json");//IniFile.PARAM_XBMC_COMMAND_URL[1]);
             if (parameters.Length>0)
-                msg = @"{""jsonrpc"": ""2.0"", ""method"": ""<M>"", ""params"": { <P> }, ""id"": 1}";
+                msg = @"{""jsonrpc"":""2.0"",""method"":""<M>"",""params"":{<P>},""id"":1}";
             else
-                msg = @"{""jsonrpc"": ""2.0"", ""method"": ""<M>"", ""id"": 1}"; ;
-            String pair = @"""<N>"": <V>,<P>";
+                msg = @"{""jsonrpc"":""2.0"",""method"":""<M>"",""id"": 1}"; ;
+            String pair = @"""<N>"":<V>,<P>";
             msg = msg.Replace("<M>", method);
 
             for (int i = 0; i < parameters.Length; i=i+2)
@@ -374,7 +382,7 @@ namespace MultiZonePlayer
             }
             else
             {
-                String result = PostURLMessage(STATUS_URL, "Player.GetActivePlayers");
+                String result = PostURLMessage(GET_URL, "Player.GetActivePlayers");
                 try
                 {
                     sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
@@ -385,14 +393,15 @@ namespace MultiZonePlayer
                             MLog.Log(this, "XBMC has active player");
                             Play();
                         }
-                        result = PostURLMessage(STATUS_URL, "Application.GetProperties", "properties", @"[""volume""]");
+						m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
+						result = PostURLMessage(GET_URL, "Application.GetProperties", "properties", @"[""volume""]");
                         resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
                         if (resp.result != null)
                         {
                             SetVolumeLevel(resp.result.volume);
                         }
 
-                        result = PostURLMessage(STATUS_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
+						result = PostURLMessage(GET_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
                         resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
                         if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
                         {

@@ -19,7 +19,7 @@ namespace MultiZonePlayer
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
             int zoneId = -1;
-            MLog.LogKey(kd.Key+"|");
+            
             //ignore console KEYBOARD commands
             if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1]))
             {

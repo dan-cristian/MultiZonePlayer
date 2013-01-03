@@ -36,6 +36,12 @@ namespace MultiZonePlayer
             string lpWindowName // window name 
         );
 
+		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+		public static extern IntPtr GetForegroundWindow();
+		
+		[DllImport("user32.dll")]
+		static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern int SendMessage(
             int hWnd, // handle to destination window 
@@ -438,6 +444,20 @@ namespace MultiZonePlayer
             }
         }
 
+		public static string GetActiveWindowTitle()
+		{
+			const int nChars = 256;
+			IntPtr handle = IntPtr.Zero;
+			StringBuilder Buff = new StringBuilder(nChars);
+			handle = GetForegroundWindow();
+
+			if (GetWindowText(handle, Buff, nChars) > 0)
+			{
+				return Buff.ToString();
+			}
+			return null;
+		}
+
         // C# to convert a string to a byte array.
         public static byte[] StrToByteArray(string str)
         {
@@ -560,17 +580,7 @@ namespace MultiZonePlayer
             return Url.Split(':')[0];
         }
 
-        public static String PostURLMessage(String url, String form)
-        {
-            WebPostRequest post = new WebPostRequest("http://192.168.0.10:12347/jsonrpc?SendRemoteKey");
-            String msg = @"{""jsonrpc"": ""2.0"", ""method"": ""Application.SetVolume"", ""params"": { ""volume"": 54 }, ""id"": 1}";
-            post.Add(msg,"");
-            MessageBox.Show(msg);
-            String res = post.GetResponse();
-            MLog.Log(null, res);
-            return res;
-
-        }
+        
 
         public static string GetEnumDescription(Enum value)
         {
@@ -594,13 +604,15 @@ namespace MultiZonePlayer
         WebRequest theRequest;
         HttpWebResponse theResponse;
         ArrayList theQueryData;
+		String ContentType;
 
-        public WebPostRequest(string url)
+        public WebPostRequest(string url, string contenttype)
         {
             MLog.LogWeb("WebPostRequest " + url);
             theRequest = WebRequest.Create(url);
             theRequest.Method = "POST";
             theQueryData = new ArrayList();
+			ContentType = contenttype;
         }
 
         public void Add(string key, string value)
@@ -611,7 +623,7 @@ namespace MultiZonePlayer
         public string GetResponse()
         {
             // Set the encoding type
-            theRequest.ContentType = "application/x-www-form-urlencoded";
+			theRequest.ContentType = ContentType;// "application/x-www-form-urlencoded";
             theRequest.Timeout = 10000;
 
             // Build a string containing all the parameters

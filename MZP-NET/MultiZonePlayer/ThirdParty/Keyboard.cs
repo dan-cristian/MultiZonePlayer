@@ -39,332 +39,354 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Text;
 
-/// <summary>
-/// Low-level keyboard intercept class to trap and suppress system keys.
-/// </summary>
-public class KeyboardHook : IDisposable
+namespace MultiZonePlayer
 {
     /// <summary>
-    /// Parameters accepted by the KeyboardHook constructor.
+    /// Low-level keyboard intercept class to trap and suppress system keys.
     /// </summary>
-    public enum Parameters
+    public class KeyboardHook : IDisposable
     {
-        None,
-        AllowAltTab,
-        AllowWindowsKey,
-        AllowAltTabAndWindows,
-        PassAllKeysToNextApp
-    }
-
-    //Internal parameters
-    private bool PassAllKeysToNextApp = false;
-    private bool AllowAltTab = false;
-    private bool AllowWindowsKey = false;
-
-    //Keyboard API constants
-    private const int WH_KEYBOARD_LL = 13;
-    private const int WM_KEYUP = 0x0101;
-    private const int WM_SYSKEYUP = 0x0105;
-
-    //Modifier key constants
-    private const int VK_SHIFT = 0x10;
-    private const int VK_CONTROL = 0x11;
-    private const int VK_MENU = 0x12;
-    private const int VK_CAPITAL = 0x14;
-
-    //Variables used in the call to SetWindowsHookEx
-    private HookHandlerDelegate proc;
-    private IntPtr hookID = IntPtr.Zero;
-    internal delegate IntPtr HookHandlerDelegate(
-        int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
-
-    /// <summary>
-    /// Event triggered when a keystroke is intercepted by the 
-    /// low-level hook.
-    /// </summary>
-    public event KeyboardHookEventHandler KeyIntercepted;
-
-    // Structure returned by the hook whenever a key is pressed
-    internal struct KBDLLHOOKSTRUCT
-    {
-        public int vkCode;
-        int scanCode;
-        public int flags;
-        int time;
-        int dwExtraInfo;
-    }
-
-    #region Constructors
-    /// <summary>
-    /// Sets up a keyboard hook to trap all keystrokes without 
-    /// passing any to other applications.
-    /// </summary>
-    public KeyboardHook()
-    {
-        proc = new HookHandlerDelegate(HookCallback);
-        using (Process curProcess = Process.GetCurrentProcess())
-        using (ProcessModule curModule = curProcess.MainModule)
+        /// <summary>
+        /// Parameters accepted by the KeyboardHook constructor.
+        /// </summary>
+        public enum Parameters
         {
-            hookID = NativeMethods.SetWindowsHookEx(WH_KEYBOARD_LL, proc,
-                NativeMethods.GetModuleHandle(curModule.ModuleName), 0);
+            None,
+            AllowAltTab,
+            AllowWindowsKey,
+            AllowAltTabAndWindows,
+            PassAllKeysToNextApp,
+            AllowNonMZPKeys
         }
-    }
 
-    /// <summary>
-    /// Sets up a keyboard hook with custom parameters.
-    /// </summary>
-    /// <param name="param">A valid name from the Parameter enum; otherwise, the 
-    /// default parameter Parameter.None will be used.</param>
-    public KeyboardHook(string param)
-        : this()
-    {
-        if (!String.IsNullOrEmpty(param) && Enum.IsDefined(typeof(Parameters), param))
-        {
-            SetParameters((Parameters)Enum.Parse(typeof(Parameters), param));
-        }
-    }
+        //Internal parameters
+        private bool PassAllKeysToNextApp = false;
+        private bool AllowAltTab = false;
+        private bool AllowWindowsKey = false;
+        private bool AllowNonMZPKeys = false;
 
-    /// <summary>
-    /// Sets up a keyboard hook with custom parameters.
-    /// </summary>
-    /// <param name="param">A value from the Parameters enum.</param>
-    public KeyboardHook(Parameters param)
-        : this()
-    {
-        SetParameters(param);
-    }
-    
-    private void SetParameters(Parameters param)
-    {
-        switch (param)
-        {
-            case Parameters.None:
-                break;
-            case Parameters.AllowAltTab:
-                AllowAltTab = true;
-                break;
-            case Parameters.AllowWindowsKey:
-                AllowWindowsKey = true;
-                break;
-            case Parameters.AllowAltTabAndWindows:
-                AllowAltTab = true;
-                AllowWindowsKey = true;
-                break;
-            case Parameters.PassAllKeysToNextApp:
-                PassAllKeysToNextApp = true;
-                break;
-        }
-    }
-    #endregion
+        //Keyboard API constants
+        private const int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYUP = 0x0101;
+        private const int WM_SYSKEYUP = 0x0105;
 
-    #region Check Modifier keys
-    /// <summary>
-    /// Checks whether Alt, Shift, Control or CapsLock
-    /// is enabled at the same time as another key.
-    /// Modify the relevant sections and return type 
-    /// depending on what you want to do with modifier keys.
-    /// </summary>
-    private String CheckModifiers()
-    {
-        StringBuilder sb = new StringBuilder();
+        //Modifier key constants
+        private const int VK_SHIFT = 0x10;
+        private const int VK_CONTROL = 0x11;
+        private const int VK_MENU = 0x12;
+        private const int VK_CAPITAL = 0x14;
 
-        if ((NativeMethods.GetKeyState(VK_CAPITAL) & 0x0001) != 0)
-        {
-            //CAPSLOCK is ON
-            //sb.Append("Capslock is enabled.");
-        }
-        if ((NativeMethods.GetKeyState(VK_CONTROL) & 0x8000) != 0)
-        {
-            //CONTROL is pressed
-            sb.Append("Control,");
-        }
-        if ((NativeMethods.GetKeyState(VK_SHIFT) & 0x8000) != 0)
-        { 
-            //SHIFT is pressed
-            sb.Append("Shift,");
-        }
-        
-        if ((NativeMethods.GetKeyState(VK_MENU) & 0x8000) != 0)
-        {
-            //ALT is pressed
-            sb.Append("Alt,");
-        }
-        return sb.ToString();
-    }
-    #endregion Check Modifier keys
+        //Variables used in the call to SetWindowsHookEx
+        private HookHandlerDelegate proc;
+        private IntPtr hookID = IntPtr.Zero;
+        internal delegate IntPtr HookHandlerDelegate(
+            int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
 
-    #region Hook Callback Method
-    /// <summary>
-    /// Processes the key event captured by the hook.
-    /// </summary>
-    private IntPtr HookCallback(
-        int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam)
-    {
-        bool AllowKey = PassAllKeysToNextApp;
+        /// <summary>
+        /// Event triggered when a keystroke is intercepted by the 
+        /// low-level hook.
+        /// </summary>
+        public event KeyboardHookEventHandler KeyIntercepted;
 
-        //Filter wParam for KeyUp events only
-        if (nCode >= 0)
+        // Structure returned by the hook whenever a key is pressed
+        internal struct KBDLLHOOKSTRUCT
         {
-            if (wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP)
+            public int vkCode;
+            int scanCode;
+            public int flags;
+            int time;
+            int dwExtraInfo;
+        }
+
+        #region Constructors
+        /// <summary>
+        /// Sets up a keyboard hook to trap all keystrokes without 
+        /// passing any to other applications.
+        /// </summary>
+        public KeyboardHook()
+        {
+			MLog.Log(this, "Setting KeyboardHook");
+            proc = new HookHandlerDelegate(HookCallback);
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule curModule = curProcess.MainModule)
             {
+                hookID = NativeMethods.SetWindowsHookEx(WH_KEYBOARD_LL, proc,
+                    NativeMethods.GetModuleHandle(curModule.ModuleName), 0);
+            }
+        }
+
+        /// <summary>
+        /// Sets up a keyboard hook with custom parameters.
+        /// </summary>
+        /// <param name="param">A valid name from the Parameter enum; otherwise, the 
+        /// default parameter Parameter.None will be used.</param>
+        public KeyboardHook(string param)
+            : this()
+        {
+            if (!String.IsNullOrEmpty(param) && Enum.IsDefined(typeof(Parameters), param))
+            {
+                SetParameters((Parameters)Enum.Parse(typeof(Parameters), param));
+            }
+        }
+
+        /// <summary>
+        /// Sets up a keyboard hook with custom parameters.
+        /// </summary>
+        /// <param name="param">A value from the Parameters enum.</param>
+        public KeyboardHook(Parameters param)
+            : this()
+        {
+            SetParameters(param);
+        }
+
+        private void SetParameters(Parameters param)
+        {
+            switch (param)
+            {
+                case Parameters.None:
+                    break;
+                case Parameters.AllowAltTab:
+                    AllowAltTab = true;
+                    break;
+                case Parameters.AllowWindowsKey:
+                    AllowWindowsKey = true;
+                    break;
+                case Parameters.AllowAltTabAndWindows:
+                    AllowAltTab = true;
+                    AllowWindowsKey = true;
+                    break;
+                case Parameters.PassAllKeysToNextApp:
+                    PassAllKeysToNextApp = true;
+                    break;
+                case Parameters.AllowNonMZPKeys:
+                    AllowNonMZPKeys = true;
+                    PassAllKeysToNextApp = true;
+                    break;
+            }
+        }
+        #endregion
+
+        #region Check Modifier keys
+        /// <summary>
+        /// Checks whether Alt, Shift, Control or CapsLock
+        /// is enabled at the same time as another key.
+        /// Modify the relevant sections and return type 
+        /// depending on what you want to do with modifier keys.
+        /// </summary>
+        private String CheckModifiers()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if ((NativeMethods.GetKeyState(VK_CAPITAL) & 0x0001) != 0)
+            {
+                //CAPSLOCK is ON
+                //sb.Append("Capslock is enabled.");
+            }
+            if ((NativeMethods.GetKeyState(VK_CONTROL) & 0x8000) != 0)
+            {
+                //CONTROL is pressed
+                sb.Append("control, ");
+            }
+            if ((NativeMethods.GetKeyState(VK_SHIFT) & 0x8000) != 0)
+            {
+                //SHIFT is pressed
+                sb.Append("shift, ");
+            }
+
+            if ((NativeMethods.GetKeyState(VK_MENU) & 0x8000) != 0)
+            {
+                //ALT is pressed
+                sb.Append("alt, ");
+            }
+            return sb.ToString();
+        }
+        #endregion Check Modifier keys
+
+        #region Hook Callback Method
+        /// <summary>
+        /// Processes the key event captured by the hook.
+        /// </summary>
+        private IntPtr HookCallback(int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam)
+        {
+            bool AllowKey = PassAllKeysToNextApp;
+
+            //Filter wParam for KeyUp events only
+            if (nCode >= 0)
+            {
+                String keyName = ((Keys)lParam.vkCode).ToString().ToLower();
+                bool isKeySet = !(lParam.vkCode >= 160 && lParam.vkCode <= 164);
+                bool keyUp = wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP;
                 String modifiers = "";
-                String keyName = ((Keys)lParam.vkCode).ToString();
                 String keySet;
                 // Check for modifier keys, but only if the key being
                 // currently processed isn't a modifier key (in other
                 // words, CheckModifiers will only run if Ctrl, Shift,
                 // CapsLock or Alt are active at the same time as
                 // another key)
-                if (!(lParam.vkCode >= 160 && lParam.vkCode <= 164))
+                if (isKeySet)
                 {
                     modifiers = CheckModifiers();
                 }
                 keySet = modifiers + keyName;
-                // Check for key combinations that are allowed to 
-                // get through to Windows
-                //
-                // Ctrl+Esc or Windows key
-                if (AllowWindowsKey)
-                {
-                    switch (lParam.flags)
-                    {
-                        //Ctrl+Esc
-                        case 0:
-                            if (lParam.vkCode == 27)
-                                AllowKey = true;
-                            break;
 
-                        //Windows keys
-                        case 1:
-                            if ((lParam.vkCode == 91) || (lParam.vkCode == 92))
-                                AllowKey = true;
-                            break;
-                    }
-                }
-                // Alt+Tab
-                if (AllowAltTab)
+                if (AllowNonMZPKeys)
                 {
-                    if ((lParam.flags == 32) && (lParam.vkCode == 9))
-                        AllowKey = true;
+                    AllowKey = !MultiZonePlayer.RemotePipi.IsControlKey(keySet);
                 }
-                bool keyUp = wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP;
-                OnKeyIntercepted(new KeyboardHookEventArgs(lParam.vkCode, AllowKey, keySet, keyUp));
+
+                if (keyUp)
+                {
+                    // Check for key combinations that are allowed to 
+                    // get through to Windows
+                    //
+                    // Ctrl+Esc or Windows key
+                    if (AllowWindowsKey)
+                    {
+                        switch (lParam.flags)
+                        {
+                            //Ctrl+Esc
+                            case 0:
+                                if (lParam.vkCode == 27)
+                                    AllowKey = true;
+                                break;
+
+                            //Windows keys
+                            case 1:
+                                if ((lParam.vkCode == 91) || (lParam.vkCode == 92))
+                                    AllowKey = true;
+                                break;
+                        }
+                    }
+                    // Alt+Tab
+                    if (AllowAltTab)
+                    {
+                        if ((lParam.flags == 32) && (lParam.vkCode == 9))
+                            AllowKey = true;
+                    }
+
+                    //if (isKeySet)
+                    //    OnKeyIntercepted(new KeyboardHookEventArgs(lParam.vkCode, AllowKey, keySet, keyUp));
+                }
+
+				String window = Utilities.GetActiveWindowTitle();
+
+                //If this key is being suppressed, FW message to MZP and return a dummy value
+                if (AllowKey == false && !IniFile.IsWhiteListed(window))
+                {
+                    MLog.Log(this, "Canceling key " + keySet + " up="+keyUp);
+                    return (System.IntPtr)1;
+                }
+            }
+            //Pass key to next application
+            return NativeMethods.CallNextHookEx(hookID, nCode, wParam, ref lParam);
+
+        }
+        #endregion
+
+        #region Event Handling
+        /// <summary>
+        /// Raises the KeyIntercepted event.
+        /// </summary>
+        /// <param name="e">An instance of KeyboardHookEventArgs</param>
+        public void OnKeyIntercepted(KeyboardHookEventArgs e)
+        {
+            if (KeyIntercepted != null)
+                KeyIntercepted(e);
+        }
+
+        /// <summary>
+        /// Delegate for KeyboardHook event handling.
+        /// </summary>
+        /// <param name="e">An instance of InterceptKeysEventArgs.</param>
+        public delegate void KeyboardHookEventHandler(KeyboardHookEventArgs e);
+
+        /// <summary>
+        /// Event arguments for the KeyboardHook class's KeyIntercepted event.
+        /// </summary>
+        public class KeyboardHookEventArgs : System.EventArgs
+        {
+
+            private string keyName;
+            private int keyCode;
+            private bool passThrough;
+            public string keySet;
+            public bool keyUp;
+            /// <summary>
+            /// The name of the key that was pressed.
+            /// </summary>
+            public string KeyName
+            {
+                get { return keyName; }
             }
 
-            //If this key is being suppressed, return a dummy value
-            if (AllowKey == false)
-                return (System.IntPtr)1;
+            /// <summary>
+            /// The virtual key code of the key that was pressed.
+            /// </summary>
+            public int KeyCode
+            {
+                get { return keyCode; }
+            }
+
+            /// <summary>
+            /// True if this key combination was passed to other applications,
+            /// false if it was trapped.
+            /// </summary>
+            public bool PassThrough
+            {
+                get { return passThrough; }
+            }
+
+            public KeyboardHookEventArgs(int evtKeyCode, bool evtPassThrough, string _modifiers, bool _keyUp)
+            {
+                keyName = ((Keys)evtKeyCode).ToString();
+                keyCode = evtKeyCode;
+                passThrough = evtPassThrough;
+                keySet = _modifiers;
+                keyUp = _keyUp;
+            }
+
         }
-        //Pass key to next application
-        return NativeMethods.CallNextHookEx(hookID, nCode, wParam, ref lParam);
 
-    }
-    #endregion
+        #endregion
 
-    #region Event Handling
-    /// <summary>
-    /// Raises the KeyIntercepted event.
-    /// </summary>
-    /// <param name="e">An instance of KeyboardHookEventArgs</param>
-    public void OnKeyIntercepted(KeyboardHookEventArgs e)
-    {
-        if (KeyIntercepted != null)
-            KeyIntercepted(e);
-    }
-
-    /// <summary>
-    /// Delegate for KeyboardHook event handling.
-    /// </summary>
-    /// <param name="e">An instance of InterceptKeysEventArgs.</param>
-    public delegate void KeyboardHookEventHandler(KeyboardHookEventArgs e);
-
-    /// <summary>
-    /// Event arguments for the KeyboardHook class's KeyIntercepted event.
-    /// </summary>
-    public class KeyboardHookEventArgs : System.EventArgs
-    {
-
-        private string keyName;
-        private int keyCode;
-        private bool passThrough;
-        public string keySet;
-        public bool keyUp;
+        #region IDisposable Members
         /// <summary>
-        /// The name of the key that was pressed.
+        /// Releases the keyboard hook.
         /// </summary>
-        public string KeyName
+        public void Dispose()
         {
-            get { return keyName; }
+            NativeMethods.UnhookWindowsHookEx(hookID);
+        }
+        #endregion
+
+        #region Native methods
+
+        [ComVisibleAttribute(false),
+         System.Security.SuppressUnmanagedCodeSecurity()]
+        internal class NativeMethods
+        {
+            [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr SetWindowsHookEx(int idHook,
+                HookHandlerDelegate lpfn, IntPtr hMod, uint dwThreadId);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode,
+                IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
+            public static extern short GetKeyState(int keyCode);
+
         }
 
-        /// <summary>
-        /// The virtual key code of the key that was pressed.
-        /// </summary>
-        public int KeyCode
-        {
-            get { return keyCode; }
-        }
 
-        /// <summary>
-        /// True if this key combination was passed to other applications,
-        /// false if it was trapped.
-        /// </summary>
-        public bool PassThrough
-        {
-            get { return passThrough; }
-        }
-
-        public KeyboardHookEventArgs(int evtKeyCode, bool evtPassThrough, string _modifiers, bool _keyUp)
-        {
-            keyName = ((Keys)evtKeyCode).ToString();
-            keyCode = evtKeyCode;
-            passThrough = evtPassThrough;
-            keySet = _modifiers;
-            keyUp = _keyUp;
-        }
-
+        #endregion
     }
 
-    #endregion
-
-    #region IDisposable Members
-    /// <summary>
-    /// Releases the keyboard hook.
-    /// </summary>
-    public void Dispose()
-    {
-        NativeMethods.UnhookWindowsHookEx(hookID);
-    }
-    #endregion
-
-    #region Native methods
-
-    [ComVisibleAttribute(false),
-     System.Security.SuppressUnmanagedCodeSecurity()]
-    internal class NativeMethods
-    {
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr SetWindowsHookEx(int idHook,
-            HookHandlerDelegate lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode,
-            IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, CallingConvention = CallingConvention.Winapi)]
-        public static extern short GetKeyState(int keyCode);
-        
-    } 
- 
-
-    #endregion
 }
-
-

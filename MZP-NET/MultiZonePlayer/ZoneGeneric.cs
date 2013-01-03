@@ -625,14 +625,10 @@ namespace MultiZonePlayer
                     break;
             }
             
-
-            
-
-            
-
             this.m_currentCmd = cmdRemote.ToString();
-            m_mainZoneActivity.Tick();//update zone details after command
-            //RefreshState();
+			if (m_mainZoneActivity != null)
+				m_mainZoneActivity.Tick();//update zone details after command
+				//RefreshState();
             return result;
         }
 
