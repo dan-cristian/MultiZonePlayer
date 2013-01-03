@@ -35,6 +35,13 @@ namespace MultiZonePlayer
 
             //VlcContext.LibVlcDllsPath = CommonStrings.LIBVLC_DLLS_PATH_DEFAULT_VALUE_X86;
             //VlcContext.LibVlcPluginsPath = CommonStrings.PLUGINS_PATH_DEFAULT_VALUE_X86;
+
+			if (IntPtr.Size == 8)
+			{
+				VlcContext.LibVlcDllsPath = CommonStrings.LIBVLC_DLLS_PATH_DEFAULT_VALUE_X86;
+				VlcContext.LibVlcPluginsPath = CommonStrings.PLUGINS_PATH_DEFAULT_VALUE_X86;
+			}
+
             MLog.Log(this, "Initializing VLC DLL path=" + VlcContext.LibVlcDllsPath);
             
             //Set the startup options

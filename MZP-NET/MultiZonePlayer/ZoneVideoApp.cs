@@ -885,7 +885,7 @@ namespace MultiZonePlayer
                  throw new ApplicationException("Can not find the VLC executable!");
              }
              {*/
-            m_videoAppPath = IniFile.PARAM_VIDEO_APP_VLC_PATH[1];
+            //m_videoAppPath = IniFile.PARAM_VIDEO_APP_VLC_PATH[1];
 
             
 

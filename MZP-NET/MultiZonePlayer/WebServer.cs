@@ -205,15 +205,18 @@ namespace MultiZonePlayer
                                 post = reader.ReadToEnd();
                                 post = System.Uri.UnescapeDataString(post);
                                 post = post.Replace("%20", " ").Replace("+"," ");
+								//post = post.Replace("&", "^");
                                 body.Close();
                                 reader.Close();
                                 break;
                         }
                         String[] atoms = post.Split(new String[] { "&" }, StringSplitOptions.RemoveEmptyEntries);
                         String[] vars;
+						String item;
                         foreach (String atom in atoms)
                         {
-                            vars = atom.Split(new String[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
+							item = atom;//.Replace("^", "&");
+                            vars = item.Split(new String[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
                             if (Enum.IsDefined(typeof(Metadata.GlobalParams), vars[0]))
                             {
                                 param = (Metadata.GlobalParams)Enum.Parse(typeof(Metadata.GlobalParams), vars[0]);

@@ -220,25 +220,30 @@ namespace MultiZonePlayer
         {
             Metadata.ValueList result = new Metadata.ValueList();
             String action = action = vals.GetValue(Metadata.GlobalParams.action);
+			String source = vals.GetValue(Metadata.GlobalParams.cmdsource);
             switch (cmdRemote)
             {
-					/*
+					
                 case Metadata.GlobalCommands.right:
-                    DirectionRight();
+                    if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+						DirectionRight();
                     break;
                 case Metadata.GlobalCommands.left:
-                    DirectionLeft();
+					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+						DirectionLeft();
                     break;
                 case Metadata.GlobalCommands.up:
-                    DirectionUp();
+					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+						DirectionUp();
                     break;
                 case Metadata.GlobalCommands.down:
-                    DirectionDown();
+					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+						DirectionDown();
                     break;
                 case Metadata.GlobalCommands.enter:
-                    Select();
+					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+						Select();
                     break;
-					 */ 
                 case Metadata.GlobalCommands.back:
                     DirectionBack();
                     break;

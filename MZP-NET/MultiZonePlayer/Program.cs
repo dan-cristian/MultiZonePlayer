@@ -23,7 +23,6 @@ namespace MultiZonePlayer
                 System.Threading.Thread.CurrentThread.Name = "Main GUI";
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                initVLC();
                 Application.Run(new MainScreen());
             }
             catch (Exception ex)
@@ -43,10 +42,6 @@ namespace MultiZonePlayer
                     VlcContext.CloseAll();
                 }
             }
-        }
-
-        static void initVLC()
-        {
         }
     }
 }

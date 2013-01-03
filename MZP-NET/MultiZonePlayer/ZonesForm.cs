@@ -129,12 +129,15 @@ namespace MultiZonePlayer
                         txtMusicFile.Text = zMusic.GetMusicFileDescription();
                         txtPlaylist.Text = m_zoneDetails.Playlist;
                         txtPlayMode.Text = zMusic.GetPlayMode().ToString();
-                        txRating.Text = zMusic.CurrentItem.Rating.ToString();
+                        
                         txCount.Text = zMusic.GetSongList().Count.ToString();
-
-                        //show playlist index
-                        String currentSong = zMusic.CurrentItem.SourceURL;
-                        //int playIndex;
+						if (zMusic.CurrentItem != null)
+						{
+							//show playlist index
+							String currentSong = zMusic.CurrentItem.SourceURL;
+							//int playIndex;
+							txRating.Text = zMusic.CurrentItem.Rating.ToString();
+						}
                         List<MediaItem> defaultSongList = zMusic.GetSongList();
                         //playIndex = zMusic.GetHashKey(defaultSongList, currentSong);
                         //dgvPlayList.CurrentCell = dgvPlayList.Rows[playIndex].Cells[0];
@@ -175,7 +178,6 @@ namespace MultiZonePlayer
                     if (m_zone.MainZoneActivity.GetType() == typeof(ZonePlayerXBMC))
                     {
                         ZonePlayerXBMC zXBMC = (ZonePlayerXBMC)m_zone.MainZoneActivity;
-
                         tabZone.SelectedTab = tabZone.TabPages[0];
                         txtMusicFile.Text = zXBMC.ZoneDetails.Title;
                     }

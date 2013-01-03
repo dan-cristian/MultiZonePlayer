@@ -51,6 +51,7 @@ namespace MultiZonePlayer
                 Metadata.ValueList retvalue = null;
                 Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
                 val.Add(Metadata.GlobalParams.command, apicmd);
+				val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
                 Thread th = new Thread(() => DoCommand(val, out retvalue));
                 th.Name = "RawInput Key " + cmdRemote.CommandName;
                 th.Start();

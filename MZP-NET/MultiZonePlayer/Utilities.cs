@@ -478,8 +478,8 @@ namespace MultiZonePlayer
 
         public static String SanitiseInternationalAndTrim(String text)
         {
-            String charsource = "ăşîâĂÎŞȚéÖöëü";
-            String chardest =   "asiiAISTeOoeu";
+            String charsource = "ăşîâĂÎŞȚéÖöëü&";
+            String chardest =   "asiiAISTeOoeu*";
 
             StringBuilder sb = new StringBuilder(text);
 

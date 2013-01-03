@@ -98,7 +98,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_POWER_CONTROL_DEVICE_NAME_GEMBIRD = new String[] { "PARAM_POWER_CONTROL_DEVICE_NAME", "Multi1" };
             public static String[] PARAM_FOLDER_DELETED_ITEMS = new String[] { "PARAM_FOLDER_DELETED_ITEMS", "\\DeletedMultiPlayerItems\\" };
 
-            public static String[] PARAM_VIDEO_APP_VLC_PATH = new String[] { "PARAM_VIDEO_APP_VLC_PATH", "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe" };
+            //public static String[] PARAM_VIDEO_APP_VLC_PATH = new String[] { "PARAM_VIDEO_APP_VLC_PATH", "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe" };
             public static String[] PARAM_VIDEO_APP_VLC_PROCESSNAME = new String[] { "PARAM_VIDEO_APP_VLC_PROCESSNAME", "vlc" };
             public static String[] PARAM_VIDEO_APP_VLC_WINDOWTITLE_KEY = new String[] { "PARAM_VIDEO_APP_VLC_WINDOWTITLE_KEY", "VLC (" };
 
@@ -169,7 +169,7 @@ namespace MultiZonePlayer
                 PARAM_POWER_CONTROL_STATUS_APP_GEMBIRD,
                 PARAM_POWER_CONTROL_DEVICE_NAME_GEMBIRD,
                 PARAM_FOLDER_DELETED_ITEMS,
-                PARAM_VIDEO_APP_VLC_PATH,
+                //PARAM_VIDEO_APP_VLC_PATH,
                 PARAM_VIDEO_APP_VLC_PROCESSNAME,
                 PARAM_VIDEO_APP_VLC_WINDOWTITLE_KEY,
                 PARAM_VIDEO_APP_MPC_PATH,
