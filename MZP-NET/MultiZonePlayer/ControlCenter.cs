@@ -124,11 +124,13 @@ namespace MultiZonePlayer
                 try
                 {
                     Thread.Sleep(IniFile.ZONE_INACTIVITY_CYCLE_DURATION);
+					
                     // FAST TICK
                     RefreshState();
                     foreach (ZoneGeneric zone in MZPState.Instance.ActiveZones)
                     {
-                        zone.Tick();
+						if (MZPState.Instance == null) break;
+						zone.Tick();
                     }
                     // SLOW TICK
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
@@ -179,12 +181,14 @@ namespace MultiZonePlayer
 
             if (MediaLibrary.IsInitialised)
             {
-                txAudioCount.Text = MediaLibrary.AllAudioFiles.PlaylistFiles.Count.ToString();
+                txAudioCount.Text = MediaLibrary.AllAudioFiles.PlaylistFiles.Count.ToString() + "["+
+					MediaLibrary.AllAudioFiles.ArtistMetaList.Count.ToString() +"]";
                 txVideoCount.Text = MediaLibrary.AllVideoFiles.PlaylistFiles.Count.ToString();
                 txAudioSave.Text = MediaLibrary.AllAudioFiles.PendingSaveItemsCount().ToString();
             }
             else
-                txAudioCount.Text = "loading " + MediaLibrary.AllAudioFiles.PlaylistFiles.Count;
+				if (MediaLibrary.AllAudioFiles != null && MediaLibrary.AllAudioFiles.PlaylistFiles!=null)
+					txAudioCount.Text = "loading " + MediaLibrary.AllAudioFiles.PlaylistFiles.Count;
         }
 
         public void CloseAllZones()

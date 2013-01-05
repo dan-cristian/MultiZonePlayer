@@ -19,7 +19,7 @@ using System.Threading;
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
-
+using System.Xml.Linq;
 using System.Web;
 
 namespace MultiZonePlayer
@@ -358,13 +358,21 @@ namespace MultiZonePlayer
             }
         }
 
-        public static String ReadFile(String fileName)
+        public static String ReadFileRelativeToAppPath(String fileName)
         {
             StreamReader str = File.OpenText(IniFile.CurrentPath() + fileName);
             String result = str.ReadToEnd();
             str.Close();
             return result;
         }
+
+		public static String ReadFile(String filePath)
+		{
+			StreamReader str = File.OpenText(filePath);
+			String result = str.ReadToEnd();
+			str.Close();
+			return result;
+		}
 
         public static byte[] ReadBinaryFile(String fileName)
         {
@@ -756,6 +764,8 @@ namespace MultiZonePlayer
 
         public static void Log(Exception e, Object o, String text)
         {
+			if (o == null)
+				o = "null";
             if (e!=null)
                 Log(e, e.StackTrace + "|" + text + " sender:" + o.ToString());
             else
@@ -1030,4 +1040,44 @@ namespace MultiZonePlayer
             return result;
         }
     }
+
+	public class LastFMService
+	{
+		public static LastFmMeta GetArtistMeta(string artistName)
+		{
+			LastFmMeta meta = new LastFmMeta();
+			meta.ArtistName = artistName;
+			try
+			{
+				WebClient client = new WebClient();
+
+				string xmlresponse = client.DownloadString(IniFile.PARAM_LASTFM_WS_URL[1]
+					+ "method=artist.getInfo&api_key=" + IniFile.PARAM_LASTFM_API_KEY[1] + "&artist=" + artistName);
+
+				XDocument doc = XDocument.Parse(xmlresponse);
+
+				var items = doc.Descendants("tag");
+
+				meta.GenreTags = new List<String>(items.ToList().Count);
+				foreach (XElement el in items)
+				{
+					meta.GenreTags.Add(el.Element("name").Value);
+				}
+				if (meta.GenreTags.Count > 0)
+					meta.MainGenre = meta.GenreTags[0];
+
+				items = doc.Descendants("artist");
+				meta.SimilarArtists = new List<String>(items.ToList().Count);
+				foreach (XElement el in items)
+				{
+					meta.SimilarArtists.Add(el.Element("name").Value);
+				}
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Error loading lastfm data for " + artistName);
+			}
+			return meta;
+		}
+	}
 }

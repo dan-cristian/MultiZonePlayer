@@ -305,9 +305,9 @@ namespace MultiZonePlayer
                 WaitForThreadEnd(th);
                 MLog.Log(null, "Running async power on completed, active thread count=" + m_threadList.Count);
             }
-            else
-                MLog.Log(this, "Power already on, power on ignored zoneid=" + zoneId 
-                    + " status=" + m_socketsStatus + " socketindex=" + GetSocketIndexForZone(zoneId));
+            //else
+            //    MLog.Log(this, "Power already on, power on ignored zoneid=" + zoneId 
+            //        + " status=" + m_socketsStatus + " socketindex=" + GetSocketIndexForZone(zoneId));
         }
 
         private bool PowerOnSync(int zoneId)

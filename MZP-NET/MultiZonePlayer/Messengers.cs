@@ -158,36 +158,44 @@ namespace MultiZonePlayer
                     Metadata.GlobalCommands gc = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), msg.Body.ToLower());
                 
                  */
-                String[] atoms, pair;
-                try
-                {
-                    atoms = cmd.Split(' ');
-                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, atoms[0], Metadata.CommandSources.web);
-                    for (int i = 1; i < atoms.Length; i++)
-                    {
-                        pair = atoms[i].Split(':');
-                        if (pair.Length >= 2)
-                        {
-                            val.Add(pair[0], pair[1]);
-                        }
-                        else
-                            MLog.Log(this, "Invalid parameter in " + atoms[i]);
-                    }
-                    Metadata.ValueList retval;
-                    String json = API.DoCommandFromWeb(val, out retval);
-                    Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
-                    if (retval != null)
-                        replymessage = retcmd.Result + " - " + retcmd.ErrorMessage + " - " + retval.GetValue(Metadata.GlobalParams.msg);
-                    else
-                        replymessage = retcmd.Result + " - " + retcmd.ErrorMessage;
-                }
-                catch (Exception ex)
-                {
-                    MLog.Log(ex, "Error parsing GTALK command");
-                    replymessage = "Error parsing command, " + ex.Message;
-                }
+				try
+				{
+					if (cmd.StartsWith("?"))
+					{
+						replymessage = message;
+						WebServer.GenericReflect(WebServer.Instance, ref replymessage);
+					}
+					else
+					{
+						String[] atoms, pair;
 
-                SendMessage(replymessage, sender);
+						atoms = cmd.Split(' ');
+						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, atoms[0], Metadata.CommandSources.web);
+						for (int i = 1; i < atoms.Length; i++)
+						{
+							pair = atoms[i].Split(':');
+							if (pair.Length >= 2)
+							{
+								val.Add(pair[0], pair[1]);
+							}
+							else
+								MLog.Log(this, "Invalid parameter in " + atoms[i]);
+						}
+						Metadata.ValueList retval;
+						String json = API.DoCommandFromWeb(val, out retval);
+						Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
+						if (retval != null)
+							replymessage = retcmd.Result + " - " + retcmd.ErrorMessage + " - " + retval.GetValue(Metadata.GlobalParams.msg);
+						else
+							replymessage = retcmd.Result + " - " + retcmd.ErrorMessage;
+					}
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, "Error parsing GTALK command");
+					replymessage = "Error parsing command, " + ex.Message;
+				}
+				SendMessage(replymessage, sender);
             }
             else
                 MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Unknown gtalk sender " + sender, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);

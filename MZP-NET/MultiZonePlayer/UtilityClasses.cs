@@ -475,6 +475,7 @@ namespace MultiZonePlayer
             public String Album;
             public String Year;
             public String SourceURL;
+			public MediaItem MediaItem;
 
             public Boolean CameraAlertActive = true;
             public Boolean MovementAlert = false;
@@ -1164,6 +1165,7 @@ namespace MultiZonePlayer
         public Boolean IsMonitoringActive = false;
         public DateTime LastAlarmEventDateTime = DateTime.MinValue;
         public DateTime LastAreaStateChange = DateTime.MinValue;
+		public bool IsArmed = false;
 
         public Alarm(int areaid)
         {

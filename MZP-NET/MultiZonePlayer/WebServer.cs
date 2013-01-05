@@ -19,7 +19,12 @@ namespace MultiZonePlayer
         private static HttpListener m_extlistener = new HttpListener();
         private static HttpListener m_extlistenersafe = new HttpListener();
         private static HttpListener m_intlistener = new HttpListener();
-        private static WebServer m_instance;
+		private static WebServer m_instance;
+
+		internal static WebServer Instance
+		{
+			get { return WebServer.m_instance; }
+		}
         private static List<String> CONTENT_TYPES = new List<string>(new String[] {
                 "ico,image/ico,true",
                 "png,image/png,true",
@@ -34,6 +39,7 @@ namespace MultiZonePlayer
                 "htm,text/html,false"
             });//format is: extension,contentype,isbinary
         private static Random RANDOM = new Random();
+		private HttpListenerContext m_lastContext;
 
         public static void Initialise()
         {
@@ -66,9 +72,9 @@ namespace MultiZonePlayer
 
         public static void Shutdown()
         {
-            m_extlistener.Stop();
-            m_intlistener.Stop();
-            m_extlistenersafe.Stop();
+            if (m_extlistener.IsListening) m_extlistener.Stop();
+			if (m_intlistener.IsListening) m_intlistener.Stop();
+			if (m_extlistenersafe.IsListening) m_extlistenersafe.Stop();
             m_instance = null;
         }
 
@@ -154,6 +160,7 @@ namespace MultiZonePlayer
         {
             try
             {
+				m_lastContext = context;
                 HttpListenerRequest request = context.Request;
                 HttpListenerResponse response = context.Response;
                 String cmdResult = "";
@@ -342,20 +349,16 @@ namespace MultiZonePlayer
             
             String result = "", localFile="";
             String requestURL = context.Request.RawUrl;
-
             String[] contentAtoms = requestURL.Split('?');//('/');
             
             localFile = contentAtoms[0];
             if (localFile.Equals("")) localFile = IniFile.PARAM_WEB_DEFAULT_PAGE[1];
-
             
             //find content type
             String extension;
             String contenttypeentry;
             String[] contentypeatoms,extensionatoms;
                 
-                
-
             extensionatoms = localFile.Split('.');
             extension = extensionatoms[extensionatoms.Length - 1];
 
@@ -378,7 +381,7 @@ namespace MultiZonePlayer
                     binaryData = Utilities.ReadBinaryFile("\\webroot\\" + localFile);
                 else
                 {
-                    result = Utilities.ReadFile("\\webroot\\" + localFile);
+                    result = Utilities.ReadFileRelativeToAppPath("\\webroot\\" + localFile);
 
                     //set client passed params
                     foreach (String param in context.Request.QueryString.Keys)
@@ -392,86 +395,8 @@ namespace MultiZonePlayer
                     //set server variables
                     if (resvalue!=null)
                         result = result.Replace("#HTMLCommandResult#", resvalue.GetValue(Metadata.GlobalParams.msg));
-                            
-                    String[] varatoms, parameters, methods;
-                    object[] methodparams;
-                    String property, methodparam, method;
-                    object value, objinfo;
-                    PropertyInfo propInfo;
-                    MethodInfo methInfo;
-                            
-                    varatoms = result.Split(new String[]{"#"},StringSplitOptions.RemoveEmptyEntries);
-                    foreach (String atom in varatoms)
-                    {
-                        switch (atom[0])
-                        {
-                            case '!': //property read
-                                property = atom.Replace("!", "");
-                                propInfo = Type.GetType(this.GetType().FullName).GetProperty(property);
-                                if (propInfo != null)
-                                {
-                                    value = propInfo.GetValue(this, null);
-                                    result = result.Replace("#" + atom + "#", value.ToString());
-                                }
-                                break;
-                            case '~'://method invoke
-                                methodparam = atom.Replace("~", "");
-                                parameters = methodparam.Split(',');
-                                method = parameters[0].ToString();
 
-                                methods = method.Split('.');
-                                if (methods.Length > 1)//have fields
-                                {
-                                    method = methods[0];
-                                    property = methods[1];
-                                }
-                                else
-                                    property = null;
-
-                                methodparams = new object[parameters.Length+1];
-                                methodparams[0] = context;
-                                parameters.CopyTo(methodparams, 1);
-                                methInfo = Type.GetType(this.GetType().FullName).GetMethod(method);
-                                        
-                                if (methInfo != null)
-                                {
-                                    value = methInfo.Invoke(this, methodparams);
-                                    if (value != null)
-                                    {
-                                        //nested properties, check for the type and read value
-                                        if (property != null)
-                                        {
-                                            objinfo = Type.GetType(value.GetType().FullName).GetField(property);
-                                                
-                                            if (objinfo == null)
-                                            {
-                                                objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
-                                                if (objinfo == null)
-                                                {
-                                                    objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
-                                                    if (objinfo == null)
-                                                        MLog.Log(this, "Unknown call for atom=" + property);
-                                                    else
-                                                    {
-                                                        value = ((PropertyInfo)objinfo).GetValue(value, null);
-                                                    }
-                                                }
-                                                else
-                                                    value = ((PropertyInfo)objinfo).GetValue(value, null);
-                                            }
-                                            else
-                                                value = ((FieldInfo)objinfo).GetValue(value);
-                                        }
-                                        if (value != null)
-                                            result = result.Replace("#" + atom + "#", value.ToString());
-                                    }
-                                }
-                                break;
-                            case '*'://multiple values
-                                    
-                                break;
-                        }
-                    }
+					GenericReflect(this, ref result);
                 }
             }
             catch (Exception ex)
@@ -489,8 +414,6 @@ namespace MultiZonePlayer
                 if (context.Request.HasEntityBody)
                 {
                     System.IO.Stream body = context.Request.InputStream;
-                    
-                    
                     
                     switch (context.Request.Headers["Content-Type"])
                     {
@@ -519,9 +442,101 @@ namespace MultiZonePlayer
             return result;
         }
 
+		public static String GenericReflect(Object instance, ref String result)
+		{
+			String[] parameters, methods;
+			object[] methodparams;
+			String property, methodparam, method;
+			object value, objinfo;
+			PropertyInfo propInfo;
+			MethodInfo methInfo;
+			String[] varatoms;
+
+			varatoms = result.Split(new String[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+			try
+			{
+				foreach (String atom in varatoms)
+				{
+					switch (atom[0])
+					{
+						case '!': //property read
+							property = atom.Replace("!", "");
+							propInfo = Type.GetType(instance.GetType().FullName).GetProperty(property);
+							if (propInfo != null)
+							{
+								value = propInfo.GetValue(instance, null);
+								result = result.Replace("#" + atom + "#", value.ToString());
+							}
+							break;
+						case '~'://method invoke
+							methodparam = atom.Replace("~", "");
+							parameters = methodparam.Split(',');
+							method = parameters[0].ToString();
+
+							methods = method.Split('.');
+							if (methods.Length > 1)//have fields
+							{
+								method = methods[0];
+								property = methods[1];
+							}
+							else
+								property = null;
+
+							methodparams = new object[parameters.Length];// + 1];
+							//methodparams[0] = context;
+							parameters.CopyTo(methodparams, 0);//1);
+							methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
+
+							if (methInfo != null)
+							{
+								value = methInfo.Invoke(instance, methodparams);
+								if (value != null)
+								{
+									//nested properties, check for the type and read value
+									if (property != null)
+									{
+										objinfo = Type.GetType(value.GetType().FullName).GetField(property);
+
+										if (objinfo == null)
+										{
+											objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
+											if (objinfo == null)
+											{
+												objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
+												if (objinfo == null)
+													MLog.Log(instance, "Unknown call for atom=" + property);
+												else
+												{
+													value = ((PropertyInfo)objinfo).GetValue(value, null);
+												}
+											}
+											else
+												value = ((PropertyInfo)objinfo).GetValue(value, null);
+										}
+										else
+											value = ((FieldInfo)objinfo).GetValue(value);
+									}
+									if (value != null)
+										result = result.Replace("#" + atom + "#", value.ToString());
+								}
+							}
+							break;
+						case '*'://multiple values
+
+							break;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Error reflection");
+			}
+
+			return result;
+		}
 
         #region used for HTML data
-        public Alarm HTMLSystemAlarm(HttpListenerContext context, String methodname)
+        public Alarm HTMLSystemAlarm(String methodname)
         {
              return MZPState.Instance.SystemAlarm; 
         }
@@ -558,7 +573,7 @@ namespace MultiZonePlayer
 
         
 
-        public String HTMLGetCmdValues(HttpListenerContext context, String methodname, String zoneid, String command, String htmldelimiter)
+        public String HTMLGetCmdValues(/*HttpListenerContext context, */String methodname, String zoneid, String command, String htmldelimiter)
         {
             Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.web);
             Metadata.ValueList resvalue;
@@ -591,17 +606,17 @@ namespace MultiZonePlayer
             return result;
         }
 
-        public MZPState HTMLMZPState(HttpListenerContext context, String methodname)
+        public MZPState HTMLMZPState(/*HttpListenerContext context, */String methodname)
         {
             return MZPState.Instance;
         }
 
-        public Metadata.ZoneDetails HTMLZones(HttpListenerContext context, String methodname, String zoneid)
+        public Metadata.ZoneDetails HTMLZones(/*HttpListenerContext context, */String methodname, String zoneid)
         {
             return MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
         }
 
-        public Metadata.ZoneDetails HTMLFirstActiveZone(HttpListenerContext context, String methodname)
+        public Metadata.ZoneDetails HTMLFirstActiveZone(/*HttpListenerContext context, */String methodname)
         {
 
             List<Metadata.ZoneDetails> zones;
@@ -616,17 +631,17 @@ namespace MultiZonePlayer
 
         }
 
-        public String HTMLDVRServerPort(HttpListenerContext context, String methodname)
+        public String HTMLDVRServerPort(/*HttpListenerContext context, */String methodname)
         {
-            return Utilities.ExtractServerNameFromURL(context.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_ISPY_PORT[1]; 
+            return Utilities.ExtractServerNameFromURL(m_lastContext.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_ISPY_PORT[1]; 
         }
 
-        public String HTMLWebServerPort(HttpListenerContext context, String methodname)
+        public String HTMLWebServerPort(/*HttpListenerContext context, */String methodname)
         {
-            return Utilities.ExtractServerNameFromURL(context.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_WEBSERVER_PORT_EXT[1];
+            return Utilities.ExtractServerNameFromURL(m_lastContext.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_WEBSERVER_PORT_EXT[1];
         }
 
-        public String HTMLZoneMoveStatusAsColor(HttpListenerContext context, String methodname, String zoneid)
+        public String HTMLZoneMoveStatusAsColor(/*HttpListenerContext context, */String methodname, String zoneid)
         {
             Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
             String color = "Transparent";
@@ -644,7 +659,7 @@ namespace MultiZonePlayer
             return color;
         }
 
-        public String HTMLGetZoneStatusAsColor(HttpListenerContext context, String methodname, String zoneid, String activity)
+        public String HTMLGetZoneStatusAsColor(/*HttpListenerContext context, */String methodname, String zoneid, String activity)
         {
             Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
             String color = "inherit";

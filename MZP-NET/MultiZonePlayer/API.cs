@@ -273,7 +273,8 @@ namespace MultiZonePlayer
                 Metadata.ZoneDetails zonedetails;
                 if (zonename != null)
                 {
-                    zonedetails = MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.ToLower().Contains(zonename.ToLower()));
+                    zonedetails = MZPState.Instance.ZoneDetails.Find(x => 
+						x.ZoneName.ToLower().Contains(zonename.ToLower()));
                     if (zonedetails != null) zoneId = zonedetails.ZoneId;
                 }
             }
@@ -311,7 +312,7 @@ namespace MultiZonePlayer
                         if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
                         {
                             MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
-                            zoneId = MZPState.Instance.GetChildZone(zoneId);
+                            zoneId = MZPState.Instance.GetActiveChildZone(zoneId);
                         }
                         else
                         {

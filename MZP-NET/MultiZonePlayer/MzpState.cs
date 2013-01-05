@@ -540,12 +540,13 @@ namespace MultiZonePlayer
                 }
             }
 
-            public int GetChildZone(int parentZoneId)
+            public int GetActiveChildZone(int parentZoneId)
             {
-                Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x => x.ParentZoneId==parentZoneId);
+                Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList()
+					.Find(x => (x.ParentZoneId==parentZoneId)&&x.IsActive);
                 if (zone != null)
                 {
-                    MLog.Log(this, "Found most recent child zone id=" + zone.ZoneId + " name=" + zone.ZoneName);
+                    MLog.Log(this, "Found most recent active child zone id=" + zone.ZoneId + " name=" + zone.ZoneName);
                     return zone.ZoneId;
                 }
                 else
@@ -626,7 +627,7 @@ namespace MultiZonePlayer
                         double diff = lastCamEvent.Subtract(alarmRefTime).TotalMinutes;
                         if (diff > 60)
                         {
-                            MLog.Log(this, "WINLOAD potential error, not running, time dif in min=" + diff);
+                            //MLog.Log(this, "WINLOAD potential error, not running, time dif in min=" + diff);
                             //LogEvent(MZPEvent.EventSource.System, "Winload restarting, was not responsive", MZPEvent.EventType.Security, MZPEvent.EventImportance.Error);
                             //m//_systemAlarm.LastAlarmEventDateTime = DateTime.Now;
                             //RestartWinload();
@@ -795,30 +796,45 @@ namespace MultiZonePlayer
                 String message = mzpevent.Source + " | " + mzpevent.Message + " | " + mzpevent.TypeEv + " | " + mzpevent.Importance + " | " + mzpevent.DateTime;
                 MLog.LogEvent(mzpevent);
 
-                if (mzpevent.ZoneDetails != null)
-                {
-                    if (mzpevent.ZoneDetails.IsArmed)
-                    {
-                        MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone is armed, buzz required");
-                        SendMessengerMessageToOne(message);
-                        MessengerMakeBuzz();
-                    }
+				if (mzpevent.ZoneDetails != null)
+				{
+					if (mzpevent.ZoneDetails.IsArmed)
+					{
+						MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone is armed, buzz required");
+						SendMessengerMessageToOne(message);
+						MessengerMakeBuzz();
+					}
 
-                    if (mzpevent.ZoneDetails != null && mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
-                            (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
-                    {
-                        MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone armed, hard notify required");
-                        SendMessengerMessageToOne(message);
-                        MessengerMakeBuzz();
-                    }
-                    else
-                    { 
-                      /*  MLog.Log(this, "Ignoring alarm event on " + mzpevent.ZoneDetails.ZoneName + " movementalert=" + mzpevent.ZoneDetails.MovementAlert
-                            + " zonealarmareaid=" + mzpevent.ZoneDetails.AlarmAreaId + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId
-                            + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
-                       */
-                    }
-                }
+					if (mzpevent.ZoneDetails != null && mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
+							(MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
+					{
+						MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone armed, hard notify required");
+						SendMessengerMessageToOne(message);
+						MessengerMakeBuzz();
+					}
+					else
+					{
+						/*  MLog.Log(this, "Ignoring alarm event on " + mzpevent.ZoneDetails.ZoneName + " movementalert=" + mzpevent.ZoneDetails.MovementAlert
+							  + " zonealarmareaid=" + mzpevent.ZoneDetails.AlarmAreaId + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId
+							  + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
+						 */
+					}
+				}
+				else
+				{//area event
+					if (SystemAlarm.IsArmed)
+					{
+						switch (m_systemAlarm.AreaState)
+						{
+							case Alarm.EnumAreaState.entrydelay:
+								String msg = "Area entry when area is armed";
+								MLog.Log(this, msg);
+								SendMessengerMessageToOne(msg);
+								MessengerMakeBuzz();
+								break;
+						}
+					}
+				}
 
                 if ((mzpevent.TypeEv.Equals(MZPEvent.EventType.Security) && mzpevent.Importance.Equals(MZPEvent.EventImportance.Critical)))
                 {

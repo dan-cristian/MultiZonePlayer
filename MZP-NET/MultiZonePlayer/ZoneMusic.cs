@@ -203,6 +203,7 @@ namespace MultiZonePlayer
                             m_zoneDetails.IsActive = true;
                             m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
                             m_zoneDetails.RequirePower = true;
+							m_zoneDetails.MediaItem = CurrentItem;
                         }
                     }
                     else

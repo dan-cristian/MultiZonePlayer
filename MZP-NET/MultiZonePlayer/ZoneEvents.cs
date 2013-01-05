@@ -169,6 +169,16 @@ namespace MultiZonePlayer
                             Alarm.EnumAreaState areastate = (Alarm.EnumAreaState)Enum.Parse(typeof(Alarm.EnumAreaState), state);
                             MZPState.Instance.SystemAlarm.AreaState = areastate;
                             MZPState.Instance.SystemAlarm.LastAreaStateChange = eventDateTime;
+							switch (areastate)
+							{
+								case Alarm.EnumAreaState.armed:
+									MZPState.Instance.SystemAlarm.IsArmed = true;
+									break;
+								case Alarm.EnumAreaState.entrydelayfinished:
+									MZPState.Instance.SystemAlarm.IsArmed = false;
+									break;
+							}
+							
                             MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " AreaEvent " + areastate.ToString() + " is " + state, 
                                 MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, null);
                             break;

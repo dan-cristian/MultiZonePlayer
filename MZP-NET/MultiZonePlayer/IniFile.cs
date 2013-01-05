@@ -24,6 +24,7 @@ namespace MultiZonePlayer
             public const String LOG_WEB_FILE = "\\MultiZonePlayerWeb.log";
             public const String LOG_KEY_FILE = "\\MultiZonePlayerKeyboard.log";
             public const String LOG_RAWINPUT_FILE = "\\MultiZonePlayerRawInput.log";
+			public const String MEDIA_META_FILE_NAME = "\\mzp-meta.txt"; 
             public const String TEMP_EXTENSION = ".temp.wav";
             public const String BEEP_OK_FILE_NAME = "\\BeepOK.wav";
             public const String BEEP_ERROR_FILE_NAME = "\\BeepError.wav";
@@ -155,6 +156,10 @@ namespace MultiZonePlayer
             public static String[] PARAM_XBMC_APP_PATH = new String[] { "PARAM_XBMC_APP_PATH", "c:\\Program Files (x86)\\XBMC\\XBMC.exe" };
             public static String[] PARAM_BOOT_TIME_SECONDS = new String[] { "PARAM_BOOT_TIME_SECONDS", "10" };
 
+			public static String[] PARAM_LASTFM_API_KEY = new String[] { "PARAM_LASTFM_API_KEY", "9d320007e2d23c9571f466030c7f2ddc" };
+			public static String[] PARAM_LASTFM_SECRET_KEY = new String[] { "PARAM_LASTFM_SECRET_KEY", "812f830d23965715878d5cd1390ada1a" };
+			public static String[] PARAM_LASTFM_WS_URL = new String[] { "PARAM_LASTFM_WS_URL", "http://ws.audioscrobbler.com/2.0/?" };
+
             public static String DATETIME_FORMAT = "HH:mm";
 
             public static Object[] PARAMS = new Object[]
@@ -211,7 +216,10 @@ namespace MultiZonePlayer
                 PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS,
                 PARAM_XBMC_PROCESS_NAME,
                 PARAM_XBMC_APP_PATH,
-                PARAM_BOOT_TIME_SECONDS
+                PARAM_BOOT_TIME_SECONDS,
+				PARAM_LASTFM_API_KEY,
+				PARAM_LASTFM_SECRET_KEY,
+				PARAM_LASTFM_WS_URL
 
              };
             private static string m_iniFinalPath =  null;

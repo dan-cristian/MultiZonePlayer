@@ -32,12 +32,15 @@ namespace MultiZonePlayer
 
         public void SaveUpdatedItems()
         {
-            List<MediaItem> clone = m_playlistItems.ToList();
-            foreach (MediaItem ai in clone)
-            {
-                if (ai.RequireSave)
-                    ai.SaveItem();
-            }
+			if (m_playlistItems != null)
+			{
+				List<MediaItem> clone = m_playlistItems.ToList();
+				foreach (MediaItem ai in clone)
+				{
+					if (ai.RequireSave)
+						ai.SaveItem();
+				}
+			}
             
         }
 
@@ -229,8 +232,9 @@ namespace MultiZonePlayer
         public String Comment;
         public DateTime LibraryAddDate;
         public Boolean IsFavorite = false;
-
-        public abstract bool RetrieveMediaItemValues();
+		public LastFmMeta Meta;
+		public abstract bool RetrieveMediaItemValues();
+		
         
         public virtual int UpdateRating(int step, int minvalue, int maxvalue)
         {
@@ -290,21 +294,32 @@ namespace MultiZonePlayer
             return LibraryAddDate.CompareTo(dt) > 0;
         }
     }
+	
+	public class LastFmMeta
+	{
+		public string URL;
+		public string MainGenre;
+		public string ArtistName;
+		public List<string> GenreTags;
+		public string ArtistOrigin;
+		public string Album;
+		public List<string> SimilarArtists;
+
+		public override string ToString()
+		{
+			return String.Format("{0}, {1}", ArtistName, MainGenre);
+		}
+	}
 
     class MusicItem:MediaItem
-    {/*
-        public const String keyRating = "rating";
-        public const String keyGenre = "Genre";
-        public const String keyPlayCount = "userplaycount";
-        public const String keyAuthor = "Album/Performer";
-        public const String keyFormat = "Format";
-      * */
+    {
         private TagLib.File m_tagFile = null;
 
-        public MusicItem(String url, String folder)
+        public MusicItem(String url, String folder, LastFmMeta meta)
         {
             SourceURL = url;
             SourceContainerURL = folder;
+			Meta = meta;
         }
 
         public override bool RetrieveMediaItemValues()
@@ -343,6 +358,17 @@ namespace MultiZonePlayer
                         MediaType = "audio";
                         Created = Utilities.GetFileInfo(SourceURL).CreationTime;
                         Comment = tg.Tag.Comment == null ? "" : tg.Tag.Comment;
+
+						if (Meta != null)
+						{
+							/*Author = Meta.ArtistName != null ? Meta.ArtistName : Author;
+							Album = Meta.Album != null ? Meta.Album : Album;
+							Genre = Meta.GenreTags != null && Meta.GenreTags.Length>0? Meta.GenreTags[0]: Genre;
+							GenreTags = Meta.GenreTags;
+							ArtistOrigin = Meta.ArtistOrigin != null ? Meta.ArtistOrigin : ArtistOrigin;
+							 */
+						}
+						
                         if (!Comment.Contains(IniFile.MEDIA_TAG_LIBRARY_ID))
                         {
                             //first added to library, reset some fields
@@ -526,41 +552,92 @@ namespace MultiZonePlayer
 
     class DirectoryPlaylist : PlaylistBase
     {
+		private List<LastFmMeta> m_artistMetaList;
+
+		public List<LastFmMeta> ArtistMetaList
+		{
+			get { return m_artistMetaList; }
+		}
+
         public DirectoryPlaylist()
         {
+			m_playlistFiles = new List<String>();
+			m_playlistItems = new List<MediaItem>();
+			m_artistMetaList = new List<LastFmMeta>();
         }
 
         //ext in format *.ext
-        public DirectoryPlaylist(String directory, String ext, SearchOption search)
+        /*public DirectoryPlaylist(String directory, String ext, SearchOption search)
         {
+			
             AddFiles(directory, ext, search);
-        }
+        }*/
 
         public void AddFiles(String directory, String ext, SearchOption search)
         {
             try
             {
-                if (m_playlistFiles == null) m_playlistFiles = new List<String>();
-                if (m_playlistItems == null) m_playlistItems = new List<MediaItem>();
-
                 DirectoryInfo di = new DirectoryInfo(directory);
                 FileInfo[] rgFiles = di.GetFiles(ext, search);
                 MusicItem item;
+				LastFmMeta meta, metaDisk, metaDownload;
+				String metaText;
+				String metaFile;
                 MLog.Log(this, "Adding files count="+rgFiles.Length);
 
+				m_playlistFiles.Capacity = rgFiles.Length;
+				m_playlistItems.Capacity = rgFiles.Length;
+				m_artistMetaList.Capacity = rgFiles.Length / 10;
+				
+				DirectoryInfo dir;
                 foreach (FileInfo fi in rgFiles)
                 {
                     if (!m_playlistFiles.Contains(fi.FullName))
                     {
-                        m_playlistFiles.Add(fi.FullName);
-                        item = new MusicItem(fi.FullName,fi.DirectoryName);
-                        item.RetrieveMediaItemValues();
-                        m_playlistItems.Add(item);
+						dir = fi.Directory;
+						do
+						{
+							meta = m_artistMetaList.Find(x => x.URL == dir.FullName);
+							if (meta == null)
+							{
+								metaFile = dir.FullName + IniFile.MEDIA_META_FILE_NAME;
+								if (File.Exists(metaFile))
+								{
+									metaText = Utilities.ReadFile(metaFile);
+									metaDisk = fastJSON.JSON.Instance.ToObject<LastFmMeta>(metaText);
+									if (metaDisk.ArtistName == null)
+										metaDisk.ArtistName = dir.Name;
+									if (metaDisk.MainGenre == null)
+									{
+										metaDownload = LastFMService.GetArtistMeta(metaDisk.ArtistName);
+										meta = metaDownload;
+										meta.URL = dir.FullName;
+										metaText = fastJSON.JSON.Instance.ToJSON(meta, false);
+										System.IO.File.WriteAllText(metaFile, metaText);
+									}
+									else
+										meta = metaDisk;
+									m_artistMetaList.Add(meta);
+									break;
+								}
+								if (dir.Parent != null)
+									dir = dir.Parent;
+								else
+									break;
+							}
+							else
+								break;
+						}
+						while (true);
+						m_playlistFiles.Add(fi.FullName);
+						item = new MusicItem(fi.FullName, fi.DirectoryName, meta);
+						item.RetrieveMediaItemValues();
+						m_playlistItems.Add(item);
                     }
-                    Application.DoEvents();
+                    //Application.DoEvents();
                     if (MZPState.Instance == null)
                     {
-                        MLog.Log(this, "Abording loading files, program is exiting");
+                        MLog.Log(this, "Aborting loading files, program is exiting");
                         break;
                     }
                 }
@@ -568,7 +645,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-                MLog.Log(null, "Unable to add files from " + directory + " err=" + ex.Message);
+                MLog.Log(ex, null, "Unable to add files from " + directory + " err=" + ex.Message);
             }
         }
 
@@ -840,11 +917,13 @@ namespace MultiZonePlayer
         private Dictionary<String, int> m_GenreList;
 
      
-        public VideoCollection(String path)
+        public VideoCollection()
         {
             m_actorNames = new Dictionary<String, int>();
             m_GenreList = new Dictionary<String, int>();
-            LoadVideos(path);
+			m_playlist = new DirectoryPlaylist();
+			//m_playlist.ClearAllLists();
+			m_videoPlayList = new List<VideoItem>();
         }
 
         public List<string> PlaylistFiles
@@ -866,12 +945,8 @@ namespace MultiZonePlayer
             return m_actorNames.Keys;
         }
 
-        private void LoadVideos(String path)
+        public void LoadVideos(String path)
         {
-            m_playlist = new DirectoryPlaylist();
-            //m_playlist.ClearAllLists();
-            m_videoPlayList = new List<VideoItem>();
-
             for (int i = 0; i < IniFile.VIDEO_EXTENSION.Length; i++)
             {
                 m_playlist.AddFiles(path, "*." + IniFile.VIDEO_EXTENSION[i], System.IO.SearchOption.AllDirectories);
@@ -880,41 +955,46 @@ namespace MultiZonePlayer
             VideoItem vidInfo;
             String actors, actorName;
 
-            foreach (String file in m_playlist.PlaylistFiles)
-            {
-                //filePath = m_playlist.GetAllFileList()[file].ToString();
-                vidInfo = new VideoItem(file);
-                vidInfo.RetrieveMediaItemValues();
-                m_videoPlayList.Add(vidInfo);
-                //parse actors
-                actors = vidInfo.ImdbActors;
-                int lastIndex = 0;
-                for (int i = 0; i < actors.Length; i++)
-                {
-                    if ((actors[i] == ',') || (i == actors.Length - 1))
-                    {
-                        actorName = actors.Substring(lastIndex, i - lastIndex);
-                        if (!m_actorNames.Keys.Contains(actorName))
-                            m_actorNames.Add(actorName, 1);
-                        else
-                            m_actorNames[actorName] = m_actorNames[actorName] + 1;
-                        lastIndex = i + 1;
-                    }
-                }
+			if (m_playlist.PlaylistFiles != null)
+			{
+				foreach (String file in m_playlist.PlaylistFiles)
+				{
+					//filePath = m_playlist.GetAllFileList()[file].ToString();
+					vidInfo = new VideoItem(file);
+					vidInfo.RetrieveMediaItemValues();
+					m_videoPlayList.Add(vidInfo);
+					//parse actors
+					actors = vidInfo.ImdbActors;
+					int lastIndex = 0;
+					for (int i = 0; i < actors.Length; i++)
+					{
+						if ((actors[i] == ',') || (i == actors.Length - 1))
+						{
+							actorName = actors.Substring(lastIndex, i - lastIndex);
+							if (!m_actorNames.Keys.Contains(actorName))
+								m_actorNames.Add(actorName, 1);
+							else
+								m_actorNames[actorName] = m_actorNames[actorName] + 1;
+							lastIndex = i + 1;
+						}
+					}
 
-                //parse genres
-                List<Object> genres;
-                genres = Utilities.ParseStringForValues(vidInfo.ImdbGenre, ' ', typeof(String));
-                String genre;
-                foreach (Object obj in genres)
-                {
-                    genre = (String)obj;
-                    if (!m_GenreList.Keys.Contains(genre))
-                        m_GenreList.Add(genre, 1);
-                    else
-                        m_GenreList[genre] = m_GenreList[genre] + 1;
-                }
-            }
+					//parse genres
+					List<Object> genres;
+					genres = Utilities.ParseStringForValues(vidInfo.ImdbGenre, ' ', typeof(String));
+					String genre;
+					foreach (Object obj in genres)
+					{
+						genre = (String)obj;
+						if (!m_GenreList.Keys.Contains(genre))
+							m_GenreList.Add(genre, 1);
+						else
+							m_GenreList[genre] = m_GenreList[genre] + 1;
+					}
+				}
+			}
+			else
+				MLog.Log(this, "Error, no video files");
         }
 
         public IOrderedEnumerable<String> GetActorsByAppearance(int minimuAppeareanceCount)
@@ -943,23 +1023,38 @@ namespace MultiZonePlayer
 
     class MediaLibrary
     {
+		public static bool IsInitialised = false;
         private static DirectoryPlaylist m_musicFiles;
         private static VideoCollection m_videoFiles;
 
         public static void Initialise()
         {
-                InitMusic();
-                InitVideo();
-                SaveUpdatedItems();//save new items found in library
+			IsInitialised = false;
+			m_musicFiles = new DirectoryPlaylist();
+			m_videoFiles = new VideoCollection();
+
+			MLog.Log(null, "Loading mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
+			for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
+			{
+				//Application.DoEvents();
+				m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*." + IniFile.MUSIC_EXTENSION[i],
+					System.IO.SearchOption.AllDirectories);
+			}
+			MLog.Log(null, "Loading mediaplayer video files from " + IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
+			m_videoFiles.LoadVideos(IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
+            SaveUpdatedItems();//save new items found in library
+			IsInitialised = true;
         }
 
+		/*
         public static bool IsInitialised
         {
             get
             {
-                return (m_musicFiles != null) && (m_videoFiles != null);
+                return (m_musicFiles != null) && (m_videoFiles != null) 
+					&& (m_musicFiles.PlaylistFiles!=null) && (m_videoFiles.PlaylistFiles!=null);
             }
-        }
+        }*/
         public static DirectoryPlaylist AllAudioFiles
         {
             get
@@ -983,10 +1078,10 @@ namespace MultiZonePlayer
         public static List<MediaItem> AudioFilesByGenre(Metadata.ValueList vals)
         {
             var items = m_musicFiles.PlaylistItems.FindAll(delegate(MediaItem item)
-                { 
-                    return vals.ContainsIndexValue(item.Genre);
-                });
-                //GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+            { 
+                return vals.ContainsIndexValue(item.Genre);
+            });
+            //GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
             return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
         }
 
@@ -1052,25 +1147,7 @@ namespace MultiZonePlayer
             
         }
 
-        private static void InitMusic()
-        {
-            MLog.Log(null, "Loading mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
-            m_musicFiles = new DirectoryPlaylist();
-            
-            for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
-            {
-                Application.DoEvents();
-                m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*."+IniFile.MUSIC_EXTENSION[i], 
-                    System.IO.SearchOption.AllDirectories);
-            }
-        }
-
-        private static void InitVideo()
-        {
-            MLog.Log(null, "Loading mediaplayer video files from " + IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
-            m_videoFiles = new VideoCollection(IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
-        }
-
+        
         public static Metadata.ValueList MusicGenres
         {
             get
