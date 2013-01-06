@@ -163,7 +163,7 @@ namespace MultiZonePlayer
 					if (cmd.StartsWith("?"))
 					{
 						replymessage = message;
-						WebServer.GenericReflect(WebServer.Instance, ref replymessage);
+						HTMLInterface.GenericReflect(HTMLInterface.Instance, ref replymessage);
 					}
 					else
 					{

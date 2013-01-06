@@ -139,8 +139,8 @@ namespace MultiZonePlayer
             areaid,
             weekday,
             cmdsource,
-			contenttype
-
+			contenttype,
+			r//random no
         }
 
         public enum GlobalCommandsUniversal
@@ -610,6 +610,32 @@ namespace MultiZonePlayer
                     return res;
                 }
             }
+
+			public String IsActiveAsDiv
+			{
+				get {return IsActive ? DIV_SHOW : DIV_HIDE;}
+			}
+
+			public String HasImmediateMoveAsDiv
+			{
+				get { return HasImmediateMove ? DIV_SHOW : DIV_HIDE; }
+			}
+
+			public String HasRecentMoveAsDiv
+			{
+				get { return HasRecentMove ? DIV_SHOW : DIV_HIDE; }
+			}
+
+			public String HasPastMoveAsDiv
+			{
+				get { return HasPastMove ? DIV_SHOW : DIV_HIDE; }
+			}
+
+			public String HasNotifyMoveAsDiv
+			{
+				get { return HasImmediateMove || HasRecentMove ? DIV_SHOW : DIV_HIDE; }
+			}
+
 
             #endregion
             public static void LoadFromIni(ref List<ZoneDetails> zones)

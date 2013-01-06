@@ -9,30 +9,17 @@
     <link href="mobile.css" rel="stylesheet" type="text/css" />
     <script type="text/JavaScript" src="utilities.js">
 	</script> 
-	<script type="text/JavaScript">
-	function setCamDivVisibility()
-	{
-		if ("#~HTMLMZPState.HasRecentMove#"=="True"){
-		document.getElementById("camdiv").style.visibility = "visible";
-		}
-		else{
-			document.getElementById("camdiv").style.visibility = "hidden";
-		}
-
-
-		refresh(30000);
-	}</script>
       </head>
-<body onload="setCamDivVisibility();" onerror="setCamDivVisibility();" 
-	  bgcolor="black">
+<body onload="refresh(30000);" onerror="refresh(30000);" bgcolor="black">
 <table>
 	<tr>
-	<td width="99%" align=left valign=top><img src="/cmd?command=getpicture&amp;r=#!HTMLRandom#" alt=""/></td>
-	<td>
-	<div id="metadiv">
+	<td width="99%" align="left" valign="top" style="color:White"><img src="/cmd?command=getpicture&amp;r=#!HTMLRandom#" alt=""/>
+	<br />#~CurrentPicture.Created# | #~CurrentPicture.SourceURL#
+	</td>
+	<td valign="top" align="left">
 	<table>
-	<tr><td style="color:White">#!HTMLServerTime#</td></tr>
-	<tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,1#; color: #FFFFFF">
+	<tr ><td style="color:White" >#!HTMLServerTime#</td></tr>
+		<tr><td><div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,1#; color: #FFFFFF">
             #~HTMLZones.ZoneName,1# | #~HTMLZones.Author,1# | #~HTMLZones.Title,1# | #~HTMLZones.Genre,1#
         </div> </td> </tr>
         <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,2#; color: #FFFFFF">
@@ -45,30 +32,27 @@
             #~HTMLZones.ZoneName,4# | #~HTMLZones.Author,4# | #~HTMLZones.Title,4# | #~HTMLZones.Genre,4# 
         </div> </td> </tr>
         <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,5#; color: #FFFFFF">
-            #~HTMLZones.ZoneName,5# | #~HTMLZones.Author,5# | #~HTMLZones.Title,5# | #~HTMLZones.Genre,5# | #~HTMLZones.SourceURL,5# | #~HTMLZones.ZoneState,5# 
+            #~HTMLZones.ZoneName,5# | #~HTMLZones.Author,5# | #~HTMLZones.Title,5# | #~HTMLZones.Genre,5# 
         </div> </td> </tr>
 	</table>
-	</div>
-	<div id="camdiv">
 	<table>
-		<tr><td>
+		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,7#;">
 		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,7#&amp;r=#!HTMLRandom#" id="Img3"
 			title="#~HTMLZones.ZoneName,7#" alt="#~HTMLZones.ZoneName,7#" width="240" height="160"/>
-		</td></tr>
-		<tr><td>
+		</div></td></tr>
+		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,12#;">
 		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,12#&amp;r=#!HTMLRandom#" id="Img4"
 			title="#~HTMLZones.ZoneName,12#" alt="#~HTMLZones.ZoneName,12#" width="240" height="160"/>
-		</td></tr>
-		<tr><td>
+		</div></td></tr>
+		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,6#;">
 			<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,6#&amp;r=#!HTMLRandom#" id="Img1"
 			title="#~HTMLZones.ZoneName,6#" alt="#~HTMLZones.ZoneName,6#" width="240" height="160"/>
-		</td></tr>
-		<tr><td>
+		</div></td></tr>
+		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,2#;">
 		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,2#&amp;r=#!HTMLRandom#" id="Img2"
 			title="#~HTMLZones.ZoneName,2#" alt="#~HTMLZones.ZoneName,2#" width="240" height="160"/>
-		</td></tr>
+		</div></td></tr>
 	</table>
-	</div>
 	</td>
 	</tr>
 </table>

@@ -255,10 +255,7 @@ namespace MultiZonePlayer
 
             public List<Metadata.ZoneDetails> ZoneDetails
             {
-                get
-                {
-                    return m_zoneList;
-                }
+                get{return m_zoneList;}
             }
 
             public ZoneEvents ZoneEvents
@@ -297,10 +294,7 @@ namespace MultiZonePlayer
 
             public BasePowerControl PowerControl
             {
-                get
-                {
-                    return m_powerControl;
-                }
+                get{return m_powerControl;}
             }
 
             public void ToogleFollowMeMusic()
@@ -310,32 +304,20 @@ namespace MultiZonePlayer
 
             public Boolean IsFollowMeMusic
             {
-                get
-                {
-                    return m_isFollowMeMusic;
-                }
+                get{return m_isFollowMeMusic;}
             }
             public List<String> SystemOutputDeviceNames
             {
-                get
-                {
-                    return m_systemOutputDeviceNames;
-                }
+                get{return m_systemOutputDeviceNames;}
             }
 
             public Hashtable SystemInputDeviceNames
             {
-                get
-                {
-                    return m_systemInputDeviceNames;
-                }
+                get{return m_systemInputDeviceNames;}
             }
             public Hashtable ZoneInputDeviceEntries
             {
-                get
-                {
-                    return m_zoneInputDeviceNames;
-                }
+                get{return m_zoneInputDeviceNames;}
             }
 
             public List<Playlist> Playlist
@@ -343,7 +325,7 @@ namespace MultiZonePlayer
                 get { return m_playlist; }
             }
 
-			public bool HasRecentMove
+			public bool HasNotifyMove
 			{
 				get{
 					bool move = false;
@@ -390,8 +372,6 @@ namespace MultiZonePlayer
                 }
                 return null;
             }
-
-
 
             public void InitRemotes()
             {

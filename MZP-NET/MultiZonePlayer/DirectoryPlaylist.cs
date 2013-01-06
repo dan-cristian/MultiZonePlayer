@@ -33,7 +33,7 @@ namespace MultiZonePlayer
 				DirectoryInfo di = new DirectoryInfo(directory);
 				FileInfo[] rgFiles = di.GetFiles(ext, search);
 
-				MLog.Log(this, "Adding files count=" + rgFiles.Length);
+				MLog.Log(this, "Adding files ext="+ext+" count=" + rgFiles.Length);
 
 				//m_playlistFiles.Capacity = rgFiles.Length;
 				//m_playlistItems.Capacity = rgFiles.Length;
@@ -50,7 +50,7 @@ namespace MultiZonePlayer
 						break;
 					}
 				}
-				MLog.Log(this, "Adding files completed");
+				MLog.Log(this, "Adding files completed ext="+ext);
 			}
 			catch (Exception ex)
 			{
@@ -1062,14 +1062,16 @@ namespace MultiZonePlayer
 				{
 					do
 					{
-						m_autoIterateItems = m_playlistItems.FindAll(x => x.Created.Day == currentDate.Day);
+						m_autoIterateItems = m_playlistItems.FindAll(x =>
+							(x.Created.Day == currentDate.Day) &&
+							(x.Created.Day == currentDate.Subtract(new TimeSpan(1, 0, 0, 0)).Day));
 						m_autoIterateDate = DateTime.Now;
 						m_currentPictureIndex = -1;
 						if (m_autoIterateItems.Count == 0)
 							currentDate = currentDate.Subtract(new TimeSpan(1,0,0,0));
 						tries++;
 					}
-					while (m_autoIterateItems.Count==0 || tries < 60);
+					while (m_autoIterateItems.Count==0 && tries < 60);
 				}
 
 				string picture;

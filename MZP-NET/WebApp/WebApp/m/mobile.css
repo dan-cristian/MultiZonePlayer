@@ -1,7 +1,7 @@
         body {margin:0px;padding:0px;}
         table {width: 100%;text-align:left;border-spacing:0px;}
         tr {text-align:left;}
-        td {text-align:left;table-layout:auto;padding:0px;border-width:thin;border-style:outset;}
+        td {text-align:left;table-layout:auto;padding:0px;border-width:thin;border-style:none;}
         a {text-decoration: none;font-size:50px;}
         a.big {font-size:96px;}
         a.med {font-size:16px;}
