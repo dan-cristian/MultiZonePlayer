@@ -265,7 +265,6 @@ namespace MultiZonePlayer
                     {
                         if (request.HasEntityBody)
                         {
-
                             System.IO.Stream body = request.InputStream;
                             System.Text.Encoding encoding = System.Text.Encoding.UTF8;//request.ContentEncoding;
                             System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
@@ -287,10 +286,15 @@ namespace MultiZonePlayer
                             MLog.Log(null, "POST has no entity body, unexpected. " + request.Url.OriginalString);
                         }
                     }
-
-                    
-                    WriteResponse("text/html", cmdResult, response, null);
-
+					String contentType;
+					byte[] binaryData = resvalue.BinaryData;
+					if (binaryData != null)
+					{
+						contentType = resvalue.GetValue(Metadata.GlobalParams.contenttype);
+					}
+					else
+						contentType = "text/html";
+                    WriteResponse(contentType, cmdResult, response, binaryData);
                 }
                 else
                 {//any other html request
@@ -299,8 +303,9 @@ namespace MultiZonePlayer
                     
                     if (vals.ContainsKey(Metadata.GlobalParams.command))
                         json = API.DoCommandFromWeb(vals, cmdSourceEnum, out resvalue);
-                    String html = ServeDirectHtml(context, requestServer, resvalue, out contentType, out binaryData);
-                    WriteResponse(contentType, html, response, binaryData);
+					
+					String html = ServeDirectHtml(context, requestServer, resvalue, out contentType, out binaryData);
+					WriteResponse(contentType, html, response, binaryData);
                 }
             }
             catch (Exception ex)
@@ -323,7 +328,6 @@ namespace MultiZonePlayer
             else
             {
                 buffer = new System.Text.UTF8Encoding().GetBytes(htmlresponse);
-                
             }
 
             httpresponse.ContentLength64 = buffer.Length;
@@ -378,7 +382,7 @@ namespace MultiZonePlayer
             try
             {
                 if (isBinary)
-                    binaryData = Utilities.ReadBinaryFile("\\webroot\\" + localFile);
+                    binaryData = Utilities.ReadBinaryFileRelativeToAppPath("\\webroot\\" + localFile);
                 else
                 {
                     result = Utilities.ReadFileRelativeToAppPath("\\webroot\\" + localFile);
@@ -570,8 +574,6 @@ namespace MultiZonePlayer
         {
             get { return DateTime.Now.ToString("HH:mm:ss"); }
         }
-
-        
 
         public String HTMLGetCmdValues(/*HttpListenerContext context, */String methodname, String zoneid, String command, String htmldelimiter)
         {

@@ -179,16 +179,21 @@ namespace MultiZonePlayer
             }
             txtZoneCount.Text = m_zoneFormsList.Count.ToString();
 
-            if (MediaLibrary.IsInitialised)
-            {
-                txAudioCount.Text = MediaLibrary.AllAudioFiles.PlaylistFiles.Count.ToString() + "["+
-					MediaLibrary.AllAudioFiles.ArtistMetaList.Count.ToString() +"]";
-                txVideoCount.Text = MediaLibrary.AllVideoFiles.PlaylistFiles.Count.ToString();
-                txAudioSave.Text = MediaLibrary.AllAudioFiles.PendingSaveItemsCount().ToString();
-            }
-            else
-				if (MediaLibrary.AllAudioFiles != null && MediaLibrary.AllAudioFiles.PlaylistFiles!=null)
+			if (MediaLibrary.IsInitialised)
+			{
+				txAudioCount.Text = MediaLibrary.AllAudioFiles.PlaylistFiles.Count.ToString() + "[" +
+					MediaLibrary.AllAudioFiles.ArtistMetaList.Count.ToString() + "]";
+				txVideoCount.Text = MediaLibrary.AllVideoFiles.PlaylistFiles.Count.ToString();
+				txAudioSave.Text = MediaLibrary.AllAudioFiles.PendingSaveItemsCount().ToString();
+				txPictureCount.Text = MediaLibrary.AllPictureFiles.PlaylistFiles.Count.ToString();
+			}
+			else
+			{
+				if (MediaLibrary.AllAudioFiles != null && MediaLibrary.AllAudioFiles.PlaylistFiles != null)
 					txAudioCount.Text = "loading " + MediaLibrary.AllAudioFiles.PlaylistFiles.Count;
+				if (MediaLibrary.AllPictureFiles != null && MediaLibrary.AllPictureFiles.PlaylistFiles != null)
+					txPictureCount.Text = "loading " + MediaLibrary.AllPictureFiles.PlaylistFiles.Count;
+			}
         }
 
         public void CloseAllZones()

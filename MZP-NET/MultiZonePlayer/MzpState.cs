@@ -343,6 +343,15 @@ namespace MultiZonePlayer
                 get { return m_playlist; }
             }
 
+			public bool HasRecentMove
+			{
+				get{
+					bool move = false;
+					move = m_zoneList.Find(x => x.HasRecentMove || x.HasImmediateMove) != null;
+					return move;
+				}
+			}
+
             public Hashtable GetAPlayList(int zoneId)
             {
                 Hashtable table;

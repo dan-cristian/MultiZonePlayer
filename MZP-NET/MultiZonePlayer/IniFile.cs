@@ -56,6 +56,7 @@ namespace MultiZonePlayer
             public const String DEFAULT_EXT_PLAYLIST = ".m3u";
             public const String POPM_CREATOR_NAME = "MZP";
             public static String[] MUSIC_EXTENSION = new String[] { "mp3", "wav", "flac" };
+			public static String[] PICTURE_EXTENSION = new String[] { "jpg", "bmp", "png" };
 #if DEBUG
             public static String[] VIDEO_EXTENSION = new String[] {"mp4" };
 #else
@@ -110,6 +111,7 @@ namespace MultiZonePlayer
 
             public static String[] PARAM_VIDEO_STORE_ROOT_PATH = new String[] { "PARAM_VIDEO_STORE_ROOT_PATH", "c:\\temp\\" };
             public static String[] PARAM_MUSIC_STORE_ROOT_PATH = new String[] { "PARAM_MUSIC_STORE_ROOT_PATH", "c:\\temp\\" };
+			public static String[] PARAM_PICTURE_STORE_ROOT_PATH = new String[] { "PARAM_PICTURE_STORE_ROOT_PATH", "c:\\temp\\" };
             public static String[] PARAM_KEYBOARD_DEVICE_IDENTIFIER = new String[] { "PARAM_KEYBOARD_DEVICE_IDENTIFIER", "ACPI#PNP" };
 
             public static String[] PARAM_WEBSERVER_PORT_EXT = new String[] { "PARAM_WEBSERVER_PORT_EXT", "12345" };
@@ -183,6 +185,7 @@ namespace MultiZonePlayer
                 PARAM_VIDEO_APP_MPC_WEBPORT,
                 PARAM_VIDEO_STORE_ROOT_PATH,
                 PARAM_MUSIC_STORE_ROOT_PATH,
+				PARAM_PICTURE_STORE_ROOT_PATH,
                 PARAM_KEYBOARD_DEVICE_IDENTIFIER,
                 PARAM_WEBSERVER_PORT_EXT,
                 PARAM_ISPY_PASS,

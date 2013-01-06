@@ -19,7 +19,7 @@ namespace MultiZonePlayer
         private void btPlayCount_Click(object sender, EventArgs e)
         {
             progressBar.Maximum = MediaLibrary.AllAudioFiles.PlaylistItems.Count;
-            foreach (MediaItem item in MediaLibrary.AllAudioFiles.PlaylistItems)
+            foreach (AudioItem item in MediaLibrary.AllAudioFiles.PlaylistItems)
             {
                 item.SetPlayCount(0);
                 progressBar.Value++;

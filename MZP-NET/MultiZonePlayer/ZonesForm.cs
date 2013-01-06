@@ -138,7 +138,7 @@ namespace MultiZonePlayer
 							//int playIndex;
 							txRating.Text = zMusic.CurrentItem.Rating.ToString();
 						}
-                        List<MediaItem> defaultSongList = zMusic.GetSongList();
+                        List<AudioItem> defaultSongList = zMusic.GetSongList();
                         //playIndex = zMusic.GetHashKey(defaultSongList, currentSong);
                         //dgvPlayList.CurrentCell = dgvPlayList.Rows[playIndex].Cells[0];
                     }
@@ -199,7 +199,7 @@ namespace MultiZonePlayer
                 return;
             }
             dgvPlayList.Rows.Clear();
-            List<MediaItem> defaultSongList;
+            List<AudioItem> defaultSongList;
 
             defaultSongList = ((ZoneMusic)m_zone.MainZoneActivity).GetSongList();
             if (defaultSongList != null)

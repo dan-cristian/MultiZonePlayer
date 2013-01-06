@@ -374,30 +374,23 @@ namespace MultiZonePlayer
 			return result;
 		}
 
-        public static byte[] ReadBinaryFile(String fileName)
+        public static byte[] ReadBinaryFileRelativeToAppPath(String fileName)
         {
             FileStream fs = File.OpenRead(IniFile.CurrentPath() + fileName);
             byte[] data = new byte[fs.Length];
             fs.Read(data, 0, data.Length);
             fs.Close();
             return data;
-
-            /*
-            //Open image as byte stream to send to requestor
-            FileInfo fInfo = new FileInfo("c:\\temp.png");
-            long numBytes = fInfo.Length;
-
-            FileStream fStream = new FileStream("c:\\temp.png", FileMode.Open, FileAccess.Read);
-
-            BinaryReader br = new BinaryReader(fStream);
-
-            byte[] bOutput = br.ReadBytes((int)numBytes);
-
-            br.Close();
-
-            fStream.Close();
-             * */
         }
+
+		public static byte[] ReadBinaryFile(String filePath)
+		{
+			FileStream fs = File.OpenRead(filePath);
+			byte[] data = new byte[fs.Length];
+			fs.Read(data, 0, data.Length);
+			fs.Close();
+			return data;
+		}
 
         public static void WriteBinaryFile(String fileName, byte[] data)
         {

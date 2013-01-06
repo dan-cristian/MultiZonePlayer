@@ -35,7 +35,7 @@ namespace MultiZonePlayer
         private int m_currentSongKey = 0;
         private int m_indexPlaylist = 0;
         private int m_indexMood = 0;
-        private List<MediaItem> m_songList = null;
+        private List<AudioItem> m_songList = null;
         private List<IZoneActivity> m_cloneMusicActivityList = new List<IZoneActivity>();
         private HoldCriteria m_holdCriteria = HoldCriteria.nothing;
            
@@ -203,7 +203,7 @@ namespace MultiZonePlayer
                             m_zoneDetails.IsActive = true;
                             m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
                             m_zoneDetails.RequirePower = true;
-							m_zoneDetails.MediaItem = CurrentItem;
+							//m_zoneDetails.MediaItem = CurrentItem;
                         }
                     }
                     else
@@ -275,7 +275,7 @@ namespace MultiZonePlayer
 
             public void ClearUsageTags()
             {
-                foreach (MediaItem me in m_songList)
+                foreach (AudioItem me in m_songList)
                 {
                     me.SetPlayCount(0);
                     me.SetRating(0);
@@ -310,7 +310,7 @@ namespace MultiZonePlayer
 
             public void Next()
             {
-                MediaItem currentItem = m_songList[m_currentSongKey];
+                AudioItem currentItem = m_songList[m_currentSongKey];
                 Stop();
                 if (m_songList != null)
                 {
@@ -322,7 +322,7 @@ namespace MultiZonePlayer
                     else
                         MLog.Log(this, "No songs in songlist, not going next");
 
-                    MediaLibrary.SaveUpdatedItems();
+                    MediaLibrary.AllAudioFiles.SaveUpdatedItems();
                 }
             }
 
@@ -382,7 +382,7 @@ namespace MultiZonePlayer
 
             public void Previous()
             {
-                MediaItem currentItem = m_songList[m_currentSongKey];
+                AudioItem currentItem = m_songList[m_currentSongKey];
                 Stop();
                 m_currentSongKey--;
                 if (m_currentSongKey < 0)
@@ -391,7 +391,7 @@ namespace MultiZonePlayer
                     Play();
                 else
                     MLog.Log(this, "No songs in songlist, not going previous");
-                MediaLibrary.SaveUpdatedItems();
+                MediaLibrary.AllAudioFiles.SaveUpdatedItems();
             }
 
             public void VolumeUp()
@@ -472,7 +472,7 @@ namespace MultiZonePlayer
             }
            
 
-            public MediaItem CurrentItem
+            public AudioItem CurrentItem
             {
                 get {
                     if (m_songList != null && m_songList.Count > 0)
@@ -656,7 +656,7 @@ namespace MultiZonePlayer
                 return currentPlaylistName;
             }*/
 
-            public List<MediaItem> GetSongList()
+            public List<AudioItem> GetSongList()
             {
                 return m_songList;
             }
@@ -682,7 +682,7 @@ namespace MultiZonePlayer
             }
 
 
-            public int GetHashKey(List<MediaItem> list, String currentSong)
+            public int GetHashKey(List<AudioItem> list, String currentSong)
             {
                 int index;
 
@@ -696,7 +696,7 @@ namespace MultiZonePlayer
                 return index;
             }
 
-            public List<MediaItem> GetRandomisedSongList()
+            public List<AudioItem> GetRandomisedSongList()
             {
                 return m_songList;
             }

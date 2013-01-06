@@ -269,6 +269,15 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
+		  Goheer.EXIF.EXIFextractor er2 = new Goheer.EXIF.EXIFextractor(
+			  "p:\\Poze Proprii\\2012-12-24\\Removable storage\\DCIM\\118___12\\IMG_0630.JPG", "", "");
+		  
+		  txt.AppendText(er2["Date Time"]+"\r\n\r\n");
+
+		  foreach (System.Web.UI.Pair s in er2)
+		  {
+			  txt.AppendText(s.First + " : " + s.Second+"\n");
+		  }
 
       }
 

@@ -112,7 +112,8 @@ namespace MultiZonePlayer
             makebuzz,
             powerevent,
             tvsetinput,
-            powercycle
+            powercycle,
+			getpicture
         }
         public enum GlobalParams
         {
@@ -137,7 +138,8 @@ namespace MultiZonePlayer
             status,
             areaid,
             weekday,
-            cmdsource
+            cmdsource,
+			contenttype
 
         }
 
@@ -475,7 +477,6 @@ namespace MultiZonePlayer
             public String Album;
             public String Year;
             public String SourceURL;
-			public MediaItem MediaItem;
 
             public Boolean CameraAlertActive = true;
             public Boolean MovementAlert = false;
@@ -600,7 +601,9 @@ namespace MultiZonePlayer
                 get
                 {
                     String res;
-                    if (IsActive && (ActivityType.Equals(GlobalCommands.music) || ActivityType.Equals(GlobalCommands.streammp3)))
+                    if (IsActive && (ActivityType.Equals(GlobalCommands.music) 
+						|| ActivityType.Equals(GlobalCommands.streammp3)
+						|| ActivityType.Equals(GlobalCommands.xbmc)))
                         res = DIV_SHOW;
                     else
                         res = DIV_HIDE;
@@ -638,7 +641,7 @@ namespace MultiZonePlayer
 
                 if (json != "")
                 {
-                    ZoneDetails zonestorage = fastJSON.JSON.Instance.ToObject(json) as ZoneDetails;
+                    ZoneDetails zonestorage = fastJSON.JSON.Instance.ToObject<ZoneDetails>(json);
 
                     ZoneName = zonestorage.ZoneName;
                     ParentZoneId = zonestorage.ParentZoneId;
@@ -679,7 +682,7 @@ namespace MultiZonePlayer
 
             public void SaveStateToIni()
             {
-                String json = fastJSON.JSON.Instance.ToJSON(this);
+                String json = fastJSON.JSON.Instance.ToJSON(this, false);
                 IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
             }
 
@@ -1151,8 +1154,8 @@ namespace MultiZonePlayer
         public enum EnumScope
         { area, zone, trouble };
         public enum EnumAreaState
-        { opened, armed, disarmed, stayarmed, sleeparm, ready, exitdelay, exitdelayfinished, entrydelay, entrydelayfinished, remotearmed,
-        sirenon, sirenonrestore, alarm, alarminmemory, alarmoutofmemory, zonesbypassed
+        { opened, armed, disarmed, stayarmed, sleeparm, ready, exitdelay, exitdelayfinished, entrydelay, entrydelayfinished, entrydelayend, remotearmed,
+        sirenon, sirenonrestore, alarm, alarminmemory, alarmoutofmemory, zonesbypassed, UNKNOWN
         };
         public enum EnumZoneState
         { opened, closed };

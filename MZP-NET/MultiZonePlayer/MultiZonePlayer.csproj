@@ -193,6 +193,7 @@
     <Compile Include="FormOptions.Designer.cs">
       <DependentUpon>FormOptions.cs</DependentUpon>
     </Compile>
+    <Compile Include="ThirdParty\EXIFextractor.cs" />
     <Compile Include="ThirdParty\fastJSON\Getters.cs" />
     <Compile Include="ThirdParty\fastJSON\JSON.cs" />
     <Compile Include="ThirdParty\fastJSON\JsonParser.cs" />
@@ -217,6 +218,7 @@
     <Compile Include="ThirdParty\StreamRatingTagger.cs" />
     <Compile Include="ThirdParty\Tail.cs" />
     <Compile Include="ThirdParty\TextParser.cs" />
+    <Compile Include="ThirdParty\translation.cs" />
     <Compile Include="ThirdParty\USBEnumerator.cs" />
     <Compile Include="ThirdParty\USBHandlerv3.cs">
       <SubType>Form</SubType>

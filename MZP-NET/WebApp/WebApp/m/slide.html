@@ -1,80 +1,76 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
-    <script src="galleria/galleria-1.2.8.min.js"></script>
-    <title></title>
-    <style>
-    /* Demo styles */
-            /*html,body{background:#222;margin:0;}
-            body{border-top:4px solid #000;}
-            .content{color:#aaa;font:14px/1.3 "helvetica neue",arial,sans-serif;width:620px;margin:20px auto;}
-            h1{font-size:14px;font-weight:normal;color:#ddd;margin:0 0 20px;}
-            p{margin:0 0 20px}
-            a {color:#0a9;text-decoration:none}
-            .cred{margin-top:20px;font-size:12px;color:#555}
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head id="Head1">
+    <meta http-equiv="content-type" content="text/html;charset=unicode;" />
+    <meta name="robots" content="index, follow, noodp" />
+    <title>
+      Slideshow
+    </title>
+    <link href="mobile.css" rel="stylesheet" type="text/css" />
+    <script type="text/JavaScript" src="utilities.js">
+	</script> 
+	<script type="text/JavaScript">
+	function setCamDivVisibility()
+	{
+		if ("#~HTMLMZPState.HasRecentMove#"=="True"){
+		document.getElementById("camdiv").style.visibility = "visible";
+		}
+		else{
+			document.getElementById("camdiv").style.visibility = "hidden";
+		}
 
-            
-            #galleria{height:640px;margin-bottom:20px}
 
-            
-            .galleria-layer div{top:10px;left:10px;padding:10px;position:absolute;background:url(bg.png);color:#fff}
-            .galleria-layer h2{margin: 0 0 8px;font-size:22px;line-height:1;}
-            .galleria-layer p{margin:0}*/
-    
-    
-    
-    html,
-    body { background:#111; font:13px/1.3 arial,sans-serif }
-    a { color:#823; text-decoration:none }
-    #container { width:960px; margin:20px auto; position:relative}
-    #gallery { width:780px; height:500px; float:right; position:relative; border:10px solid #141414 }
-    #galleria { width:100%; height:640px; background:#000 }
-    #loader { width:200px; height:100px; margin:-50px 0 0 -100px; position:absolute; left:50%; top:50%; color:#fff; text-align:center;
-        z-index:4; display:none; background:#000 url('loader.gif') no-repeat 50% 25px; opacity:.8; line-height:150px; border-radius:6px }
-    #menu { width:140px; float:left; border-top:1px solid #2b2b2b }
-    #menu a { display:block; padding:10px 6px; border-bottom:1px solid #2b2b2b }
-    #menu a:hover { background:#151515; background:rgba(0,0,0,.1); }
-    #menu a.active { background:#111; background:rgba(0,0,0,.3); color:#fff }
-    #fullscreen { position:absolute; top:500px; left:0 }
-    #fullscreen:hover { color:#fff }
-    
-    </style>
-</head>
-<body>
-   <a id="fullscreen" href="#">Enter fullscreen</a>
-   <div id="galleria">
-            <img src="streammp3.png">
-            <img src="stop.png">
-            <img src="music.png">
-        </div>
-    
-    <script>
-        Galleria.loadTheme('galleria/themes/classic/galleria.classic.min.js');
-        Galleria.run('#galleria');
-        Galleria.configure({
-            thumbCrop: false,
-            lightbox: true,
-
-        });
-        // cache the gallery
-        var elem = $('#galleria');
-
-            var gallery = Galleria.get(0); // gallery is now the first galleria instance
-            
-            gallery.play(); // will start slideshow when the element #play is clicked
-        elem.galleria({
-                        // add a custom fullscreen button
-                        extend: function() {
-                            $('#fullscreen').click(this.proxy(function(e) {
-                                e.preventDefault();
-
-                                // call the enterFullscreen() method from the galleria API
-                                this.enterFullscreen();
-                            }));
-                        }
-                    });
-        
-        </script>
+		refresh(30000);
+	}</script>
+      </head>
+<body onload="setCamDivVisibility();" onerror="setCamDivVisibility();" 
+	  bgcolor="black">
+<table>
+	<tr>
+	<td width="99%" align=left valign=top><img src="/cmd?command=getpicture&amp;r=#!HTMLRandom#" alt=""/></td>
+	<td>
+	<div id="metadiv">
+	<table>
+	<tr><td style="color:White">#!HTMLServerTime#</td></tr>
+	<tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,1#; color: #FFFFFF">
+            #~HTMLZones.ZoneName,1# | #~HTMLZones.Author,1# | #~HTMLZones.Title,1# | #~HTMLZones.Genre,1#
+        </div> </td> </tr>
+        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,2#; color: #FFFFFF">
+            #~HTMLZones.ZoneName,2# | #~HTMLZones.Author,2# | #~HTMLZones.Title,2# | #~HTMLZones.Genre,2# 
+        </div> </td> </tr>
+        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,3#; color: #FFFFFF">
+            #~HTMLZones.ZoneName,3# | #~HTMLZones.Author,3# | #~HTMLZones.Title,3# | #~HTMLZones.Genre,3#
+        </div> </td> </tr>
+        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,4#; color: #FFFFFF">
+            #~HTMLZones.ZoneName,4# | #~HTMLZones.Author,4# | #~HTMLZones.Title,4# | #~HTMLZones.Genre,4# 
+        </div> </td> </tr>
+        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,5#; color: #FFFFFF">
+            #~HTMLZones.ZoneName,5# | #~HTMLZones.Author,5# | #~HTMLZones.Title,5# | #~HTMLZones.Genre,5# | #~HTMLZones.SourceURL,5# | #~HTMLZones.ZoneState,5# 
+        </div> </td> </tr>
+	</table>
+	</div>
+	<div id="camdiv">
+	<table>
+		<tr><td>
+		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,7#&amp;r=#!HTMLRandom#" id="Img3"
+			title="#~HTMLZones.ZoneName,7#" alt="#~HTMLZones.ZoneName,7#" width="240" height="160"/>
+		</td></tr>
+		<tr><td>
+		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,12#&amp;r=#!HTMLRandom#" id="Img4"
+			title="#~HTMLZones.ZoneName,12#" alt="#~HTMLZones.ZoneName,12#" width="240" height="160"/>
+		</td></tr>
+		<tr><td>
+			<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,6#&amp;r=#!HTMLRandom#" id="Img1"
+			title="#~HTMLZones.ZoneName,6#" alt="#~HTMLZones.ZoneName,6#" width="240" height="160"/>
+		</td></tr>
+		<tr><td>
+		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,2#&amp;r=#!HTMLRandom#" id="Img2"
+			title="#~HTMLZones.ZoneName,2#" alt="#~HTMLZones.ZoneName,2#" width="240" height="160"/>
+		</td></tr>
+	</table>
+	</div>
+	</td>
+	</tr>
+</table>
 </body>
 </html>

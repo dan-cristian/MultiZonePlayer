@@ -15,6 +15,7 @@ function redirectdelayed(location, interval) {
     setTimeout(function () { redirect(location) }, interval);
 }
 
+
 // return the value of the radio button that is checked
 // return an empty string if none are checked, or
 // there are no radio buttons

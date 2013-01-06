@@ -166,7 +166,13 @@ namespace MultiZonePlayer
 
                             break;
                         case Alarm.EnumScope.area:
-                            Alarm.EnumAreaState areastate = (Alarm.EnumAreaState)Enum.Parse(typeof(Alarm.EnumAreaState), state);
+							Alarm.EnumAreaState areastate;
+							if (!Enum.TryParse<Alarm.EnumAreaState>(state, out areastate))
+							{
+								MLog.Log(this, "Unknown area state "+state);
+								areastate = Alarm.EnumAreaState.UNKNOWN;
+							}
+                            //areastate = (Alarm.EnumAreaState)Enum.Parse(typeof(Alarm.EnumAreaState), state);
                             MZPState.Instance.SystemAlarm.AreaState = areastate;
                             MZPState.Instance.SystemAlarm.LastAreaStateChange = eventDateTime;
 							switch (areastate)

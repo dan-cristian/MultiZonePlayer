@@ -240,6 +240,14 @@ namespace MultiZonePlayer
                             }
                             result = JsonResult(Metadata.ResultEnum.OK, "power failure=" + failure, null);
                             break;
+						case Metadata.GlobalCommands.getpicture:
+							string picture = MediaLibrary.AllPictureFiles.IteratePicture;
+							string[] pictsplit = picture.Split('.');
+							resvalue = new Metadata.ValueList();
+							resvalue.BinaryData = Utilities.ReadBinaryFile(picture);
+							resvalue.Add(Metadata.GlobalParams.contenttype, "image/"+pictsplit[pictsplit.Length-1]);
+							result = JsonResult(Metadata.ResultEnum.OK, "picture retrieved=" + picture, null);
+							break;
                         default:
                             res = DoZoneCommand(apicmd, vals, out err, out values);
                             resvalue = values;
