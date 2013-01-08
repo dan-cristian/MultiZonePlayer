@@ -11,50 +11,56 @@
 	</script> 
       </head>
 <body onload="refresh(30000);" onerror="refresh(30000);" bgcolor="black">
-<table>
-	<tr>
-	<td width="99%" align="left" valign="top" style="color:White"><img src="/cmd?command=getpicture&amp;r=#!HTMLRandom#" alt=""/>
-	<br />#~CurrentPicture.Created# | #~CurrentPicture.SourceURL#
-	</td>
-	<td valign="top" align="left">
-	<table>
-	<tr ><td style="color:White" >#!HTMLServerTime#</td></tr>
-		<tr><td><div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,1#; color: #FFFFFF">
-            #~HTMLZones.ZoneName,1# | #~HTMLZones.Author,1# | #~HTMLZones.Title,1# | #~HTMLZones.Genre,1#
-        </div> </td> </tr>
-        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,2#; color: #FFFFFF">
-            #~HTMLZones.ZoneName,2# | #~HTMLZones.Author,2# | #~HTMLZones.Title,2# | #~HTMLZones.Genre,2# 
-        </div> </td> </tr>
-        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,3#; color: #FFFFFF">
-            #~HTMLZones.ZoneName,3# | #~HTMLZones.Author,3# | #~HTMLZones.Title,3# | #~HTMLZones.Genre,3#
-        </div> </td> </tr>
-        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,4#; color: #FFFFFF">
-            #~HTMLZones.ZoneName,4# | #~HTMLZones.Author,4# | #~HTMLZones.Title,4# | #~HTMLZones.Genre,4# 
-        </div> </td> </tr>
-        <tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,5#; color: #FFFFFF">
-            #~HTMLZones.ZoneName,5# | #~HTMLZones.Author,5# | #~HTMLZones.Title,5# | #~HTMLZones.Genre,5# 
-        </div> </td> </tr>
-	</table>
-	<table>
+
+<table><tr><td style="text-align:center;">&nbsp;<img src="/cmd?command=getpicture&amp;r=#!HTMLRandom#" alt="" id="picture" 
+	onload="resizeImage(this)"/>
+	
+
+	</td></tr></table>
+
+	<div style="position:absolute;top:0;left:0;">
+		<table>
+			<tr><td><div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,1#; color: #FFFFFF">
+				#~HTMLZones.ZoneName,1# | #~HTMLZones.Author,1# | #~HTMLZones.Title,1# | #~HTMLZones.Genre,1#
+			</div> </td> </tr>
+			<tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,2#; color: #FFFFFF">
+				#~HTMLZones.ZoneName,2# | #~HTMLZones.Author,2# | #~HTMLZones.Title,2# | #~HTMLZones.Genre,2# 
+			</div> </td> </tr>
+			<tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,3#; color: #FFFFFF">
+				#~HTMLZones.ZoneName,3# | #~HTMLZones.Author,3# | #~HTMLZones.Title,3# | #~HTMLZones.Genre,3#
+			</div> </td> </tr>
+			<tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,4#; color: #FFFFFF">
+				#~HTMLZones.ZoneName,4# | #~HTMLZones.Author,4# | #~HTMLZones.Title,4# | #~HTMLZones.Genre,4# 
+			</div> </td> </tr>
+			<tr> <td> <div style="display: #~HTMLZones.HTMLDIVStateMusicOrRadio,5#; color: #FFFFFF">
+				#~HTMLZones.ZoneName,5# | #~HTMLZones.Author,5# | #~HTMLZones.Title,5# | #~HTMLZones.Genre,5# 
+			</div> </td> </tr>
+		</table>
+	
+		<table>
 		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,7#;">
 		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,7#&amp;r=#!HTMLRandom#" id="Img3"
-			title="#~HTMLZones.ZoneName,7#" alt="#~HTMLZones.ZoneName,7#" width="240" height="160"/>
+			title="#~HTMLZones.ZoneName,7#" alt="#~HTMLZones.ZoneName,7#" style="width:50%;"/>
 		</div></td></tr>
 		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,12#;">
 		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,12#&amp;r=#!HTMLRandom#" id="Img4"
-			title="#~HTMLZones.ZoneName,12#" alt="#~HTMLZones.ZoneName,12#" width="240" height="160"/>
+			title="#~HTMLZones.ZoneName,12#" alt="#~HTMLZones.ZoneName,12#" style="width:50%;"/>
 		</div></td></tr>
 		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,6#;">
 			<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,6#&amp;r=#!HTMLRandom#" id="Img1"
-			title="#~HTMLZones.ZoneName,6#" alt="#~HTMLZones.ZoneName,6#" width="240" height="160"/>
+			title="#~HTMLZones.ZoneName,6#" alt="#~HTMLZones.ZoneName,6#" style="width:50%;"/>
 		</div></td></tr>
-		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,2#;">
-		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,2#&amp;r=#!HTMLRandom#" id="Img2"
-			title="#~HTMLZones.ZoneName,2#" alt="#~HTMLZones.ZoneName,2#" width="240" height="160"/>
-		</div></td></tr>
-	</table>
-	</td>
-	</tr>
-</table>
+		
+		</table>
+
+		<p style="color:White">
+		#!HTMLServerTime# <br />
+		</p><p style="font-size:xx-small;color:Gray">
+		#~CurrentPicture.Created# <br />
+		#~CurrentPicture.CameraModel#<br />
+		#~CurrentPicture.SourceURL# 
+		</p>
+	</div>
+	
 </body>
 </html>

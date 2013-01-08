@@ -412,12 +412,18 @@ namespace MultiZonePlayer
 		{
 			bool result = false;
 			Goheer.EXIF.EXIFextractor exif;
+			string datetime;
 			try
 			{
 				exif = new Goheer.EXIF.EXIFextractor(SourceURL, "", "");
-				this.Created = Convert.ToDateTime(exif["Date Time"]);
-				this.CameraModel = exif["Equip Model"].ToString();
-				this.Comment = exif["Image Description"].ToString();
+				this.CameraModel = exif["Equip Model"]!=null?exif["Equip Model"].ToString().Replace("\0", ""):"";
+				this.Comment = exif["Image Description"]!=null?exif["Image Description"].ToString().Replace("\0", ""):"";
+				datetime = exif["Date Time"]!=null?exif["Date Time"].ToString().Replace("\0", ""):"";
+				if (datetime.Length >= "yyyy:dd:hh".Length)
+				{
+					datetime = datetime.Substring(0, "yyyy:dd:hh".Length).Replace(":", "/") + datetime.Substring("yyyy:dd:hh".Length);
+				}
+				this.Created = Convert.ToDateTime(datetime);
 				result = true;
 			}
 			catch (Exception)
@@ -1043,8 +1049,13 @@ namespace MultiZonePlayer
 		{
 			get
 			{
-				if (m_currentPictureIndex < m_playlistItems.Count)
-					return m_playlistItems[m_currentPictureIndex];
+				if (m_autoIterateItems.Count > 0)
+				{
+					if (m_currentPictureIndex < m_autoIterateItems.Count)
+						return m_autoIterateItems[m_currentPictureIndex + 1];
+					else
+						return m_autoIterateItems[0];
+				}
 				else
 					return null;
 			}
@@ -1055,7 +1066,7 @@ namespace MultiZonePlayer
 			{
 				DateTime currentDate = DateTime.Now;
 				int tries= 0;
-				if (m_autoIterateDate.ToString("yyyy-mm-dd") != DateTime.Now.ToString("yyyy-mm-dd"))
+				if (m_autoIterateDate.ToString("yyyy-dd") != DateTime.Now.ToString("yyyy-dd"))
 					m_autoIterateItems = null;
 
 				if (m_autoIterateItems == null)
@@ -1063,8 +1074,9 @@ namespace MultiZonePlayer
 					do
 					{
 						m_autoIterateItems = m_playlistItems.FindAll(x =>
-							(x.Created.Day == currentDate.Day) &&
-							(x.Created.Day == currentDate.Subtract(new TimeSpan(1, 0, 0, 0)).Day));
+							((x.Created.Day == currentDate.Day) && (x.Created.Month == currentDate.Month)) ||
+							((x.Created.Day == currentDate.Subtract(new TimeSpan(1, 0, 0, 0)).Day)
+							&& (x.Created.Month == currentDate.Subtract(new TimeSpan(1, 0, 0, 0)).Month)));
 						m_autoIterateDate = DateTime.Now;
 						m_currentPictureIndex = -1;
 						if (m_autoIterateItems.Count == 0)
@@ -1075,14 +1087,14 @@ namespace MultiZonePlayer
 				}
 
 				string picture;
-				if (m_currentPictureIndex < m_playlistItems.Count)
+				if (m_currentPictureIndex+1 < m_autoIterateItems.Count)
 					m_currentPictureIndex++;
 				else
 					m_currentPictureIndex = 0;
 
-				if (m_playlistItems.Count == 0)
+				if (m_autoIterateItems.Count == 0)
 					picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "notfound.jpg";
-				picture = m_playlistItems[m_currentPictureIndex].SourceURL;
+				picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;
 				return picture;
 			}
 		}
