@@ -67,7 +67,13 @@ function getCheckedRadioValue(radioObj) {
    	obj.height = resultH;
    }
 
-   function scaleSize(maxW, maxH, currW, currH) {
-   	
+   function reloadImage(obj, delay) {
+   	setTimeout(function () { getnextframe(obj) }, delay);
+   }
 
+   function getnextframe(obj) {
+   		var _url = obj.src;
+   		_url = _url.substring(0, _url.indexOf('&r='));
+   		_url += "&r=" + Math.random();
+   		obj.src = _url;
    }

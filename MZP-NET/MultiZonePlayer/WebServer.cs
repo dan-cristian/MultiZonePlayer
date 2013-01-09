@@ -502,7 +502,15 @@ namespace MultiZonePlayer
 
 							if (methInfo != null)
 							{
-								value = methInfo.Invoke(instance, methodparams);
+								try
+								{
+									value = methInfo.Invoke(instance, methodparams);
+								}catch (Exception ex)
+								{ 
+									result = ex.Message;
+									value = null;
+								}
+
 								if (value != null)
 								{
 									//nested properties, check for the type and read value

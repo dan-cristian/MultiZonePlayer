@@ -132,6 +132,11 @@ namespace MultiZonePlayer
 						if (MZPState.Instance == null) break;
 						zone.Tick();
                     }
+
+					foreach (Metadata.ZoneDetails details in MZPState.Instance.ZoneDetails)
+					{
+						if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
+					}
                     // SLOW TICK
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
                     {

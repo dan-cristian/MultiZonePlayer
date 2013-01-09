@@ -140,6 +140,8 @@ namespace MultiZonePlayer
             weekday,
             cmdsource,
 			contenttype,
+			count,
+			interval,
 			r//random no
         }
 
@@ -432,6 +434,12 @@ namespace MultiZonePlayer
             public static int VolumeSilence = -10000;
         }
 
+		public enum ZoneNotifyState
+		{
+			Open, 
+			Closed
+		}
+
         public class ZoneDetails
         {
             public int ZoneId = 0;
@@ -483,7 +491,7 @@ namespace MultiZonePlayer
             public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
             public DateTime LastCamAlertDateTime = DateTime.MinValue;
             public DateTime LastLocalCommandDateTime = DateTime.MinValue;
-
+			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
             // not serializable, hidden from json
             
             protected static List<String> m_systemOutputDevices;
@@ -610,6 +618,21 @@ namespace MultiZonePlayer
                     return res;
                 }
             }
+
+			public String HasMediaActiveAsDiv
+			{
+				get
+				{
+					String res;
+					if (IsActive && (ActivityType.Equals(GlobalCommands.music)
+						|| ActivityType.Equals(GlobalCommands.streammp3)
+						|| ActivityType.Equals(GlobalCommands.xbmc)))
+						res = DIV_SHOW;
+					else
+						res = DIV_HIDE;
+					return res;
+				}
+			}
 
 			public String IsActiveAsDiv
 			{

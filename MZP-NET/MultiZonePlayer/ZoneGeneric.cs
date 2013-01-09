@@ -256,7 +256,8 @@ namespace MultiZonePlayer
                     string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
                     m_zoneDetails.MovementAlert = true;
                     MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
-                    m_zoneDetails.MovementAlert = false;
+					ZoneOpenActions();
+					m_zoneDetails.MovementAlert = false;
                     /*if (m_zoneDetails.IsArmed || 
                         (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)&&(m_zoneDetails.AlarmAreaId==MZPState.Instance.SystemAlarm.AreaId)))
                     {
@@ -288,6 +289,7 @@ namespace MultiZonePlayer
                     MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
                             vals.GetValue(Metadata.GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(Metadata.GlobalParams.status),
                             MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
+					ZoneOpenActions();
                     /*
                     if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed ||
                         (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (m_zoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
@@ -705,6 +707,24 @@ namespace MultiZonePlayer
             }
         }
 
+		private void ZoneOpenActions()
+		{
+			if (m_zoneDetails.NotifyZoneEventTriggered == Metadata.ZoneNotifyState.Closed)
+			{
+				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-open-" + m_zoneDetails.ZoneId + ".bat");
+				m_zoneDetails.NotifyZoneEventTriggered = Metadata.ZoneNotifyState.Open;
+			}
+		}
+
+		public static void ZoneInactiveActions(Metadata.ZoneDetails p_zoneDetails)
+		{
+			if (p_zoneDetails.NotifyZoneEventTriggered == Metadata.ZoneNotifyState.Open)
+			{
+				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-close-" + p_zoneDetails.ZoneId + ".bat");
+				p_zoneDetails.NotifyZoneEventTriggered = Metadata.ZoneNotifyState.Closed;
+			}
+		}
+
         public void Tick()
         {
             try
@@ -726,11 +746,6 @@ namespace MultiZonePlayer
 
                 CheckForSleep();
 
-                if (m_inactiveCyclesCount == IniFile.ZONE_INACTIVITY_CYCLE_WARNING)
-                {
-                    //play warning message
-                }
-
                 if (m_inactiveCyclesCount > IniFile.ZONE_INACTIVITY_MAX_CYCLES)
                 {
                     if (m_zoneForm != null) m_zoneForm.CloseFormSafe();
@@ -744,8 +759,6 @@ namespace MultiZonePlayer
                 }
 
                 if (m_zoneForm != null) m_zoneForm.RefreshState();
-
-                //m_zoneForm.ShowPlayList();
             }
             catch (Exception ex)
             {

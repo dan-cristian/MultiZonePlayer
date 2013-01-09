@@ -112,6 +112,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_VIDEO_STORE_ROOT_PATH = new String[] { "PARAM_VIDEO_STORE_ROOT_PATH", "c:\\temp\\" };
             public static String[] PARAM_MUSIC_STORE_ROOT_PATH = new String[] { "PARAM_MUSIC_STORE_ROOT_PATH", "c:\\temp\\" };
 			public static String[] PARAM_PICTURE_STORE_ROOT_PATH = new String[] { "PARAM_PICTURE_STORE_ROOT_PATH", "c:\\temp\\" };
+			public static String[] PARAM_PICTURE_TAG_IGNORE = new String[] { "PARAM_PICTURE_TAG_IGNORE", "private" };
             public static String[] PARAM_KEYBOARD_DEVICE_IDENTIFIER = new String[] { "PARAM_KEYBOARD_DEVICE_IDENTIFIER", "ACPI#PNP" };
 
             public static String[] PARAM_WEBSERVER_PORT_EXT = new String[] { "PARAM_WEBSERVER_PORT_EXT", "12345" };
@@ -186,6 +187,7 @@ namespace MultiZonePlayer
                 PARAM_VIDEO_STORE_ROOT_PATH,
                 PARAM_MUSIC_STORE_ROOT_PATH,
 				PARAM_PICTURE_STORE_ROOT_PATH,
+				PARAM_PICTURE_TAG_IGNORE,
                 PARAM_KEYBOARD_DEVICE_IDENTIFIER,
                 PARAM_WEBSERVER_PORT_EXT,
                 PARAM_ISPY_PASS,

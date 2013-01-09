@@ -121,6 +121,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\DirectShowLib-2008.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -130,6 +131,7 @@
     <Reference Include="System.Speech" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -154,6 +156,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\Vlc.DotNet.Forms.dll</HintPath>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API.cs" />
@@ -193,7 +196,6 @@
     <Compile Include="FormOptions.Designer.cs">
       <DependentUpon>FormOptions.cs</DependentUpon>
     </Compile>
-    <Compile Include="ThirdParty\EXIFextractor.cs" />
     <Compile Include="ThirdParty\fastJSON\Getters.cs" />
     <Compile Include="ThirdParty\fastJSON\JSON.cs" />
     <Compile Include="ThirdParty\fastJSON\JsonParser.cs" />
@@ -218,7 +220,6 @@
     <Compile Include="ThirdParty\StreamRatingTagger.cs" />
     <Compile Include="ThirdParty\Tail.cs" />
     <Compile Include="ThirdParty\TextParser.cs" />
-    <Compile Include="ThirdParty\translation.cs" />
     <Compile Include="ThirdParty\USBEnumerator.cs" />
     <Compile Include="ThirdParty\USBHandlerv3.cs">
       <SubType>Form</SubType>

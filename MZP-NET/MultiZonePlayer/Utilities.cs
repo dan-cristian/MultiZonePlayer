@@ -256,8 +256,8 @@ namespace MultiZonePlayer
             extProc.StartInfo.FileName = fileName;
             extProc.StartInfo.Arguments = arguments;
             extProc.EnableRaisingEvents = true;
-            extProc.StartInfo.UseShellExecute = false;
-            extProc.StartInfo.RedirectStandardInput = true;
+            //extProc.StartInfo.UseShellExecute = false;
+            //extProc.StartInfo.RedirectStandardInput = true;
             //extProc.StartInfo.ErrorDialog = false;
             //extProc.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             extProc.Start();

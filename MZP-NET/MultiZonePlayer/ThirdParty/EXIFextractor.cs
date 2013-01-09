@@ -385,7 +385,8 @@ namespace Goheer
 					string v = "";
 					string name = (string)myHash[p.Id];
 					// tag not found. skip it
-					if( name == null ) continue;
+					if( name == null ) 
+						continue;
 					//
 					data += name+": ";
 					//

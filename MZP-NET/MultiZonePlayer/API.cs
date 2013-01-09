@@ -241,7 +241,9 @@ namespace MultiZonePlayer
                             result = JsonResult(Metadata.ResultEnum.OK, "power failure=" + failure, null);
                             break;
 						case Metadata.GlobalCommands.getpicture:
-							string picture = MediaLibrary.AllPictureFiles.IteratePicture;
+							int pictcount = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.count));
+							int interval = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.interval));
+							string picture = MediaLibrary.AllPictureFiles.IteratePicture(pictcount, interval);
 							string[] pictsplit = picture.Split('.');
 							resvalue = new Metadata.ValueList();
 							resvalue.BinaryData = Utilities.ReadBinaryFile(picture);
