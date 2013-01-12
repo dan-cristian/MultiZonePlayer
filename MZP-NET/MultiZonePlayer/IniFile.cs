@@ -312,7 +312,6 @@ namespace MultiZonePlayer
                 Hashtable entries = new Hashtable();
                 String entry;
 
-
                 int i = 0;
                 do
                 {

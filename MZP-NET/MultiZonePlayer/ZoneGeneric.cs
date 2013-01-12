@@ -709,10 +709,12 @@ namespace MultiZonePlayer
 
 		private void ZoneOpenActions()
 		{
-			if (m_zoneDetails.NotifyZoneEventTriggered == Metadata.ZoneNotifyState.Closed)
+			if ((m_zoneDetails.NotifyZoneEventTriggered == Metadata.ZoneNotifyState.Closed)
+				|| (DateTime.Now.Subtract(m_zoneDetails.LastNotifyZoneEventTriggered).TotalHours>1))
 			{
 				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-open-" + m_zoneDetails.ZoneId + ".bat");
 				m_zoneDetails.NotifyZoneEventTriggered = Metadata.ZoneNotifyState.Open;
+				m_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}
 		}
 
@@ -722,6 +724,7 @@ namespace MultiZonePlayer
 			{
 				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-close-" + p_zoneDetails.ZoneId + ".bat");
 				p_zoneDetails.NotifyZoneEventTriggered = Metadata.ZoneNotifyState.Closed;
+				p_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}
 		}
 
@@ -752,7 +755,9 @@ namespace MultiZonePlayer
                 }
 
                 //close if no recent activity detected
-                if (m_zoneDetails.HasPastActivity && m_zoneDetails.IsActive && !m_zoneDetails.ActivityType.Equals(Metadata.GlobalCommands.nul))//HasPastMove)
+                if (m_zoneDetails.HasPastActivity && m_zoneDetails.IsActive 
+					&& !m_zoneDetails.ActivityType.Equals(Metadata.GlobalCommands.nul)
+					&& !m_zoneDetails.ActivityType.Equals(Metadata.GlobalCommands.xbmc))
                 {
                     MLog.Log(this, "Zone " + m_zoneDetails.ZoneName + " closed due to inactivity, activity="+m_zoneDetails.ActivityType.ToString());
                     if (m_zoneForm != null) m_zoneForm.CloseFormSafe();

@@ -329,12 +329,9 @@ namespace MultiZonePlayer
 
 				if (Meta != null)
 				{
-					/*Author = Meta.ArtistName != null ? Meta.ArtistName : Author;
-					Album = Meta.Album != null ? Meta.Album : Album;
-					Genre = Meta.GenreTags != null && Meta.GenreTags.Length>0? Meta.GenreTags[0]: Genre;
-					GenreTags = Meta.GenreTags;
-					ArtistOrigin = Meta.ArtistOrigin != null ? Meta.ArtistOrigin : ArtistOrigin;
-						*/
+					Author = Meta.ArtistName ?? Author;
+					//Album = Meta.Album ?? Album;
+					Genre = Meta.MainGenre ?? Genre;
 				}
 
 				if (!Comment.Contains(IniFile.MEDIA_TAG_LIBRARY_ID))
@@ -399,6 +396,7 @@ namespace MultiZonePlayer
 		public string CameraModel;
 		public string Location;
 		public string Subject;
+		public List<String> Faces;
 
 		public MediaImageItem(String url, String folder)
 		{
@@ -411,6 +409,15 @@ namespace MultiZonePlayer
 			throw new NotImplementedException();
 		}
 
+		public String FaceList
+		{
+			get { 
+				string result="";
+				foreach (string face in Faces)
+					result += face + ";";
+				return result;
+			}
+		}
 		public override bool RetrieveMediaItemValues()
 		{
 			bool result = false;
@@ -428,7 +435,8 @@ namespace MultiZonePlayer
 					datetime = datetime.Substring(0, "yyyy:dd:hh".Length).Replace(":", "/") + datetime.Substring("yyyy:dd:hh".Length);
 				}
 				*/
-				BitmapSource src = BitmapFrame.Create(new FileStream(SourceURL,FileMode.Open));
+				FileStream fs = new FileStream(SourceURL, FileMode.Open);
+				BitmapSource src = BitmapFrame.Create(fs);
 				BitmapMetadata bmp = (BitmapMetadata)src.Metadata;
 				this.Created = Convert.ToDateTime(bmp.DateTaken);
 				this.Title = bmp.Title ?? "";
@@ -439,6 +447,17 @@ namespace MultiZonePlayer
 				//this.Created = Convert.ToDateTime(datetime);
 				this.Location = bmp.Location ?? "";
 				this.Subject = bmp.Subject ?? "";
+				
+				byte[] content = new byte[fs.Length];
+				fs.Position = 0;
+				fs.Read(content, 0, content.Length);
+
+				String fileContent = System.Text.Encoding.Default.GetString(content);
+				fs.Close();
+				int start = fileContent.IndexOf("<x:xmpmeta");
+				int end = fileContent.IndexOf("</x:xmpmeta>") + "</x:xmpmeta>".Length;
+				fileContent = fileContent.Substring(start, end - start);
+				this.Faces = XMPService.GetFaces(fileContent.Replace(':','_'));
 				result = true;
 			}
 			catch (Exception)
@@ -454,7 +473,7 @@ namespace MultiZonePlayer
 	public class LastFmMeta
 	{
 		public string URL;
-		public string MainGenre;
+		public string MainGenre = null;
 		public string ArtistName;
 		public List<string> GenreTags;
 		public string ArtistOrigin;
@@ -1033,6 +1052,7 @@ namespace MultiZonePlayer
 		private DateTime m_autoIterateDate = DateTime.Now;
 		private DateTime m_lastPictureRetrieved = DateTime.Now;
 		private int m_currentPictureIndex;
+		private int m_intervalIterateSecs;
 
 		public PicturesCollection()
 			: base()
@@ -1066,56 +1086,67 @@ namespace MultiZonePlayer
 		{
 			get
 			{
-				if (m_autoIterateItems != null)
-				{
-					if (m_autoIterateItems.Count > 0)
-					{
-						if (m_currentPictureIndex < m_autoIterateItems.Count)
-							return m_autoIterateItems[m_currentPictureIndex];
-					}
-				}
-				return null;
+				NextPicture();
+				if (m_autoIterateItems != null && m_autoIterateItems.Count > 0)
+					return m_autoIterateItems[m_currentPictureIndex];
+				else				
+					return null;
 			}
 		}
-		public string IteratePicture(int items, int intervalSecs)
+
+		private void NextPicture()
 		{
-			
-				DateTime currentDate = DateTime.Now;
-				int tries= 0;
-				if (m_autoIterateDate.ToString("yyyy-dd") != DateTime.Now.ToString("yyyy-dd"))
-					m_autoIterateItems = null;
-
-				if (m_autoIterateItems == null)
+			if (m_autoIterateItems != null && m_autoIterateItems.Count > 0)
+			{
+				if (DateTime.Now.Subtract(m_lastPictureRetrieved).TotalSeconds >= m_intervalIterateSecs)
 				{
-					do
-					{
-						m_autoIterateItems = m_playlistItems.FindAll(x => (x.Created <= currentDate) 
-							&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1])).
-							OrderByDescending(y=>y.Created).Take(items).ToList();
-						m_autoIterateDate = DateTime.Now;
-						m_currentPictureIndex = -1;
-						if (m_autoIterateItems.Count == 0)
-							currentDate = currentDate.Add(new TimeSpan(1,0,0,0));
-						tries++;
-					}
-					while (m_autoIterateItems.Count==0 && tries < 120);
-				}
-
-				string picture;
-
-				if (DateTime.Now.Subtract(m_lastPictureRetrieved).TotalSeconds >= intervalSecs)
-				{
-
 					if (m_currentPictureIndex + 1 < m_autoIterateItems.Count)
 						m_currentPictureIndex++;
 					else
 						m_currentPictureIndex = 0;
 					m_lastPictureRetrieved = DateTime.Now;
 				}
-				if (m_autoIterateItems.Count == 0)
-					picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "notfound.jpg";
-				picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;
-				return picture;
+			}
+		}
+
+		public string IteratePicture(int items, int intervalSecs)
+		{
+			
+			DateTime currentDate = DateTime.Now;
+			int tries= 0;
+			if (m_autoIterateDate.Day != DateTime.Now.Day)
+				m_autoIterateItems = null;
+			string compareDate;
+			TimeSpan day = new TimeSpan(1,0,0,0);
+			m_intervalIterateSecs = intervalSecs;
+			if (m_autoIterateItems == null)
+			{
+				do
+				{
+					compareDate = currentDate.ToString("dd/mm");
+					m_autoIterateItems = m_playlistItems.FindAll(x => 
+						(x.Created.ToString("dd/mm") == compareDate) 
+						|| (x.Created.Add(day).ToString("dd/mm") == compareDate)
+						|| (x.Created.Add(day).Add(day).ToString("dd/mm") == compareDate)
+						|| (x.Created.Add(day).Add(day).Add(day).ToString("dd/mm") == compareDate)
+						&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1])).OrderBy(y=>y.Created).Take(items).ToList();
+					m_autoIterateDate = DateTime.Now;
+					m_currentPictureIndex = -1;
+					if (m_autoIterateItems.Count == 0)
+						currentDate = currentDate.Add(day);
+					tries++;
+				}
+				while (m_autoIterateItems.Count==0 && tries < 120);
+			}
+
+			NextPicture();
+
+			string picture;
+				
+			if (m_autoIterateItems.Count == 0)
+				picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "notfound.jpg";
+			picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;
+			return picture;
 		}
 	}
 

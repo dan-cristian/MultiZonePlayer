@@ -492,6 +492,7 @@ namespace MultiZonePlayer
             public DateTime LastCamAlertDateTime = DateTime.MinValue;
             public DateTime LastLocalCommandDateTime = DateTime.MinValue;
 			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
+			public DateTime LastNotifyZoneEventTriggered;
             // not serializable, hidden from json
             
             protected static List<String> m_systemOutputDevices;

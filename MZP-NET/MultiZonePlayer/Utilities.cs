@@ -1073,4 +1073,33 @@ namespace MultiZonePlayer
 			return meta;
 		}
 	}
+
+	public class XMPService
+	{
+		public static List<String> GetFaces(string xmpContent)
+		{
+			List<String> faces;
+			XDocument doc = XDocument.Parse(xmpContent);
+			var items = doc.Descendants("rdf_Description");
+
+			faces = new List<String>();
+			String face;
+			foreach (XElement el in items)
+			{
+				foreach (XAttribute atr in el.Attributes())
+				{
+					if (atr.Name == "mwg-rs_Name")
+					{
+						face = atr.Value;
+						if (face != null)
+							faces.Add(face);
+					}
+				}
+				
+			}
+			return faces;
+		}
+
+	}
+
 }

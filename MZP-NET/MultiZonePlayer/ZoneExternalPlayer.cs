@@ -220,7 +220,7 @@ namespace MultiZonePlayer
         {
             Metadata.ValueList result = new Metadata.ValueList();
             String action = action = vals.GetValue(Metadata.GlobalParams.action);
-			String source = vals.GetValue(Metadata.GlobalParams.cmdsource);
+			String source = vals.GetValue(Metadata.GlobalParams.cmdsource) ?? "";
             switch (cmdRemote)
             {
 					
