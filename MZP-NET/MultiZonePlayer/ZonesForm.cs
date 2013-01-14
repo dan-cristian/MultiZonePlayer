@@ -253,10 +253,6 @@ namespace MultiZonePlayer
             }
         }
 
-        
-
-        
-
         private void button1_Click(object sender, EventArgs e)
         {
             if (m_zone.MainZoneActivity.GetType() == typeof(ZoneRadio))

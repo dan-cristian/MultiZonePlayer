@@ -6,6 +6,7 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
+using ExifLib;
 
 namespace MultiZonePlayer
 {
@@ -211,6 +212,7 @@ namespace MultiZonePlayer
 		public String Comment;
 		public DateTime LibraryAddDate;
 		public String Author = "";
+		public String Copyright;
 		public abstract bool RetrieveMediaItemValues();
 		public bool RequireSave
 		{
@@ -331,7 +333,7 @@ namespace MultiZonePlayer
 				{
 					Author = Meta.ArtistName ?? Author;
 					//Album = Meta.Album ?? Album;
-					Genre = Meta.MainGenre ?? Genre;
+					Genre = (Meta.MainGenre ?? Genre).ToLower();
 				}
 
 				if (!Comment.Contains(IniFile.MEDIA_TAG_LIBRARY_ID))
@@ -392,11 +394,11 @@ namespace MultiZonePlayer
 	
 	public class MediaImageItem : MediaItemBase
 	{
-		public string[] Tags;
+		public List<String> Tags = new List<string>();
 		public string CameraModel;
 		public string Location;
 		public string Subject;
-		public List<String> Faces;
+		public List<String> Faces = new List<string>();
 
 		public MediaImageItem(String url, String folder)
 		{
@@ -418,6 +420,18 @@ namespace MultiZonePlayer
 				return result;
 			}
 		}
+
+		public String TagList
+		{
+			get
+			{
+				string result = "";
+				foreach (string tag in Tags)
+					result += tag + ";";
+				return result;
+			}
+		}
+
 		public override bool RetrieveMediaItemValues()
 		{
 			bool result = false;
@@ -436,6 +450,8 @@ namespace MultiZonePlayer
 				}
 				*/
 				FileStream fs = new FileStream(SourceURL, FileMode.Open);
+				/*
+				
 				BitmapSource src = BitmapFrame.Create(fs);
 				BitmapMetadata bmp = (BitmapMetadata)src.Metadata;
 				this.Created = Convert.ToDateTime(bmp.DateTaken);
@@ -447,23 +463,101 @@ namespace MultiZonePlayer
 				//this.Created = Convert.ToDateTime(datetime);
 				this.Location = bmp.Location ?? "";
 				this.Subject = bmp.Subject ?? "";
-				
-				byte[] content = new byte[fs.Length];
+				*/
+				int length = (int)Math.Min(16384, fs.Length);
+				byte[] content = new byte[length];
 				fs.Position = 0;
-				fs.Read(content, 0, content.Length);
+				fs.Read(content, 0, length);
 
 				String fileContent = System.Text.Encoding.Default.GetString(content);
 				fs.Close();
 				int start = fileContent.IndexOf("<x:xmpmeta");
 				int end = fileContent.IndexOf("</x:xmpmeta>") + "</x:xmpmeta>".Length;
 				fileContent = fileContent.Substring(start, end - start);
-				this.Faces = XMPService.GetFaces(fileContent.Replace(':','_'));
+
+				MediaImageItem media = this;
+				XMPService.GetProperties(fileContent.Replace(':','_'), ref media);
+
+				ExifReader reader = null;
+				try
+				{
+					reader = new ExifReader(SourceURL);
+					// To read a single field, use code like this:
+					
+					if (reader.GetTagValue<DateTime>(ExifTags.DateTimeDigitized, out this.Created))
+					{
+					}
+
+					if (reader.GetTagValue<String>(ExifTags.Model, out this.CameraModel))
+					{
+					}
+
+					if (reader.GetTagValue<String>(ExifTags.ImageDescription, out this.Title))
+					{
+					}
+
+					if (reader.GetTagValue<String>(ExifTags.Artist, out this.Author))
+					{
+					}
+
+					if (reader.GetTagValue<String>(ExifTags.Copyright, out this.Copyright))
+					{
+					}
+
+					//if (reader.GetTagValue<String>(ExifTags.Software, out this.Tags[0]))
+					//{
+					//}
+
+					// Parse through all available fields
+					/*string props = "";
+					foreach (ushort tagID in Enum.GetValues(typeof(ExifTags)))
+					{
+						object val;
+						if (reader.GetTagValue(tagID, out val))
+						{
+							// Arrays don't render well without assistance.
+							string renderedTag;
+							if (val is Array)
+							{
+								var array = (Array)val;
+
+								renderedTag = "";
+								if (array.Length > 0)
+								{
+
+									foreach (object item in array)
+										renderedTag += item + ",";
+
+									renderedTag = renderedTag.Substring(0, renderedTag.Length - 1);
+								}
+							}
+							else
+								renderedTag = val.ToString();
+
+							props += string.Format("{0}:{1}\r\n", Enum.GetName(typeof(ExifTags), tagID), renderedTag);
+						}
+					}
+
+					// Remove the last carriage return
+					props = props.Substring(0, props.Length - 2);
+					 */
+				}
+				catch (Exception ex)
+				{
+					// Something didn't work!
+					MLog.Log(ex, "Err read image exif");
+
+					if (reader != null)
+						reader.Dispose();
+				}
+
+
+
 				result = true;
 			}
 			catch (Exception)
 			{
 				errorMetaCount++;
-				this.Tags = this.Tags ?? new string[0];
 			}
 
 			return result;
@@ -1113,6 +1207,7 @@ namespace MultiZonePlayer
 		{
 			
 			DateTime currentDate = DateTime.Now;
+			List<MediaImageItem> imagesFound;
 			int tries= 0;
 			if (m_autoIterateDate.Day != DateTime.Now.Day)
 				m_autoIterateItems = null;
@@ -1123,20 +1218,26 @@ namespace MultiZonePlayer
 			{
 				do
 				{
-					compareDate = currentDate.ToString("dd/mm");
-					m_autoIterateItems = m_playlistItems.FindAll(x => 
-						(x.Created.ToString("dd/mm") == compareDate) 
-						|| (x.Created.Add(day).ToString("dd/mm") == compareDate)
-						|| (x.Created.Add(day).Add(day).ToString("dd/mm") == compareDate)
-						|| (x.Created.Add(day).Add(day).Add(day).ToString("dd/mm") == compareDate)
-						&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1])).OrderBy(y=>y.Created).Take(items).ToList();
+					compareDate = currentDate.ToString("dd/MM");
+					imagesFound = m_playlistItems.FindAll(x => 
+						(x.Created.ToString("dd/MM") == compareDate)
+						&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1]))
+						.ToList();
+
+
+					if (m_autoIterateItems != null)
+						m_autoIterateItems = m_autoIterateItems.Concat(imagesFound).
+							OrderByDescending(y => y.Created.ToString("MM/dd")).Take(items).ToList();
+					else
+						m_autoIterateItems = imagesFound;
+
 					m_autoIterateDate = DateTime.Now;
 					m_currentPictureIndex = -1;
-					if (m_autoIterateItems.Count == 0)
-						currentDate = currentDate.Add(day);
+					if (m_autoIterateItems.Count < items)
+						currentDate = currentDate.Subtract(day);
 					tries++;
 				}
-				while (m_autoIterateItems.Count==0 && tries < 120);
+				while (m_autoIterateItems.Count<items && tries < 120);
 			}
 
 			NextPicture();

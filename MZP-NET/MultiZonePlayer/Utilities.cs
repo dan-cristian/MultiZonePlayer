@@ -259,7 +259,7 @@ namespace MultiZonePlayer
             //extProc.StartInfo.UseShellExecute = false;
             //extProc.StartInfo.RedirectStandardInput = true;
             //extProc.StartInfo.ErrorDialog = false;
-            //extProc.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            extProc.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
             extProc.Start();
 #if DEBUG 
             System.Threading.Thread.Sleep(100);
@@ -1076,13 +1076,11 @@ namespace MultiZonePlayer
 
 	public class XMPService
 	{
-		public static List<String> GetFaces(string xmpContent)
+		public static void GetProperties(string xmpContent, ref MediaImageItem media)
 		{
-			List<String> faces;
 			XDocument doc = XDocument.Parse(xmpContent);
 			var items = doc.Descendants("rdf_Description");
 
-			faces = new List<String>();
 			String face;
 			foreach (XElement el in items)
 			{
@@ -1092,12 +1090,25 @@ namespace MultiZonePlayer
 					{
 						face = atr.Value;
 						if (face != null)
-							faces.Add(face);
+							media.Faces.Add(face);
 					}
 				}
-				
+
+				foreach (XElement el2 in el.Descendants())
+				{
+					if (el2.Name == "xmp_Rating")
+						media.Rating = Convert.ToInt16(el2.Value);
+					if (el2.Name == "MicrosoftPhoto_LastKeywordXMP")
+					{
+						foreach (XElement el3 in el2.Descendants())
+						{
+							if (el3.Name == "rdf_li")
+								media.Tags.Add(el3.Value);
+						}
+					}
+				}
 			}
-			return faces;
+
 		}
 
 	}

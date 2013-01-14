@@ -189,7 +189,10 @@ namespace MultiZonePlayer
         public ZonePlayerXBMC(Metadata.ZoneDetails zoneDetails)
         {
             m_zoneDetails = zoneDetails;
-            m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
+			m_zoneDetails.ResetValues();
+			m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
+			m_zoneDetails.Genre = "video";
+			
             if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
                 MZPState.RestartXBMC();
             
@@ -264,51 +267,59 @@ namespace MultiZonePlayer
         {
             WebPostRequest post;
             String paramName,paramValue;
-
+			String res;
             String msg, conn;
-			if (URL == GET_URL)
-				conn = m_zoneDetails.DisplayConnection + URL + method;
-			else
-				conn = m_zoneDetails.DisplayConnection + URL;
-			post = new WebPostRequest(conn, "application/json");//IniFile.PARAM_XBMC_COMMAND_URL[1]);
-            if (parameters.Length>0)
-                msg = @"{""jsonrpc"":""2.0"",""method"":""<M>"",""params"":{<P>},""id"":1}";
-            else
-                msg = @"{""jsonrpc"":""2.0"",""method"":""<M>"",""id"": 1}"; ;
-            String pair = @"""<N>"":<V>,<P>";
-            msg = msg.Replace("<M>", method);
+			try
+			{
+				if (URL == GET_URL)
+					conn = m_zoneDetails.DisplayConnection + URL + method;
+				else
+					conn = m_zoneDetails.DisplayConnection + URL;
+				post = new WebPostRequest(conn, "application/json");//IniFile.PARAM_XBMC_COMMAND_URL[1]);
+				if (parameters.Length > 0)
+					msg = @"{""jsonrpc"":""2.0"",""method"":""<M>"",""params"":{<P>},""id"":1}";
+				else
+					msg = @"{""jsonrpc"":""2.0"",""method"":""<M>"",""id"": 1}"; ;
+				String pair = @"""<N>"":<V>,<P>";
+				msg = msg.Replace("<M>", method);
 
-            for (int i = 0; i < parameters.Length; i=i+2)
-            {
-                paramName = parameters[i];
-                paramValue = parameters[i+1];
-                
-                msg = msg.Replace("<P>",pair);
-                msg = msg.Replace("<N>", paramName);
-                msg = msg.Replace("<V>", paramValue);
-                /*if (paramName != "")
-                {
+				for (int i = 0; i < parameters.Length; i = i + 2)
+				{
+					paramName = parameters[i];
+					paramValue = parameters[i + 1];
 
-                    msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""params"": { """ + paramName + @""": " + paramValue + @" }, ""id"": 1}";
+					msg = msg.Replace("<P>", pair);
+					msg = msg.Replace("<N>", paramName);
+					msg = msg.Replace("<V>", paramValue);
+					/*if (paramName != "")
+					{
 
-                }
-                else
-                    msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""id"": 1}";
-                 * */
-            }
-            msg = msg.Replace(",<P>", "");
-            post.Add(msg, "");
-            //MessageBox.Show(msg);
-            String res;
-            try
-            {
-                res = post.GetResponse();
-            }
-            catch (Exception ex)
-            {
-                res = "{xbmc web server error:" + ex.Message+"}";
-            }
-            //MLog.Log(null, res);
+						msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""params"": { """ + paramName + @""": " + paramValue + @" }, ""id"": 1}";
+
+					}
+					else
+						msg = @"{""jsonrpc"": ""2.0"", ""method"": """ + method + @""", ""id"": 1}";
+					 * */
+				}
+				msg = msg.Replace(",<P>", "");
+				post.Add(msg, "");
+				//MessageBox.Show(msg);
+				
+				try
+				{
+					res = post.GetResponse();
+				}
+				catch (Exception ex)
+				{
+					res = "{xbmc web server error:" + ex.Message + "}";
+				}
+				//MLog.Log(null, res);
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, this, "Error post XBMC cmd="+method+" zone="+m_zoneDetails.ZoneName);
+				res = "[error]";
+			}
             return res;
         }
 
@@ -396,7 +407,8 @@ namespace MultiZonePlayer
                         if (m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.NotStarted))
                         {
                             MLog.Log(this, "XBMC has active player");
-                            Play();
+							base.Play();
+                            //Play();
                         }
 						m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
 						result = PostURLMessage(GET_URL, "Application.GetProperties", "properties", @"[""volume""]");
@@ -411,6 +423,7 @@ namespace MultiZonePlayer
                         if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
                         {
                             m_zoneDetails.Title = resp.result.items[0].label;
+							m_zoneDetails.RequirePower = true;
                         }
                     }
                 }

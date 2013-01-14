@@ -195,15 +195,13 @@ namespace MultiZonePlayer
                         //m_currentPlayList.MediaItemValueChange(musicFile, WindowsMediaItem.keyPlayCount, 1, 0, int.MaxValue);
                         m_songList[m_currentSongKey].IncreasePlayCount();
                         //init amp power if needed
+						m_zoneDetails.RequirePower = true;
                         MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
                         m_dcPlay.OpenClip(m_zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted, musicFile, this.m_zoneForm);
-
                         if (m_dcPlay.GetState() == Metadata.ZoneState.Running)
                         {
                             m_zoneDetails.IsActive = true;
                             m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
-                            m_zoneDetails.RequirePower = true;
-							//m_zoneDetails.MediaItem = CurrentItem;
                         }
                     }
                     else
@@ -228,6 +226,7 @@ namespace MultiZonePlayer
             public void Play(String filePathName)
             {
                 int volume = m_zoneForm.GetVolumeLevel();
+				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
                 m_dcPlay = new DCPlayer(m_zoneForm, m_zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted, filePathName, volume);
                 
@@ -854,12 +853,12 @@ namespace MultiZonePlayer
 
             if (m_clonedZoneForm != null)
             {
+				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControl.PowerOn(m_parentZoneForm.ZoneDetails.ZoneId);
                 m_clonedZoneForm.AddClonedZone(this);
                 m_clonedZoneMusic = (ZoneMusic)m_clonedZoneForm.GetCurrentActivity();
                 m_clonedZoneMusic.UpdateOutputDevices();
                 m_zoneState = Metadata.ZoneState.Running;
-
             }
         }
 
@@ -871,6 +870,7 @@ namespace MultiZonePlayer
                 m_clonedZoneMusic.UpdateOutputDevices();
             }
             m_zoneState = Metadata.ZoneState.NotStarted;
+			m_zoneDetails.RequirePower = false;
         }
         public void Close()
         {

@@ -241,15 +241,20 @@ namespace MultiZonePlayer
         public override bool IsPowerOn(int zoneId)
         {
             int[] index = GetSocketIndexForZone(zoneId);
-            //MLog.Log(this, "index len="+index.Length);
-            
-            for (int r = 0; r < index.Length; r++)
-            {
-                //MLog.Log(this, "check r=" + r + "=" + m_socketsStatus[index[r] - 1]);
-                if (m_socketsStatus[index[r]-1] == '0')
-                    return false;
-            }
-            return true;
+			bool res;
+			if (index.Length > 0)
+			{
+				res = m_socketsStatus[index[0] - 1] == '1';
+				/*for (int r = 0; r < index.Length; r++)
+				{
+					if ()
+						return false;
+					else
+						return true;
+				}*/
+			}
+			else res = false;
+			return res;
         }
 
         private void ReadAllData()

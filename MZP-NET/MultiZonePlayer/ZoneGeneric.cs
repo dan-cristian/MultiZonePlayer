@@ -78,46 +78,64 @@ namespace MultiZonePlayer
         public void CloseZone()
         {
             try
-            {
-                //MLog.Log(null, "Closing zone " + m_zoneDetails.ZoneId + ", activity=" + m_mainZoneActivity);
-                if (m_mainZoneActivity != null)
-                {
-                    m_mainZoneActivity.Close();
-                }
+			{
+				//MLog.Log(null, "Closing zone " + m_zoneDetails.ZoneId + ", activity=" + m_mainZoneActivity);
+				if (m_mainZoneActivity != null)
+				{
+					m_mainZoneActivity.Close();
+				}
 
-                //controlCenter.ZoneClosing(m_zoneDetails.ZoneId);
+				/*
+				//find all child zones that require power
+				Metadata.ZoneDetails childZone = MZPState.Instance.ZoneDetails.Find(
+					x => x.ParentZoneId == m_zoneDetails.ZoneId && x.RequirePower);
+				hasChildswithPower = childZone != null;
 
-                Metadata.ZoneDetails childZone = MZPState.Instance.ZoneDetails.Find(x => x.ParentZoneId == m_zoneDetails.ZoneId);
-                
-                //power off only if no child zones are using power socket
-                if (childZone == null || !childZone.RequirePower)
-                    MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
-                else
-                    MLog.Log(this, "Not powering off zone " + m_zoneDetails.ZoneName+", there are childs requiring power, child=" + childZone.ZoneName);
+				//find all parents that require power
+				Metadata.ZoneDetails parentZone = MZPState.Instance.GetZoneById(m_zoneDetails.ParentZoneId);
+				hasParentwithPower = (parentZone != null && parentZone.RequirePower);
 
-                Metadata.ZoneDetails parentZone = MZPState.Instance.GetZoneById(m_zoneDetails.ParentZoneId);
-                if (parentZone != null && !parentZone.RequirePower)
-                {
-                    MLog.Log(this, "Closing child zone " +m_zoneDetails.ZoneName+" , power off parent zone " + parentZone.ZoneName+ " as well");
-                    MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ParentZoneId);
-                }
+				//find all siblings that require power
+				if (parentZone != null)
+				{
+					Metadata.ZoneDetails siblingZone = MZPState.Instance.ZoneDetails.Find(
+					   x => x.ParentZoneId == parentZone.ZoneId && x.RequirePower);
+					hasSiblingswithPower = siblingZone != null;
+				}
+				else hasSiblingswithPower = false;
 
-                //power off if there are power on sockets without zone
-                if (MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId)
-                    && !m_zoneDetails.RequirePower)
-                {
-                    //make sure no childs needs it
-                    childZone = MZPState.Instance.ZoneDetails.Find(x => x.ParentZoneId == m_zoneDetails.ParentZoneId && x.RequirePower);
-                    if (childZone == null && (parentZone!=null && !parentZone.RequirePower))
-                    {
-                        MLog.Log(this, "Closing parent zone " + m_zoneDetails.ParentZoneId+" power, parent and no child zones required power");
-                        MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ParentZoneId);
-                    }
-                }
+				//zone is parent scenario
+				if (!hasChildswithPower && !m_zoneDetails.RequirePower)
+				{
+					MLog.Log(this, "No child zones that require power, powering off zone=" + m_zoneDetails.ZoneName);
+					MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
+				}
 
-                m_zoneDetails.Close();
-                MZPState.Instance.ActiveZones.Remove(this);
-            }
+				//zone is child or sibling scenario
+				if (!hasParentwithPower && !hasSiblingswithPower && !m_zoneDetails.RequirePower)
+				{
+					MLog.Log(this, "Closing child zone " + m_zoneDetails.ZoneName + " , power off parent zone " + parentZone.ZoneName + " as well");
+					MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ParentZoneId);
+					
+				}
+
+
+				//power off if there are power on sockets without a zone requiring power
+				if (MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId)
+					&& !m_zoneDetails.RequirePower)
+				{
+					//make sure no childs needs it
+					childZone = MZPState.Instance.ZoneDetails.Find(x => x.ParentZoneId == m_zoneDetails.ParentZoneId && x.RequirePower);
+					if (childZone == null && (parentZone != null && !parentZone.RequirePower))
+					{
+						MLog.Log(this, "Closing parent zone " + m_zoneDetails.ParentZoneId + " power, parent and no child zones required power");
+						MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ParentZoneId);
+					}
+				}
+				*/
+				m_zoneDetails.Close();
+				MZPState.Instance.ActiveZones.Remove(this);
+			}
             catch (Exception ex)
             {
                 MLog.Log(ex, "Error closing generic zone " + m_zoneDetails.ZoneName);
@@ -220,9 +238,14 @@ namespace MultiZonePlayer
             MLog.Log(null, "Initialising XBMC zone");
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             //m_mainZoneActivity = new ZoneVideoVlc(this);
-            m_mainZoneActivity = new ZonePlayerXBMC(this.ZoneDetails);
-            m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
-            m_zoneDetails.IsActive = true;
+			if (m_zoneDetails.DisplayConnection != "")
+			{
+				m_mainZoneActivity = new ZonePlayerXBMC(this.ZoneDetails);
+				m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
+				m_zoneDetails.IsActive = true;
+			}
+			else
+				MLog.Log(this, "no display connection details, zone not initialised " + m_zoneDetails.ZoneName);
         }
         
         public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)

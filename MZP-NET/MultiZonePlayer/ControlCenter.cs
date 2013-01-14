@@ -133,15 +133,28 @@ namespace MultiZonePlayer
 						zone.Tick();
                     }
 
-					foreach (Metadata.ZoneDetails details in MZPState.Instance.ZoneDetails)
-					{
-						if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
-					}
                     // SLOW TICK
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
                         MZPState.Instance.Tick();
+
+						foreach (Metadata.ZoneDetails details in MZPState.Instance.ZoneDetails)
+						{
+							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
+
+							Metadata.ZoneDetails zoneWithPower = MZPState.Instance.ZoneDetails.Find(x =>
+								x.RequirePower && x.PowerIndex == details.PowerIndex);
+							if (zoneWithPower == null)
+							{
+								if (MZPState.Instance.PowerControl.IsPowerOn(details.ZoneId))
+								{
+									MLog.Log(this, "No zones require power on index " + details.PowerIndex
+										+ ", powering off zone=" + details.ZoneName);
+									MZPState.Instance.PowerControl.PowerOff(details.ZoneId);
+								}
+							}
+						}
                     }
                 }
                 catch (Exception ex)
