@@ -51,7 +51,8 @@ namespace MultiZonePlayer
             Utilities.SetThreadExecutionState(Utilities.EXECUTION_STATE.ES_CONTINUOUS);
             //run external power save actions
             MLog.Log(null,"Wait for power saving action");
-            Utilities.RunProcessWaitExit(IniFile.CurrentPath() + IniFile.PARAM_POWER_SAVING_APP[1]);
+            Utilities.RunProcessWait(IniFile.CurrentPath() + IniFile.PARAM_POWER_SAVING_APP[1], 
+				System.Diagnostics.ProcessWindowStyle.Minimized);
             MLog.Log(null,"Wait completed for power saving action");
 
             isPowerSavingMode = true;
@@ -70,7 +71,8 @@ namespace MultiZonePlayer
             //tell windows it cannot go into idle
             Utilities.SetThreadExecutionState(Utilities.EXECUTION_STATE.ES_SYSTEM_REQUIRED);
 
-            Utilities.RunProcessWaitExit(IniFile.CurrentPath() + IniFile.PARAM_POWER_RESUME_APP[1]);
+            Utilities.RunProcessWait(IniFile.CurrentPath() + IniFile.PARAM_POWER_RESUME_APP[1],
+				System.Diagnostics.ProcessWindowStyle.Minimized);
 
             //resume from power saving
             powerSavingCycleCount = 0;
@@ -556,7 +558,7 @@ namespace MultiZonePlayer
             {
                 MLog.Log(null,"Power resume action initiated zone " + zoneId);
                 String powerOnCommand = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONEPOWERONCTRL_GEMBIRD, zoneId.ToString());
-                Utilities.RunProcessWaitExit(powerOnCommand);
+				Utilities.RunProcessWait(powerOnCommand, System.Diagnostics.ProcessWindowStyle.Minimized);
                 MLog.Log(null,"Power resume action completed zone " + zoneId);
 
                 //wait for socket to go on
@@ -590,7 +592,7 @@ namespace MultiZonePlayer
             {
                 MLog.Log(null,"Power save action initiated zone " + zoneId);
                 String powerOffCommand = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONEPOWEROFFCTRL_GEMBIRD, zoneId.ToString());
-                Utilities.RunProcessWaitExit(powerOffCommand);
+				Utilities.RunProcessWait(powerOffCommand, System.Diagnostics.ProcessWindowStyle.Minimized);
                 MLog.Log(null,"Power save action completed zone " + zoneId);
 
                 //wait for socket to go off
@@ -629,7 +631,7 @@ namespace MultiZonePlayer
                 Open();
 
             Utilities.MoveFile(IniFile.PARAM_POWER_CONTROL_STATUS_FILE_GEMBIRD[1], IniFile.PARAM_POWER_CONTROL_STATUS_FILE_GEMBIRD[1] + ".old", true);
-            Utilities.RunProcessWaitExit(MZPState.Instance.powerControlStatusCommand);
+			Utilities.RunProcessWait(MZPState.Instance.powerControlStatusCommand, System.Diagnostics.ProcessWindowStyle.Minimized);
 
             int i = 0;
             while (true)
@@ -664,7 +666,7 @@ namespace MultiZonePlayer
 
         protected override void Open()
         {
-            Utilities.RunProcessWait(IniFile.PARAM_POWER_CONTROL_APP_PATH_GEMBIRD[1]);
+			Utilities.RunProcessWait(IniFile.PARAM_POWER_CONTROL_APP_PATH_GEMBIRD[1], System.Diagnostics.ProcessWindowStyle.Minimized);
         }
 
         public override bool IsPowerControlOn()

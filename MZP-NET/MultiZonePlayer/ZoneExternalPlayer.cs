@@ -21,6 +21,7 @@ namespace MultiZonePlayer
             m_zoneDetails.ZoneState = Metadata.ZoneState.NotInitialised;
             m_zoneDetails.RequirePower = false;
             m_zoneDetails.IsActive = false;
+			m_zoneDetails.ResetValues();
         }
 
         public virtual void Next()
@@ -323,6 +324,11 @@ namespace MultiZonePlayer
             return res;
         }
 
+		public override void Close()
+		{
+			base.Close();
+			PostURLCmdMessage("Application.Quit", m_playerIdParam, m_playerId);
+		}
 
         public override void Play()
         {

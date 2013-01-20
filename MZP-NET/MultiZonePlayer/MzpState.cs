@@ -179,14 +179,16 @@ namespace MultiZonePlayer
             {
                 MLog.Log(null, "Restarting Winload");
                 Utilities.CloseProcSync(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1]);
-                Utilities.RunProcessWait(IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1]);
+				Utilities.RunProcessWait(IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], 
+					System.Diagnostics.ProcessWindowStyle.Normal);
             }
 
             public static void RestartXBMC()
             {
                 MLog.Log(null, "Restarting XBMC");
                 Utilities.CloseProcSync(IniFile.PARAM_XBMC_PROCESS_NAME[1]);
-                Utilities.RunProcessWait(IniFile.PARAM_XBMC_APP_PATH[1]);
+                Utilities.RunProcessWait(IniFile.PARAM_XBMC_APP_PATH[1],
+					System.Diagnostics.ProcessWindowStyle.Normal);
             }
 
             public void Shutdown()
@@ -872,6 +874,10 @@ namespace MultiZonePlayer
                 CheckForAlarm();
                 CheckForExternalZoneEvents();
                 PowerControl.timerPowerSaving_Tick();
+
+				
+				if (MediaLibrary.AllAudioFiles != null)
+					MediaLibrary.AllAudioFiles.SaveUpdatedItems();
             }
         }
 

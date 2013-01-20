@@ -305,25 +305,29 @@ namespace MultiZonePlayer
 				//	{
 				Banshee.Streaming.StreamRatingTagger.GetRatingAndPlayCount(tg, ref p_rating, ref p_playcount);
 				Title = tg.Tag.Title;
-				if (Title == null) Title = SourceURL.Substring(Math.Max(0, SourceURL.Length - 35)).Replace("\\", "/");
-				Title = Utilities.SanitiseInternationalAndTrim(Title);
-				Genre = Utilities.ToTitleCase(tg.Tag.FirstGenre);
-				Genre = Utilities.SanitiseInternationalAndTrim(Genre);
-				if (Genre == null) Genre = "Not Set";
+				Title = Title ?? SourceURL.Substring(Math.Max(0, SourceURL.Length - 35)).Replace("\\", "/");
+				Title = Utilities.SanitiseInternationalTrimUpper(Title);
+				Genre = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstGenre);
+				if (Genre == null || Genre=="") 
+					Genre = "Not Set";
 				PlayCount = p_playcount;
 				Rating = p_rating;
-				Author = Utilities.SanitiseInternationalAndTrim(Utilities.ToTitleCase(tg.Tag.FirstAlbumArtist));
-				if ((Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
+				Author = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstAlbumArtist);
+				
+				if ( (Author==null) || (Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
 				{
-					Author = Utilities.SanitiseInternationalAndTrim(Utilities.ToTitleCase(tg.Tag.FirstPerformer));
-					if ((Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
+					Author = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstPerformer);
+					if ((Author==null)|| (Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
 					{
-						Author = Utilities.SanitiseInternationalAndTrim(Utilities.ToTitleCase(tg.Tag.FirstComposer));
+						Author = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstComposer);
 					}
-					//MLog.Log(null, tg.ToString());
 				}
-				if (Author == "") Author = "Not Set";
-				Album = Utilities.SanitiseInternationalAndTrim(tg.Tag.Album);
+				
+				if (Author==null || Author == "") 
+					Author = "Not Set";
+				Album = Utilities.SanitiseInternationalTrimUpper(tg.Tag.Album);
+				if (Album == null || Album == "") 
+					Album = "Not Set";
 				Year = tg.Tag.Year.ToString();
 				MediaType = "audio";
 				Created = Utilities.GetFileInfo(SourceURL).CreationTime;
@@ -331,9 +335,9 @@ namespace MultiZonePlayer
 
 				if (Meta != null)
 				{
-					Author = Meta.ArtistName ?? Author;
+					Author = Utilities.SanitiseInternationalTrimUpper(Meta.ArtistName) ?? Author;
 					//Album = Meta.Album ?? Album;
-					Genre = (Meta.MainGenre ?? Genre).ToLower();
+					Genre = Utilities.SanitiseInternationalTrimUpper(Meta.MainGenre) ?? Genre;
 				}
 
 				if (!Comment.Contains(IniFile.MEDIA_TAG_LIBRARY_ID))
@@ -365,8 +369,6 @@ namespace MultiZonePlayer
 			}
 			return result;
 		}
-
-
 
 		public override void SaveItem()
 		{

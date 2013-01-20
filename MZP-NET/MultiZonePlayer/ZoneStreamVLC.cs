@@ -111,6 +111,7 @@ namespace MultiZonePlayer
         public void Close()
         {
             Stop();
+			m_zoneDetails.ResetValues();
         }
 
         public void Next()

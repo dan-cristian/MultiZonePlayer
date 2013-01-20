@@ -253,13 +253,16 @@ namespace MultiZonePlayer
             public void Close()
             {
                 Stop();
-                if (m_dcPlay.InvokeRequired)
-                {
-                    DelegateClose dlg = new DelegateClose(Close);
-                    m_dcPlay.BeginInvoke(dlg);
-                }
-                else
-                    m_dcPlay.Close();
+				if (m_dcPlay.InvokeRequired)
+				{
+					DelegateClose dlg = new DelegateClose(Close);
+					m_dcPlay.BeginInvoke(dlg);
+				}
+				else
+				{
+					m_dcPlay.Close();
+					m_zoneDetails.ResetValues();
+				}
             }
 
             public void DeleteCurrentFile()
@@ -320,8 +323,6 @@ namespace MultiZonePlayer
                         Play();
                     else
                         MLog.Log(this, "No songs in songlist, not going next");
-
-                    MediaLibrary.AllAudioFiles.SaveUpdatedItems();
                 }
             }
 

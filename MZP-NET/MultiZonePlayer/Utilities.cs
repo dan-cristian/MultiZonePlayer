@@ -227,7 +227,7 @@ namespace MultiZonePlayer
             return (proc.Length != 0);
         }
 
-        public static Process RunProcessWait(String command)
+        public static Process RunProcessWait(String command, ProcessWindowStyle style)
         {
             String fileName;
             String arguments="";
@@ -259,7 +259,7 @@ namespace MultiZonePlayer
             //extProc.StartInfo.UseShellExecute = false;
             //extProc.StartInfo.RedirectStandardInput = true;
             //extProc.StartInfo.ErrorDialog = false;
-            extProc.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            extProc.StartInfo.WindowStyle = style;
             extProc.Start();
 #if DEBUG 
             System.Threading.Thread.Sleep(100);
@@ -271,16 +271,7 @@ namespace MultiZonePlayer
             return extProc;
         }
 
-        public static void RunProcessWaitExit(String command)
-        {
-            MLog.Log(null,"running wait exit proc=" + command);
-            RunProcessWait(command);
-#if DEBUG
-#else
-            //System.Threading.Thread.Sleep(500);
-#endif
-            MLog.Log(null,"running completed wait exit proc " + command);
-        }
+        
 
         public static void SetWaitForWakeUpTime(DateTime date)
         {
@@ -472,17 +463,18 @@ namespace MultiZonePlayer
             {
                 CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
                 TextInfo textInfo = cultureInfo.TextInfo;
-                return textInfo.ToTitleCase(title.ToLower());
+                return textInfo.ToTitleCase(title.ToLower())??"";
             }
             else return null;
         }
 
-        public static String SanitiseInternationalAndTrim(String text)
+        public static String SanitiseInternationalTrimUpper(String text)
         {
-            String charsource = "ăşîâĂÎŞȚéÖöëü&";
-            String chardest =   "asiiAISTeOoeu*";
+			if (text == null) return null;
+			String charsource = "ăşîâĂÎŞȚéÖöëü&�Ã¡Å";
+            String chardest =   "asiiAISTeOoeu*eAlR";
 
-            StringBuilder sb = new StringBuilder(text);
+            StringBuilder sb = new StringBuilder(Utilities.ToTitleCase(text));
 
             if ((text != null) && (text != ""))
             {
@@ -1096,17 +1088,30 @@ namespace MultiZonePlayer
 
 				foreach (XElement el2 in el.Descendants())
 				{
-					if (el2.Name == "xmp_Rating")
-						media.Rating = Convert.ToInt16(el2.Value);
-					if (el2.Name == "MicrosoftPhoto_LastKeywordXMP")
+					switch (el2.Name.ToString())
 					{
-						foreach (XElement el3 in el2.Descendants())
-						{
-							if (el3.Name == "rdf_li")
-								media.Tags.Add(el3.Value);
-						}
-					}
+						case "xmp_Rating":
+							media.Rating = Convert.ToInt16(el2.Value);
+							break;
+
+						case "MicrosoftPhoto_LastKeywordXMP":
+							foreach (XElement el3 in el2.Descendants())
+							{
+								if (el3.Name == "rdf_li")
+									media.Tags.Add(el3.Value);
+							}
+							break;
+						case "dc_description":
+							foreach (XElement el3 in el2.Descendants())
+							{
+								if (el3.Name == "rdf_li")
+									media.Subject=el3.Value;
+							}
+							break;
 				}
+				}
+
+				
 			}
 
 		}

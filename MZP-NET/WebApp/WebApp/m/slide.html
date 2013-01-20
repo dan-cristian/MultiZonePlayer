@@ -14,7 +14,7 @@
 
 <table><tr><td style="text-align:center;">&nbsp;
 	<img src="/cmd?command=getpicture&amp;count=50&amp;interval=20&amp;r=#!HTMLRandom#" alt="" id="picture" 
-	onload="resizeImage(this)"/>
+	onload="resizeImage(this);"/>
 	
 
 	</td></tr></table>
@@ -40,18 +40,21 @@
 	
 		<table>
 		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,7#;">
-		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,7#&amp;r=#!HTMLRandom#" id="Img3"
-			title="#~HTMLZones.ZoneName,7#" alt="#~HTMLZones.ZoneName,7#" style="width:50%;" onload="reloadImage(this,3000)"/>
+		<#~Zones.HasNotifyMoveAsImg,7# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,7#&amp;r=#!HTMLRandom#" id="Img3"
+			title="#~HTMLZones.ZoneName,7#" alt="#~HTMLZones.ZoneName,7#" style="width:50%;"/>
 		</div></td></tr>
 		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,12#;">
-		<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,12#&amp;r=#!HTMLRandom#" id="Img4"
-			title="#~HTMLZones.ZoneName,12#" alt="#~HTMLZones.ZoneName,12#" style="width:50%;" onload="reloadImage(this,3000)"/>
+		<#~Zones.HasNotifyMoveAsImg,12# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,12#&amp;r=#!HTMLRandom#" id="Img4"
+			title="#~HTMLZones.ZoneName,12#" alt="#~HTMLZones.ZoneName,12#" style="width:50%;"/>
 		</div></td></tr>
 		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,6#;">
-			<img src="http://#~HTMLDVRServerPort#/livefeed?oid=#~HTMLZones.CameraId,6#&amp;r=#!HTMLRandom#" id="Img1"
-			title="#~HTMLZones.ZoneName,6#" alt="#~HTMLZones.ZoneName,6#" style="width:50%;" onload="reloadImage(this,3000)"/>
+			<#~Zones.HasNotifyMoveAsImg,6# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,6#&amp;r=#!HTMLRandom#" id="Img1"
+			title="#~HTMLZones.ZoneName,6#" alt="#~HTMLZones.ZoneName,6#" style="width:50%;"/>
 		</div></td></tr>
-		
+		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,2#;">
+			<#~Zones.HasNotifyMoveAsImg,2# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,2#&amp;r=#!HTMLRandom#;" id="Img2"
+			title="#~HTMLZones.ZoneName,2#" alt="#~HTMLZones.ZoneName,2#" style="width:50%;"/>
+		</div></td></tr>
 		</table>
 
 		<table style="width:100px">
@@ -60,12 +63,6 @@
 		<p style="font-size:xx-small;color:Gray">
 		#~CurrentPicture.Created# <br />
 		#~CurrentPicture.CameraModel#<br />
-		#~CurrentPicture.Rating#<br />
-		#~CurrentPicture.Title#<br />
-		#~CurrentPicture.Subject#<br />
-		#~CurrentPicture.Comment#<br />
-		#~CurrentPicture.SourceURL# <br />
-		#~CurrentPicture.TagList#<br />
 		#~CurrentPicture.FaceList#<br />
 		</p></td></tr>
 		</table>

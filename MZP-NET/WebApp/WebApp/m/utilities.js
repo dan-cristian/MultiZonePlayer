@@ -37,6 +37,7 @@ function getCheckedRadioValue(radioObj) {
    }
 
    function resizeImage(obj) {
+   	obj.style.visibility = "hidden";
    	var myWidth = 0, myHeight = 0;
    	if (typeof (window.innerWidth) == 'number') {
    		//Non-IE
@@ -65,6 +66,7 @@ function getCheckedRadioValue(radioObj) {
    	}
    	obj.width = resultW;
    	obj.height = resultH;
+   	obj.style.visibility = "visible";
    }
 
    function reloadImage(obj, delay) {
@@ -76,4 +78,17 @@ function getCheckedRadioValue(radioObj) {
    		_url = _url.substring(0, _url.indexOf('&r='));
    		_url += "&r=" + Math.random();
    		obj.src = _url;
-   }
+   	}
+
+   	function toggleDiv(showHideDiv, switchTextDiv, restoreText, collapseText) {
+   		var ele = document.getElementById(showHideDiv);
+   		var text = document.getElementById(switchTextDiv);
+   		if (ele.style.display == "block") {
+   			ele.style.display = "none";
+   			text.innerHTML = restoreText;
+   		}
+   		else {
+   			ele.style.display = "block";
+   			text.innerHTML = collapseText;
+   		}
+   	} 

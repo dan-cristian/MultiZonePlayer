@@ -184,7 +184,7 @@ namespace MultiZonePlayer
                         case Metadata.GlobalCommands.restartispy:
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_PROCNAME[1]);
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
-                            Utilities.RunProcessWait(IniFile.PARAM_ISPY_APP_PATH[1]);
+							Utilities.RunProcessWait(IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
                             resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
