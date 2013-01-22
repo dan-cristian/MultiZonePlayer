@@ -52,8 +52,8 @@ function getCheckedRadioValue(radioObj) {
    		myWidth = document.body.clientWidth;
    		myHeight = document.body.clientHeight;
    	}
-   	var maxW = myWidth - 5;
-   	var maxH = myHeight - 5;
+   	var maxW = myWidth - 0;
+   	var maxH = myHeight - 4;
    	var resultW, resultH;
 
 	var ratio = Math.min(maxW / obj.width, maxH / obj.height);
@@ -91,4 +91,9 @@ function getCheckedRadioValue(radioObj) {
    			ele.style.display = "block";
    			text.innerHTML = collapseText;
    		}
-   	} 
+   	}
+
+   	function reloadResizeImage(obj, delay) {
+   		resizeImage(obj);
+   		setTimeout(function () { getnextframe(obj) }, delay);
+   	}

@@ -7,65 +7,66 @@
       Slideshow
     </title>
     <link href="mobile.css" rel="stylesheet" type="text/css" />
-    <script type="text/JavaScript" src="utilities.js">
-	</script> 
+    <script type="text/JavaScript" src="utilities.js"></script> 
+	<script type="text/javascript" src="jquery-1.9.0.min.js"></script>
+
+	<script type="text/javascript">
+		var auto_refresh_media = setInterval(
+		function () {
+			$('#time').load('snip-time.html?' + 'r=' + Math.random());
+			$('#media1').load('snip-media.html?zoneid=1' + '&r=' + Math.random());
+			$('#media2').load('snip-media.html?zoneid=2' + '&r=' + Math.random());
+			$('#media3').load('snip-media.html?zoneid=3' + '&r=' + Math.random());
+			$('#media4').load('snip-media.html?zoneid=4' + '&r=' + Math.random());
+			$('#media5').load('snip-media.html?zoneid=5' + '&r=' + Math.random());
+		}, 5000); 
+
+		var auto_refresh_cam = setInterval(
+		function () {
+			$('#cam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
+			$('#cam12').load('snip-cam.html?zoneid=12' + '&r=' + Math.random());
+			$('#cam6').load('snip-cam.html?zoneid=6' + '&r=' + Math.random());
+			$('#cam2').load('snip-cam.html?zoneid=2' + '&r=' + Math.random());
+		}, 5000); 
+
+		var auto_refresh_pict = setInterval(
+		function () {
+			$('#picture').load('snip-picture.html?' + 'r=' + Math.random()).fadeIn(200);
+			$('#picturedetails').load('snip-picturedetails.html?' + 'r=' + Math.random());
+		}, 20000); 
+
+</script>
+
       </head>
-<body onload="refresh(20000);" onerror="refresh(20000);" bgcolor="black">
-
-<table><tr><td style="text-align:center;">&nbsp;
-	<img src="/cmd?command=getpicture&amp;count=50&amp;interval=20&amp;r=#!HTMLRandom#" alt="" id="picture" 
-	onload="resizeImage(this);"/>
-	
-
+<body bgcolor="black" >
+	<table><tr><td style="text-align:center;">
+	<div id="picture"></div>
 	</td></tr></table>
 
 	<div style="position:absolute;top:0;left:0;">
+		<table style="width:100px">
+		<tr><td style="color:White">
+		<div id="time"></div>
+		<div id="picturedetails"></div>
+		</td></tr>
+		</table>
+
 		<table>
-			<tr><td><div style="display: #~HTMLZones.HasMediaActiveAsDiv,1#; color: #FFFFFF">
-				#~HTMLZones.ZoneName,1# | #~HTMLZones.Author,1#<br /> #~HTMLZones.Title,1#<br /> #~HTMLZones.Genre,1#
-			</div> </td> </tr>
-			<tr> <td> <div style="display: #~HTMLZones.HasMediaActiveAsDiv,2#; color: #FFFFFF">
-				#~HTMLZones.ZoneName,2# | #~HTMLZones.Author,2#<br /> #~HTMLZones.Title,2#<br /> #~HTMLZones.Genre,2# 
-			</div> </td> </tr>
-			<tr> <td> <div style="display: #~HTMLZones.HasMediaActiveAsDiv,3#; color: #FFFFFF">
-				#~HTMLZones.ZoneName,3# | #~HTMLZones.Author,3#<br /> #~HTMLZones.Title,3#<br /> #~HTMLZones.Genre,3#
-			</div> </td> </tr>
-			<tr> <td> <div style="display: #~HTMLZones.HasMediaActiveAsDiv,4#; color: #FFFFFF">
-				#~HTMLZones.ZoneName,4# | #~HTMLZones.Author,4#<br /> #~HTMLZones.Title,4#<br /> #~HTMLZones.Genre,4# 
-			</div> </td> </tr>
-			<tr> <td> <div style="display: #~HTMLZones.HasMediaActiveAsDiv,5#; color: #FFFFFF">
-				#~HTMLZones.ZoneName,5# | #~HTMLZones.Author,5#<br /> #~HTMLZones.Title,5#<br /> #~HTMLZones.Genre,5# 
-			</div> </td> </tr>
+			<tr> <td> <div id="media1"></div> </td> </tr>
+			<tr> <td> <div id="media2"></div> </td> </tr>
+			<tr> <td> <div id="media3"></div> </td> </tr>
+			<tr> <td> <div id="media4"></div> </td> </tr>
+			<tr> <td> <div id="media5"></div> </td> </tr>
 		</table>
 	
 		<table>
-		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,7#;">
-		<#~Zones.HasNotifyMoveAsImg,7# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,7#&amp;r=#!HTMLRandom#" id="Img3"
-			title="#~HTMLZones.ZoneName,7#" alt="#~HTMLZones.ZoneName,7#" style="width:50%;"/>
-		</div></td></tr>
-		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,12#;">
-		<#~Zones.HasNotifyMoveAsImg,12# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,12#&amp;r=#!HTMLRandom#" id="Img4"
-			title="#~HTMLZones.ZoneName,12#" alt="#~HTMLZones.ZoneName,12#" style="width:50%;"/>
-		</div></td></tr>
-		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,6#;">
-			<#~Zones.HasNotifyMoveAsImg,6# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,6#&amp;r=#!HTMLRandom#" id="Img1"
-			title="#~HTMLZones.ZoneName,6#" alt="#~HTMLZones.ZoneName,6#" style="width:50%;"/>
-		</div></td></tr>
-		<tr><td><div style="display:#~Zones.HasNotifyMoveAsDiv,2#;">
-			<#~Zones.HasNotifyMoveAsImg,2# src="http://#~HTMLDVRServerPort#/mjpegfeed?oid=#~HTMLZones.CameraId,2#&amp;r=#!HTMLRandom#;" id="Img2"
-			title="#~HTMLZones.ZoneName,2#" alt="#~HTMLZones.ZoneName,2#" style="width:50%;"/>
-		</div></td></tr>
+		<tr><td><div id="cam7"></div></td></tr>
+		<tr><td><div id="cam12"></div></td></tr>
+		<tr><td><div id="cam6">	</div></td></tr>
+		<tr><td><div id="cam2">	</div></td></tr>
 		</table>
 
-		<table style="width:100px">
-		<tr><td style="color:White">
-		#!HTMLServerTime# <br />
-		<p style="font-size:xx-small;color:Gray">
-		#~CurrentPicture.Created# <br />
-		#~CurrentPicture.CameraModel#<br />
-		#~CurrentPicture.FaceList#<br />
-		</p></td></tr>
-		</table>
+		
 	</div>
 	
 </body>

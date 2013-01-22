@@ -605,6 +605,7 @@ namespace MultiZonePlayer
             private const String DIV_SHOW = "block";
             private const String DIV_HIDE = "none";
 			private const String IMG_TAG = "img";
+			private const String VIDEO_TAG = "video";
 
             public String HTMLDIVStateMusicOrRadio
             {
@@ -639,6 +640,11 @@ namespace MultiZonePlayer
 			public String HasNotifyMoveAsImg
 			{
 				get { return HasImmediateMove || HasRecentMove ? IMG_TAG : "inactive_"+IMG_TAG; }
+			}
+
+			public String HasNotifyMoveAsVideo
+			{
+				get { return HasImmediateMove || HasRecentMove ? VIDEO_TAG : "inactive_" + VIDEO_TAG; }
 			}
 
 			public String IsActiveAsDiv

@@ -113,6 +113,12 @@
     <Content Include="m\musicselect.html" />
     <Content Include="m\recorder.js" />
     <Content Include="m\slide.html" />
+    <Content Include="m\snip-cam.html" />
+    <Content Include="m\snip-media.html" />
+    <Content Include="m\snip-picture.html" />
+    <Content Include="m\snip-picturedetails.html" />
+    <Content Include="m\snip-time.html" />
+    <Content Include="m\snip-video.html" />
     <Content Include="m\status.html" />
     <Content Include="m\streammp3.html" />
     <Content Include="m\tv.html" />

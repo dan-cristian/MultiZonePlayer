@@ -352,8 +352,15 @@ namespace MultiZonePlayer
 
         public override void Stop()
         {
- 	        base.Stop();
-            PostURLCmdMessage("Player.Stop", m_playerIdParam, m_playerId);
+			if (m_zoneDetails.ZoneState == Metadata.ZoneState.NotStarted)
+			{
+				Close();
+			}
+			else
+			{
+				base.Stop();
+				PostURLCmdMessage("Player.Stop", m_playerIdParam, m_playerId);
+			}
         }
 
         public override void Pause()
@@ -429,7 +436,10 @@ namespace MultiZonePlayer
                         if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
                         {
                             m_zoneDetails.Title = resp.result.items[0].label;
+							m_zoneDetails.Author = "xbmc";
 							m_zoneDetails.RequirePower = true;
+							m_zoneDetails.IsActive = true;
+							Utilities.SetForegroundWindow(Utilities.FindWindow("XBMC", "XBMC"));
                         }
                     }
                 }
