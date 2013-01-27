@@ -243,7 +243,8 @@ namespace MultiZonePlayer
 						case Metadata.GlobalCommands.getpicture:
 							int pictcount = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.count));
 							int interval = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.interval));
-							string picture = MediaLibrary.AllPictureFiles.IteratePicture(pictcount, interval);
+							string face = vals.GetValue(Metadata.GlobalParams.face);
+							string picture = MediaLibrary.AllPictureFiles.IteratePicture(pictcount, interval,face);
 							string[] pictsplit = picture.Split('.');
 							resvalue = new Metadata.ValueList();
 							resvalue.BinaryData = Utilities.ReadBinaryFile(picture);

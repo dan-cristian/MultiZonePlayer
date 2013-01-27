@@ -1,0 +1,1 @@
+..\utils\psexec \\server "c:\Program Files (x86)\MZP\MultiZonePlayer.exe" 

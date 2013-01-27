@@ -219,6 +219,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemotePiPi.cs" />
+    <Compile Include="ThirdParty\SpecialServices.cs" />
     <Compile Include="ThirdParty\StreamRatingTagger.cs" />
     <Compile Include="ThirdParty\Tail.cs" />
     <Compile Include="ThirdParty\TextParser.cs" />

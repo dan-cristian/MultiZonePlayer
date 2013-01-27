@@ -509,8 +509,10 @@ namespace MultiZonePlayer
                 get
                 {
                     Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
-                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) || x.ActivityType.Equals(Metadata.GlobalCommands.streammp3) ||
-                        x.ActivityType.Equals(Metadata.GlobalCommands.tv) || x.ActivityType.Equals(Metadata.GlobalCommands.xbmc)) 
+                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) 
+						|| x.ActivityType.Equals(Metadata.GlobalCommands.streammp3) ||
+                        x.ActivityType.Equals(Metadata.GlobalCommands.tv) 
+						|| x.ActivityType.Equals(Metadata.GlobalCommands.xbmc)) 
                         && x.IsActive);
                     if (zone != null)
                     {

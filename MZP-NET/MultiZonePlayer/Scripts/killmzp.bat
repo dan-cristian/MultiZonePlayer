@@ -1,0 +1,1 @@
+..\utils\pskill \\server multizoneplayer

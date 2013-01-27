@@ -501,7 +501,7 @@ namespace MultiZonePlayer
                                 m_mainZoneActivity = null;
                             }
 
-                            if (m_mainZoneActivity == null)
+                            if (m_mainZoneActivity == null || !m_mainZoneActivity.ZoneDetails.IsActive)
                                 InitZonePlayerXBMC();
 
                             if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))

@@ -1082,7 +1082,7 @@ namespace MultiZonePlayer
 					{
 						face = atr.Value;
 						if (face != null)
-							media.Faces.Add(face);
+							media.AddFace(face);
 					}
 				}
 

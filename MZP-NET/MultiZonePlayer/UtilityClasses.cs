@@ -142,6 +142,7 @@ namespace MultiZonePlayer
 			contenttype,
 			count,
 			interval,
+			face,
 			r//random no
         }
 

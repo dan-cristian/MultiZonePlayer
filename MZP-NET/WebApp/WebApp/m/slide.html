@@ -11,36 +11,103 @@
 	<script type="text/javascript" src="jquery-1.9.0.min.js"></script>
 
 	<script type="text/javascript">
+		var refreshCamCount = 0;
+		var refreshPictureCount = 0;
+
 		var auto_refresh_media = setInterval(
 		function () {
+			loadMedia();
+		}, 5000);
+
+		var auto_refresh_cam = setInterval(
+		function () {
+			loadCams();
+		}, 1000);
+
+		var auto_refresh_pict = setInterval(
+		function () {
+			loadPicture();
+		}, 30000);
+
+		function loadMedia() {
 			$('#time').load('snip-time.html?' + 'r=' + Math.random());
 			$('#media1').load('snip-media.html?zoneid=1' + '&r=' + Math.random());
 			$('#media2').load('snip-media.html?zoneid=2' + '&r=' + Math.random());
 			$('#media3').load('snip-media.html?zoneid=3' + '&r=' + Math.random());
 			$('#media4').load('snip-media.html?zoneid=4' + '&r=' + Math.random());
 			$('#media5').load('snip-media.html?zoneid=5' + '&r=' + Math.random());
-		}, 5000); 
+		}
 
-		var auto_refresh_cam = setInterval(
-		function () {
-			$('#cam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
-			$('#cam12').load('snip-cam.html?zoneid=12' + '&r=' + Math.random());
-			$('#cam6').load('snip-cam.html?zoneid=6' + '&r=' + Math.random());
-			$('#cam2').load('snip-cam.html?zoneid=2' + '&r=' + Math.random());
-		}, 5000); 
 
-		var auto_refresh_pict = setInterval(
-		function () {
-			$('#picture').load('snip-picture.html?' + 'r=' + Math.random()).fadeIn(200);
+		function loadCams() {
+			if (Math.ceil(refreshCamCount / 2) == refreshCamCount / 2) {
+				
+				$('#cam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
+				$('#cam12').load('snip-cam.html?zoneid=12' + '&r=' + Math.random());
+				$('#cam6').load('snip-cam.html?zoneid=6' + '&r=' + Math.random());
+				//$('#cam2').load('snip-cam.html?zoneid=2' + '&r=' + Math.random());
+
+				setTimeout(function () {
+					$('#xcamset').hide();
+					$('#camset').show();
+				}, 900);
+				
+				
+			}
+			else {
+				$('#xcam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
+				$('#xcam12').load('snip-cam.html?zoneid=12' + '&r=' + Math.random());
+				$('#xcam6').load('snip-cam.html?zoneid=6' + '&r=' + Math.random());
+				$('#xcam2').load('snip-cam.html?zoneid=2' + '&r=' + Math.random());
+
+				setTimeout(function () {
+					$('#camset').hide();
+					$('#xcamset').show();
+				}, 900);
+				
+			}
+			refreshCamCount++;
+		}
+
+		function loadPicture() {
 			$('#picturedetails').load('snip-picturedetails.html?' + 'r=' + Math.random());
-		}, 20000); 
+			if (Math.ceil(refreshCamCount / 2) == refreshCamCount / 2) {
+				$('#picture').hide();
+				$('#picture').load('snip-picture.html?' + 'r=' + Math.random());
 
+				setTimeout(function () {
+					//alert("ready1");
+					$('#xpicture').hide();
+					$('#picture').fadeIn(3000);
+				}, 3000);
+
+			}
+			else {
+				$('#xpicture').hide();
+				$('#xpicture').load('snip-picture.html?' + 'r=' + Math.random());
+
+				setTimeout(function () {
+					//alert("ready2");
+					$('#picture').hide();
+					$('#xpicture').fadeIn(3000);
+				}, 3000);
+
+			}
+			refreshPictureCount++;
+		}
+		
+		function onLoad() {
+			loadMedia();
+			loadCams();
+			loadPicture();
+		}
 </script>
 
       </head>
-<body bgcolor="black" >
+<body bgcolor="black" style="color:white" onload="javascript:onLoad();">
 	<table><tr><td style="text-align:center;">
 	<div id="picture"></div>
+	<div id="xpicture"></div>
 	</td></tr></table>
 
 	<div style="position:absolute;top:0;left:0;">
@@ -59,13 +126,23 @@
 			<tr> <td> <div id="media5"></div> </td> </tr>
 		</table>
 	
+		<div id="camset" style="display:none">
 		<table>
-		<tr><td><div id="cam7"></div></td></tr>
-		<tr><td><div id="cam12"></div></td></tr>
-		<tr><td><div id="cam6">	</div></td></tr>
-		<tr><td><div id="cam2">	</div></td></tr>
+		<tr><td><div id="cam7"></div></div></td></tr>
+		<tr><td><div id="cam12"></div></div></td></tr>
+		<tr><td><div id="cam6">	</div></div></td></tr>
+		<tr><td><div id="cam2">	</div></div></td></tr>
 		</table>
+		</div>
 
+		<div id="xcamset" style="display:none">
+		<table>
+		<tr><td><div id="xcam7"></div></td></tr>
+		<tr><td><div id="xcam12"></div></td></tr>
+		<tr><td><div id="xcam6"></div></td></tr>
+		<tr><td><div id="xcam2"></td></tr>
+		</table>
+		</div>
 		
 	</div>
 	

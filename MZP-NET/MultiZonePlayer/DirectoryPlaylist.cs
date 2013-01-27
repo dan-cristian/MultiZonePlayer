@@ -401,6 +401,7 @@ namespace MultiZonePlayer
 		public string Location;
 		public string Subject;
 		public List<String> Faces = new List<string>();
+		public String FaceList="";
 
 		public MediaImageItem(String url, String folder)
 		{
@@ -413,14 +414,12 @@ namespace MultiZonePlayer
 			throw new NotImplementedException();
 		}
 
-		public String FaceList
+		public void AddFace(string face)
 		{
-			get { 
-				string result="";
-				foreach (string face in Faces)
-					result += face + ";";
-				return result;
-			}
+			Faces.Add(face);
+			FaceList = "";
+			foreach (string item in Faces)
+				FaceList+= item+ ";";
 		}
 
 		public String TagList
@@ -475,19 +474,22 @@ namespace MultiZonePlayer
 				fs.Close();
 				int start = fileContent.IndexOf("<x:xmpmeta");
 				int end = fileContent.IndexOf("</x:xmpmeta>") + "</x:xmpmeta>".Length;
-				fileContent = fileContent.Substring(start, end - start);
 
-				MediaImageItem media = this;
-				XMPService.GetProperties(fileContent.Replace(':','_'), ref media);
-
+				if (start > -1)
+				{
+					fileContent = fileContent.Substring(start, end - start);
+					MediaImageItem media = this;
+					XMPService.GetProperties(fileContent.Replace(':', '_'), ref media);
+				}
 				ExifReader reader = null;
 				try
 				{
 					reader = new ExifReader(SourceURL);
 					// To read a single field, use code like this:
 					
-					if (reader.GetTagValue<DateTime>(ExifTags.DateTimeDigitized, out this.Created))
+					if (!reader.GetTagValue<DateTime>(ExifTags.DateTimeOriginal, out this.Created))
 					{
+						reader.GetTagValue<DateTime>(ExifTags.DateTimeDigitized, out this.Created);
 					}
 
 					if (reader.GetTagValue<String>(ExifTags.Model, out this.CameraModel))
@@ -547,7 +549,20 @@ namespace MultiZonePlayer
 				catch (Exception ex)
 				{
 					// Something didn't work!
-					MLog.Log(ex, "Err read image exif");
+					//MLog.Log(this, "Err read image exif file "+this.SourceURL + " er="+ex.Message);
+
+					try
+					{
+						FileInfo fi = new FileInfo(this.SourceURL);
+						if (this.Created.Year == 1)
+						{
+							this.Created = fi.CreationTime;
+						}
+					}
+					catch (Exception exx)
+					{
+						MLog.Log(exx, "Error read creationtime " + this.SourceURL);
+					}
 
 					if (reader != null)
 						reader.Dispose();
@@ -1182,7 +1197,7 @@ namespace MultiZonePlayer
 		{
 			get
 			{
-				NextPicture();
+				//NextPicture();
 				if (m_autoIterateItems != null && m_autoIterateItems.Count > 0)
 					return m_autoIterateItems[m_currentPictureIndex];
 				else				
@@ -1205,7 +1220,7 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public string IteratePicture(int items, int intervalSecs)
+		public string IteratePicture(int items, int intervalSecs, string face)
 		{
 			
 			DateTime currentDate = DateTime.Now;
@@ -1216,39 +1231,57 @@ namespace MultiZonePlayer
 			string compareDate;
 			TimeSpan day = new TimeSpan(1,0,0,0);
 			m_intervalIterateSecs = intervalSecs;
-			if (m_autoIterateItems == null)
+
+			if (m_autoIterateItems == null || m_autoIterateItems.Count==0)
 			{
 				do
 				{
 					compareDate = currentDate.ToString("dd/MM");
-					imagesFound = m_playlistItems.FindAll(x => 
-						(x.Created.ToString("dd/MM") == compareDate)
-						&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1]))
-						.ToList();
 
+					imagesFound = m_playlistItems.FindAll(x =>
+							(x.Created.ToString("dd/MM") == compareDate)
+							&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1]))
+							.ToList();
+
+					if (imagesFound.Count>0 && face != null)
+					{
+						imagesFound = imagesFound.FindAll(delegate(MediaImageItem item)
+						{
+							if (item.FaceList=="" || item.FaceList==null) return false;
+							string[] faceAtoms = face.ToLower().Split(';');
+							foreach (string el in faceAtoms)
+							{
+								if (item.FaceList.ToLower().Contains(el))
+									return true;
+							}
+							return false;
+						}).ToList();
+					}
 
 					if (m_autoIterateItems != null)
 						m_autoIterateItems = m_autoIterateItems.Concat(imagesFound).
 							OrderByDescending(y => y.Created.ToString("MM/dd")).Take(items).ToList();
 					else
-						m_autoIterateItems = imagesFound;
+						if (imagesFound.Count>0) 
+							m_autoIterateItems = imagesFound;
 
 					m_autoIterateDate = DateTime.Now;
 					m_currentPictureIndex = -1;
-					if (m_autoIterateItems.Count < items)
+					if (m_autoIterateItems==null || m_autoIterateItems.Count < items)
 						currentDate = currentDate.Subtract(day);
 					tries++;
 				}
-				while (m_autoIterateItems.Count<items && tries < 120);
+				while ((m_autoIterateItems ==null || m_autoIterateItems.Count<items) && tries < 366);
 			}
 
 			NextPicture();
 
 			string picture;
 				
-			if (m_autoIterateItems.Count == 0)
-				picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "notfound.jpg";
-			picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;
+			if (m_autoIterateItems==null || m_autoIterateItems.Count == 0)
+				picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "\notfound.jpg";
+			else
+				picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;
 			return picture;
 		}
 	}

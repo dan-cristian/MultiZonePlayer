@@ -327,7 +327,7 @@ namespace MultiZonePlayer
 		public override void Close()
 		{
 			base.Close();
-			PostURLCmdMessage("Application.Quit", m_playerIdParam, m_playerId);
+			PostURLCmdMessage("Application.Quit");
 		}
 
         public override void Play()
@@ -433,14 +433,20 @@ namespace MultiZonePlayer
 
 						result = PostURLMessage(GET_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
                         resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-                        if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
-                        {
-                            m_zoneDetails.Title = resp.result.items[0].label;
+						if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
+						{
+							m_zoneDetails.Title = resp.result.items[0].label;
 							m_zoneDetails.Author = "xbmc";
 							m_zoneDetails.RequirePower = true;
 							m_zoneDetails.IsActive = true;
+							m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
 							Utilities.SetForegroundWindow(Utilities.FindWindow("XBMC", "XBMC"));
-                        }
+						}
+						else
+						{
+							if (m_zoneDetails.IsActive)
+								m_zoneDetails.ResetValues();
+						}
                     }
                 }
                 catch (Exception ex)

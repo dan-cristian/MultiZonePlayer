@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Configuration;
 using System.Collections.Specialized;
 using Vlc.DotNet.Core;
+using SpecialServices;
 
 namespace MultiZonePlayer
 {
@@ -20,10 +21,22 @@ namespace MultiZonePlayer
         {
             try
             {
-                System.Threading.Thread.CurrentThread.Name = "Main GUI";
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new MainScreen());
+				System.Threading.Thread.CurrentThread.Name = "Main GUI";
+
+				using (SingleProgramInstance spi = new SingleProgramInstance("MZP1770515310010"))
+				{
+					if (spi.IsSingleInstance)
+					{
+						Application.EnableVisualStyles();
+						Application.SetCompatibleTextRenderingDefault(false);
+						Application.Run(new MainScreen());
+					}
+					else
+					{
+						MLog.Log(null, "ANother MZP instance already running");
+						spi.RaiseOtherProcess();
+					}
+				}
             }
             catch (Exception ex)
             {

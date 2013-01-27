@@ -53,7 +53,7 @@ function getCheckedRadioValue(radioObj) {
    		myHeight = document.body.clientHeight;
    	}
    	var maxW = myWidth - 0;
-   	var maxH = myHeight - 4;
+   	var maxH = myHeight - 5;
    	var resultW, resultH;
 
 	var ratio = Math.min(maxW / obj.width, maxH / obj.height);
