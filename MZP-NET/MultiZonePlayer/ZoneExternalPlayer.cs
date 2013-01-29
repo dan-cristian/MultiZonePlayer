@@ -5,122 +5,11 @@ using System.Text;
 
 namespace MultiZonePlayer
 {
-    public class ZoneExternalPlayerBase :ZoneBase, IZoneActivity
+    public class ZoneExternalPlayerBase :ZoneBase
     {
 
-        protected Metadata.ZoneDetails m_zoneDetails;
         protected Display m_display;
 
-        public virtual void Stop()
-        {
-            m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
-        }
-
-        public virtual void Close()
-        {
-            m_zoneDetails.ZoneState = Metadata.ZoneState.NotInitialised;
-            m_zoneDetails.RequirePower = false;
-            m_zoneDetails.IsActive = false;
-			m_zoneDetails.ResetValues();
-        }
-
-        public virtual void Next()
-        {
-        }
-
-        public void NextPlaylist()
-        {
-        }
-
-        public void Previous()
-        {
-        }
-
-        public void PreviousPlaylist()
-        {
-        }
-
-        public void NextMood()
-        {
-        }
-
-        public void PreviousMood()
-        {
-        }
-
-        public virtual void Play()
-        {
-            m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
-            m_zoneDetails.IsActive = true;
-
-        }
-        public virtual void Pause()
-        {
-            m_zoneDetails.ZoneState = Metadata.ZoneState.Paused;
-        }
-        public virtual void Mute()
-        {
-        }
-        public virtual void VolumeUp()
-        {
-        }
-        public virtual void VolumeDown()
-        {
-        }
-        public void SaveStateIni()
-        {
-        }
-        public void Guide()
-        {
-        }
-
-        public Metadata.ZoneState GetState()
-        {
-
-            return m_zoneDetails.ZoneState;
-        }
-
-        public Metadata.ZoneDetails ZoneDetails
-        {
-            get
-            {
-                return m_zoneDetails;
-            }
-        }
-
-        public bool IsActive()
-        {
-            return m_zoneDetails.IsActive;
-
-        }
-
-        public void SetVolumeLevel(int volume)
-        {
-            m_zoneDetails.VolumeLevel = volume;
-        }
-
-        public int GetVolumeLevel()
-        {
-            return m_zoneDetails.VolumeLevel;
-        }
-
-        public long Position
-        {
-            get { return -1; }
-        }
-
-        public int PositionPercent
-        {
-            get
-            {
-                return -1;
-            }
-        }
-
-        public virtual void Tick()
-        {
-            //not implemented
-        }
     }
 
     public class ZonePlayerXBMC:ZoneExternalPlayerBase, INavigableUI
@@ -128,9 +17,10 @@ namespace MultiZonePlayer
         //http://wiki.xbmc.org/index.php?title=JSON-RPC_API/v4
         private String m_playerId = "1";
         private String m_playerIdParam = "playerid";
-        private String STATUS_URL = "/jsonrpc?UpdateState";
+        //private String STATUS_URL = "/jsonrpc?UpdateState";
         private String CMD_URL = "/jsonrpc?SendRemoteKey";
 		private String GET_URL = "/jsonrpc?";
+		private bool m_bringToForegroundOnce = false;
 
         public class XBMCLimits
         {
@@ -190,7 +80,7 @@ namespace MultiZonePlayer
         public ZonePlayerXBMC(Metadata.ZoneDetails zoneDetails)
         {
             m_zoneDetails = zoneDetails;
-			m_zoneDetails.ResetValues();
+			m_zoneDetails.ZoneClose();
 			m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
 			m_zoneDetails.Genre = "video";
 			
@@ -414,40 +304,52 @@ namespace MultiZonePlayer
                 String result = PostURLMessage(GET_URL, "Player.GetActivePlayers");
                 try
                 {
+					if (!m_bringToForegroundOnce)
+					{
+						Utilities.SetForegroundWindow(Utilities.FindWindow("XBMC", "XBMC"));
+						m_bringToForegroundOnce = true;
+					}
+
                     sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
-                    if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1)
-                    {
-                        if (m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.NotStarted))
-                        {
-                            MLog.Log(this, "XBMC has active player");
+					if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1)
+					{
+						if (m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.NotStarted))
+						{
+							MLog.Log(this, "XBMC has active player");
 							base.Play();
-                            //Play();
-                        }
+							//Play();
+						}
 						m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
 						result = PostURLMessage(GET_URL, "Application.GetProperties", "properties", @"[""volume""]");
-                        resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-                        if (resp.result != null)
-                        {
-                            SetVolumeLevel(resp.result.volume);
-                        }
+						resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+						if (resp.result != null)
+						{
+							SetVolumeLevel(resp.result.volume);
+						}
 
 						result = PostURLMessage(GET_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
-                        resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+						resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
 						if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
 						{
 							m_zoneDetails.Title = resp.result.items[0].label;
 							m_zoneDetails.Author = "xbmc";
 							m_zoneDetails.RequirePower = true;
 							m_zoneDetails.IsActive = true;
+							m_zoneDetails.Genre = resp.result.type;
 							m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
 							Utilities.SetForegroundWindow(Utilities.FindWindow("XBMC", "XBMC"));
 						}
 						else
 						{
 							if (m_zoneDetails.IsActive)
-								m_zoneDetails.ResetValues();
+								m_zoneDetails.ZoneStop();
 						}
-                    }
+					}
+					else
+					{
+						if (m_zoneDetails.IsActive)
+							m_zoneDetails.ZoneStop();
+					}
                 }
                 catch (Exception ex)
                 {

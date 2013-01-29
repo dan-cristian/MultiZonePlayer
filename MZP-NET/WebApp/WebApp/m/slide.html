@@ -22,7 +22,7 @@
 		var auto_refresh_cam = setInterval(
 		function () {
 			loadCams();
-		}, 1000);
+		}, 2000);
 
 		var auto_refresh_pict = setInterval(
 		function () {
@@ -50,20 +50,18 @@
 				setTimeout(function () {
 					$('#xcamset').hide();
 					$('#camset').show();
-				}, 900);
-				
-				
+				}, 1800);
 			}
 			else {
 				$('#xcam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
 				$('#xcam12').load('snip-cam.html?zoneid=12' + '&r=' + Math.random());
 				$('#xcam6').load('snip-cam.html?zoneid=6' + '&r=' + Math.random());
-				$('#xcam2').load('snip-cam.html?zoneid=2' + '&r=' + Math.random());
+				//$('#xcam2').load('snip-cam.html?zoneid=2' + '&r=' + Math.random());
 
 				setTimeout(function () {
 					$('#camset').hide();
 					$('#xcamset').show();
-				}, 900);
+				}, 1800);
 				
 			}
 			refreshCamCount++;
@@ -119,13 +117,13 @@
 		</table>
 
 		<table>
-			<tr> <td> <div id="media1"></div> </td> </tr>
-			<tr> <td> <div id="media2"></div> </td> </tr>
-			<tr> <td> <div id="media3"></div> </td> </tr>
-			<tr> <td> <div id="media4"></div> </td> </tr>
-			<tr> <td> <div id="media5"></div> </td> </tr>
+			<tr> <td> <div id="media1" style="width:200px"></div> </td> </tr>
+			<tr> <td> <div id="media2" style="width:200px"></div> </td> </tr>
+			<tr> <td> <div id="media3" style="width:200px"></div> </td> </tr>
+			<tr> <td> <div id="media4" style="width:200px"></div> </td> </tr>
+			<tr> <td> <div id="media5" style="width:200px"></div> </td> </tr>
 		</table>
-	
+		<br />
 		<div id="camset" style="display:none">
 		<table>
 		<tr><td><div id="cam7"></div></div></td></tr>

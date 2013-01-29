@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MultiZonePlayer
 {
-    class ZoneAux : IZoneActivity
+    class ZoneAux : ZoneBase
     {
         private AuxPlayer auxPlayer = null;
         private ZoneGeneric zoneForm;
@@ -21,106 +21,89 @@ namespace MultiZonePlayer
             this.outputDeviceName = outputDeviceName;
         }
 
-        public virtual void Play()
+        public override void Play()
         {
+			base.Play();
             auxPlayer.OpenClip(outputDeviceName, inputDeviceName, zoneForm);
         }
 
-        public virtual void Stop()
+        public override void Stop()
         {
+			base.Stop();
             auxPlayer.StopClip();
         }
 
-        public virtual void Close()
+        public override void Close()
         {
+			base.Close();
             auxPlayer.CloseClip();
             auxPlayer.Close();
         }
 
-        public void Pause()
+        public override void VolumeUp()
         {
-        }
-
-        public virtual void Guide()
-        {
-        }
-        public void Mute()
-        {
-        }
-
-        public void VolumeUp()
-        {
+			base.VolumeUp();
             auxPlayer.ChangeVolume(IniFile.VOLUME_STEP);
         }
 
-        public void VolumeDown()
+		public override void VolumeDown()
         {
+			base.VolumeDown();
             auxPlayer.ChangeVolume(-IniFile.VOLUME_STEP);
         }
 
 
-        public void SaveStateIni()
-        {
-            IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONERESUME + zoneForm.GetZoneId(), "VOLUME", GetVolumeLevel().ToString());
-        }
-
-        public int GetVolumeLevel()
+		public override int GetVolumeLevel()
         {
             return auxPlayer.GetVolumeLevel();
         }
 
-        public void SetVolumeLevel(int volume)
+		public override void SetVolumeLevel(int volume)
         {
             auxPlayer.SetVolume(volume);
         }
 
-        public Metadata.ZoneState GetState()
+        public override Metadata.ZoneState GetState()
         {
             return auxPlayer.GetState();
         }
 
-        public Metadata.ZoneDetails ZoneDetails
-        {
-            get
-            {
-                return zoneForm.ZoneDetails;
-            }
-        }
+        
 
-        public virtual bool IsActive()
+        public override bool IsActive()
         {
             return (auxPlayer.GetState() == Metadata.ZoneState.Running);
         }
 
-        public virtual void Next()
+        public override void Next()
         {
             MLog.Log(null,"Next() not implemented for ZoneAux");
         }
 
-        public virtual void NextPlaylist()
+		public override void NextPlaylist()
         {
             MLog.Log(null, "Nextplaylist() not implemented for ZoneAux");
         }
 
-        public virtual void Previous()
+		public override void Previous()
         {
             MLog.Log(null,"Previous() not implemented for ZoneAux");
         }
 
-        public virtual void PreviousPlaylist()
+		public override void PreviousPlaylist()
         {
             MLog.Log(null, "Prevplaylist() not implemented for ZoneAux");
         }
 
-        public virtual void NextMood()
+		public override void NextMood()
         {
         }
 
-        public virtual void PreviousMood()
+		public override void PreviousMood()
         {
         }
 
-        public long Position
+		public override long Position
         {
             get
             {
@@ -128,7 +111,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public int PositionPercent
+		public override int PositionPercent
         {
             get
             {
@@ -136,7 +119,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public void Tick()
+		public override void Tick()
         {
             //not implemented
         }

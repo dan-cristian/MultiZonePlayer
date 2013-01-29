@@ -831,7 +831,7 @@ namespace MultiZonePlayer
 
             public void Close()
             {
-                ResetValues();
+                ZoneClose();
                 SaveStateToIni();
             }
 
@@ -851,18 +851,25 @@ namespace MultiZonePlayer
                 return Convert.ToInt16(VolumeLevels.VolumeSilence * val);
             }
 
-            public void ResetValues()
+			public void ZoneStop()
+			{
+				Album = null;
+				Author = null;
+				Year = null;
+				Title = null;
+				Genre = null;
+				SourceURL = null;
+				RequirePower = false;
+				ZoneState = Metadata.ZoneState.NotStarted;
+			}
+
+            public void ZoneClose()
             {
-                Album = null;
-                Author = null;
-                Year = null;
-                Title = null;
-                Genre = null;
-                SourceURL = null;
+				ZoneStop();
                 IsActive = false;
                 ActivityType = GlobalCommands.nul;
                 ZoneState = Metadata.ZoneState.NotInitialised;
-                RequirePower = false;
+                
             }
         }
 

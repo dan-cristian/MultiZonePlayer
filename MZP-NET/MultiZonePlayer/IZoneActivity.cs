@@ -42,9 +42,123 @@ namespace MultiZonePlayer
         void Tick();
     }
 
-    public class ZoneBase
+    public class ZoneBase:IZoneActivity
     {
         protected DateTime m_lastSlowTickDateTime = DateTime.Now;
+		protected Metadata.ZoneDetails m_zoneDetails;
+
+		public virtual void Stop()
+		{
+			m_zoneDetails.ZoneStop();
+		}
+
+		public virtual void Close()
+		{
+			m_zoneDetails.ZoneClose();
+		}
+
+		public virtual void Next()
+		{
+		}
+
+		public virtual void NextPlaylist()
+		{
+		}
+
+		public virtual void Previous()
+		{
+		}
+
+		public virtual void PreviousPlaylist()
+		{
+		}
+
+		public virtual void NextMood()
+		{
+		}
+
+		public virtual void PreviousMood()
+		{
+		}
+
+		public virtual void Play()
+		{
+			m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
+			m_zoneDetails.IsActive = true;
+
+		}
+		public virtual void Pause()
+		{
+			m_zoneDetails.ZoneState = Metadata.ZoneState.Paused;
+		}
+		public virtual void Mute()
+		{
+		}
+		public virtual void VolumeUp()
+		{
+		}
+		public virtual void VolumeDown()
+		{
+		}
+		public virtual void SaveStateIni()
+		{
+		}
+
+		public virtual void Guide()
+		{
+		}
+
+		public virtual Metadata.ZoneState GetState()
+		{
+
+			return m_zoneDetails.ZoneState;
+		}
+
+		public virtual Metadata.ZoneDetails ZoneDetails
+		{
+			get
+			{
+				return m_zoneDetails;
+			}
+		}
+
+		public virtual bool IsActive()
+		{
+
+			return m_zoneDetails.IsActive;
+
+		}
+
+		public virtual void SetVolumeLevel(int volume)
+		{
+			m_zoneDetails.VolumeLevel = volume;
+		}
+
+		public virtual int GetVolumeLevel()
+		{
+			return m_zoneDetails.VolumeLevel;
+		}
+
+		public virtual long Position
+		{
+			get { return -1; }
+		}
+
+		public virtual int PositionPercent
+		{
+			get
+			{
+				return -1;
+			}
+		}
+
+
+
+		public virtual void Tick()
+		{
+			//not implemented
+
+		}
     }
 
     public interface INavigableUI

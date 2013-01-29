@@ -27,7 +27,7 @@ namespace MultiZonePlayer
         rating
     }
 
-    public class ZoneMusic : IZoneActivity
+    public class ZoneMusic : ZoneBase, IZoneActivity
     {
         private DCPlayer m_dcPlay = null;
         private ZoneGeneric m_zoneForm = null;
@@ -41,7 +41,6 @@ namespace MultiZonePlayer
            
         private PlayMode m_playMode = PlayMode.Default1;
         private Boolean m_isAlarm = false;
-        private Metadata.ZoneDetails m_zoneDetails;
         private String m_alarmStartMinute = "";
         private bool m_isGuideMode = false;
         private string m_numericCmd = "";
@@ -180,7 +179,7 @@ namespace MultiZonePlayer
                 //locate new index
             }
 
-            public void Play()
+			public override void Play()
             {
                 String musicFile;
 
@@ -237,20 +236,18 @@ namespace MultiZonePlayer
                 if (GetState().Equals(Metadata.ZoneState.Running))
                     m_dcPlay.UpdateOutputDevices();
             }
-        
-            public void Stop()
+
+			public override void Stop()
             {
                 SaveStateIni();
                 //dcPlay.StopClip();
                 m_dcPlay.CloseClip();
-                m_zoneDetails.IsActive = false;
-                m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
-                m_zoneDetails.RequirePower = false;
+				m_zoneDetails.ZoneStop();
                 m_isGuideMode = false;
             }
 
             delegate void DelegateClose();
-            public void Close()
+			public override void Close()
             {
                 Stop();
 				if (m_dcPlay.InvokeRequired)
@@ -261,7 +258,7 @@ namespace MultiZonePlayer
 				else
 				{
 					m_dcPlay.Close();
-					m_zoneDetails.ResetValues();
+					m_zoneDetails.ZoneClose();
 				}
             }
 
@@ -284,17 +281,18 @@ namespace MultiZonePlayer
                 }
             }
 
-            public void Pause()
+            public override void Pause()
             {
+				base.Pause();
                 m_dcPlay.PauseClip();
             }
 
-            public void Mute()
+			public override void Mute()
             {
                 m_dcPlay.ToggleMute();
             }
-        
-            public void Guide()
+
+			public override void Guide()
             {
                 m_isGuideMode = !m_isGuideMode;
                 m_numericCmd = "";
@@ -310,7 +308,7 @@ namespace MultiZonePlayer
                 m_dcPlay.ModifyRate(-0.25);
             }
 
-            public void Next()
+			public override void Next()
             {
                 AudioItem currentItem = m_songList[m_currentSongKey];
                 Stop();
@@ -326,7 +324,7 @@ namespace MultiZonePlayer
                 }
             }
 
-            public void NextMood()
+			public override void NextMood()
             {
                 List<MoodMusic> moodList = MZPState.Instance.GetScheduledMoodList(m_zoneDetails.ZoneId);
                 MLog.Log(this, "At next mood cmd moodcount=" + moodList.Count + " current index="+m_indexMood);
@@ -338,7 +336,7 @@ namespace MultiZonePlayer
                 Play();
             }
 
-            public void PreviousMood()
+			public override void PreviousMood()
             {
                 List<MoodMusic> moodList = MZPState.Instance.GetScheduledMoodList(m_zoneDetails.ZoneId);
                 MLog.Log(this, "At previous mood cmd moodcount=" + moodList.Count + " current index=" + m_indexMood);
@@ -350,7 +348,7 @@ namespace MultiZonePlayer
                 Play();
             }
 
-            public void NextPlaylist()
+			public override void NextPlaylist()
             {
                 /*
                 Stop();
@@ -366,7 +364,7 @@ namespace MultiZonePlayer
                 NextMood();
             }
 
-            public void PreviousPlaylist()
+			public override void PreviousPlaylist()
             {
                 /*Stop();
                 m_indexPlaylist--;
@@ -380,7 +378,7 @@ namespace MultiZonePlayer
                 PreviousMood();
             }
 
-            public void Previous()
+			public override void Previous()
             {
                 AudioItem currentItem = m_songList[m_currentSongKey];
                 Stop();
@@ -394,12 +392,12 @@ namespace MultiZonePlayer
                 MediaLibrary.AllAudioFiles.SaveUpdatedItems();
             }
 
-            public void VolumeUp()
+			public override void VolumeUp()
             {
                 m_dcPlay.ChangeVolume(IniFile.VOLUME_STEP);
             }
 
-            public void VolumeDown()
+			public override void VolumeDown()
             {
                 m_dcPlay.ChangeVolume(-IniFile.VOLUME_STEP);
             }
@@ -419,21 +417,21 @@ namespace MultiZonePlayer
                 CurrentItem.SetRating(ratingLevel);
             }
 
-            public void SaveStateIni()
+			public override void SaveStateIni()
             {
                 //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + m_zoneForm.GetZoneId() + "USR" + m_zoneForm.GetUser().Id, "PLAYLIST", GetPlayList());
                 //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + zoneForm.GetZoneId() + "USR" +zoneForm.GetUser().Id, "PLAYFILE", GetCurrentMusicFileFullPath());
                 //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + zoneForm.GetZoneId() + "USR" +zoneForm.GetUser().Id, "VOLUME", GetVolumeLevel().ToString());
             }
 
-            public long Position
+			public override long Position
             {
                 get
                 {
                     return m_dcPlay.Position;
                 }
             }
-            public int PositionPercent
+			public override int PositionPercent
             {
                 get
                 {
@@ -441,13 +439,6 @@ namespace MultiZonePlayer
                 }
             }
 
-            public Metadata.ZoneDetails ZoneDetails
-            {
-                get
-                {
-                    return m_zoneForm.ZoneDetails;
-                }
-            }
             #endregion
 
             #region GetSet
@@ -589,12 +580,12 @@ namespace MultiZonePlayer
                 Play();
             }
 
-            public int GetVolumeLevel()
+            public override int GetVolumeLevel()
             {
                 return m_dcPlay.GetVolumeLevel();
             }
 
-            public void SetVolumeLevel(int volume)
+			public override void SetVolumeLevel(int volume)
             {
                 m_dcPlay.SetVolume(volume);
             }
@@ -636,12 +627,12 @@ namespace MultiZonePlayer
                 return prevIndex + ":"+ m_songList[prevIndex].SourceURL;
             }
 
-            public Metadata.ZoneState GetState()
+			public override Metadata.ZoneState GetState()
             {
                 return m_dcPlay.GetState();
             }
 
-            public bool IsActive()
+			public override bool IsActive()
             {
                 return (m_dcPlay.GetState() == Metadata.ZoneState.Running);
             }
@@ -813,7 +804,7 @@ namespace MultiZonePlayer
                 
                 return result;
             }
-            public void Tick()
+			public override void Tick()
             {
                 if (IsAlarm && GetVolumeLevel() < m_zoneForm.ZoneDetails.GetDefaultVolume())
                 {
@@ -837,12 +828,11 @@ namespace MultiZonePlayer
             }
     }
 
-    public class ZoneMusicClone : IZoneActivity
+    public class ZoneMusicClone : ZoneBase
     {
         private ZoneGeneric m_parentZoneForm;
         private ZoneGeneric m_clonedZoneForm;
         private ZoneMusic m_clonedZoneMusic;
-        private Metadata.ZoneDetails m_zoneDetails;
         private Metadata.ZoneState m_zoneState;
 
         public ZoneMusicClone(ZoneGeneric p_zoneForm, ZoneGeneric p_clonedZoneForm)
@@ -863,7 +853,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public void Stop()
+        public override void Stop()
         {
             if ((m_clonedZoneMusic != null) && (m_parentZoneForm != null))
             {
@@ -873,43 +863,36 @@ namespace MultiZonePlayer
             m_zoneState = Metadata.ZoneState.NotStarted;
 			m_zoneDetails.RequirePower = false;
         }
-        public void Close()
+		public override void Close()
         {
             Stop();
         }
-        public void Next()
+		public override void Next()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 m_clonedZoneForm.GetCurrentActivity().Next();
         }
 
-        public void NextPlaylist()
+		public override void NextPlaylist()
         {
             //Next();
             NextMood();
         }
 
-        public void Previous()
+		public override void Previous()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 m_clonedZoneForm.GetCurrentActivity().Previous();
         }
 
-        public void PreviousPlaylist()
+		public override void PreviousPlaylist()
         {
             //Previous();
             PreviousMood();
         }
 
-        public void NextMood()
-        {
-        }
 
-        public void PreviousMood()
-        {
-        }
-
-        public void Play()
+		public override void Play()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
             {
@@ -918,36 +901,36 @@ namespace MultiZonePlayer
                 m_zoneState = Metadata.ZoneState.Running;
             }
         }
-        public void Pause()
+		public override void Pause()
         {
             if ((m_clonedZoneForm!=null) && (m_clonedZoneForm.GetCurrentActivity()!= null))
                 m_clonedZoneForm.GetCurrentActivity().Pause();
         }
-        public void Mute()
+		public override void Mute()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 m_clonedZoneForm.GetCurrentActivity().Mute();
         }
-        public void VolumeUp()
+		public override void VolumeUp()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 m_clonedZoneForm.GetCurrentActivity().VolumeUp();
         }
-        public void VolumeDown()
+		public override void VolumeDown()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 m_clonedZoneForm.GetCurrentActivity().VolumeDown();
         }
-        public void SaveStateIni()
+		public override void SaveStateIni()
         {
         }
-        public void Guide()
+		public override void Guide()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 m_clonedZoneForm.GetCurrentActivity().Guide();
         }
 
-        public Metadata.ZoneState GetState()
+		public override Metadata.ZoneState GetState()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
             {
@@ -960,7 +943,7 @@ namespace MultiZonePlayer
                 return Metadata.ZoneState.NotInitialised;
         }
 
-        public Metadata.ZoneDetails ZoneDetails
+		public override Metadata.ZoneDetails ZoneDetails
         {
             get
             {
@@ -968,7 +951,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public bool IsActive()
+		public override bool IsActive()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
             {
@@ -981,14 +964,14 @@ namespace MultiZonePlayer
                 return false;
         }
 
-        public void SetVolumeLevel(int volume)
+		public override void SetVolumeLevel(int volume)
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 m_clonedZoneForm.GetCurrentActivity().SetVolumeLevel(volume);
 
         }
 
-        public int GetVolumeLevel()
+		public override int GetVolumeLevel()
         {
             if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
                 return m_clonedZoneForm.GetCurrentActivity().GetVolumeLevel();
@@ -1012,7 +995,7 @@ namespace MultiZonePlayer
                 return -1;
         }
 
-        public long Position
+		public override long Position
         {
             get
             {
@@ -1023,7 +1006,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public int PositionPercent
+		public override int PositionPercent
         {
             get
             {
@@ -1092,7 +1075,7 @@ namespace MultiZonePlayer
             return result;
         }
 
-        public void Tick()
+		public override void Tick()
         {
             //not implemented
             if (m_clonedZoneMusic != null && m_clonedZoneMusic.CurrentItem != null)

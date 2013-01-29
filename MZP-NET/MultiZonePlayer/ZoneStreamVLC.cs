@@ -12,7 +12,7 @@ using Vlc.DotNet.Forms;
 
 namespace MultiZonePlayer
 {
-    class ZoneStreamVLC:IZoneActivity
+    class ZoneStreamVLC:ZoneBase
     {
         private VlcControl m_vlcControl;
 
@@ -20,7 +20,6 @@ namespace MultiZonePlayer
         public const int VOLUME_NATIVE_MIN = 0;
         private String m_url;
         private int m_playlistIndex = 0;
-        private Metadata.ZoneDetails m_zoneDetails;
         private int m_tickCount = 0;
 
         public ZoneStreamVLC(Metadata.ZoneDetails p_zoneDetails)
@@ -102,20 +101,20 @@ namespace MultiZonePlayer
             //SetVolumeLevel(m_zoneDetails.GetDefaultVolume());
         }
 
-        public void Stop()
+        public override void Stop()
         {
             m_vlcControl.Stop();
             m_tickCount = 0;
             m_zoneDetails.RequirePower = false;
 			m_zoneDetails.IsActive = false;
         }
-        public void Close()
+		public override void Close()
         {
             Stop();
-			m_zoneDetails.ResetValues();
+			m_zoneDetails.ZoneClose();
         }
 
-        public void Next()
+		public override void Next()
         {
             //not impl
             Stop();
@@ -123,27 +122,19 @@ namespace MultiZonePlayer
             Play();
         }
 
-        public void NextPlaylist()
+		public override void NextPlaylist()
         {
             Next();
         }
-        public void Previous()
+		public override void Previous()
         {
             Stop();
             m_playlistIndex--;
             Play();
         }
-        public void PreviousPlaylist()
+		public override void PreviousPlaylist()
         {
             Previous();
-        }
-
-        public  void NextMood()
-        {
-        }
-
-        public  void PreviousMood()
-        {
         }
 
         private String GetNextPlaylist()
@@ -171,7 +162,7 @@ namespace MultiZonePlayer
             return media;
         }
 
-        public void Play()
+        public override void Play()
         {
             m_url = GetNextPlaylist();
 
@@ -187,38 +178,33 @@ namespace MultiZonePlayer
                 MLog.Log(this, "error empty stream url");
         }
 
-        public void Pause()
+		public override void Pause()
         {
             m_vlcControl.Pause();
         }
 
-        public void Mute()
+		public override void Mute()
         {
             //not impl
         }
 
-        public void VolumeUp()
+		public override void VolumeUp()
         {
             if (m_vlcControl.AudioProperties.Volume < VOLUME_NATIVE_MAX)
                 SetVolumeLevelNative(m_vlcControl.AudioProperties.Volume + 4);
         }
 
-        public void VolumeDown()
+		public override void VolumeDown()
         {
             if (m_vlcControl.AudioProperties.Volume > VOLUME_NATIVE_MIN)
                 SetVolumeLevelNative(m_vlcControl.AudioProperties.Volume - 4);
         }
 
-        public void SaveStateIni()
+        public override void Guide()
         {
             //
         }
-
-        public void Guide()
-        {
-            //
-        }
-        public Metadata.ZoneState GetState()
+		public override Metadata.ZoneState GetState()
         {
             switch (m_vlcControl.State)
             {
@@ -236,35 +222,21 @@ namespace MultiZonePlayer
             }
         }
 
-        public Metadata.ZoneDetails ZoneDetails
-        {
-            get
-            {
-                return m_zoneDetails;
-            }
-        }
-        public long Position
-        {
-            get { return 0; }
-        }
-        public int PositionPercent
-        {
-            get { return 0; }
-        }
-        public bool IsActive()
+        
+        public override bool IsActive()
         {
             //
             return GetState().Equals(Metadata.ZoneState.Running);
         }
 
-        public void SetVolumeLevel(int volume)
+		public override void SetVolumeLevel(int volume)
         {
             int calcvol = (VOLUME_NATIVE_MAX - VOLUME_NATIVE_MIN) * (Metadata.VolumeLevels.VolumeSilence - volume) / Metadata.VolumeLevels.VolumeSilence;
             MLog.Log(this, "set volume val="+volume);
             SetVolumeLevelNative(calcvol);
         }
 
-        public int GetVolumeLevel()
+		public override int GetVolumeLevel()
         {
             return (VOLUME_NATIVE_MAX - m_vlcControl.AudioProperties.Volume) * Metadata.VolumeLevels.VolumeSilence / (VOLUME_NATIVE_MAX - VOLUME_NATIVE_MIN);
         }
@@ -285,7 +257,7 @@ namespace MultiZonePlayer
             return m_url;
         }
 
-        public void Tick()
+		public override void Tick()
         {
             if (m_vlcControl != null && m_vlcControl.Media != null)
             {
@@ -294,7 +266,6 @@ namespace MultiZonePlayer
                 m_zoneDetails.Author = m_vlcControl.Media.Metadatas.Title;
                 m_zoneDetails.SourceURL = m_vlcControl.Media.MRL;
                 m_tickCount++;
-                 
             }
         }
     }
