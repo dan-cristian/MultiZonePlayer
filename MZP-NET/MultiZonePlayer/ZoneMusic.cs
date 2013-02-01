@@ -196,6 +196,7 @@ namespace MultiZonePlayer
                         //init amp power if needed
 						m_zoneDetails.RequirePower = true;
                         MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
+						System.Threading.Thread.Sleep(10000);
                         m_dcPlay.OpenClip(m_zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted, musicFile, this.m_zoneForm);
                         if (m_dcPlay.GetState() == Metadata.ZoneState.Running)
                         {

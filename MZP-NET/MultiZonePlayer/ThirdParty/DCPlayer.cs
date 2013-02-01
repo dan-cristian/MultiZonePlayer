@@ -17,6 +17,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 using DirectShowLib;
 using MultiZonePlayer;
+using System.Threading;
 
 namespace MultiZonePlayer
 {
@@ -86,30 +87,17 @@ namespace MultiZonePlayer
 	
      public DCPlayer()
     {
-      //
-      // Requis pour la prise en charge du Concepteur Windows Forms
-      //
+ 
       InitializeComponent();
-
-      //
-      // TODO : ajoutez le code du constructeur après l'appel à InitializeComponent
-      //
     }
     
          // play single file then stop
      public DCPlayer(ZoneGeneric zoneForm, String outputDevice, String musicFile, int volume)
      {
-         //
-         // Requis pour la prise en charge du Concepteur Windows Forms
-         //
          InitializeComponent();
          autoNext = false;
          this.currentVolume = volume;
          OpenClip(outputDevice, musicFile, zoneForm);
-
-         //
-         // TODO : ajoutez le code du constructeur après l'appel à InitializeComponent
-         //
      }
 
     /// <summary>
@@ -184,7 +172,7 @@ namespace MultiZonePlayer
     {
         // Reset status variables
         this.currentState = Metadata.ZoneState.NotStarted;
-        ConnectAndRunGraphSafe();
+        ConnectAndRunGraph();
     }
 
     public void UpdateOutputDevices()
@@ -193,122 +181,121 @@ namespace MultiZonePlayer
         CloseClip();
         //m_outputDeviceList.Add(p_zone.ZoneId, p_outputDeviceName);
         //SetVolume(p_zone.GetDefaultVolume());
-        ConnectAndRunGraphSafe();
+        ConnectAndRunGraph();
         Position = pos;
     }
 
-    delegate void DelegateConnectAndRunGraphSafe();
-    protected void ConnectAndRunGraphSafe()
-    {
-        if (this.InvokeRequired)
-        {
-            //MLog.Log(this, "Delegate required on RunGraph, thread=" + System.Threading.Thread.CurrentThread.Name + " clip="+filename);
-            //DelegateConnectAndRunGraphSafe dlg = new DelegateConnectAndRunGraphSafe(ConnectAndRunGraph);
-            //this.BeginInvoke(dlg);
-        }
-        else
-        {
-            //MLog.Log(this, "No delegate required on RunGraph, thread=" + System.Threading.Thread.CurrentThread.Name + " clip="+filename);
-            //ConnectAndRunGraph();
-        }
-        ConnectAndRunGraph();
-    }
     
     protected void ConnectAndRunGraph()
     {
-        int hr = 0;
+		try
+		{
+			int hr = 0;
 
-        this.graphBuilder = (IGraphBuilder)new FilterGraph();
+			this.graphBuilder = (IGraphBuilder)new FilterGraph();
 
 #if DEBUG
-        rot = new DsROTEntry(this.graphBuilder);
+			rot = new DsROTEntry(this.graphBuilder);
 #endif
-        hr = this.graphBuilder.AddSourceFilter(filename, "Input Source", out sourceFilter);
-        lastErrorMesg = filename;
-        DsError.ThrowExceptionForHR(hr);
+			hr = this.graphBuilder.AddSourceFilter(filename, "Input Source", out sourceFilter);
+			lastErrorMesg = filename;
+			DsError.ThrowExceptionForHR(hr);
 
-        infiniteTeeFilter = (IBaseFilter)Marshal.BindToMoniker(DShowUtility.InfinitePinTeeFilter);
-        hr = this.graphBuilder.AddFilter(infiniteTeeFilter, "InfiniteTee");
-        DsError.ThrowExceptionForHR(hr);
+			infiniteTeeFilter = (IBaseFilter)Marshal.BindToMoniker(DShowUtility.InfinitePinTeeFilter);
+			hr = this.graphBuilder.AddFilter(infiniteTeeFilter, "InfiniteTee");
+			DsError.ThrowExceptionForHR(hr);
 
-        foreach (IZoneActivity device in zoneForm.GetClonedZones())
-        {
-            IBaseFilter outFilter = (IBaseFilter)Marshal.BindToMoniker(device.ZoneDetails.OutputDeviceAutoCompleted);
-            hr = this.graphBuilder.AddFilter(outFilter, "Out Renderer device " + device);
-            DsError.ThrowExceptionForHR(hr);
-        }
+			int loop = 0;
+			foreach (IZoneActivity device in zoneForm.GetClonedZones())
+			{
+				while (!MZPState.Instance.PowerControl.IsPowerOn(device.ZoneDetails.ZoneId) && loop < 50)
+				{
+					Thread.Sleep(100);
+					loop++;
+				}
+				if (loop >= 50)
+					MLog.Log(this, "Error waiting for power on on DCPlayer graph init, loop count exceeded");
+				IBaseFilter outFilter = (IBaseFilter)Marshal.BindToMoniker(device.ZoneDetails.OutputDeviceAutoCompleted);
+				hr = this.graphBuilder.AddFilter(outFilter, "Out Renderer device " + device);
+				DsError.ThrowExceptionForHR(hr);
+			}
 
-        int pinCount,newPinCount;
-        IPin[] pinList,newPinList;
+			int pinCount, newPinCount;
+			IPin[] pinList, newPinList;
 
-        DShowUtility.GetFilterPins(sourceFilter, out pinCount, out pinList);
-        hr = this.graphBuilder.Render(pinList[0]);
+			DShowUtility.GetFilterPins(sourceFilter, out pinCount, out pinList);
+			hr = this.graphBuilder.Render(pinList[0]);
 
-        DShowUtility.GetFilterPins(infiniteTeeFilter, out pinCount, out pinList);
-        for (int i = 0; i < zoneForm.GetClonedZones().Count+1; i++)
-        {
-            hr = this.graphBuilder.Render(pinList[i]);
-            DShowUtility.GetFilterPins(infiniteTeeFilter, out newPinCount, out newPinList);
-            if (newPinCount != pinCount)
-            {
-                pinCount = newPinCount;
-                pinList = newPinList;
-            }
-        }
+			DShowUtility.GetFilterPins(infiniteTeeFilter, out pinCount, out pinList);
+			for (int i = 0; i < zoneForm.GetClonedZones().Count + 1; i++)
+			{
+				hr = this.graphBuilder.Render(pinList[i]);
+				DShowUtility.GetFilterPins(infiniteTeeFilter, out newPinCount, out newPinList);
+				if (newPinCount != pinCount)
+				{
+					pinCount = newPinCount;
+					pinList = newPinList;
+				}
+			}
 
-        // QueryInterface for DirectShow interfaces
-        this.mediaControl = (IMediaControl) this.graphBuilder;
-        this.mediaEventEx = (IMediaEventEx) this.graphBuilder;
-        this.mediaSeeking = (IMediaSeeking) this.graphBuilder;
-        this.mediaPosition = (IMediaPosition) this.graphBuilder;
+			// QueryInterface for DirectShow interfaces
+			this.mediaControl = (IMediaControl)this.graphBuilder;
+			this.mediaEventEx = (IMediaEventEx)this.graphBuilder;
+			this.mediaSeeking = (IMediaSeeking)this.graphBuilder;
+			this.mediaPosition = (IMediaPosition)this.graphBuilder;
 
-        // Query for video interfaces, which may not be relevant for audio files
-        this.videoWindow = this.graphBuilder as IVideoWindow;
-        this.basicVideo = this.graphBuilder as IBasicVideo;
+			// Query for video interfaces, which may not be relevant for audio files
+			this.videoWindow = this.graphBuilder as IVideoWindow;
+			this.basicVideo = this.graphBuilder as IBasicVideo;
 
-        // Query for audio interfaces, which may not be relevant for video-only files
-        this.basicAudio = this.graphBuilder as IBasicAudio;
+			// Query for audio interfaces, which may not be relevant for video-only files
+			this.basicAudio = this.graphBuilder as IBasicAudio;
 
-        // Is this an audio-only file (no video component)?
-        //CheckVisibility();
+			// Is this an audio-only file (no video component)?
+			//CheckVisibility();
 
-        // Have the graph signal event via window callbacks for performance
-        //hr = this.mediaEventEx.SetNotifyWindow(this.Handle, WMGraphNotify, IntPtr.Zero);
-        //DsError.ThrowExceptionForHR(hr);
+			// Have the graph signal event via window callbacks for performance
+			//hr = this.mediaEventEx.SetNotifyWindow(this.Handle, WMGraphNotify, IntPtr.Zero);
+			//DsError.ThrowExceptionForHR(hr);
 
-        /*
-        if (!this.isAudioOnly)
-        {
-        // Setup the video window
-        hr = this.videoWindow.put_Owner(this.Handle);
-        DsError.ThrowExceptionForHR(hr);
+			/*
+			if (!this.isAudioOnly)
+			{
+			// Setup the video window
+			hr = this.videoWindow.put_Owner(this.Handle);
+			DsError.ThrowExceptionForHR(hr);
 
-        hr = this.videoWindow.put_WindowStyle(WindowStyle.Child | WindowStyle.ClipSiblings | WindowStyle.ClipChildren);
-        DsError.ThrowExceptionForHR(hr);
+			hr = this.videoWindow.put_WindowStyle(WindowStyle.Child | WindowStyle.ClipSiblings | WindowStyle.ClipChildren);
+			DsError.ThrowExceptionForHR(hr);
 
-        //hr = InitVideoWindow(1, 1);
-        DsError.ThrowExceptionForHR(hr);
+			//hr = InitVideoWindow(1, 1);
+			DsError.ThrowExceptionForHR(hr);
 
-        GetFrameStepInterface();
-        }
-        else
-        {
-        // Initialize the default player size and enable playback menu items
+			GetFrameStepInterface();
+			}
+			else
+			{
+			// Initialize the default player size and enable playback menu items
         
-        }
-        */
+			}
+			*/
 
-        // Complete window initialization
-        //CheckSizeMenu(menuFileSizeNormal);
-        this.isFullScreen = false;
-        this.currentPlaybackRate = 1.0;
+			// Complete window initialization
+			//CheckSizeMenu(menuFileSizeNormal);
+			this.isFullScreen = false;
+			this.currentPlaybackRate = 1.0;
 
-      // Run the graph to play the media file
-      hr = this.mediaControl.Run();
-      DsError.ThrowExceptionForHR(hr);
-      
-      SetVolume(this.currentVolume);
-      this.currentState = Metadata.ZoneState.Running;
+			// Run the graph to play the media file
+			hr = this.mediaControl.Run();
+			DsError.ThrowExceptionForHR(hr);
+
+			SetVolume(this.currentVolume);
+			this.currentState = Metadata.ZoneState.Running;
+		}
+		catch (Exception ex)
+		{
+			MLog.Log(ex, this, "Error init graph zone "+zoneForm.ZoneDetails.ZoneName+" output="+zoneForm.ZoneDetails.OutputDeviceAutoCompleted);
+		}
     }
 
     

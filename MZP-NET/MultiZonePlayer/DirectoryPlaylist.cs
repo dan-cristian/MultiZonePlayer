@@ -1279,7 +1279,7 @@ namespace MultiZonePlayer
 			string picture;
 				
 			if (m_autoIterateItems==null || m_autoIterateItems.Count == 0)
-				picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "\notfound.jpg";
+				picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "\\notfound.jpg";
 			else
 				picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;
 			return picture;
@@ -1300,17 +1300,19 @@ namespace MultiZonePlayer
 				m_videoFiles = new VideoCollection();
 				m_pictureFiles = new PicturesCollection();
 
-				MLog.Log(null, "Loading mediaplayer picture files from " + IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1]);
-				for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++)
-				{
-					m_pictureFiles.AddFiles(IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1], "*." + IniFile.PICTURE_EXTENSION[i],
-						System.IO.SearchOption.AllDirectories);
-				}
+				
 
 				MLog.Log(null, "Loading mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
 				for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
 				{
 					m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*." + IniFile.MUSIC_EXTENSION[i],
+						System.IO.SearchOption.AllDirectories);
+				}
+
+				MLog.Log(null, "Loading mediaplayer picture files from " + IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1]);
+				for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++)
+				{
+					m_pictureFiles.AddFiles(IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1], "*." + IniFile.PICTURE_EXTENSION[i],
 						System.IO.SearchOption.AllDirectories);
 				}
 

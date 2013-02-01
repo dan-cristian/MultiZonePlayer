@@ -359,8 +359,8 @@ namespace MultiZonePlayer
 
                 entry = IniReadValue(sectionName, key);
                 //hack to support network paths
-                if (entry.Contains("\\\\"))
-                    entry = entry.Replace("\\\\", "\\");
+                //if (entry.Contains("\\\\"))
+                //    entry = entry.Replace("\\\\", "\\");
 
                 if (entry == ".") entry = "";
                 return entry;

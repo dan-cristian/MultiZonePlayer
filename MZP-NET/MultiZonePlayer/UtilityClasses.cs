@@ -782,6 +782,8 @@ namespace MultiZonePlayer
                     else
                         result = p_outputDevice;
                 }
+
+				MLog.Log(null, "Device user select="+p_outputDevice+" keywords="+p_outputKeywords+" res="+result);
                 return result;
             }
 

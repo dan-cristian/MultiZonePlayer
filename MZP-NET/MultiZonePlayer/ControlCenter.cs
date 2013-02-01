@@ -270,7 +270,7 @@ namespace MultiZonePlayer
                     newZoneForm.Show();
                 }
                 else
-                    MLog.Log(this, "Unable to open zone form" + zoneId);
+                    MLog.Log(this, "Unable to open zone form, zone not in active zoneform list " + zoneId);
             }
         }
 
