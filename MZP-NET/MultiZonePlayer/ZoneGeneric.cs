@@ -84,55 +84,6 @@ namespace MultiZonePlayer
 				{
 					m_mainZoneActivity.Close();
 				}
-
-				/*
-				//find all child zones that require power
-				Metadata.ZoneDetails childZone = MZPState.Instance.ZoneDetails.Find(
-					x => x.ParentZoneId == m_zoneDetails.ZoneId && x.RequirePower);
-				hasChildswithPower = childZone != null;
-
-				//find all parents that require power
-				Metadata.ZoneDetails parentZone = MZPState.Instance.GetZoneById(m_zoneDetails.ParentZoneId);
-				hasParentwithPower = (parentZone != null && parentZone.RequirePower);
-
-				//find all siblings that require power
-				if (parentZone != null)
-				{
-					Metadata.ZoneDetails siblingZone = MZPState.Instance.ZoneDetails.Find(
-					   x => x.ParentZoneId == parentZone.ZoneId && x.RequirePower);
-					hasSiblingswithPower = siblingZone != null;
-				}
-				else hasSiblingswithPower = false;
-
-				//zone is parent scenario
-				if (!hasChildswithPower && !m_zoneDetails.RequirePower)
-				{
-					MLog.Log(this, "No child zones that require power, powering off zone=" + m_zoneDetails.ZoneName);
-					MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
-				}
-
-				//zone is child or sibling scenario
-				if (!hasParentwithPower && !hasSiblingswithPower && !m_zoneDetails.RequirePower)
-				{
-					MLog.Log(this, "Closing child zone " + m_zoneDetails.ZoneName + " , power off parent zone " + parentZone.ZoneName + " as well");
-					MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ParentZoneId);
-					
-				}
-
-
-				//power off if there are power on sockets without a zone requiring power
-				if (MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId)
-					&& !m_zoneDetails.RequirePower)
-				{
-					//make sure no childs needs it
-					childZone = MZPState.Instance.ZoneDetails.Find(x => x.ParentZoneId == m_zoneDetails.ParentZoneId && x.RequirePower);
-					if (childZone == null && (parentZone != null && !parentZone.RequirePower))
-					{
-						MLog.Log(this, "Closing parent zone " + m_zoneDetails.ParentZoneId + " power, parent and no child zones required power");
-						MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ParentZoneId);
-					}
-				}
-				*/
 				m_zoneDetails.Close();
 				MZPState.Instance.ActiveZones.Remove(this);
 			}
@@ -187,7 +138,7 @@ namespace MultiZonePlayer
             // input zone 0 is Radio
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs["0"];
-            m_mainZoneActivity = new ZoneRadio(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted);
+            m_mainZoneActivity = new ZoneRadio(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted());
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.radio;
             m_zoneDetails.IsActive = true;
             m_mainZoneActivity.Play();
@@ -208,7 +159,7 @@ namespace MultiZonePlayer
             MLog.Log(null,"Initialising microphone");
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs[m_zoneDetails.ZoneId];
-            m_mainZoneActivity = new ZoneMic(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted);
+            m_mainZoneActivity = new ZoneMic(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted());
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.microphone;
             m_zoneDetails.IsActive = true;
         }
@@ -776,7 +727,8 @@ namespace MultiZonePlayer
 
                 if (m_inactiveCyclesCount > IniFile.ZONE_INACTIVITY_MAX_CYCLES)
                 {
-                    if (m_zoneForm != null) m_zoneForm.CloseFormSafe();
+                    if (m_zoneForm != null) 
+						m_zoneForm.CloseFormSafe();
                 }
 
                 //close if no recent activity detected on an active zone

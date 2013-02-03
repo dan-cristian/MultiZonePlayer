@@ -103,7 +103,7 @@ namespace MultiZonePlayer
                     return;
                 }
 
-                txtOutputDevice.Text = m_zoneDetails.OutputDeviceAutoCompleted;
+                txtOutputDevice.Text = m_zoneDetails.OutputKeywords + " - " + m_zoneDetails.OutputDeviceUserSelected;
                 txtUser.Text = m_zone.ZoneUser.Name;
                 txtInactiveCycles.Text = m_zone.InactiveCyclesCount.ToString()+"/" + IniFile.ZONE_INACTIVITY_MAX_CYCLES;
                 txtControlDevice.Text = m_zone.ControlDevice;

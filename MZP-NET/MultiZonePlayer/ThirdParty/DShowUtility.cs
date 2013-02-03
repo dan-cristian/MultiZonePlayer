@@ -18,6 +18,36 @@ namespace MultiZonePlayer
         public static readonly Guid Clsid_AudioInput = new Guid("33D9A762-90C8-11D0-BD43-00A0C911CE86");
         public static readonly String InfinitePinTeeFilter = "@device:sw:{083863F1-70DE-11D0-BD40-00A0C911CE86}\\{F8388A40-D5BB-11D0-BE5A-0080C706568E}";
 
+		[DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern uint waveOutGetDevCaps(IntPtr hwo, ref WAVEOUTCAPS pwoc, uint cbwoc);
+
+		[DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern uint waveOutGetDevCaps(int hwo, ref WAVEOUTCAPS pwoc, /*uint*/ int cbwoc);
+
+		[DllImport("winmm.dll", SetLastError = true)]
+		static extern uint waveOutGetNumDevs();
+
+		[System.Runtime.InteropServices.StructLayout(LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+		public struct WAVEOUTCAPS
+		{
+			public short wMid;
+			public short wPid;
+			public int vDriverVersion;
+
+			[MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValTStr, SizeConst = 32)]
+			public string szPname;
+
+			public int dwFormats;
+			public short wChannels;
+			public short wReserved;
+			public int dwSupport;
+
+			public override string ToString()
+			{
+				return string.Format("wMid:{0}|wPid:{1}|vDriverVersion:{2}|'szPname:{3}'|dwFormats:{4}|wChannels:{5}|wReserved:{6}|dwSupport:{7}",
+					new object[] { wMid, wPid, vDriverVersion, szPname, dwFormats, wChannels, wReserved, dwSupport });
+			}
+		}
 
         public static String GetDisplayName(IMoniker mon)
         {
@@ -215,8 +245,50 @@ namespace MultiZonePlayer
                 return false;
             }
         }
-        
 
+		public static List<string> SystemDeviceNameList
+		{
+			get
+			{
+				List<String> systemOutputDeviceNames = new List<string>();
+				ArrayList systemOutputDeviceList = null;
+				DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioOutRender, out systemOutputDeviceList);
+
+				List<WAVEOUTCAPS> m_waveoutdeviceList = GetDevCapsPlayback();
+				String deviceName;
+
+				foreach (Object m in systemOutputDeviceList)
+				{
+					deviceName = DShowUtility.GetDisplayName((IMoniker)m);
+					systemOutputDeviceNames.Add(deviceName);
+				}
+
+				return systemOutputDeviceNames;
+			}
+		}
+
+		public static List<WAVEOUTCAPS> GetDevCapsPlayback()
+		{
+			uint waveOutDevicesCount = waveOutGetNumDevs();
+			if (waveOutDevicesCount > 0)
+			{
+				List<WAVEOUTCAPS> list = new List<WAVEOUTCAPS>();
+				for (int uDeviceID = 0; uDeviceID < waveOutDevicesCount; uDeviceID++)
+				{
+					WAVEOUTCAPS waveOutCaps = new WAVEOUTCAPS();
+					waveOutGetDevCaps(uDeviceID, ref waveOutCaps, Marshal.SizeOf(typeof(WAVEOUTCAPS)));
+					//MLog.Log(null,waveOutCaps.ToString());
+					list.Add(waveOutCaps);
+				}
+				return list;
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		
 
     }
 }

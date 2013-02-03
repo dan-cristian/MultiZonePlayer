@@ -43,7 +43,7 @@ namespace MultiZonePlayer
      * Graph creation and destruction methods
      */
 
-             public override void OpenClip(String outputDevice, String inputDevice, ZoneGeneric zoneForm)
+             public override void OpenClip(String inputDevice, ZoneGeneric zoneForm)
              {
                  try
                  {
@@ -80,7 +80,8 @@ namespace MultiZonePlayer
                  hr = this.graphBuilder.AddFilter(inputFilter, "Input capture");
                  DsError.ThrowExceptionForHR(hr);
 
-                 outputFilter = (IBaseFilter)Marshal.BindToMoniker(zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted);
+                 outputFilter = (IBaseFilter)Marshal.BindToMoniker(
+					 zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted());
 
                  hr = this.graphBuilder.AddFilter(outputFilter, "Out Renderer");
                  DsError.ThrowExceptionForHR(hr);

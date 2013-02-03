@@ -14,8 +14,7 @@ namespace MultiZonePlayer
         public class MZPState
         {
             private static MZPState m_sysState = null;
-            private ArrayList m_systemOutputDeviceList = null;
-            private List<String> m_systemOutputDeviceNames = null;
+          
             private ArrayList m_systemInputDeviceList = null;
             private Hashtable m_systemInputDeviceNames = null;
 
@@ -25,7 +24,7 @@ namespace MultiZonePlayer
             public List<Playlist> m_playlist = new List<Playlist>();
             public Hashtable zoneDefaultInputs;
 
-            private List<Utilities.WAVEOUTCAPS> m_waveoutdeviceList;
+            //private List<Utilities.WAVEOUTCAPS> m_waveoutdeviceList;
 
             private static RemotePipi[] remotePipi;
             private static int maxRemotes = 10;
@@ -96,16 +95,12 @@ namespace MultiZonePlayer
                 InitRemotes();
                 m_powerControl = new DenkoviPowerControl("8 Relay Brd USB");
 
-                
-
                 MLog.Log(this, "Retrieving system available audio output devices");
-                DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioOutRender, out m_systemOutputDeviceList);
-                if (m_systemOutputDeviceNames == null) m_systemOutputDeviceNames = new List<String>(); else m_systemOutputDeviceNames.Clear();
-
-                m_waveoutdeviceList = Utilities.GetDevCapsPlayback();
-
-                MLog.Log(this, "Retrieving system audio output devices details");
-                String deviceName;
+                
+                //if (m_systemOutputDeviceNames == null) m_systemOutputDeviceNames = new List<String>(); else m_systemOutputDeviceNames.Clear();
+				String deviceName;
+                /*MLog.Log(this, "Retrieving system audio output devices details");
+                
                 if (m_systemOutputDeviceList != null)
                 {
                     foreach (Object m in MZPState.Instance.m_systemOutputDeviceList)
@@ -115,11 +110,11 @@ namespace MultiZonePlayer
                     }
                 }
                 m_systemOutputDeviceNames.Add(IniFile.DEFAULT_AUTO_DEV_NAME);
-
+				*/
 
                 MLog.Log(this, "Loading zones from ini");
                 m_zoneList = new List<Metadata.ZoneDetails>();
-                Metadata.ZoneDetails.Initialise(m_systemOutputDeviceNames, m_waveoutdeviceList);
+                //Metadata.ZoneDetails.Initialise(m_systemOutputDeviceNames, m_waveoutdeviceList);
                 Metadata.ZoneDetails.LoadFromIni(ref m_zoneList);
 
                 m_moodMusicList = new List<MoodMusic>();
@@ -154,9 +149,7 @@ namespace MultiZonePlayer
                 MLog.Log(this, "Loading other settings from ini");
 
                 LoadIniInput();
-
                 LoadPlaylist();
-
                 InitMediaLibrary();
 
                 m_zoneEvents = new ZoneEvents();
@@ -308,10 +301,10 @@ namespace MultiZonePlayer
             {
                 get{return m_isFollowMeMusic;}
             }
-            public List<String> SystemOutputDeviceNames
+            /*public List<String> SystemOutputDeviceNames
             {
                 get{return m_systemOutputDeviceNames;}
-            }
+            }*/
 
             public Hashtable SystemInputDeviceNames
             {
@@ -474,13 +467,20 @@ namespace MultiZonePlayer
                 }
             }
 
-            
-
             private void InitMediaLibrary()
             {
-                Thread th = new Thread(() => MediaLibrary.Initialise());
-                th.Name = "MediaLibrary";
-                th.Start();
+                Thread thmu = new Thread(() => MediaLibrary.InitialiseMusic());
+                thmu.Name = "MediaLibrary Music";
+                thmu.Start();
+
+				Thread thpi = new Thread(() => MediaLibrary.InitialisePictures());
+				thpi.Name = "MediaLibrary Pictures";
+				thpi.Start();
+
+				Thread thmo = new Thread(() => MediaLibrary.InitialiseVideos());
+				thmo.Name = "MediaLibrary Movies";
+				thmo.Start();
+
             }
 
             public int GetZoneIdByAlarmZoneId(int alarmZoneId)

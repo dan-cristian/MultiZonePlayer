@@ -546,7 +546,7 @@ namespace MultiZonePlayer
 					props = props.Substring(0, props.Length - 2);
 					 */
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
 					// Something didn't work!
 					//MLog.Log(this, "Err read image exif file "+this.SourceURL + " er="+ex.Message);
@@ -1287,264 +1287,286 @@ namespace MultiZonePlayer
 	}
 
 	public class MediaLibrary
+	{
+		private static bool m_isMusicInitialised = false;
+		private static bool m_isPicturesInitialised = false;
+		private static bool m_isVideosInitialised = false;
+
+		private static MusicCollection m_musicFiles;
+		private static VideoCollection m_videoFiles;
+		private static PicturesCollection m_pictureFiles;
+
+		public static bool IsInitialised
 		{
-			public static bool IsInitialised = false;
-			private static MusicCollection m_musicFiles;
-			private static VideoCollection m_videoFiles;
-			private static PicturesCollection m_pictureFiles;
+			get { return m_isMusicInitialised && m_isPicturesInitialised && m_isVideosInitialised; }
+		}
+		public static void InitialiseMusic()
+		{
+			m_isMusicInitialised = false;
+			m_musicFiles = new MusicCollection();
 
-			public static void Initialise()
+			MLog.Log(null, "Loading mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
+			for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
 			{
-				IsInitialised = false;
-				m_musicFiles = new MusicCollection();
-				m_videoFiles = new VideoCollection();
-				m_pictureFiles = new PicturesCollection();
-
-				
-
-				MLog.Log(null, "Loading mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
-				for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
-				{
-					m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*." + IniFile.MUSIC_EXTENSION[i],
-						System.IO.SearchOption.AllDirectories);
-				}
-
-				MLog.Log(null, "Loading mediaplayer picture files from " + IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1]);
-				for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++)
-				{
-					m_pictureFiles.AddFiles(IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1], "*." + IniFile.PICTURE_EXTENSION[i],
-						System.IO.SearchOption.AllDirectories);
-				}
-
-				MLog.Log(null, "Loading mediaplayer video files from " + IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
-				for (int i = 0; i < IniFile.VIDEO_EXTENSION.Length; i++)
-				{
-					m_videoFiles.AddFiles(IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1], "*." + IniFile.VIDEO_EXTENSION[i], 
-						System.IO.SearchOption.AllDirectories);
-				}
-				
-				
-
-				//save new items found in library
-				m_musicFiles.SaveUpdatedItems();
-				m_videoFiles.SaveUpdatedItems();
-				m_pictureFiles.SaveUpdatedItems();
-
-				IsInitialised = true;
+				m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*." + IniFile.MUSIC_EXTENSION[i],
+					System.IO.SearchOption.AllDirectories);
 			}
 
-			public static MusicCollection AllAudioFiles
+			//save new items found in library
+			m_musicFiles.SaveUpdatedItems();
+
+			m_isMusicInitialised = true;
+		}
+
+		public static void InitialisePictures()
+		{
+			m_isPicturesInitialised = false;
+			m_pictureFiles = new PicturesCollection();
+
+			MLog.Log(null, "Loading mediaplayer picture files from " + IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1]);
+			for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++)
 			{
-				get	{return m_musicFiles;}
+				m_pictureFiles.AddFiles(IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1], "*." + IniFile.PICTURE_EXTENSION[i],
+					System.IO.SearchOption.AllDirectories);
 			}
 
-			public static VideoCollection AllVideoFiles
-			{
-				get	{return m_videoFiles;}
-			}
-			public static PicturesCollection AllPictureFiles
-			{
-				get { return m_pictureFiles; }
-			}
-			public static List<AudioItem> AudioFilesByGenre(Metadata.ValueList vals)
-			{
-				var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-				{
-					return vals.ContainsIndexValue(item.Genre);
-				});
-				//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
-				return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-			}
+			//save new items found in library
+			m_pictureFiles.SaveUpdatedItems();
 
-			public static List<AudioItem> AudioFilesByArtist(Metadata.ValueList vals)
+			m_isPicturesInitialised = true;
+		}
+
+		public static void InitialiseVideos()
+		{
+			m_isVideosInitialised = false;
+			m_videoFiles = new VideoCollection();
+
+			MLog.Log(null, "Loading mediaplayer video files from " + IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
+			for (int i = 0; i < IniFile.VIDEO_EXTENSION.Length; i++)
 			{
-				var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-				{
-					return vals.ContainsIndexValue(item.Author);
-				});
-				//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
-				return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+				m_videoFiles.AddFiles(IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1], "*." + IniFile.VIDEO_EXTENSION[i],
+					System.IO.SearchOption.AllDirectories);
 			}
 
-			public static List<AudioItem> AudioFilesByArtist(String artist)
+			//save new items found in library
+			m_videoFiles.SaveUpdatedItems();
+
+			m_isVideosInitialised = true;
+		}
+
+		public static MusicCollection AllAudioFiles
+		{
+			get	{return m_musicFiles;}
+		}
+
+		public static VideoCollection AllVideoFiles
+		{
+			get	{return m_videoFiles;}
+		}
+		public static PicturesCollection AllPictureFiles
+		{
+			get { return m_pictureFiles; }
+		}
+		public static List<AudioItem> AudioFilesByGenre(Metadata.ValueList vals)
+		{
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-				{
-					return artist.Equals(item.Author);
-				});
-				return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-			}
+				return vals.ContainsIndexValue(item.Genre);
+			});
+			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
 
-			public static List<AudioItem> AudioFilesByAlbum(String album)
+		public static List<AudioItem> AudioFilesByArtist(Metadata.ValueList vals)
+		{
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-				{
-					return album.Equals(item.Album);
-				});
-				return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-			}
+				return vals.ContainsIndexValue(item.Author);
+			});
+			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
 
-			public static List<AudioItem> AudioFilesByGenre(String genre)
+		public static List<AudioItem> AudioFilesByArtist(String artist)
+		{
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-				{
-					return genre.Equals(item.Genre);
-				});
-				return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-			}
+				return artist.Equals(item.Author);
+			});
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
 
-			public static List<AudioItem> AudioFilesByFolder(String sourceContainerURL)
+		public static List<AudioItem> AudioFilesByAlbum(String album)
+		{
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-				{
-					return sourceContainerURL.Equals(item.SourceContainerURL);
-				});
-				return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-			}
+				return album.Equals(item.Album);
+			});
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
 
-			public static List<AudioItem> AudioFilesByRating(int rating)
+		public static List<AudioItem> AudioFilesByGenre(String genre)
+		{
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-				{
-					return rating.Equals(item.Rating);
-				});
-				return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-			}
+				return genre.Equals(item.Genre);
+			});
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
 
-			public static Metadata.ValueList MusicGenres
+		public static List<AudioItem> AudioFilesByFolder(String sourceContainerURL)
+		{
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				get
-				{
-					//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
-					var unique = m_musicFiles.PlaylistItems.Select(i => i.Genre).Distinct().ToList();
-					Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
-					unique.Sort();
-					val.SetIndexValues(unique.ToList());
-					return val;
-				}
-			}
+				return sourceContainerURL.Equals(item.SourceContainerURL);
+			});
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
 
-			public static Metadata.ValueList MusicArtists
+		public static List<AudioItem> AudioFilesByRating(int rating)
+		{
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				get
-				{
-					//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
-					var unique = m_musicFiles.PlaylistItems.Select(i => i.Author).Distinct().ToList();
-					unique.Sort();
+				return rating.Equals(item.Rating);
+			});
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
 
-					Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
-					val.SetIndexValues(unique.ToList());
-					return val;
-				}
-			}
-
-			public static List<AudioItem> GetMoodPlaylist(MoodMusic mood)
+		public static Metadata.ValueList MusicGenres
+		{
+			get
 			{
-				List<AudioItem> result = null;
-				if (mood != null)
-				{
-					try
-					{
-						IEnumerable<AudioItem> query, res1, res2, res3, res4;
-						bool exclude;
-						String value;
-
-						res1 = null;
-						foreach (String val in mood.Genres)
-						{
-							exclude = val.Contains('!');
-							if (exclude)
-							{
-								if (res1 == null) res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
-								value = val.Replace("!", "");
-								res1 = res1.Where(i => !i.Genre.ToLower().Contains(value.ToLower())).ToList();
-								//res1 = res1.Intersect(query).Distinct().ToList();
-							}
-							else
-							{
-								if (res1 == null) res1 = new List<AudioItem>();
-								value = val;
-								query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Genre.ToLower().Contains(value.ToLower())).ToList();
-								res1 = res1.Union(query).Distinct().ToList();
-							}
-						}
-						if (res1 == null) res1 = new List<AudioItem>();
-
-						res2 = null;
-						foreach (String val in mood.Authors)
-						{
-							exclude = val.Contains('!');
-							if (exclude)
-							{
-								if (res2 == null) res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
-								value = val.Replace("!", "");
-								res2 = res2.Where(i => !i.Author.ToLower().Contains(value.ToLower())).ToList();
-
-							}
-							else
-							{
-								if (res2 == null) res2 = new List<AudioItem>();
-								value = val;
-								query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Author.ToLower().Contains(value.ToLower())).ToList();
-								res2 = res2.Union(query).Distinct().ToList();
-							}
-						}
-						if (res2 == null) res2 = new List<AudioItem>();
-
-						res3 = new List<AudioItem>();
-						foreach (int val in mood.Ratings)
-						{
-							query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Rating.Equals(val)).ToList();
-							res3 = res3.Union(query).Distinct().ToList();
-						}
-
-						res4 = new List<AudioItem>();
-						foreach (int val in mood.AgeInWeeks)
-						{
-							query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.IsThatNew(val)).ToList();
-							res4 = res4.Union(query).Distinct().ToList();
-						}
-
-						switch (mood.LogicalSearchOperator)
-						{
-							case MoodMusic.LogicalSearchOperatorEnum.Intersect:
-								if (res1.Count() + res2.Count() + res3.Count() + res4.Count() != 0)
-								{
-									if (res1.Count() == 0) res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
-									if (res2.Count() == 0) res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
-									if (res3.Count() == 0) res3 = MediaLibrary.AllAudioFiles.PlaylistItems;
-									if (res4.Count() == 0) res4 = MediaLibrary.AllAudioFiles.PlaylistItems;
-									result = res1.Intersect(res2).Intersect(res3).Intersect(res4).ToList();
-								}
-								else
-									MLog.Log(null, "No songs matching criteria mood=" + mood.Name);
-								break;
-							case MoodMusic.LogicalSearchOperatorEnum.Union:
-								result = res1.Union(res2).Union(res3).Union(res4).ToList();
-								break;
-
-						}
-
-						if (result != null && mood.IsGroupByTop)
-						{
-							IEnumerable<AudioItem> list = new List<AudioItem>();
-							var items = result.OrderBy(y => y.PlayCount).ThenBy(z => z.RandomId).GroupBy(x => x.Author).Distinct();
-							foreach (var item in items)
-							{
-								list = list.Union(item.Take(3));
-							}
-							result = list.ToList();
-						}
-
-					}
-					catch (Exception ex)
-					{
-						MLog.Log(ex, "Error get mood=" + mood);
-					}
-				}
-				else
-					MLog.Log(null, "NULL mood unexpected");
-				return result;
+				//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+				var unique = m_musicFiles.PlaylistItems.Select(i => i.Genre).Distinct().ToList();
+				Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
+				unique.Sort();
+				val.SetIndexValues(unique.ToList());
+				return val;
 			}
 		}
+
+		public static Metadata.ValueList MusicArtists
+		{
+			get
+			{
+				//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+				var unique = m_musicFiles.PlaylistItems.Select(i => i.Author).Distinct().ToList();
+				unique.Sort();
+
+				Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
+				val.SetIndexValues(unique.ToList());
+				return val;
+			}
+		}
+
+		public static List<AudioItem> GetMoodPlaylist(MoodMusic mood)
+		{
+			List<AudioItem> result = null;
+			if (mood != null)
+			{
+				try
+				{
+					IEnumerable<AudioItem> query, res1, res2, res3, res4;
+					bool exclude;
+					String value;
+
+					res1 = null;
+					foreach (String val in mood.Genres)
+					{
+						exclude = val.Contains('!');
+						if (exclude)
+						{
+							if (res1 == null) res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
+							value = val.Replace("!", "");
+							res1 = res1.Where(i => !i.Genre.ToLower().Contains(value.ToLower())).ToList();
+							//res1 = res1.Intersect(query).Distinct().ToList();
+						}
+						else
+						{
+							if (res1 == null) res1 = new List<AudioItem>();
+							value = val;
+							query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Genre.ToLower().Contains(value.ToLower())).ToList();
+							res1 = res1.Union(query).Distinct().ToList();
+						}
+					}
+					if (res1 == null) res1 = new List<AudioItem>();
+
+					res2 = null;
+					foreach (String val in mood.Authors)
+					{
+						exclude = val.Contains('!');
+						if (exclude)
+						{
+							if (res2 == null) res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
+							value = val.Replace("!", "");
+							res2 = res2.Where(i => !i.Author.ToLower().Contains(value.ToLower())).ToList();
+
+						}
+						else
+						{
+							if (res2 == null) res2 = new List<AudioItem>();
+							value = val;
+							query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Author.ToLower().Contains(value.ToLower())).ToList();
+							res2 = res2.Union(query).Distinct().ToList();
+						}
+					}
+					if (res2 == null) res2 = new List<AudioItem>();
+
+					res3 = new List<AudioItem>();
+					foreach (int val in mood.Ratings)
+					{
+						query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Rating.Equals(val)).ToList();
+						res3 = res3.Union(query).Distinct().ToList();
+					}
+
+					res4 = new List<AudioItem>();
+					foreach (int val in mood.AgeInWeeks)
+					{
+						query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.IsThatNew(val)).ToList();
+						res4 = res4.Union(query).Distinct().ToList();
+					}
+
+					switch (mood.LogicalSearchOperator)
+					{
+						case MoodMusic.LogicalSearchOperatorEnum.Intersect:
+							if (res1.Count() + res2.Count() + res3.Count() + res4.Count() != 0)
+							{
+								if (res1.Count() == 0) res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								if (res2.Count() == 0) res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								if (res3.Count() == 0) res3 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								if (res4.Count() == 0) res4 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								result = res1.Intersect(res2).Intersect(res3).Intersect(res4).ToList();
+							}
+							else
+								MLog.Log(null, "No songs matching criteria mood=" + mood.Name);
+							break;
+						case MoodMusic.LogicalSearchOperatorEnum.Union:
+							result = res1.Union(res2).Union(res3).Union(res4).ToList();
+							break;
+
+					}
+
+					if (result != null && mood.IsGroupByTop)
+					{
+						IEnumerable<AudioItem> list = new List<AudioItem>();
+						var items = result.OrderBy(y => y.PlayCount).ThenBy(z => z.RandomId).GroupBy(x => x.Author).Distinct();
+						foreach (var item in items)
+						{
+							list = list.Union(item.Take(3));
+						}
+						result = list.ToList();
+					}
+
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, "Error get mood=" + mood);
+				}
+			}
+			else
+				MLog.Log(null, "NULL mood unexpected");
+			return result;
+		}
+	}
+
 	}

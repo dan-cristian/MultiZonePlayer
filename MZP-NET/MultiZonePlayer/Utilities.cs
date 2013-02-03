@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using System.Web;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace MultiZonePlayer
 {
@@ -111,36 +112,10 @@ namespace MultiZonePlayer
         public static extern bool SetWaitableTimer(SafeWaitHandle hTimer, [In] ref long pDueTime, int lPeriod, IntPtr pfnCompletionRoutine, IntPtr lpArgToCompletionRoutine, bool fResume);
 
 
-        [System.Runtime.InteropServices.StructLayout(LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-        public struct WAVEOUTCAPS
-        {
-            public short wMid;
-            public short wPid;
-            public int vDriverVersion;
+        
 
-            [MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValTStr, SizeConst = 32)]
-            public string szPname;
-
-            public int dwFormats;
-            public short wChannels;
-            public short wReserved;
-            public int dwSupport;
-
-            public override string ToString()
-            {
-                return string.Format("wMid:{0}|wPid:{1}|vDriverVersion:{2}|'szPname:{3}'|dwFormats:{4}|wChannels:{5}|wReserved:{6}|dwSupport:{7}",
-                    new object[] { wMid, wPid, vDriverVersion, szPname, dwFormats, wChannels, wReserved, dwSupport });
-            }
-        }
-
-        [DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern uint waveOutGetDevCaps(IntPtr hwo, ref WAVEOUTCAPS pwoc, uint cbwoc);
-
-        [DllImport("winmm.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern uint waveOutGetDevCaps(int hwo, ref WAVEOUTCAPS pwoc, /*uint*/ int cbwoc);
-
-        [DllImport("winmm.dll", SetLastError = true)]
-        static extern uint waveOutGetNumDevs();
+        
+        
 
         [DllImport("winmm.dll")]
         public static extern int waveOutGetVolume(IntPtr hwo, out uint dwVolume);
@@ -171,26 +146,7 @@ namespace MultiZonePlayer
             return (IntPtr)((HiWord << 16) | (LoWord & 0xffff));
         }
 
-        public static List<WAVEOUTCAPS> GetDevCapsPlayback()
-        {
-            uint waveOutDevicesCount = waveOutGetNumDevs();
-            if (waveOutDevicesCount > 0)
-            {
-                List<WAVEOUTCAPS> list = new List<WAVEOUTCAPS>();
-                for (int uDeviceID = 0; uDeviceID < waveOutDevicesCount; uDeviceID++)
-                {
-                    WAVEOUTCAPS waveOutCaps = new WAVEOUTCAPS();
-                    waveOutGetDevCaps(uDeviceID, ref waveOutCaps, Marshal.SizeOf(typeof(WAVEOUTCAPS)));
-                    //MLog.Log(null,waveOutCaps.ToString());
-                    list.Add(waveOutCaps);
-                }
-                return list;
-            }
-            else
-            {
-                return null;
-            }
-        }
+		
 
         public static bool CloseProcSync(String procName)
         {
@@ -662,7 +618,8 @@ namespace MultiZonePlayer
                 ZoneAux aux = null;
                 if (zone != null)
                 {
-                    aux = new ZoneAux(zone, (String)MZPState.Instance.zoneDefaultInputs["0"], zone.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted);
+                    aux = new ZoneAux(zone, (String)MZPState.Instance.zoneDefaultInputs["0"], 
+						zone.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted());
                     aux.SetVolumeLevel(zone.GetVolumeLevel());
                     aux.Play();
                 }

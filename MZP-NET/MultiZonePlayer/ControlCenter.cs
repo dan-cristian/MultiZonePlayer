@@ -119,7 +119,8 @@ namespace MultiZonePlayer
         private void TickLoop()
         {
             Thread.Sleep(Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]) * 1000);
-            do
+            Array activeZoneClone;
+			do
             {
                 try
                 {
@@ -127,7 +128,9 @@ namespace MultiZonePlayer
 					
                     // FAST TICK
                     RefreshState();
-                    foreach (ZoneGeneric zone in MZPState.Instance.ActiveZones)
+
+					activeZoneClone = MZPState.Instance.ActiveZones.ToArray();
+					foreach (ZoneGeneric zone in activeZoneClone)
                     {
 						if (MZPState.Instance == null) break;
 						zone.Tick();
@@ -143,9 +146,9 @@ namespace MultiZonePlayer
 						{
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
 
-							Metadata.ZoneDetails zoneWithPower = MZPState.Instance.ZoneDetails.Find(x =>
+							List<Metadata.ZoneDetails> zonesWithPower = MZPState.Instance.ZoneDetails.FindAll(x =>
 								x.RequirePower && x.PowerIndex == details.PowerIndex);
-							if (zoneWithPower == null)
+							if (zonesWithPower.Count==0 && details.LastLocalCommandAgeInSeconds>120)
 							{
 								if (MZPState.Instance.PowerControl.IsPowerOn(details.ZoneId))
 								{
@@ -211,6 +214,8 @@ namespace MultiZonePlayer
 					txAudioCount.Text = "loading " + MediaLibrary.AllAudioFiles.PlaylistFiles.Count;
 				if (MediaLibrary.AllPictureFiles != null && MediaLibrary.AllPictureFiles.PlaylistFiles != null)
 					txPictureCount.Text = "loading " + MediaLibrary.AllPictureFiles.PlaylistFiles.Count;
+				if (MediaLibrary.AllVideoFiles != null && MediaLibrary.AllVideoFiles.PlaylistFiles != null)
+					txVideoCount.Text = "loading " + MediaLibrary.AllVideoFiles.PlaylistFiles.Count;
 			}
         }
 

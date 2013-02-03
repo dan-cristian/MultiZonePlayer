@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 
+
 namespace MultiZonePlayer
 {
 
@@ -458,7 +459,7 @@ namespace MultiZonePlayer
             public int DefaultVolumePercent;
             public String OutputKeywords;
             public String OutputDeviceUserSelected;
-            public String OutputDeviceAutoCompleted;
+            
             public String OutputDeviceNameWaveVLC;
             public int WavedeviceIndex;
             public Boolean HasCamera = false;
@@ -496,19 +497,18 @@ namespace MultiZonePlayer
 			public DateTime LastNotifyZoneEventTriggered;
             // not serializable, hidden from json
             
-            protected static List<String> m_systemOutputDevices;
-            protected static List<Utilities.WAVEOUTCAPS> m_systemWaveOutputDevices;
+            
             protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
 
             public ZoneDetails()
             {
             }
 
-            public static void Initialise(List<String> p_systemOutputDevices, List<Utilities.WAVEOUTCAPS> p_systemWaveOutputDevices)
+            /*public static void Initialise(List<String> p_systemOutputDevices, List<Utilities.WAVEOUTCAPS> p_systemWaveOutputDevices)
             {
                 m_systemOutputDevices = p_systemOutputDevices;
                 m_systemWaveOutputDevices = p_systemWaveOutputDevices;
-            }
+            }*/
 
             public ZoneDetails(int p_zoneId, String p_zoneName)
             {
@@ -548,6 +548,11 @@ namespace MultiZonePlayer
                         return LastCamAlertDateTime;
                 }
             }
+
+			public double LastLocalCommandAgeInSeconds
+			{
+				get { return DateTime.Now.Subtract(LastLocalCommandDateTime).TotalSeconds; }
+			}
             public Boolean HasImmediateMove
             {
                 get
@@ -596,7 +601,8 @@ namespace MultiZonePlayer
                 get
                 {
                     String[] split;
-                    split = OutputDeviceAutoCompleted.Split(new String[]{"\\DirectSound: "}, StringSplitOptions.RemoveEmptyEntries);
+                    split = OutputDeviceAutoCompleted().Split(new String[]{"\\DirectSound: "}, 
+						StringSplitOptions.RemoveEmptyEntries);
                     if (split.Length >= 2)
                         return split[1];
                     else
@@ -719,8 +725,8 @@ namespace MultiZonePlayer
 
                     OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
                     OutputKeywords = zonestorage.OutputKeywords;
-                    OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
-                    if (!OutputDeviceAutoCompleted.Equals(""))
+                    //OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
+                    if (!OutputDeviceAutoCompleted().Equals(""))
                     {
                         HasSpeakers = true;
                     }
@@ -749,17 +755,30 @@ namespace MultiZonePlayer
                 IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
             }
 
+			
+
+			public bool HasOutputDeviceAvailable()
+			{
+				return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords) != "";
+			}
+
+			public String OutputDeviceAutoCompleted()
+			{
+				return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
+			}
+
             public static String GetOutputDeviceNameAutocompleted(String p_outputDevice, String p_outputKeywords)
             {
+				List<String> systemOutputDevices = DShowUtility.SystemDeviceNameList;
                 String matchValue;
-                String result = "NONE-outdev=" + p_outputDevice + "|keys=" + p_outputKeywords + "|";
+				String result = "";//"NONE-outdev=" + p_outputDevice + "|keys=" + p_outputKeywords + "|";
                 if (p_outputKeywords != null)
                 {
                     String[] keys = p_outputKeywords.Split(',');
 
                     if (p_outputDevice.Equals(IniFile.DEFAULT_AUTO_DEV_NAME))
                     {
-                        foreach (String device in m_systemOutputDevices)
+                        foreach (String device in systemOutputDevices)
                         {
                             matchValue = "";
                             foreach (String key in keys)
@@ -789,19 +808,21 @@ namespace MultiZonePlayer
 
             private static int GetWaveOutDeviceIndex(String p_outputKeywords)
             {
+				List<DShowUtility.WAVEOUTCAPS> systemWaveOutputDevices;
+				systemWaveOutputDevices = DShowUtility.GetDevCapsPlayback();
                 int result = -1;
                 if (p_outputKeywords != null)
                 {
                     String[] keys = p_outputKeywords.Split(new String[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
-                    for (int i = 0; i < m_systemWaveOutputDevices.Count; i++)
+                    for (int i = 0; i < systemWaveOutputDevices.Count; i++)
                     {
                         result = -1;
                         foreach (String key in keys)
                         {
                             if (!key.Equals("directsound"))
                             {
-                                if (m_systemWaveOutputDevices[i].szPname.ToLower().Contains(key.ToLower()))
+                                if (systemWaveOutputDevices[i].szPname.ToLower().Contains(key.ToLower()))
                                     result = i;
                                 else
                                 {
@@ -820,10 +841,10 @@ namespace MultiZonePlayer
             private static String GetVLCAudioWaveDeviceName(int wavedeviceindex)
             {
                 String result;
-                Utilities.WAVEOUTCAPS wave;
+                DShowUtility.WAVEOUTCAPS wave;
                 if (wavedeviceindex != -1)
                 {
-                    wave = Utilities.GetDevCapsPlayback()[wavedeviceindex];
+                    wave = DShowUtility.GetDevCapsPlayback()[wavedeviceindex];
                     result = wave.szPname + " ($" + String.Format("{0:x}", wave.wMid) + ",$" + String.Format("{0:x}", wave.wPid) + ")";
                 }
                 else

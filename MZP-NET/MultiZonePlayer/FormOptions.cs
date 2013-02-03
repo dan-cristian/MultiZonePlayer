@@ -83,10 +83,11 @@ namespace MultiZonePlayer
 
         private void PopulateOutputDevices()
         {
-            foreach (String deviceName in MZPState.Instance.SystemOutputDeviceNames)
+            foreach (String deviceName in DShowUtility.SystemDeviceNameList)
             {
                 ((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add(deviceName);
             }
+			((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add(IniFile.DEFAULT_AUTO_DEV_NAME);
         }
 
         private void PopulateInputDevices()

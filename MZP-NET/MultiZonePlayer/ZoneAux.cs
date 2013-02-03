@@ -24,7 +24,7 @@ namespace MultiZonePlayer
         public override void Play()
         {
 			base.Play();
-            auxPlayer.OpenClip(outputDeviceName, inputDeviceName, zoneForm);
+            auxPlayer.OpenClip(inputDeviceName, zoneForm);
         }
 
         public override void Stop()

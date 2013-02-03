@@ -83,7 +83,7 @@ namespace MultiZonePlayer
 
             public  const int VOLUME_STEP = 250;
             public  const int ZONE_INACTIVITY_CYCLE_DURATION = 500;
-            public  const int ZONE_INACTIVITY_MAX_CYCLES = 30;
+            public  const int ZONE_INACTIVITY_MAX_CYCLES = 120;
             public  const int ZONE_INACTIVITY_CYCLE_WARNING = 5;
             public  const int POWERSAVING_CYCLE_DURATION = 10000;
             public  const int POWERSAVING_MAX_CYCLES = 60;

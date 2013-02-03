@@ -64,7 +64,7 @@ namespace MultiZonePlayer
                 m_zoneForm = p_zoneForm;
                 m_zoneDetails = p_zoneForm.ZoneDetails;
                 int volume = p_zoneForm.GetVolumeLevel();
-                m_dcPlay = new DCPlayer(m_zoneForm, p_zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted, p_fileName, volume);
+                m_dcPlay = new DCPlayer(m_zoneForm, p_fileName, volume);
             }
 
             private void LoadPlaylist(String playListName)//, String fileNameToResume)
@@ -192,17 +192,32 @@ namespace MultiZonePlayer
                     if (File.Exists(musicFile))
                     {
                         //m_currentPlayList.MediaItemValueChange(musicFile, WindowsMediaItem.keyPlayCount, 1, 0, int.MaxValue);
-                        m_songList[m_currentSongKey].IncreasePlayCount();
+                        
                         //init amp power if needed
 						m_zoneDetails.RequirePower = true;
-                        MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
-						System.Threading.Thread.Sleep(10000);
-                        m_dcPlay.OpenClip(m_zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted, musicFile, this.m_zoneForm);
-                        if (m_dcPlay.GetState() == Metadata.ZoneState.Running)
-                        {
-                            m_zoneDetails.IsActive = true;
-                            m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
-                        }
+						m_zoneDetails.IsActive = true;
+                        MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+						int loop = 0;
+						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50)
+						{
+							MLog.Log(this, "Device not yet available for zone " + m_zoneDetails.ZoneName);
+							System.Threading.Thread.Sleep(500);
+							loop++;
+						}
+						if (loop >= 50)
+						{
+							MLog.Log(this, "Error, NO device available for zone " + m_zoneDetails.ZoneName);
+							m_zoneDetails.IsActive = false;
+						}
+						else
+						{
+							m_dcPlay.OpenClip(musicFile, this.m_zoneForm);
+							if (m_dcPlay.GetState() == Metadata.ZoneState.Running)
+							{
+								m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
+							}
+							m_songList[m_currentSongKey].IncreasePlayCount();
+						}
                     }
                     else
                     {
@@ -228,7 +243,7 @@ namespace MultiZonePlayer
                 int volume = m_zoneForm.GetVolumeLevel();
 				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
-                m_dcPlay = new DCPlayer(m_zoneForm, m_zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted, filePathName, volume);
+                m_dcPlay = new DCPlayer(m_zoneForm, filePathName, volume);
                 
             }
 

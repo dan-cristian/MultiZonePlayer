@@ -92,12 +92,12 @@ namespace MultiZonePlayer
     }
     
          // play single file then stop
-     public DCPlayer(ZoneGeneric zoneForm, String outputDevice, String musicFile, int volume)
+     public DCPlayer(ZoneGeneric zoneForm, String musicFile, int volume)
      {
          InitializeComponent();
          autoNext = false;
          this.currentVolume = volume;
-         OpenClip(outputDevice, musicFile, zoneForm);
+         OpenClip(musicFile, zoneForm);
      }
 
     /// <summary>
@@ -137,13 +137,10 @@ namespace MultiZonePlayer
      * Graph creation and destruction methods
      */
 
-    public virtual void OpenClip(String outputDevice, String musicFile, ZoneGeneric zoneForm)
+    public virtual void OpenClip(String musicFile, ZoneGeneric zoneForm)
     {
       try
       {
-          if (outputDevice == "")
-              MLog.Log(null,"no outputdevice set for "+musicFile);
-
           this.filename = musicFile;
           //m_outputDeviceList = new Hashtable();
           //m_outputDeviceList.Add(zoneForm.GetZoneId(), outputDevice);
@@ -205,17 +202,10 @@ namespace MultiZonePlayer
 			hr = this.graphBuilder.AddFilter(infiniteTeeFilter, "InfiniteTee");
 			DsError.ThrowExceptionForHR(hr);
 
-			int loop = 0;
 			foreach (IZoneActivity device in zoneForm.GetClonedZones())
 			{
-				while (!MZPState.Instance.PowerControl.IsPowerOn(device.ZoneDetails.ZoneId) && loop < 50)
-				{
-					Thread.Sleep(100);
-					loop++;
-				}
-				if (loop >= 50)
-					MLog.Log(this, "Error waiting for power on on DCPlayer graph init, loop count exceeded");
-				IBaseFilter outFilter = (IBaseFilter)Marshal.BindToMoniker(device.ZoneDetails.OutputDeviceAutoCompleted);
+				MLog.Log(this, "Playing " + device.ZoneDetails.ZoneName + " output " + device.ZoneDetails.OutputDeviceAutoCompleted() + " cloned count=" + zoneForm.GetClonedZones().Count);
+				IBaseFilter outFilter = (IBaseFilter)Marshal.BindToMoniker(device.ZoneDetails.OutputDeviceAutoCompleted());
 				hr = this.graphBuilder.AddFilter(outFilter, "Out Renderer device " + device);
 				DsError.ThrowExceptionForHR(hr);
 			}
@@ -294,7 +284,8 @@ namespace MultiZonePlayer
 		}
 		catch (Exception ex)
 		{
-			MLog.Log(ex, this, "Error init graph zone "+zoneForm.ZoneDetails.ZoneName+" output="+zoneForm.ZoneDetails.OutputDeviceAutoCompleted);
+			MLog.Log(ex, this, "Error init graph zone "+zoneForm.ZoneDetails.ZoneName
+				+" output="+zoneForm.ZoneDetails.OutputDeviceAutoCompleted());
 		}
     }
 
