@@ -279,6 +279,11 @@ namespace MultiZonePlayer
 			  txt.AppendText(s.First + " : " + s.Second+"\n");
 		  }
 		  */
+
+		  USB_RC2.ELROUsbRC2  rc = new USB_RC2.ELROUsbRC2();
+		  rc.RFOn(1001);
+		  Thread.Sleep(5000);
+		  rc.RFOff(1001);
       }
 
       private void button7_Click(object sender, EventArgs e)

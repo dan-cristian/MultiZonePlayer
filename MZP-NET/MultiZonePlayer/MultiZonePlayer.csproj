@@ -189,6 +189,8 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="DirectoryPlaylist.cs" />
+    <Compile Include="ThirdParty\DeviceManagement.cs" />
+    <Compile Include="ThirdParty\DeviceManagementApiDeclarations.cs" />
     <Compile Include="ThirdParty\DShowUtility.cs" />
     <Compile Include="FormOptions.cs">
       <SubType>Form</SubType>
@@ -196,6 +198,7 @@
     <Compile Include="FormOptions.Designer.cs">
       <DependentUpon>FormOptions.cs</DependentUpon>
     </Compile>
+    <Compile Include="ThirdParty\ELROUsbRC2.cs" />
     <Compile Include="ThirdParty\ExifReader.cs" />
     <Compile Include="ThirdParty\ExifTags.cs" />
     <Compile Include="ThirdParty\fastJSON\Getters.cs" />
@@ -203,7 +206,10 @@
     <Compile Include="ThirdParty\fastJSON\JsonParser.cs" />
     <Compile Include="ThirdParty\fastJSON\JsonSerializer.cs" />
     <Compile Include="ThirdParty\fastJSON\SafeDictionary.cs" />
+    <Compile Include="ThirdParty\FileIOApiDeclarations.cs" />
     <Compile Include="ThirdParty\FTD2XX_NETclass.cs" />
+    <Compile Include="ThirdParty\Hid.cs" />
+    <Compile Include="ThirdParty\HidApiDeclarations.cs" />
     <Compile Include="ThirdParty\HtmlParser.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="PowerControl.cs" />
