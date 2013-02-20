@@ -60,6 +60,14 @@ namespace MultiZonePlayer
             private List<Display> m_displayList = new List<Display>();
             private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
 
+			private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
+
+			internal USB_RC2.ELROUsbRC2 RemoteControl
+			{
+				get { return m_remoteControl; }
+				set { m_remoteControl = value; }
+			}
+
             public List<ZoneGeneric> ActiveZones
             {
                 get { return m_activeZones; }

@@ -95,8 +95,8 @@ namespace USB_RC2
 			{
 				Guid empty = Guid.Empty;
 				this._MyDeviceDetected = false;
-				structure.lpSecurityDescriptor = 0;
-				structure.bInheritHandle = Convert.ToInt32(true);
+				structure.lpSecurityDescriptor = IntPtr.Zero;
+				structure.bInheritHandle = true;
 				structure.nLength = Marshal.SizeOf(structure);
 				HidApiDeclarations.HidD_GetHidGuid(ref empty);
 				if (this._MyDeviceManagement.FindDeviceFromGuid(empty, ref devicePathName))
@@ -136,11 +136,12 @@ namespace USB_RC2
 				}
 				if (this._MyDeviceDetected)
 				{
-					flag3 = this._MyDeviceManagement.RegisterForDeviceNotifications(this._MyDevicePathName, 
+					flag3 = true;
+						/*this._MyDeviceManagement.RegisterForDeviceNotifications(this._MyDevicePathName, 
 						//base.Handle, 
 						MultiZonePlayer.ControlCenter.Instance.Handle,
-
 						empty, ref this._DeviceNotificationHandle);
+						 */
 					this._MyHID.Capabilities = this._MyHID.GetDeviceCapabilities(this._HIDHandle);
 					if (flag3)
 					{
@@ -273,7 +274,7 @@ namespace USB_RC2
 		private void RFSpecs_Find(ref byte[,] RFCMDBuf, string SpecName)
 		{
 			int num = -1;
-			/*if (this.DS_RFSpec.Tables[0].Rows.Count > 0)
+			if (this.DS_RFSpec.Tables[0].Rows.Count > 0)
 			{
 				for (int i = 0; i < this.DS_RFSpec.Tables[0].Rows.Count; i++)
 				{
@@ -312,7 +313,7 @@ namespace USB_RC2
 					RFCMDBuf[1, 7] = (byte)(num3 & 0xff);
 				}
 			}
-			 */
+			 
 		}
 
 		private string SendOutputReports(byte[] buf)

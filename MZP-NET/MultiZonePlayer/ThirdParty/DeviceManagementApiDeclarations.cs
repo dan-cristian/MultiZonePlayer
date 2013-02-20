@@ -23,9 +23,10 @@
         [DllImport("setupapi.dll")]
         public static extern int SetupDiDestroyDeviceInfoList(IntPtr DeviceInfoSet);
         [DllImport("setupapi.dll")]
-        public static extern int SetupDiEnumDeviceInterfaces(IntPtr DeviceInfoSet, int DeviceInfoData, ref Guid InterfaceClassGuid, int MemberIndex, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
+        public static extern IntPtr SetupDiEnumDeviceInterfaces(
+			IntPtr DeviceInfoSet, int DeviceInfoData, ref Guid InterfaceClassGuid, int MemberIndex, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
         [DllImport("setupapi.dll", CharSet=CharSet.Auto)]
-        public static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, string Enumerator, int hwndParent, int Flags);
+        public static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, string Enumerator, IntPtr hwndParent, int Flags);
         [DllImport("setupapi.dll", CharSet=CharSet.Auto)]
         public static extern bool SetupDiGetDeviceInterfaceDetail(IntPtr DeviceInfoSet, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData, IntPtr DeviceInterfaceDetailData, int DeviceInterfaceDetailDataSize, ref int RequiredSize, IntPtr DeviceInfoData);
         [DllImport("user32.dll")]
@@ -77,7 +78,7 @@
             public int cbSize;
             public Guid InterfaceClassGuid;
             public int Flags;
-            public int Reserved;
+            public IntPtr Reserved;
         }
 
         [StructLayout(LayoutKind.Sequential)]

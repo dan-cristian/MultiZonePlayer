@@ -114,6 +114,8 @@ namespace MultiZonePlayer
             powerevent,
             tvsetinput,
             powercycle,
+			remotepoweron,
+			remotepoweroff,
 			getpicture
         }
         public enum GlobalParams
@@ -144,6 +146,7 @@ namespace MultiZonePlayer
 			count,
 			interval,
 			face,
+			remoteid,
 			r//random no
         }
 
@@ -229,7 +232,8 @@ namespace MultiZonePlayer
             new CommandSyntax(GlobalCommands.alarmstay,         GlobalParams.areaid),
             new CommandSyntax(GlobalCommands.volumeset,         GlobalParams.volumelevel),
             new CommandSyntax(GlobalCommands.ratingset,         GlobalParams.ratingvalue),
-            
+            new CommandSyntax(GlobalCommands.remotepoweron,		GlobalParams.remoteid),
+			new CommandSyntax(GlobalCommands.remotepoweroff,	GlobalParams.remoteid)
             /*
             genrelist,
             setgenrelist,

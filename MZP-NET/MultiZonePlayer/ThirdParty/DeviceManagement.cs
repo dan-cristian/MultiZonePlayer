@@ -44,19 +44,23 @@
             bool flag2 = false;
             int requiredSize = 0;
             int memberIndex = 0;
-            DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DETAIL_DATA structure = new DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DETAIL_DATA();
-            DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DATA deviceInterfaceData = new DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DATA();
+            DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DETAIL_DATA structure 
+				= new DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DETAIL_DATA();
+            DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DATA deviceInterfaceData 
+				= new DeviceManagementApiDeclarations.SP_DEVICE_INTERFACE_DATA();
             int num3 = 0;
             bool flag3 = false;
             try
             {
-                IntPtr deviceInfoSet = DeviceManagementApiDeclarations.SetupDiGetClassDevs(ref myGuid, null, 0, 0x12);
+                IntPtr deviceInfoSet = DeviceManagementApiDeclarations.SetupDiGetClassDevs(
+					ref myGuid, null, IntPtr.Zero, 0x12);
                 flag = false;
                 memberIndex = 0;
                 do
                 {
-                    deviceInterfaceData.cbSize = 0x1c;
-                    if (DeviceManagementApiDeclarations.SetupDiEnumDeviceInterfaces(deviceInfoSet, 0, ref myGuid, memberIndex, ref deviceInterfaceData) == 0)
+					deviceInterfaceData.cbSize = Marshal.SizeOf(deviceInterfaceData);//0x1c;
+                    if (DeviceManagementApiDeclarations.SetupDiEnumDeviceInterfaces(
+						deviceInfoSet, 0, ref myGuid, memberIndex, ref deviceInterfaceData) == IntPtr.Zero)
                     {
                         flag2 = true;
                     }
@@ -69,10 +73,10 @@
                         flag3 = DeviceManagementApiDeclarations.SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref deviceInterfaceData, IntPtr.Zero, 0, ref requiredSize, IntPtr.Zero);
                         structure.cbSize = Marshal.SizeOf(structure);
                         IntPtr ptr = Marshal.AllocHGlobal(requiredSize);
-                        Marshal.WriteInt32(ptr, 4 + Marshal.SystemDefaultCharSize);
+                        Marshal.WriteInt32(ptr, IntPtr.Size + Marshal.SystemDefaultCharSize);
                         Debug.WriteLine("cbsize = " + structure.cbSize);
                         flag3 = DeviceManagementApiDeclarations.SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref deviceInterfaceData, ptr, requiredSize, ref requiredSize, IntPtr.Zero);
-                        IntPtr ptr3 = new IntPtr(ptr.ToInt32() + 4);
+                        IntPtr ptr3 = new IntPtr(ptr.ToInt32() + IntPtr.Size);
                         devicePathName[memberIndex] = Marshal.PtrToStringAuto(ptr3);
                         Debug.WriteLine("Device Path = " + devicePathName[memberIndex]);
                         Debug.WriteLine("Device Path Length = " + devicePathName[memberIndex].Length);

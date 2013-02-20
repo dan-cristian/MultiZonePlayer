@@ -259,8 +259,8 @@
                 FileIOApiDeclarations.SECURITY_ATTRIBUTES structure = new FileIOApiDeclarations.SECURITY_ATTRIBUTES();
                 try
                 {
-                    structure.lpSecurityDescriptor = 0;
-                    structure.bInheritHandle = Convert.ToInt32(true);
+                    structure.lpSecurityDescriptor = IntPtr.Zero;
+                    structure.bInheritHandle = true;
                     structure.nLength = Marshal.SizeOf(structure);
                     eventObject = FileIOApiDeclarations.CreateEvent(ref structure, Convert.ToInt32(false), Convert.ToInt32(true), "");
                     hidOverlapped.Offset = 0;

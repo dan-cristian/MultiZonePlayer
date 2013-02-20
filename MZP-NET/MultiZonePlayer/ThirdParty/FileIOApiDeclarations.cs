@@ -44,8 +44,8 @@
         public struct SECURITY_ATTRIBUTES
         {
             public int nLength;
-            public int lpSecurityDescriptor;
-            public int bInheritHandle;
+            public IntPtr lpSecurityDescriptor;
+            public bool bInheritHandle;
         }
     }
 }

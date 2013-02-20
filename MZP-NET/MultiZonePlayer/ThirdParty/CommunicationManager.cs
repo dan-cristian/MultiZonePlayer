@@ -472,7 +472,10 @@ namespace MultiZonePlayer
             {
                 try
                 {
-                    Thread.CurrentThread.Name = "Serial Data Received " + comPort.PortName;
+					if (Thread.CurrentThread != null && 
+						(Thread.CurrentThread.Name == null ||
+						!Thread.CurrentThread.Name.StartsWith("Serial Data")))
+						Thread.CurrentThread.Name = "Serial Data Received " + comPort.PortName;
                     //determine the mode the user selected (binary/string)
                     switch (CurrentTransmissionType)
                     {
@@ -533,7 +536,8 @@ namespace MultiZonePlayer
         }
         void comPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            Thread.CurrentThread.Name = "Serial Error Received " + comPort.PortName;
+			if (!Thread.CurrentThread.Name.StartsWith("Serial Error"))
+				Thread.CurrentThread.Name = "Serial Error Received " + comPort.PortName;
             MLog.Log(this, "ERROR received sender=" + sender.ToString() + " errtype="+e.ToString());
         }
         #endregion

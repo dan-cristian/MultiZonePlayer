@@ -104,6 +104,7 @@ namespace MultiZonePlayer
             Metadata.CommandResult cmdres;
             String cmdName;
             String result,err,detailedStatus="";
+			int remoteid;
 
             try
             {
@@ -250,6 +251,16 @@ namespace MultiZonePlayer
 							resvalue.BinaryData = Utilities.ReadBinaryFile(picture);
 							resvalue.Add(Metadata.GlobalParams.contenttype, "image/"+pictsplit[pictsplit.Length-1]);
 							result = JsonResult(Metadata.ResultEnum.OK, "picture retrieved=" + picture, null);
+							break;
+						case Metadata.GlobalCommands.remotepoweron:
+							remoteid=Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
+							result = MZPState.Instance.RemoteControl.RFOn(remoteid);
+							result = JsonResult(Metadata.ResultEnum.OK, "remoteon="+result, null);
+							break;
+						case Metadata.GlobalCommands.remotepoweroff:
+							remoteid=Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
+							result = MZPState.Instance.RemoteControl.RFOff(remoteid);
+							result = JsonResult(Metadata.ResultEnum.OK, "remoteoff="+result, null);
 							break;
                         default:
                             res = DoZoneCommand(apicmd, vals, out err, out values);
