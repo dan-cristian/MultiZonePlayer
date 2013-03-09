@@ -536,7 +536,7 @@ namespace MultiZonePlayer
         }
         void comPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-			if (!Thread.CurrentThread.Name.StartsWith("Serial Error"))
+			if (Thread.CurrentThread.Name != null && !Thread.CurrentThread.Name.StartsWith("Serial Error"))
 				Thread.CurrentThread.Name = "Serial Error Received " + comPort.PortName;
             MLog.Log(this, "ERROR received sender=" + sender.ToString() + " errtype="+e.ToString());
         }
