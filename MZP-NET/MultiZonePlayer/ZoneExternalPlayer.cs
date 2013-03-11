@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
+using System.Drawing;
 
 namespace MultiZonePlayer
 {
@@ -290,6 +292,31 @@ namespace MultiZonePlayer
             PostURLCmdMessage("Input.Back");
         }
 
+		private void MoveToSecondScreen()
+		{
+			Screen[] sc = Screen.AllScreens;
+			if (sc.Length > 1)
+			{
+				MLog.Log(null, "Multiple screens detected, count=" + sc.Length);
+				foreach (Screen scr in sc)
+				{
+					if (!scr.Primary)
+					{
+						Rectangle area = scr.Bounds;
+						Utilities.SetWindowPos(GetXBMCHandle(), 0, area.Left, area.Top,
+							area.Width, area.Height, Utilities.SWP.SHOWWINDOW);
+						MLog.Log(null, "XBMC sent to second screen at x="+area.Left+" y="+area.Top);
+						break;
+					}
+				}
+			}
+		}
+
+		private IntPtr GetXBMCHandle()
+		{
+			return Utilities.FindWindow("XBMC", "XBMC");
+		}
+
         private void GetXBMCStatus()
         {
             XBMCResponse resp;
@@ -306,7 +333,8 @@ namespace MultiZonePlayer
                 {
 					if (!m_bringToForegroundOnce)
 					{
-						Utilities.SetForegroundWindow(Utilities.FindWindow("XBMC", "XBMC"));
+						MoveToSecondScreen();
+						Utilities.SetForegroundWindow(GetXBMCHandle());
 						m_bringToForegroundOnce = true;
 					}
 
@@ -337,7 +365,7 @@ namespace MultiZonePlayer
 							m_zoneDetails.IsActive = true;
 							m_zoneDetails.Genre = resp.result.type;
 							m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
-							Utilities.SetForegroundWindow(Utilities.FindWindow("XBMC", "XBMC"));
+							Utilities.SetForegroundWindow(GetXBMCHandle());
 						}
 						else
 						{

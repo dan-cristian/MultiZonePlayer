@@ -54,6 +54,32 @@ namespace MultiZonePlayer
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, ExactSpelling = true, SetLastError = true)]
         internal static extern void MoveWindow(IntPtr hwnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
+		/// <summary>
+		/// SetWindowPos Flags
+		/// </summary>
+		public static class SWP
+		{
+			public static readonly int
+			NOSIZE = 0x0001,
+			NOMOVE = 0x0002,
+			NOZORDER = 0x0004,
+			NOREDRAW = 0x0008,
+			NOACTIVATE = 0x0010,
+			DRAWFRAME = 0x0020,
+			FRAMECHANGED = 0x0020,
+			SHOWWINDOW = 0x0040,
+			HIDEWINDOW = 0x0080,
+			NOCOPYBITS = 0x0100,
+			NOOWNERZORDER = 0x0200,
+			NOREPOSITION = 0x0200,
+			NOSENDCHANGING = 0x0400,
+			DEFERERASE = 0x2000,
+			ASYNCWINDOWPOS = 0x4000;
+		}
+
+		[DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+		public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
