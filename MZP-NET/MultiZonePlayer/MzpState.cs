@@ -62,6 +62,8 @@ namespace MultiZonePlayer
 
 			private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
+			private List<Metadata.SchedulerEntry> m_schedulerList;
+
 			internal USB_RC2.ELROUsbRC2 RemoteControl
 			{
 				get { return m_remoteControl; }
@@ -172,6 +174,8 @@ namespace MultiZonePlayer
                 m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], //IniFile.PARAM_GTALK_SERVER[1], 
                     IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
+
+				m_schedulerList = Metadata.SchedulerEntry.LoadFromIni();
 
                 LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
@@ -285,6 +289,10 @@ namespace MultiZonePlayer
                 return ZoneDetails.Find(item => item.ZoneId == zoneId);
             }
 
+			public Metadata.ZoneDetails GetZoneIdByName(String zoneName)
+			{
+				return ZoneDetails.Find(item => item.ZoneName == zoneName);
+			}
             public List<ControlDevice> IniControlDevices
             {
                 get {return m_iniControlList;}
@@ -541,6 +549,15 @@ namespace MultiZonePlayer
                 }
             }
 
+			//Music zone to clone
+			public ZoneGeneric GetFirstZoneMusic()
+			{
+				Metadata.ZoneDetails zonedetails = ZoneDetails.OrderBy(x => x.LastLocalCommandDateTime).ToList().Find(x =>
+                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) && x.IsActive));
+				ZoneGeneric zone = ActiveZones.Find(x => x.GetZoneId() == zonedetails.ZoneId);
+				return zone;
+			}
+
             public int GetActiveChildZone(int parentZoneId)
             {
                 Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList()
@@ -560,7 +577,7 @@ namespace MultiZonePlayer
             public MoodMusic GetScheduledMood(int zoneId)
             {
                 String time, weekday;
-                time = DateTime.Now.ToString(IniFile.DATETIME_FORMAT);
+                time = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
                 weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
 
                 foreach(MusicScheduleEntry entry in m_musicScheduleList)
@@ -579,7 +596,7 @@ namespace MultiZonePlayer
             public List<MoodMusic> GetScheduledMoodList(int zoneId)
             {
                 String time, weekday;
-                time = DateTime.Now.ToString(IniFile.DATETIME_FORMAT);
+                time = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
                 weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
                 List<MoodMusic> result = new List<MoodMusic>();
 
@@ -727,7 +744,7 @@ namespace MultiZonePlayer
 
             public void CheckForWakeTimers()
             {
-                String dt = DateTime.Now.ToString(IniFile.DATETIME_FORMAT);
+                String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
                 String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
                 foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
                 {
@@ -741,6 +758,36 @@ namespace MultiZonePlayer
                     }
                 }
             }
+
+			public void CheckForScheduleEvents()
+			{
+				String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
+				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
+				string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT);
+				foreach (Metadata.SchedulerEntry entry in m_schedulerList)
+				{
+					if ((entry.RepeatMonth == "All" || entry.RepeatMonth == month)
+						&& (entry.RepeatWeekDay=="All" || entry.RepeatWeekDay.Contains(weekday))
+						&& (entry.RepeatTime==hrmin)
+						&& (DateTime.Now.Subtract(entry.ExecutedDateTime).TotalSeconds>60))
+					{
+						foreach (Metadata.SchedulerEntryCommand cmd in entry.CommandList)
+						{
+							MLog.Log(this, "Executing scheduled event "+cmd.Command + " in zone="+cmd.ZoneName);
+							Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
+								cmd.Command.ToString(), Metadata.CommandSources.system);
+							val.Add(Metadata.GlobalParams.zoneid, GetZoneIdByName(cmd.ZoneName).ZoneId.ToString());
+							//parameters
+							Metadata.SchedulerEntry.AddParams(cmd.ParameterValueList, ref val);
+							Metadata.ValueList retval;
+							API.DoCommandFromWeb(val, out retval);
+							if (cmd.DelayMiliSec != 0)
+								Thread.Sleep(cmd.DelayMiliSec);
+						}
+						entry.ExecutedDateTime = DateTime.Now;
+					}
+				}
+			}
 
             public void CheckForAlarm()
             {
@@ -883,6 +930,7 @@ namespace MultiZonePlayer
                 CheckForWakeTimers();
                 CheckForAlarm();
                 CheckForExternalZoneEvents();
+				CheckForScheduleEvents();
                 PowerControl.timerPowerSaving_Tick();
 
 				

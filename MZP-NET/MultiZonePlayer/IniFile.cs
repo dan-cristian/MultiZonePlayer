@@ -18,6 +18,8 @@ namespace MultiZonePlayer
         {
 
             public const String INI_FILE = "\\MultiZonePlayer.ini";
+			public const String SCHEDULER_FILE = "\\scheduler.ini";
+
             public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";
             public const String LOG_MODEM_FILE = "\\MultiZonePlayerModem.log";
@@ -31,6 +33,8 @@ namespace MultiZonePlayer
             public const String TEST_FILE_NAME = "\\Test.mp3";
             public static String DEFAULT_AUTO_DEV_NAME = "-AUTO BY KEYWORDS-";
             public static String DEFAULT_AUTO_DEV_ID = "-1";
+			public const String SCHEDULER_SECTION_MAIN = "Scheduler";
+            
             public const String INI_SECTION_ZONES = "Zones";
             public const String INI_SECTION_ZONESTATE = "ZoneState";
             public const String INI_SECTION_ZONEDEVICE = "ZoneDevice";
@@ -163,7 +167,8 @@ namespace MultiZonePlayer
 			public static String[] PARAM_LASTFM_SECRET_KEY = new String[] { "PARAM_LASTFM_SECRET_KEY", "812f830d23965715878d5cd1390ada1a" };
 			public static String[] PARAM_LASTFM_WS_URL = new String[] { "PARAM_LASTFM_WS_URL", "http://ws.audioscrobbler.com/2.0/?" };
 
-            public static String DATETIME_FORMAT = "HH:mm";
+            public static String DATETIME_DAYHR_FORMAT = "HH:mm";
+			public static String DATETIME_MONTH_FORMAT = "MMM";
 
             public static Object[] PARAMS = new Object[]
             {

@@ -161,7 +161,7 @@ namespace MultiZonePlayer
             WebPostRequest post;
             String paramName,paramValue;
 			String res;
-            String msg, conn;
+            String msg, conn="";
 			try
 			{
 				if (URL == GET_URL)
@@ -210,8 +210,8 @@ namespace MultiZonePlayer
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, this, "Error post XBMC cmd="+method+" zone="+m_zoneDetails.ZoneName);
-				res = "[error]";
+				MLog.Log(ex, this, "Error post XBMC cmd="+method+" zone="+m_zoneDetails.ZoneName + " conn="+conn);
+				res = "{}";
 			}
             return res;
         }

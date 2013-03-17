@@ -245,7 +245,7 @@ namespace MultiZonePlayer
 
         private void CheckForSleep()
         {
-            if (m_zoneDetails.SleepHourMin.Equals(DateTime.Now.ToString(IniFile.DATETIME_FORMAT)))
+            if (m_zoneDetails.SleepHourMin.Equals(DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT)))
             {
                 MLog.Log(this, "Zone sleeping");
                 this.Close();

@@ -79,7 +79,7 @@ namespace MultiZonePlayer
         {
             try
 			{
-				//MLog.Log(null, "Closing zone " + m_zoneDetails.ZoneId + ", activity=" + m_mainZoneActivity);
+				MLog.Log(null, "Closing zone " + m_zoneDetails.ZoneId + ", activity=" + m_mainZoneActivity);
 				if (m_mainZoneActivity != null)
 				{
 					m_mainZoneActivity.Close();
@@ -127,7 +127,7 @@ namespace MultiZonePlayer
             ///ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             StopRemoveClonedZones();
 
-            m_mainZoneActivity = new ZoneMusicClone(this, ControlCenter.GetFirstZoneMusic());
+            m_mainZoneActivity = new ZoneMusicClone(this, MZPState.Instance.GetFirstZoneMusic());
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.musicclone;
             m_zoneDetails.IsActive = true;
         }
@@ -291,7 +291,7 @@ namespace MultiZonePlayer
                     if (date.Equals(""))
                         m_zoneDetails.SleepHourMin = "";
                     else
-                        m_zoneDetails.SleepHourMin = Convert.ToDateTime(date).ToString(IniFile.DATETIME_FORMAT);
+                        m_zoneDetails.SleepHourMin = Convert.ToDateTime(date).ToString(IniFile.DATETIME_DAYHR_FORMAT);
                     /*if (minutes == -1)
                         m_zoneDetails.SleepHourMin = "";
                     else
@@ -414,17 +414,19 @@ namespace MultiZonePlayer
                         //check if photo (clone zone)
                         case Metadata.GlobalCommands.photo:
                         case Metadata.GlobalCommands.musicclone:
-                            if (!this.Equals(ControlCenter.GetFirstZoneMusic()))//cannot clone myself
-                            {
-                                if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneMusicClone)))
-                                {
-                                    m_mainZoneActivity.Close();
-                                    m_mainZoneActivity = null;
-                                }
+							if (!this.Equals(MZPState.Instance.GetFirstZoneMusic()))//cannot clone myself
+							{
+								if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneMusicClone)))
+								{
+									m_mainZoneActivity.Close();
+									m_mainZoneActivity = null;
+								}
 
-                                if (m_mainZoneActivity == null)
-                                    InitZoneMusicClone();
-                            }
+								if (m_mainZoneActivity == null)
+									InitZoneMusicClone();
+							}
+							else MLog.Log(this, "Cannot clone myself clone zone="
+								+MZPState.Instance.GetFirstZoneMusic().ZoneDetails.ZoneName);
                             break;
 
 
@@ -673,7 +675,7 @@ namespace MultiZonePlayer
 
         private void CheckForSleep()
         {
-            if (m_zoneDetails.SleepHourMin.Equals(DateTime.Now.ToString(IniFile.DATETIME_FORMAT)))
+            if (m_zoneDetails.SleepHourMin.Equals(DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT)))
             {
                 MLog.Log(this, "Zone sleeping");
                 if (m_zoneForm != null) m_zoneForm.Close();

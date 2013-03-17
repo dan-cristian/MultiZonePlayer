@@ -797,7 +797,11 @@ namespace MultiZonePlayer
                         result = GetMoodValueList();
                         break;
                     case Metadata.GlobalCommands.setmoodmusic:
-                        SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.IndexValueList[0])));
+						if (vals.GetValue(Metadata.GlobalParams.selectedindex) != null)
+							SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.GetValue(Metadata.GlobalParams.selectedindex))));
+						else
+							if (vals.GetValue(Metadata.GlobalParams.moodname) != null)
+								SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(vals.GetValue(Metadata.GlobalParams.moodname))));
                         Play();
                         break;
                     case Metadata.GlobalCommands.searchmediaitem:
@@ -824,7 +828,8 @@ namespace MultiZonePlayer
             {
                 if (IsAlarm && GetVolumeLevel() < m_zoneForm.ZoneDetails.GetDefaultVolume())
                 {
-                    SetVolumeLevel(GetVolumeLevel() + 50);
+                    SetVolumeLevel(GetVolumeLevel() + 100);
+					MLog.Log(this, "Setting alarm volume on " + m_zoneDetails.ZoneName + " vol="+GetVolumeLevel());
                 }
 
                 if (CurrentItem != null)
@@ -860,6 +865,7 @@ namespace MultiZonePlayer
 
             if (m_clonedZoneForm != null)
             {
+				m_clonedZoneForm.MainZoneActivity.SetVolumeLevel(m_clonedZoneForm.ZoneDetails.GetDefaultVolume());
 				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControl.PowerOn(m_parentZoneForm.ZoneDetails.ZoneId);
                 m_clonedZoneForm.AddClonedZone(this);

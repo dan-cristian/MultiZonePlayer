@@ -307,16 +307,7 @@ namespace MultiZonePlayer
             else return false;;
         }
 
-        public static ZoneGeneric GetFirstZoneMusic()
-        {
-            foreach (ZoneGeneric zone in MZPState.Instance.ActiveZones)
-            {
-                    if ((zone.GetCurrentActivity() != null) && (zone.GetCurrentActivity().GetType() == typeof(ZoneMusic)))
-                        return zone;
-                
-            }
-            return null;
-        }
+        
 
         #region USBEvents
         private void RegisterDriveDetector()

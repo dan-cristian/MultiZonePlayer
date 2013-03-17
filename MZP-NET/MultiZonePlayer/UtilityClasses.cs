@@ -147,6 +147,7 @@ namespace MultiZonePlayer
 			interval,
 			face,
 			remoteid,
+			moodname,
 			r//random no
         }
 
@@ -869,7 +870,7 @@ namespace MultiZonePlayer
 
             public static int GetDefaultVolume(int percent)
             {
-                String dt = DateTime.Now.ToString(IniFile.DATETIME_FORMAT);
+                String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
                 String[] interval = IniFile.PARAM_SILENCE_SAFE_HOUR_INTERVAL[1].Split('-');
                 //reduce volume during silence interval - night
                 if (dt.CompareTo(interval[0]) >= 0 || dt.CompareTo(interval[1]) <= 0)
@@ -900,6 +901,82 @@ namespace MultiZonePlayer
             }
         }
 
+		public class SchedulerEntryCommand
+		{
+			public GlobalCommands Command;
+			public String ZoneName;
+			public String ParameterValueList;
+			public int DelayMiliSec=0;
+
+			public SchedulerEntryCommand()
+			{}
+		}
+
+		public class SchedulerEntry
+		{
+			public String RepeatMonth;
+			public String RepeatWeekDay;
+			public String RepeatTime;
+			public List<SchedulerEntryCommand> CommandList;
+			public DateTime ExecutedDateTime;
+			public SchedulerEntry()
+			{}
+
+			public static void SaveToIni(List<SchedulerEntry> list)
+			{
+				String json;
+				int line = 0;
+				foreach (SchedulerEntry entry in list)
+				{
+					json = fastJSON.JSON.Instance.ToJSON(entry, false);
+					Utilities.WritePrivateProfileString(IniFile.SCHEDULER_SECTION_MAIN, line.ToString(),
+						json, IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
+				}
+			}
+
+			public static List<SchedulerEntry> LoadFromIni()
+			{
+				String json;
+				SchedulerEntry entry;
+				List<SchedulerEntry> list = new List<SchedulerEntry>();
+				int line=0;
+				do
+				{
+					json = Utilities.IniReadValue(IniFile.SCHEDULER_SECTION_MAIN, 
+						line.ToString(), IniFile.CurrentPath()+IniFile.SCHEDULER_FILE);
+					if (json != "")
+					{
+						entry = fastJSON.JSON.Instance.ToObject<SchedulerEntry>(json);
+						entry.ExecutedDateTime = DateTime.MinValue;
+						list.Add(entry);
+					}
+					line++;
+				}
+				while (json!="");
+				MLog.Log(null, "Loaded " + line +" scheduler events");
+				return list;
+			}
+
+			public static void AddParams(String parameters, ref Metadata.ValueList vals)
+			{
+				if (parameters != null && parameters != "")
+				{
+					String[] atoms, pair;
+					atoms = parameters.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+					for (int i = 1; i < atoms.Length; i++)
+					{
+						pair = atoms[i].Split('=');
+						if (pair.Length >= 2)
+						{
+							vals.Add(pair[0], pair[1]);
+						}
+						else
+							MLog.Log(null, "At AddParams Invalid parameter in " + atoms[i]);
+					}
+				}
+			}
+		}
         public class CamAlert
         {
             private static int startIndex = 0;
@@ -937,8 +1014,7 @@ namespace MultiZonePlayer
             public List<CamAlert> CamAlertList;
 
             public ServerStatus()
-            {
-            }
+            {}
         }
     }
 
