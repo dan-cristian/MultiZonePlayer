@@ -1278,7 +1278,7 @@ namespace MultiZonePlayer
 
 			string picture;
 				
-			if (m_autoIterateItems==null || m_autoIterateItems.Count == 0)
+			if (m_autoIterateItems==null || m_autoIterateItems.Count == 0 || m_currentPictureIndex == -1)
 				picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "\\notfound.jpg";
 			else
 				picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;

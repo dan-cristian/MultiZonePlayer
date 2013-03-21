@@ -127,7 +127,12 @@ namespace MultiZonePlayer
             ///ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             StopRemoveClonedZones();
 
-            m_mainZoneActivity = new ZoneMusicClone(this, MZPState.Instance.GetFirstZoneMusic());
+			ZoneGeneric clonesource = MZPState.Instance.ActiveZones.Find
+				(x => x.ZoneDetails.ActivityType == Metadata.GlobalCommands.musicclone);
+            if (clonesource != null)
+				m_mainZoneActivity = new ZoneMusicClone(this, clonesource);
+            else
+				m_mainZoneActivity = new ZoneMusicClone(this, MZPState.Instance.GetFirstZoneMusic());
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.musicclone;
             m_zoneDetails.IsActive = true;
         }

@@ -797,8 +797,8 @@ namespace MultiZonePlayer
                         result = GetMoodValueList();
                         break;
                     case Metadata.GlobalCommands.setmoodmusic:
-						if (vals.GetValue(Metadata.GlobalParams.selectedindex) != null)
-							SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.GetValue(Metadata.GlobalParams.selectedindex))));
+						if (vals.GetValue(Metadata.GlobalParams.moodindex) != null)
+							SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.GetValue(Metadata.GlobalParams.moodindex))));
 						else
 							if (vals.GetValue(Metadata.GlobalParams.moodname) != null)
 								SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(vals.GetValue(Metadata.GlobalParams.moodname))));

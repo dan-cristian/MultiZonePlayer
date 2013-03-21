@@ -63,6 +63,7 @@ namespace MultiZonePlayer
 			private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
 			private List<Metadata.SchedulerEntry> m_schedulerList;
+			private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
 
 			internal USB_RC2.ELROUsbRC2 RemoteControl
 			{
@@ -175,10 +176,20 @@ namespace MultiZonePlayer
                     IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
 
-				m_schedulerList = Metadata.SchedulerEntry.LoadFromIni();
+				LoadSchedule();
 
                 LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
+
+			private void LoadSchedule()
+			{
+				DateTime fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
+				if (fileModified != m_lastScheduleFileModifiedDate)
+				{
+					m_schedulerList = Metadata.SchedulerEntry.LoadFromIni();
+					m_lastScheduleFileModifiedDate = fileModified;
+				}
+			}
 
             public static void RestartWinload()
             {
@@ -761,6 +772,8 @@ namespace MultiZonePlayer
 
 			public void CheckForScheduleEvents()
 			{
+				LoadSchedule();
+
 				String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
 				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
 				string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT);

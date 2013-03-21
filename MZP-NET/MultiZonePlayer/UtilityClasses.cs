@@ -148,6 +148,7 @@ namespace MultiZonePlayer
 			face,
 			remoteid,
 			moodname,
+			moodindex,
 			r//random no
         }
 
@@ -953,7 +954,7 @@ namespace MultiZonePlayer
 					line++;
 				}
 				while (json!="");
-				MLog.Log(null, "Loaded " + line +" scheduler events");
+				MLog.Log(null, "Loaded " + (line-1) +" scheduler events");
 				return list;
 			}
 
