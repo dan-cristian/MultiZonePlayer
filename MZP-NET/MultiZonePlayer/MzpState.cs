@@ -300,9 +300,12 @@ namespace MultiZonePlayer
                 return ZoneDetails.Find(item => item.ZoneId == zoneId);
             }
 
-			public Metadata.ZoneDetails GetZoneIdByName(String zoneName)
+			public Metadata.ZoneDetails GetZoneIdByContainsName(String zoneName)
 			{
-				return ZoneDetails.Find(item => item.ZoneName == zoneName);
+				if (zoneName != null)
+					return ZoneDetails.Find(item => item.ZoneName.Contains(zoneName));
+				else
+					return null;
 			}
             public List<ControlDevice> IniControlDevices
             {
@@ -775,12 +778,12 @@ namespace MultiZonePlayer
 				LoadSchedule();
 
 				String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
-				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
-				string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT);
+				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2).ToUpper();
+				string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT).ToUpper();
 				foreach (Metadata.SchedulerEntry entry in m_schedulerList)
 				{
-					if ((entry.RepeatMonth == "All" || entry.RepeatMonth == month)
-						&& (entry.RepeatWeekDay=="All" || entry.RepeatWeekDay.Contains(weekday))
+					if ((entry.RepeatMonth.ToUpper() == "ALL" || entry.RepeatMonth.ToUpper() == month)
+						&& (entry.RepeatWeekDay.ToUpper()=="ALL" || entry.RepeatWeekDay.ToUpper().Contains(weekday))
 						&& (entry.RepeatTime==hrmin)
 						&& (DateTime.Now.Subtract(entry.ExecutedDateTime).TotalSeconds>60))
 					{
@@ -788,8 +791,12 @@ namespace MultiZonePlayer
 						{
 							MLog.Log(this, "Executing scheduled event "+cmd.Command + " in zone="+cmd.ZoneName);
 							Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
-								cmd.Command.ToString(), Metadata.CommandSources.system);
-							val.Add(Metadata.GlobalParams.zoneid, GetZoneIdByName(cmd.ZoneName).ZoneId.ToString());
+									cmd.Command.ToString(), Metadata.CommandSources.system);
+							Metadata.ZoneDetails zone = GetZoneIdByContainsName(cmd.ZoneName);
+							if (zone != null)
+							{
+								val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+							}
 							//parameters
 							Metadata.SchedulerEntry.AddParams(cmd.ParameterValueList, ref val);
 							Metadata.ValueList retval;

@@ -82,6 +82,9 @@ namespace MultiZonePlayer
         
         private void messageReceived(object sender, agsXMPP.protocol.client.Message msg)
         {
+			if (Thread.CurrentThread.Name != null && !Thread.CurrentThread.Name.StartsWith("GTalk"))
+				Thread.CurrentThread.Name = "GTalk " + msg.Body;
+
             string[] chatMessage = null;
             chatMessage = msg.From.ToString().Split('/');
             //agsXMPP.Jid jid = null;

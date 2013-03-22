@@ -213,7 +213,7 @@ namespace MultiZonePlayer
                             if (vals.GetValue(param) == null)
                             {
                                 MLog.Log(null, "Expected parameter not found in cmd=" + cmdName + " param=" + param.ToString());
-                                break;
+                                return false;
                             }
                         }
                         return true;
@@ -808,7 +808,7 @@ namespace MultiZonePlayer
                         result = p_outputDevice;
                 }
 
-				MLog.Log(null, "Device user select="+p_outputDevice+" keywords="+p_outputKeywords+" res="+result);
+				//MLog.Log(null, "Device user select="+p_outputDevice+" keywords="+p_outputKeywords+" res="+result);
                 return result;
             }
 
@@ -965,7 +965,7 @@ namespace MultiZonePlayer
 					String[] atoms, pair;
 					atoms = parameters.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-					for (int i = 1; i < atoms.Length; i++)
+					for (int i = 0; i < atoms.Length; i++)
 					{
 						pair = atoms[i].Split('=');
 						if (pair.Length >= 2)
