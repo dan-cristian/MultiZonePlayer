@@ -103,6 +103,7 @@
     <Content Include="m\buttons.png" />
     <Content Include="m\cam.html" />
     <Content Include="m\cmd.html" />
+    <Content Include="m\gate.html" />
     <Content Include="m\gui.js" />
     <Content Include="m\mic.html" />
     <Content Include="m\mobile.css" />
@@ -123,6 +124,7 @@
     <Content Include="m\streammp3.html" />
     <Content Include="m\tv.html" />
     <Content Include="m\utilities.js" />
+    <Content Include="m\video.html" />
     <Content Include="m\Wami.swf" />
     <Content Include="m\galleria\galleria-1.2.8.js" />
     <Content Include="m\galleria\galleria-1.2.8.min.js" />

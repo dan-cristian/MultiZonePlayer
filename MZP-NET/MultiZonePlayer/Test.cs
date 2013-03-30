@@ -41,39 +41,7 @@ namespace MultiZonePlayer
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (VlcContext.IsInitialized)
-            {
-                if (vlcControl1 != null)
-                {
-                    vlcControl1.Stop();
-                }
-                VlcContext.CloseAll();
-                VlcContext.StartupOptions.ClearAllOptions();
-            }
-
-            VlcContext.LibVlcDllsPath = CommonStrings.LIBVLC_DLLS_PATH_DEFAULT_VALUE_X86;
-            VlcContext.LibVlcPluginsPath = CommonStrings.PLUGINS_PATH_DEFAULT_VALUE_X86;
-            //Set the startup options
-            VlcContext.StartupOptions.IgnoreConfig = true;
-            VlcContext.StartupOptions.LogOptions.LogInFile = true;
-            VlcContext.StartupOptions.LogOptions.ShowLoggerConsole = true;
-            VlcContext.StartupOptions.LogOptions.Verbosity = VlcLogVerbosities.Debug;
-            VlcContext.StartupOptions.LogOptions.LogInFilePath = "C:\\temp\\vlc.log";
-            //VlcContext.StartupOptions.AddOption("--aout=aout_directx \"--directx-audio-device=Speakers (2- C-Media USB Headphone Set  )\""); 
-            VlcContext.StartupOptions.AddOption("--aout=waveout");
-            VlcContext.StartupOptions.AddOption("--waveout-audio-device="+MZPState.Instance.ZoneDetails.Find(x=>x.ZoneId.ToString().Equals(textBox1.Text)).OutputDeviceNameWaveVLC);
-            txt2.AppendText(MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.ToString().Equals(textBox1.Text)).OutputDeviceNameWaveVLC + "\n");
-            //VlcContext.StartupOptions.AddOption("--waveout-audio-device=Speakers (3- C-Media USB Headph ($ffff,$ffff)");
-            //VlcContext.StartupOptions.AddOption("--waveout-audio-device=Speakers (SoundMAX Integrated D ($1,$64)");
-            //VlcContext.StartupOptions.AddOption("--aout=out_directx");
-            //VlcContext.StartupOptions.AddOption("--directx-audio-device=Speakers (3- C-Media USB Headphone Set )");
-            VlcContext.Initialize();
-
-            vlcControl1 = new VlcControl();
-            this.vlcControl1.PositionChanged += this.VlcControlOnPositionChanged;
-            var media = new PathMedia("http://live.eliberadio.ro:8002");
-            vlcControl1.Media = media;
-            
+			
             
         }
 

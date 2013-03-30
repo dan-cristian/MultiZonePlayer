@@ -137,10 +137,7 @@ namespace MultiZonePlayer
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWaitableTimer(SafeWaitHandle hTimer, [In] ref long pDueTime, int lPeriod, IntPtr pfnCompletionRoutine, IntPtr lpArgToCompletionRoutine, bool fResume);
 
-
-        
-
-        
+		
         
 
         [DllImport("winmm.dll")]
@@ -164,6 +161,8 @@ namespace MultiZonePlayer
         public const int VK_RETURN = 0x0D;
         public const int VK_TAB = 0x09;
 
+
+		
 
         private static Process extProc = null;
 
@@ -756,7 +755,7 @@ namespace MultiZonePlayer
             { }
             try
             {
-                Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM hh:mm:ss-ff [") 
+                Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [") 
                     + Thread.CurrentThread.Name +"]:" + text + "\n", MZPEvent.EventSource.System);
             }
             catch (Exception)

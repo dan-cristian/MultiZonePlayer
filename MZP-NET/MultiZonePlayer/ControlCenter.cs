@@ -70,7 +70,8 @@ namespace MultiZonePlayer
         private void m_KeyPressed(object sender, ref RawInputDevice.KeyControlEventArgs e)
         {
             MLog.LogKey(String.Format("Raw: {0} down={1}", e.Keyboard.vKey, e.Keyboard.isKeyDownWinMessage));
-            KeyDetail kd = new KeyDetail(e.Keyboard.vKey, e.Keyboard.deviceName, e.Keyboard.isKeyDownWinMessage, e.Keyboard.isKeyUpWinMessage);
+            KeyDetail kd = new KeyDetail(e.Keyboard.vKey, e.Keyboard.deviceName, e.Keyboard.Name,
+				e.Keyboard.isKeyDownWinMessage, e.Keyboard.isKeyUpWinMessage);
             if (parentForm.m_formOptions != null && parentForm.m_formOptions.Visible)
             {
                 parentForm.m_formOptions.m_KeyPressed(kd);

@@ -47,7 +47,7 @@ namespace MultiZonePlayer
         public void m_KeyPressed(KeyDetail kd)
         {
             
-            m_lastControlDevice = GetControlDeviceShowName(kd.Device);
+            m_lastControlDevice = kd.Device;
             txtLastControlDevice.Text = m_lastControlDevice;
 
             DataGridViewCell cell;
@@ -66,15 +66,7 @@ namespace MultiZonePlayer
             }
         }
 
-        private String GetControlDeviceShowName(String deviceName)
-        {
-            /*ControlDevice dev = MZPState.Instance.SystemAvailableControlDevices.Find(x => x.DeviceName.Equals(deviceName));
-            if (dev != null)
-                return dev.DisplayName + "-" + dev.DeviceName;
-            else
-             */
-                return deviceName;
-        }
+        
 
         private void FormOptions_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -102,7 +94,7 @@ namespace MultiZonePlayer
         {
             foreach (ControlDevice dev in MZPState.Instance.SystemAvailableControlDevices)
             {
-                ((DataGridViewComboBoxColumn)dgvControl.Columns[Control_DeviceName.Name]).Items.Add(GetControlDeviceShowName(dev.DeviceName));
+                ((DataGridViewComboBoxColumn)dgvControl.Columns[Control_DeviceName.Name]).Items.Add(dev.DeviceName);
             }
         }
 
@@ -211,7 +203,7 @@ namespace MultiZonePlayer
         {
             foreach (ControlDevice ctrl in MZPState.Instance.IniControlDevices)
             {
-                    dgvControl.Rows.Add(ctrl.ZoneId, GetControlDeviceShowName(ctrl.DeviceName));
+                    dgvControl.Rows.Add(ctrl.ZoneId, ctrl.DeviceName, ctrl.DisplayName);
             }
         }
 

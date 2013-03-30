@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
+using HE853;
 
 namespace MultiZonePlayer
 {
@@ -689,4 +690,71 @@ namespace MultiZonePlayer
             //not needed
         }
     }
+
+	public class RemotePowerControl
+	{
+		private static IDevice device;
+		public static string SwitchOff(int remoteid)
+		{
+			string result = "SwitchOff OK";
+			lock (device)
+			{
+				device = new Device();
+				try
+				{
+					device.Open();
+					device.SwitchOff(remoteid, CommandStyle.Comprehensive);
+				}
+				catch (Exception ex)
+				{
+					result = "Eror SwitchOff " + ex.Message;
+					MLog.Log(ex, result);
+					device.Close();
+				}
+			}
+			return result;
+		}
+
+		public static string SwitchOn(int remoteid)
+		{
+			string result = "SwitchOn OK";
+			lock (device)
+			{
+				device = new Device();
+				try
+				{
+					device.Open();
+					device.SwitchOn(remoteid, CommandStyle.Comprehensive);
+				}
+				catch (Exception ex)
+				{
+					result = "Error SwitchOn " + ex.Message;
+					MLog.Log(ex, result);
+					device.Close();
+				}
+			}
+			return result;
+		}
+
+		public static string AdjustDim(int remoteid, int dimamount)
+		{
+			string result = "AdjustDim OK";
+			lock (device)
+			{
+				device = new Device();
+				try
+				{
+					device.Open();
+					device.AdjustDim(remoteid, CommandStyle.Comprehensive, dimamount);
+				}
+				catch (Exception ex)
+				{
+					result = "Eror AdjustDim " + ex.Message;
+					MLog.Log(ex, result);
+					device.Close();
+				}
+			}
+			return result;
+		}
+	}
 }

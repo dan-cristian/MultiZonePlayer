@@ -85,33 +85,17 @@
           imgw= maxW;
           imgh= currH * ratio;
           }
-
-        }
-
-        function onLoad() {
-        	var photo = document.getElementById("PHOTO_DIV").innerHTML;
-        	var nphoto = photo.replace("@img","img");
-			var video = document.getElementById("VIDEO_DIV").innerHTML;
-			var nvideo = video.replace("@img","@img");
-        	//document.getElementById("PHOTO_DIV").innerHTML = "BUBA";
-        	document.getElementById("PHOTO_DIV").innerHTML = nphoto;
-        	document.getElementById("VIDEO_DIV").innerHTML = nvideo;
-
-        	alert(document.getElementById("PHOTO_DIV").innerHTML);
-        	alert(document.getElementById("VIDEO_DIV").innerHTML);
-
-        	nextimage(document.getElementById("PHOTOID"));
-        }
-
+          
+          }
         </script>
-
-
     </head>
   <body>
   <table><tr><td>
-    <div id="PHOTO_DIV">
-      <img src="http://#~HTMLDVRServerPort#/livefeed?oid=%_oid&amp;r=#!HTMLRandom#&amp;" id="PHOTOID"
-        onerror="nextimageerror(this)" onload="nextimage(this)" alt="photo"/>
+    <div id="ObjectContainer">
+      <img src="http://#~HTMLDVRServerPort#/livefeed?oid=%_oid&amp;r=#!HTMLRandom#&amp;" id="CAMID"
+        title="Camera" onerror="nextimageerror(this)"
+        onload="nextimage(this)"
+        alt="cam"/>
       </div>
       </td>
       <td>
@@ -120,12 +104,13 @@
       <input id="RadioRefresh2" name="RadioRefresh" type="radio" value="1000" onclick="delay=1000"/>Medium<br />
       <input id="RadioRefresh3"  name="RadioRefresh" type="radio" value="10000" onclick="delay=10000"/>Slow<br />
       </form>
-	  <br />
-      <a class="med" href="video.html?oid=%_oid">Video</a>
 	  <br /><br />
-      <a class="med" href="monitor.html">«M</a><br />
-      <br /><br />
-	  <a class="med" href="status.html">←S</a>
+      <a class="med" href="cmd.html?command=powercycle&zoneid=14&oid=%_oid">Toggle Gate</a>
+	  <br /><br />
+	  <a class="med" href="video.html?oid=%_oid">Video</a>
+	  <br />
+	  <a class="med" href="monitor.html">«M</a><br />
+      <a class="med" href="status.html">←S</a>
       </td></tr>
 </table>
       

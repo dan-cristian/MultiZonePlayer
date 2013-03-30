@@ -60,16 +60,16 @@ namespace MultiZonePlayer
             private List<Display> m_displayList = new List<Display>();
             private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
 
-			private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
+			//private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
-			private List<Metadata.SchedulerEntry> m_schedulerList;
+			private List<Metadata.MacroEntry> m_schedulerList;
 			private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
 
-			internal USB_RC2.ELROUsbRC2 RemoteControl
+			/*internal USB_RC2.ELROUsbRC2 RemoteControl
 			{
 				get { return m_remoteControl; }
 				set { m_remoteControl = value; }
-			}
+			}*/
 
             public List<ZoneGeneric> ActiveZones
             {
@@ -176,17 +176,17 @@ namespace MultiZonePlayer
                     IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
 
-				LoadSchedule();
+				LoadMacros();
 
                 LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
 
-			private void LoadSchedule()
+			private void LoadMacros()
 			{
 				DateTime fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 				if (fileModified != m_lastScheduleFileModifiedDate)
 				{
-					m_schedulerList = Metadata.SchedulerEntry.LoadFromIni();
+					m_schedulerList = Metadata.MacroEntry.LoadFromIni();
 					m_lastScheduleFileModifiedDate = fileModified;
 				}
 			}
@@ -413,7 +413,8 @@ namespace MultiZonePlayer
                 while (enumerator.MoveNext())
                 {
                     m_systemAvailableControlDevices.Add(new ControlDevice(-1, 
-                        ((RawInputDevice.DeviceInfo)enumerator.Value).deviceName, ((RawInputDevice.DeviceInfo)enumerator.Value).Name));
+                        ((RawInputDevice.DeviceInfo)enumerator.Value).deviceName, 
+						((RawInputDevice.DeviceInfo)enumerator.Value).Name));
                 }
             }
 
@@ -540,8 +541,8 @@ namespace MultiZonePlayer
                 {
                     Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
                         (x.ActivityType.Equals(Metadata.GlobalCommands.music) 
-						|| x.ActivityType.Equals(Metadata.GlobalCommands.streammp3) ||
-                        x.ActivityType.Equals(Metadata.GlobalCommands.tv) 
+						|| x.ActivityType.Equals(Metadata.GlobalCommands.streammp3)
+                        || x.ActivityType.Equals(Metadata.GlobalCommands.tv) 
 						|| x.ActivityType.Equals(Metadata.GlobalCommands.xbmc)) 
                         && x.IsActive);
                     if (zone != null)
@@ -756,6 +757,34 @@ namespace MultiZonePlayer
                 m_lastBuzzDateTime = DateTime.Now;
             }
 
+			public void ExecuteMacro(int macroId)
+			{
+				Metadata.MacroEntry entry = m_schedulerList.Find(x => x.Id == macroId);
+				if (entry != null)
+				{
+
+					foreach (Metadata.MacroEntryCommand cmd in entry.CommandList)
+					{
+						MLog.Log(this, "Executing scheduled event " + cmd.Command + " in zone=" + cmd.ZoneName);
+						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
+								cmd.Command.ToString(), Metadata.CommandSources.system);
+						Metadata.ZoneDetails zone = GetZoneIdByContainsName(cmd.ZoneName);
+						if (zone != null)
+						{
+							val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+						}
+						//parameters
+						Metadata.MacroEntry.AddParams(cmd.ParameterValueList, ref val);
+						Metadata.ValueList retval;
+						API.DoCommandFromWeb(val, out retval);
+						if (cmd.DelayMiliSec != 0)
+							Thread.Sleep(cmd.DelayMiliSec);
+					}
+				}
+				else
+					MLog.Log(this, "Macro not found id="+macroId);
+			}
+
             public void CheckForWakeTimers()
             {
                 String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
@@ -773,40 +802,38 @@ namespace MultiZonePlayer
                 }
             }
 
-			public void CheckForScheduleEvents()
+			public void CheckForScheduleMacroEvents()
 			{
-				LoadSchedule();
+				LoadMacros();
 
 				String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
 				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2).ToUpper();
 				string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT).ToUpper();
-				foreach (Metadata.SchedulerEntry entry in m_schedulerList)
+				foreach (Metadata.MacroEntry entry in m_schedulerList)
 				{
 					if ((entry.RepeatMonth.ToUpper() == "ALL" || entry.RepeatMonth.ToUpper() == month)
 						&& (entry.RepeatWeekDay.ToUpper()=="ALL" || entry.RepeatWeekDay.ToUpper().Contains(weekday))
 						&& (entry.RepeatTime==hrmin)
 						&& (DateTime.Now.Subtract(entry.ExecutedDateTime).TotalSeconds>60))
 					{
-						foreach (Metadata.SchedulerEntryCommand cmd in entry.CommandList)
-						{
-							MLog.Log(this, "Executing scheduled event "+cmd.Command + " in zone="+cmd.ZoneName);
-							Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
-									cmd.Command.ToString(), Metadata.CommandSources.system);
-							Metadata.ZoneDetails zone = GetZoneIdByContainsName(cmd.ZoneName);
-							if (zone != null)
-							{
-								val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
-							}
-							//parameters
-							Metadata.SchedulerEntry.AddParams(cmd.ParameterValueList, ref val);
-							Metadata.ValueList retval;
-							API.DoCommandFromWeb(val, out retval);
-							if (cmd.DelayMiliSec != 0)
-								Thread.Sleep(cmd.DelayMiliSec);
-						}
+						ExecuteMacro(entry.Id);
 						entry.ExecutedDateTime = DateTime.Now;
 					}
 				}
+			}
+
+			public int GetMacroIdByShortcut(string shortcut, string deviceName)
+			{
+				shortcut = shortcut.ToLower();
+				deviceName = deviceName.ToLower();
+				Metadata.MacroEntry entry = m_schedulerList.Find(x => 
+					x.ShortcutList != null 
+					&& x.ShortcutList.Find(y => y.Shortcut == shortcut) != null
+					&& (x.ShortcutList.Find(y => deviceName.Contains(y.DeviceName))!=null));
+				if (entry != null)
+					return entry.Id;
+				else
+					return -1;
 			}
 
             public void CheckForAlarm()
@@ -950,7 +977,7 @@ namespace MultiZonePlayer
                 CheckForWakeTimers();
                 CheckForAlarm();
                 CheckForExternalZoneEvents();
-				CheckForScheduleEvents();
+				CheckForScheduleMacroEvents();
                 PowerControl.timerPowerSaving_Tick();
 
 				

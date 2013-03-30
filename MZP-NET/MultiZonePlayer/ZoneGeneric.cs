@@ -130,7 +130,7 @@ namespace MultiZonePlayer
 			ZoneGeneric clonesource = MZPState.Instance.ActiveZones.Find
 				(x => x.ZoneDetails.ActivityType == Metadata.GlobalCommands.musicclone);
             if (clonesource != null)
-				m_mainZoneActivity = new ZoneMusicClone(this, clonesource);
+				m_mainZoneActivity = new ZoneMusicClone(this, ((ZoneMusicClone)clonesource.MainZoneActivity).CloneSourceZone);
             else
 				m_mainZoneActivity = new ZoneMusicClone(this, MZPState.Instance.GetFirstZoneMusic());
             m_zoneDetails.ActivityType = Metadata.GlobalCommands.musicclone;
@@ -418,6 +418,7 @@ namespace MultiZonePlayer
                         */
                         //check if photo (clone zone)
                         case Metadata.GlobalCommands.photo:
+						case Metadata.GlobalCommands.back:
                         case Metadata.GlobalCommands.musicclone:
 							if (!this.Equals(MZPState.Instance.GetFirstZoneMusic()))//cannot clone myself
 							{

@@ -116,6 +116,7 @@ namespace MultiZonePlayer
             powercycle,
 			remotepoweron,
 			remotepoweroff,
+			remoteadjustdim,
 			getpicture
         }
         public enum GlobalParams
@@ -149,6 +150,7 @@ namespace MultiZonePlayer
 			remoteid,
 			moodname,
 			moodindex,
+			dimvalue,
 			r//random no
         }
 
@@ -235,7 +237,8 @@ namespace MultiZonePlayer
             new CommandSyntax(GlobalCommands.volumeset,         GlobalParams.volumelevel),
             new CommandSyntax(GlobalCommands.ratingset,         GlobalParams.ratingvalue),
             new CommandSyntax(GlobalCommands.remotepoweron,		GlobalParams.remoteid),
-			new CommandSyntax(GlobalCommands.remotepoweroff,	GlobalParams.remoteid)
+			new CommandSyntax(GlobalCommands.remotepoweroff,	GlobalParams.remoteid),
+			new CommandSyntax(GlobalCommands.remoteadjustdim,	GlobalParams.remoteid, GlobalParams.dimvalue)
             /*
             genrelist,
             setgenrelist,
@@ -902,32 +905,40 @@ namespace MultiZonePlayer
             }
         }
 
-		public class SchedulerEntryCommand
+		public class MacroEntryCommand
 		{
 			public GlobalCommands Command;
 			public String ZoneName;
 			public String ParameterValueList;
 			public int DelayMiliSec=0;
 
-			public SchedulerEntryCommand()
+			public MacroEntryCommand()
 			{}
 		}
-
-		public class SchedulerEntry
+		public class MacroShortcut
 		{
+			public String Shortcut;
+			public String DeviceName;
+			public MacroShortcut() { }
+		}
+
+		public class MacroEntry
+		{
+			public int Id;
 			public String RepeatMonth;
 			public String RepeatWeekDay;
 			public String RepeatTime;
-			public List<SchedulerEntryCommand> CommandList;
+			public List<MacroShortcut> ShortcutList;
+			public List<MacroEntryCommand> CommandList;
 			public DateTime ExecutedDateTime;
-			public SchedulerEntry()
+			public MacroEntry()
 			{}
 
-			public static void SaveToIni(List<SchedulerEntry> list)
+			public static void SaveToIni(List<MacroEntry> list)
 			{
 				String json;
 				int line = 0;
-				foreach (SchedulerEntry entry in list)
+				foreach (MacroEntry entry in list)
 				{
 					json = fastJSON.JSON.Instance.ToJSON(entry, false);
 					Utilities.WritePrivateProfileString(IniFile.SCHEDULER_SECTION_MAIN, line.ToString(),
@@ -935,11 +946,11 @@ namespace MultiZonePlayer
 				}
 			}
 
-			public static List<SchedulerEntry> LoadFromIni()
+			public static List<MacroEntry> LoadFromIni()
 			{
 				String json;
-				SchedulerEntry entry;
-				List<SchedulerEntry> list = new List<SchedulerEntry>();
+				MacroEntry entry;
+				List<MacroEntry> list = new List<MacroEntry>();
 				int line=0;
 				do
 				{
@@ -947,7 +958,7 @@ namespace MultiZonePlayer
 						line.ToString(), IniFile.CurrentPath()+IniFile.SCHEDULER_FILE);
 					if (json != "")
 					{
-						entry = fastJSON.JSON.Instance.ToObject<SchedulerEntry>(json);
+						entry = fastJSON.JSON.Instance.ToObject<MacroEntry>(json);
 						entry.ExecutedDateTime = DateTime.MinValue;
 						list.Add(entry);
 					}
@@ -1036,12 +1047,14 @@ namespace MultiZonePlayer
     {
         public String Key;
         public String Device;
+		public String DeviceName;
         public bool IsKeyDown;
         public bool IsKeyUp;
-        public KeyDetail(String key, String device, bool isKeyDown, bool isKeyUp)
+        public KeyDetail(String key, String device, String deviceName, bool isKeyDown, bool isKeyUp)
         {
             this.Key = key;
             this.Device = device;
+			this.DeviceName = deviceName;
             this.IsKeyDown = isKeyDown;
             this.IsKeyUp = isKeyUp;
         }

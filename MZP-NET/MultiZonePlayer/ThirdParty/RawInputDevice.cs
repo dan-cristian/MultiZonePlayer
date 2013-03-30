@@ -439,6 +439,8 @@ namespace MultiZonePlayer
             
         }
 
+		
+
         #endregion ReadReg( string item, ref bool isKeyboard )
 
         #region int EnumerateDevices()
@@ -483,6 +485,8 @@ namespace MultiZonePlayer
                         IntPtr pData = Marshal.AllocHGlobal((int)pcbSize);
                         GetRawInputDeviceInfo(rid.hDevice, RIDI_DEVICENAME, pData, ref pcbSize);
                         deviceName = (string)Marshal.PtrToStringAnsi(pData);
+
+						
 
                         // Drop the "root" keyboard and mouse devices used for Terminal 
                         // Services and the Remote Desktop

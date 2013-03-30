@@ -36,7 +36,12 @@ namespace MultiZonePlayer
                     +" apicmd="+cmdRemote+(cmdRemote==null?" IGNORING CMD":"") + " zoneid="+zoneId);
                 if (cmdRemote == null)
                 {
-                    //MLog.Log(null, "Hook command not found key=" + kd.Key);
+					int macroId = MZPState.Instance.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
+					if (macroId != -1)
+					{
+						MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);
+						MZPState.Instance.ExecuteMacro(macroId);
+					}
                     return;
                 }
                
@@ -254,13 +259,22 @@ namespace MultiZonePlayer
 							break;
 						case Metadata.GlobalCommands.remotepoweron:
 							remoteid=Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
-							result = MZPState.Instance.RemoteControl.RFOn(remoteid);
+							result = RemotePowerControl.SwitchOn(remoteid);
+							//result = MZPState.Instance.RemoteControl.RFOn(remoteid);
 							result = JsonResult(Metadata.ResultEnum.OK, "remoteon="+result, null);
 							break;
 						case Metadata.GlobalCommands.remotepoweroff:
 							remoteid=Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
-							result = MZPState.Instance.RemoteControl.RFOff(remoteid);
+							result = RemotePowerControl.SwitchOff(remoteid);
+							//result = MZPState.Instance.RemoteControl.RFOff(remoteid);
 							result = JsonResult(Metadata.ResultEnum.OK, "remoteoff="+result, null);
+							break;
+						case Metadata.GlobalCommands.remoteadjustdim:
+							remoteid = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
+							int dimvalue = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.dimvalue));
+							result = RemotePowerControl.AdjustDim(remoteid, dimvalue);
+							//result = MZPState.Instance.RemoteControl.RFOff(remoteid);
+							result = JsonResult(Metadata.ResultEnum.OK, "remotedim=" + result, null);
 							break;
                         default:
                             res = DoZoneCommand(apicmd, vals, out err, out values);

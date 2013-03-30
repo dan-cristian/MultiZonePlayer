@@ -382,7 +382,7 @@ namespace MultiZonePlayer
                 catch (Exception ex)
                 {
                     MLog.Log(this, "Unable to json parse XBMC response " + result + " err="+ex.Message);
-                    Close();
+                    //Close();
                 }
             }
         }

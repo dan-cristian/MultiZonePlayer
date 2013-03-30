@@ -810,7 +810,7 @@ namespace MultiZonePlayer
                     case Metadata.GlobalCommands.followmemusic:
                         MZPState.Instance.ToogleFollowMeMusic();
                         break;
-                    case Metadata.GlobalCommands.back:
+                    //case Metadata.GlobalCommands.back:
                     case Metadata.GlobalCommands.holdcriteria:
                         if (vals.GetValue(Metadata.GlobalParams.action) != null)
                             SetHoldCriteria(vals.GetValue(Metadata.GlobalParams.action).ToLower());
@@ -852,24 +852,30 @@ namespace MultiZonePlayer
     public class ZoneMusicClone : ZoneBase
     {
         private ZoneGeneric m_parentZoneForm;
-        private ZoneGeneric m_clonedZoneForm;
+		private ZoneGeneric m_cloneSourceZone;
+
+		public ZoneGeneric CloneSourceZone
+		{
+			get { return m_cloneSourceZone; }
+			
+		}
         private ZoneMusic m_clonedZoneMusic;
         private Metadata.ZoneState m_zoneState;
 
-        public ZoneMusicClone(ZoneGeneric p_zoneForm, ZoneGeneric p_clonedZoneForm)
+        public ZoneMusicClone(ZoneGeneric p_zoneForm, ZoneGeneric p_cloneSource)
         {
-            m_clonedZoneForm = p_clonedZoneForm;
+            m_cloneSourceZone = p_cloneSource;
             m_parentZoneForm = p_zoneForm;
             m_zoneState = Metadata.ZoneState.NotInitialised;
             m_zoneDetails = p_zoneForm.ZoneDetails;
 
-            if (m_clonedZoneForm != null)
+            if (m_cloneSourceZone != null)
             {
-				m_clonedZoneForm.MainZoneActivity.SetVolumeLevel(m_clonedZoneForm.ZoneDetails.GetDefaultVolume());
+				m_cloneSourceZone.MainZoneActivity.SetVolumeLevel(m_cloneSourceZone.ZoneDetails.GetDefaultVolume());
 				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControl.PowerOn(m_parentZoneForm.ZoneDetails.ZoneId);
-                m_clonedZoneForm.AddClonedZone(this);
-                m_clonedZoneMusic = (ZoneMusic)m_clonedZoneForm.GetCurrentActivity();
+                m_cloneSourceZone.AddClonedZone(this);
+                m_clonedZoneMusic = (ZoneMusic)m_cloneSourceZone.GetCurrentActivity();
                 m_clonedZoneMusic.UpdateOutputDevices();
                 m_zoneState = Metadata.ZoneState.Running;
             }
@@ -879,7 +885,7 @@ namespace MultiZonePlayer
         {
             if ((m_clonedZoneMusic != null) && (m_parentZoneForm != null))
             {
-                m_clonedZoneForm.RemoveClonedZone(this);
+                m_cloneSourceZone.RemoveClonedZone(this);
                 m_clonedZoneMusic.UpdateOutputDevices();
             }
             m_zoneState = Metadata.ZoneState.NotStarted;
@@ -891,8 +897,8 @@ namespace MultiZonePlayer
         }
 		public override void Next()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                m_clonedZoneForm.GetCurrentActivity().Next();
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                m_cloneSourceZone.GetCurrentActivity().Next();
         }
 
 		public override void NextPlaylist()
@@ -903,8 +909,8 @@ namespace MultiZonePlayer
 
 		public override void Previous()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                m_clonedZoneForm.GetCurrentActivity().Previous();
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                m_cloneSourceZone.GetCurrentActivity().Previous();
         }
 
 		public override void PreviousPlaylist()
@@ -916,48 +922,48 @@ namespace MultiZonePlayer
 
 		public override void Play()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
             {
                 MZPState.Instance.PowerControl.PowerOn(m_parentZoneForm.ZoneDetails.ZoneId);
-                m_clonedZoneForm.GetCurrentActivity().Play();
+                m_cloneSourceZone.GetCurrentActivity().Play();
                 m_zoneState = Metadata.ZoneState.Running;
             }
         }
 		public override void Pause()
         {
-            if ((m_clonedZoneForm!=null) && (m_clonedZoneForm.GetCurrentActivity()!= null))
-                m_clonedZoneForm.GetCurrentActivity().Pause();
+            if ((m_cloneSourceZone!=null) && (m_cloneSourceZone.GetCurrentActivity()!= null))
+                m_cloneSourceZone.GetCurrentActivity().Pause();
         }
 		public override void Mute()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                m_clonedZoneForm.GetCurrentActivity().Mute();
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                m_cloneSourceZone.GetCurrentActivity().Mute();
         }
 		public override void VolumeUp()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                m_clonedZoneForm.GetCurrentActivity().VolumeUp();
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                m_cloneSourceZone.GetCurrentActivity().VolumeUp();
         }
 		public override void VolumeDown()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                m_clonedZoneForm.GetCurrentActivity().VolumeDown();
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                m_cloneSourceZone.GetCurrentActivity().VolumeDown();
         }
 		public override void SaveStateIni()
         {
         }
 		public override void Guide()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                m_clonedZoneForm.GetCurrentActivity().Guide();
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                m_cloneSourceZone.GetCurrentActivity().Guide();
         }
 
 		public override Metadata.ZoneState GetState()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
             {
                 if (m_zoneState == Metadata.ZoneState.Running)
-                    return m_clonedZoneForm.GetCurrentActivity().GetState();
+                    return m_cloneSourceZone.GetCurrentActivity().GetState();
                 else
                     return m_zoneState;
             }
@@ -975,10 +981,10 @@ namespace MultiZonePlayer
 
 		public override bool IsActive()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
             {
                 if (m_zoneState == Metadata.ZoneState.Running)
-                    return m_clonedZoneForm.GetCurrentActivity().IsActive();
+                    return m_cloneSourceZone.GetCurrentActivity().IsActive();
                 else
                     return false;
             }
@@ -988,22 +994,22 @@ namespace MultiZonePlayer
 
 		public override void SetVolumeLevel(int volume)
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                m_clonedZoneForm.GetCurrentActivity().SetVolumeLevel(volume);
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                m_cloneSourceZone.GetCurrentActivity().SetVolumeLevel(volume);
 
         }
 
 		public override int GetVolumeLevel()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                return m_clonedZoneForm.GetCurrentActivity().GetVolumeLevel();
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                return m_cloneSourceZone.GetCurrentActivity().GetVolumeLevel();
             else
                 return Metadata.VolumeLevels.VolumeSilence;
         }
 
         public int RatingUp()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
                 return m_clonedZoneMusic.RatingUp();
             else
                 return -1;
@@ -1011,7 +1017,7 @@ namespace MultiZonePlayer
 
         public int RatingDown()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
                 return m_clonedZoneMusic.RatingDown();
             else
                 return -1;
@@ -1021,8 +1027,8 @@ namespace MultiZonePlayer
         {
             get
             {
-                if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                    return m_clonedZoneForm.GetCurrentActivity().Position;
+                if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                    return m_cloneSourceZone.GetCurrentActivity().Position;
                 else
                     return -1;
             }
@@ -1032,8 +1038,8 @@ namespace MultiZonePlayer
         {
             get
             {
-                if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
-                    return m_clonedZoneForm.GetCurrentActivity().PositionPercent;
+                if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
+                    return m_cloneSourceZone.GetCurrentActivity().PositionPercent;
                 else
                     return -1;
             }
@@ -1041,7 +1047,7 @@ namespace MultiZonePlayer
 
         public void HoldCriteriaToggle()
         {
-            if ((m_clonedZoneForm != null) && (m_clonedZoneForm.GetCurrentActivity() != null))
+            if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
                 m_clonedZoneMusic.HoldCriteriaToggle();
         }
 
