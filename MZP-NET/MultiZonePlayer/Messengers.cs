@@ -82,7 +82,8 @@ namespace MultiZonePlayer
         
         private void messageReceived(object sender, agsXMPP.protocol.client.Message msg)
         {
-			if (Thread.CurrentThread.Name != null && !Thread.CurrentThread.Name.StartsWith("GTalk"))
+			if (Thread.CurrentThread.Name == null 
+				|| !Thread.CurrentThread.Name.StartsWith("GTalk"))
 				Thread.CurrentThread.Name = "GTalk " + msg.Body;
 
             string[] chatMessage = null;
@@ -151,16 +152,27 @@ namespace MultiZonePlayer
 
         public void ReceiveMessage(String message, String sender)
         {
-            if (sender.ToLower().Equals(IniFile.PARAM_GTALK_TARGETUSER[1].ToLower()))
-            {
-
-                string replymessage;
-                string cmd = message.ToLower();
-                /*if (Enum.IsDefined(typeof(Metadata.GlobalCommands), msg.Body.ToLower()))
-                {
-                    Metadata.GlobalCommands gc = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), msg.Body.ToLower());
-                
-                 */
+			String[] atoms, pair;
+			String cmdName, replymessage;
+			string cmd = message;
+			atoms = cmd.Split(' ');
+			sender = sender.ToLower();
+			bool isPowerUser = IniFile.PARAM_GTALK_TARGETUSER[1].ToLower().Contains(sender);
+			if (atoms.Length > 0)
+			{
+				cmdName = atoms[0].ToLower();
+				int macroId = MZPState.Instance.GetMacroIdByShortcut(cmdName, "");
+				if (!isPowerUser)
+				{
+					Metadata.MacroEntry entry = MZPState.Instance.MacroList.Find(x => x.Id == macroId);
+					if (entry == null || !entry.AllowUserList.Contains(sender))
+					{
+						replymessage = "Not authorised gtalk sender " + sender;
+						MZPState.Instance.LogEvent(MZPEvent.EventSource.System, replymessage, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
+						SendMessage(replymessage, sender);
+						return;	
+					}
+				}
 				try
 				{
 					if (cmd.StartsWith("?"))
@@ -170,38 +182,36 @@ namespace MultiZonePlayer
 					}
 					else
 					{
-						String[] atoms, pair;
-
-						atoms = cmd.Split(' ');
-						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, atoms[0], Metadata.CommandSources.web);
+						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, cmdName, Metadata.CommandSources.messenger);
 						for (int i = 1; i < atoms.Length; i++)
 						{
 							pair = atoms[i].Split(':');
 							if (pair.Length >= 2)
 							{
-								val.Add(pair[0], pair[1]);
+								val.Add(pair[0].ToLower(), pair[1].Replace('_', ' '));
 							}
 							else
-								MLog.Log(this, "Invalid parameter in " + atoms[i]);
+							{
+								if (i == 1)//assume first param is zonename. replace _ to allow space in words
+									val.Add(Metadata.GlobalParams.singleparamvalue, atoms[i].Replace('_', ' '));
+								else
+									MLog.Log(this, "Invalid parameter in " + atoms[i]);
+							}
 						}
-						Metadata.ValueList retval;
-						String json = API.DoCommandFromWeb(val, out retval);
-						Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
-						if (retval != null)
-							replymessage = retcmd.Result + " - " + retcmd.ErrorMessage + " - " + retval.GetValue(Metadata.GlobalParams.msg);
-						else
-							replymessage = retcmd.Result + " - " + retcmd.ErrorMessage;
+						Metadata.CommandResult res = API.DoCommand(val);
+						string sysname = System.Security.Principal.WindowsIdentity.GetCurrent().Name.ToString();
+						replymessage = sysname + " (" + res.Command + "): " + res.Result + " - " + res.ErrorMessage + " - " + res.OutputMessage;
 					}
 				}
 				catch (Exception ex)
 				{
-					MLog.Log(ex, "Error parsing GTALK command");
-					replymessage = "Error parsing command, " + ex.Message;
+					replymessage = "Error parsing command " + ex.Message;
+					MLog.Log(ex, replymessage);
 				}
-				SendMessage(replymessage, sender);
-            }
-            else
-                MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Unknown gtalk sender " + sender, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
+			}
+			else
+				replymessage = "Error no command received";
+			SendMessage(replymessage, sender);
         }
 
         public bool TestConnection()
@@ -225,7 +235,9 @@ namespace MultiZonePlayer
 
         public void MakeBuzz()
         {
-            SendMessage("BUZZ", IniFile.PARAM_GTALK_TARGETUSER[1]);
+			string[] targets = IniFile.PARAM_GTALK_TARGETUSER[1].Split(';');
+			for (int i=0;i<targets.Length;i++)
+				SendMessage("BUZZ", targets[i]);
         }
     }
 

@@ -138,7 +138,7 @@ namespace MultiZonePlayer
                 {
 
                     Alarm.EnumScope sc = (Alarm.EnumScope)Enum.Parse(typeof(Alarm.EnumScope), scope);
-                    Metadata.ValueList vals, resvalue;
+                    Metadata.ValueList vals;
 
                     if (DateTime.Now.Subtract(eventDateTime).Duration().TotalMinutes < 5)
                         MZPState.Instance.SystemAlarm.LastAlarmEventDateTime = eventDateTime;
@@ -157,7 +157,7 @@ namespace MultiZonePlayer
                                 vals.Add(Metadata.GlobalParams.status, state);
                                 vals.Add(Metadata.GlobalParams.scope, scope);
                                 vals.Add(Metadata.GlobalParams.alertsource, IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[0]);
-                                API.DoCommandFromWeb(vals, out resvalue);
+                                API.DoCommand(vals);
 
                                 //if (eventsBulkCount < 10)
                                 //    MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " ZoneEvent " + MZPState.Instance.GetZoneById(zoneId).ZoneName + " is " + state,

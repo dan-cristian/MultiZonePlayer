@@ -1371,17 +1371,28 @@ namespace MultiZonePlayer
 		{
 			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				return vals.ContainsIndexValue(item.Genre);
+				return vals.ContainsIndexValue(item.Genre, false);
 			});
 			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static List<AudioItem> AudioFilesByArtist(Metadata.ValueList vals)
+		public static List<AudioItem> AudioFilesByGenre(string genre)
 		{
+			genre = genre.ToLower();
 			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				return vals.ContainsIndexValue(item.Author);
+				return item.Genre.ToLower().Contains(genre);
+			});
+			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
+		public static List<AudioItem> AudioFilesByArtist(Metadata.ValueList vals)
+		{
+
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
+			{
+				return vals.ContainsIndexValue(item.Author, false);
 			});
 			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
@@ -1389,27 +1400,20 @@ namespace MultiZonePlayer
 
 		public static List<AudioItem> AudioFilesByArtist(String artist)
 		{
+			artist = artist.ToLower();
 			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				return artist.Equals(item.Author);
+				return item.Author.ToLower().Contains(artist);
 			});
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
 		public static List<AudioItem> AudioFilesByAlbum(String album)
 		{
+			album = album.ToLower();
 			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
-				return album.Equals(item.Album);
-			});
-			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-		}
-
-		public static List<AudioItem> AudioFilesByGenre(String genre)
-		{
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return genre.Equals(item.Genre);
+				return item.Album.ToLower().Contains(album);
 			});
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}

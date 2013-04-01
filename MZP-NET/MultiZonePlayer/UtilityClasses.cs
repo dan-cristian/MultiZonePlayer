@@ -117,7 +117,8 @@ namespace MultiZonePlayer
 			remotepoweron,
 			remotepoweroff,
 			remoteadjustdim,
-			getpicture
+			getpicture,
+			macro
         }
         public enum GlobalParams
         {
@@ -151,6 +152,7 @@ namespace MultiZonePlayer
 			moodname,
 			moodindex,
 			dimvalue,
+			singleparamvalue,
 			r//random no
         }
 
@@ -178,7 +180,8 @@ namespace MultiZonePlayer
             gui,
             events,
             mobileslow,
-            system
+            system,
+			messenger
         }
 
         public class CommandSyntax
@@ -281,8 +284,11 @@ namespace MultiZonePlayer
 
         public class CommandResult
         {
+			public string Command;
+			public string User;
             public ResultEnum Result;
             public String ErrorMessage = "";
+			public String OutputMessage = "";
             public ServerStatus ServerStatus;
             public ValueList ValueList;
 
@@ -290,10 +296,11 @@ namespace MultiZonePlayer
             {
             }
 
-            public CommandResult(ResultEnum p_result, String message)
+            public CommandResult(ResultEnum p_result, String outputMessage, String errorMessage)
             {
                 Result = p_result;
-                ErrorMessage = message;
+                ErrorMessage = errorMessage;
+				OutputMessage = outputMessage;
             }
         }
 
@@ -406,9 +413,19 @@ namespace MultiZonePlayer
                 return Values.Contains(value);
             }
 
-            public bool ContainsIndexValue(String value)
+			//
+            public bool ContainsIndexValue(String value, bool exactMatch)
             {
-                return IndexValueList.Contains(value);
+				if (exactMatch)
+					return IndexValueList.Contains(value);
+				else
+				{
+					foreach (string s in IndexValueList)
+					{
+						if (value.Contains(s)) return true;
+					}
+					return false;
+				}
             }
 
             public bool ContainsKey(GlobalParams key)
@@ -930,6 +947,7 @@ namespace MultiZonePlayer
 			public String RepeatTime;
 			public List<MacroShortcut> ShortcutList;
 			public List<MacroEntryCommand> CommandList;
+			public List<String> AllowUserList;
 			public DateTime ExecutedDateTime;
 			public MacroEntry()
 			{}
@@ -960,6 +978,7 @@ namespace MultiZonePlayer
 					{
 						entry = fastJSON.JSON.Instance.ToObject<MacroEntry>(json);
 						entry.ExecutedDateTime = DateTime.MinValue;
+						entry.Id = line;
 						list.Add(entry);
 					}
 					line++;

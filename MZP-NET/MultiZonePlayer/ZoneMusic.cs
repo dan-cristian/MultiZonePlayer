@@ -489,19 +489,26 @@ namespace MultiZonePlayer
                 }
             }
 
-            public void SetGenreList(Metadata.ValueList vals)
+            public void SetGenreList(Metadata.ValueList vals, string genre)
             {
                 Stop();
-                m_songList = MediaLibrary.AudioFilesByGenre(vals);
+				if (genre == null)
+					m_songList = MediaLibrary.AudioFilesByGenre(vals);
+				else
+					m_songList = MediaLibrary.AudioFilesByGenre(genre);
                 SetPlayMode(m_playMode);
                 m_currentSongKey = 0;
                 Play();
             }
+			
 
-            public void SetArtistList(Metadata.ValueList vals)
+            public void SetArtistList(Metadata.ValueList vals, string artist)
             {
                 Stop();
-                m_songList = MediaLibrary.AudioFilesByArtist(vals);
+				if (artist == null)
+					m_songList = MediaLibrary.AudioFilesByArtist(vals);
+				else
+					m_songList = MediaLibrary.AudioFilesByArtist(artist);
                 SetPlayMode(m_playMode);
                 m_currentSongKey = 0;
                 Play();
@@ -782,10 +789,10 @@ namespace MultiZonePlayer
                         SetRating(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.ratingvalue)));
                         break;
                     case Metadata.GlobalCommands.setgenrelist:
-                        SetGenreList(vals);
+						SetGenreList(vals, vals.GetValue(Metadata.GlobalParams.singleparamvalue));
                         break;
                     case Metadata.GlobalCommands.setartistlist:
-                        SetArtistList(vals);
+						SetArtistList(vals, vals.GetValue(Metadata.GlobalParams.singleparamvalue));
                         break;
                     case Metadata.GlobalCommands.medialist:
                         result = GetSongValueList();
@@ -800,12 +807,19 @@ namespace MultiZonePlayer
 						if (vals.GetValue(Metadata.GlobalParams.moodindex) != null)
 							SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.GetValue(Metadata.GlobalParams.moodindex))));
 						else
+						{
+							if (vals.ContainsKey(Metadata.GlobalParams.singleparamvalue))
+								vals.Add(Metadata.GlobalParams.moodname, vals.GetValue(Metadata.GlobalParams.singleparamvalue));
 							if (vals.GetValue(Metadata.GlobalParams.moodname) != null)
 								SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(vals.GetValue(Metadata.GlobalParams.moodname))));
+						}
                         Play();
                         break;
                     case Metadata.GlobalCommands.searchmediaitem:
-                        Search(vals.GetValue(Metadata.GlobalParams.searchvalue));
+						if (vals.ContainsKey(Metadata.GlobalParams.searchvalue))
+							Search(vals.GetValue(Metadata.GlobalParams.searchvalue));
+						else
+							Search(vals.GetValue(Metadata.GlobalParams.singleparamvalue));
                         break;
                     case Metadata.GlobalCommands.followmemusic:
                         MZPState.Instance.ToogleFollowMeMusic();

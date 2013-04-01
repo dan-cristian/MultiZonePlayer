@@ -62,7 +62,12 @@ namespace MultiZonePlayer
 
 			//private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
-			private List<Metadata.MacroEntry> m_schedulerList;
+			private List<Metadata.MacroEntry> m_macroList;
+
+			public List<Metadata.MacroEntry> MacroList
+			{
+				get { return m_macroList; }
+			}
 			private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
 
 			/*internal USB_RC2.ELROUsbRC2 RemoteControl
@@ -186,7 +191,7 @@ namespace MultiZonePlayer
 				DateTime fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 				if (fileModified != m_lastScheduleFileModifiedDate)
 				{
-					m_schedulerList = Metadata.MacroEntry.LoadFromIni();
+					m_macroList = Metadata.MacroEntry.LoadFromIni();
 					m_lastScheduleFileModifiedDate = fileModified;
 				}
 			}
@@ -418,7 +423,6 @@ namespace MultiZonePlayer
                 }
             }
 
-
             private void LoadIniParams()
             {
                 String pname;
@@ -455,8 +459,6 @@ namespace MultiZonePlayer
                     r++;
                 }
             }
-
-            
 
             private void LoadIniSections()
             {
@@ -511,7 +513,6 @@ namespace MultiZonePlayer
 				Thread thmo = new Thread(() => MediaLibrary.InitialiseVideos());
 				thmo.Name = "MediaLibrary Movies";
 				thmo.Start();
-
             }
 
             public int GetZoneIdByAlarmZoneId(int alarmZoneId)
@@ -521,7 +522,6 @@ namespace MultiZonePlayer
                     return zone.ZoneId;
                 else
                     return -1;
-
             }
 
             public int GetZoneIdByCamZoneId(int camId)
@@ -757,12 +757,13 @@ namespace MultiZonePlayer
                 m_lastBuzzDateTime = DateTime.Now;
             }
 
-			public void ExecuteMacro(int macroId)
+			public Metadata.CommandResult ExecuteMacro(int macroId)
 			{
-				Metadata.MacroEntry entry = m_schedulerList.Find(x => x.Id == macroId);
+				Metadata.CommandResult cmdresult = new Metadata.CommandResult();
+				Metadata.MacroEntry entry = m_macroList.Find(x => x.Id == macroId);
 				if (entry != null)
 				{
-
+					cmdresult.ErrorMessage = "macro found but empty command list";
 					foreach (Metadata.MacroEntryCommand cmd in entry.CommandList)
 					{
 						MLog.Log(this, "Executing scheduled event " + cmd.Command + " in zone=" + cmd.ZoneName);
@@ -775,14 +776,17 @@ namespace MultiZonePlayer
 						}
 						//parameters
 						Metadata.MacroEntry.AddParams(cmd.ParameterValueList, ref val);
-						Metadata.ValueList retval;
-						API.DoCommandFromWeb(val, out retval);
+						cmdresult = API.DoCommand(val);
 						if (cmd.DelayMiliSec != 0)
 							Thread.Sleep(cmd.DelayMiliSec);
 					}
 				}
 				else
-					MLog.Log(this, "Macro not found id="+macroId);
+				{
+					cmdresult.ErrorMessage = "Macro not found id=" + macroId;
+					MLog.Log(this, cmdresult.ErrorMessage);
+				}
+				return cmdresult;
 			}
 
             public void CheckForWakeTimers()
@@ -796,8 +800,7 @@ namespace MultiZonePlayer
                         Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, 
                             Metadata.GlobalCommands.musicalarm.ToString(), Metadata.CommandSources.system);
                         val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
-                        Metadata.ValueList retval;
-                        API.DoCommandFromWeb(val, out retval);
+                        API.DoCommand(val);
                     }
                 }
             }
@@ -805,14 +808,16 @@ namespace MultiZonePlayer
 			public void CheckForScheduleMacroEvents()
 			{
 				LoadMacros();
-
+				String entrymonth, entryday;
 				String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
 				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2).ToUpper();
 				string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT).ToUpper();
-				foreach (Metadata.MacroEntry entry in m_schedulerList)
+				foreach (Metadata.MacroEntry entry in m_macroList)
 				{
-					if ((entry.RepeatMonth.ToUpper() == "ALL" || entry.RepeatMonth.ToUpper() == month)
-						&& (entry.RepeatWeekDay.ToUpper()=="ALL" || entry.RepeatWeekDay.ToUpper().Contains(weekday))
+					entrymonth = entry.RepeatMonth != null ? entry.RepeatMonth.ToUpper() : "";
+					entryday = entry.RepeatWeekDay != null ? entry.RepeatWeekDay.ToUpper() : "";
+					if ((entrymonth == "ALL" || entrymonth == month)
+						&& (entryday =="ALL" || entryday.Contains(weekday))
 						&& (entry.RepeatTime==hrmin)
 						&& (DateTime.Now.Subtract(entry.ExecutedDateTime).TotalSeconds>60))
 					{
@@ -826,7 +831,7 @@ namespace MultiZonePlayer
 			{
 				shortcut = shortcut.ToLower();
 				deviceName = deviceName.ToLower();
-				Metadata.MacroEntry entry = m_schedulerList.Find(x => 
+				Metadata.MacroEntry entry = m_macroList.Find(x => 
 					x.ShortcutList != null 
 					&& x.ShortcutList.Find(y => y.Shortcut == shortcut) != null
 					&& (x.ShortcutList.Find(y => deviceName.Contains(y.DeviceName))!=null));
@@ -864,8 +869,7 @@ namespace MultiZonePlayer
                                     Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
                                         Metadata.GlobalCommands.tv.ToString(), Metadata.CommandSources.system);
                                     val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
-                                    Metadata.ValueList retval;
-                                    API.DoCommandFromWeb(val, out retval);
+                                    API.DoCommand(val);
                                 }
                             }
                         }
@@ -877,8 +881,7 @@ namespace MultiZonePlayer
                                 Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
                                         Metadata.GlobalCommands.xbmc.ToString(), Metadata.CommandSources.system);
                                 val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
-                                Metadata.ValueList retval;
-                                API.DoCommandFromWeb(val, out retval);
+                                API.DoCommand(val);
                             }
                         }
                     }

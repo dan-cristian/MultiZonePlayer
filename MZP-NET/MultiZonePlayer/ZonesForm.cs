@@ -296,7 +296,7 @@ namespace MultiZonePlayer
             Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, m_zoneDetails.ZoneId.ToString(), Metadata.CommandSources.gui);
             vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.setmoodmusic.ToString());
             vals.Add(Metadata.GlobalParams.selectedindex, MZPState.Instance.MoodMusicList.Find(x=>x.Name.Equals(cmbMoods.Text)).Index.ToString());
-            API.DoCommandFromGUIInput(vals);
+            //API.DoCommandFromGUIInput(vals);
         }
 
         private void btClearTags_Click(object sender, EventArgs e)

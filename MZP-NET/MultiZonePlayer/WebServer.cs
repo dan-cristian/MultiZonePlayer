@@ -257,7 +257,7 @@ namespace MultiZonePlayer
 				{
 					if (request.HttpMethod.Equals("GET"))
 					{
-						cmdResult = API.DoCommandFromWeb(vals, cmdSourceEnum, out resvalue);
+						cmdResult = API.DoCommandFromWeb(vals, out resvalue);
 					}
 
 					if (request.HttpMethod.Equals("POST"))
@@ -278,7 +278,7 @@ namespace MultiZonePlayer
 							String json = post.Substring(firstindex, lastindex - firstindex + 1);
 
 							Metadata.ValueList val = fastJSON.JSON.Instance.ToObject<Metadata.ValueList>(json);
-							cmdResult = API.DoCommandFromWeb(val, cmdSourceEnum, out resvalue);
+							cmdResult = API.DoCommandFromWeb(val, out resvalue);
 						}
 						else
 						{
@@ -302,7 +302,7 @@ namespace MultiZonePlayer
 					byte[] binaryData;
 
 					if (vals.ContainsKey(Metadata.GlobalParams.command))
-						json = API.DoCommandFromWeb(vals, cmdSourceEnum, out resvalue);
+						json = API.DoCommandFromWeb(vals, out resvalue);
 
 					String html = ServeDirectHtml(context, requestServer, resvalue, out contentType, out binaryData);
 					WriteResponse(contentType, html, response, binaryData);
@@ -600,6 +600,7 @@ namespace MultiZonePlayer
             vals.Add(Metadata.GlobalParams.zoneid, zoneid);
             vals.Add(Metadata.GlobalParams.command, command);
             
+
             API.DoCommandFromWeb(vals, out resvalue);
 
             if (resvalue != null)

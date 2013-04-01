@@ -437,7 +437,7 @@ namespace MultiZonePlayer
 
         private void bt1_Click(object sender, EventArgs e)
         {
-            String result = API.DoCommandFromGUIInput(Metadata.GlobalCommands.selectzone.ToString(), ((Button)sender).Text);
+            API.DoCommandFromGUIInput(Metadata.GlobalCommands.selectzone.ToString(), ((Button)sender).Text);
         }
 
         private void btCommand_Click(object sender, EventArgs e)
