@@ -302,6 +302,33 @@ namespace MultiZonePlayer
                 ErrorMessage = errorMessage;
 				OutputMessage = outputMessage;
             }
+
+			public string ValuesToString()
+			{
+				String result = "";
+				if (ValueList != null)
+				{
+					if (ValueList.Keys != null)
+					{
+						result += " Keys:";
+						foreach (string key in ValueList.Keys)
+						{
+							result += key + "=" + ValueList.GetValue(key) + ";";
+						}
+					}
+					if (ValueList.IndexValueList != null)
+					{
+						result += " Vals:";
+						foreach (string value in ValueList.IndexValueList)
+						{
+							result += value + ",";
+						}
+					}
+				}
+				 
+				
+				return result;
+			}
         }
 
         public class ValueList
@@ -559,7 +586,7 @@ namespace MultiZonePlayer
                         + (IsArmed?" Armed ":" ") 
                         + (HasImmediateMove? " ImmediateMove ":" ")
                         + (HasRecentMove? " RecentMove ":" ")
-                        + SourceURL;
+                        + Title;
                     return val;
                 }
             }

@@ -760,6 +760,7 @@ namespace MultiZonePlayer
 			public Metadata.CommandResult ExecuteMacro(int macroId)
 			{
 				Metadata.CommandResult cmdresult = new Metadata.CommandResult();
+				cmdresult.Result = Metadata.ResultEnum.ERR;
 				Metadata.MacroEntry entry = m_macroList.Find(x => x.Id == macroId);
 				if (entry != null)
 				{

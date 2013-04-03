@@ -274,8 +274,8 @@ namespace MultiZonePlayer
 							macroid = MZPState.Instance.GetMacroIdByShortcut(shortcut, "");
 							if (macroid != -1)
 							{
-								MZPState.Instance.ExecuteMacro(macroid);
-								cmdresult.OutputMessage = "macro id=" + macroid;
+								cmdresult = MZPState.Instance.ExecuteMacro(macroid);
+								cmdresult.OutputMessage += "macro id=" + macroid;
 								//result = JsonResult(Metadata.ResultEnum.OK, "macro id=" + macroid, null);
 							}
 							else
@@ -294,8 +294,8 @@ namespace MultiZonePlayer
 					macroid = MZPState.Instance.GetMacroIdByShortcut(cmdName, "");
 					if (macroid != -1)
 					{
-						MZPState.Instance.ExecuteMacro(macroid);
-						cmdresult.OutputMessage = "macro2 id=" + macroid;
+						cmdresult = MZPState.Instance.ExecuteMacro(macroid);
+						cmdresult.OutputMessage += "macro2 id=" + macroid;
 					}
 					else
 					{

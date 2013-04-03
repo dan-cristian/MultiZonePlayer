@@ -200,7 +200,8 @@ namespace MultiZonePlayer
 						}
 						Metadata.CommandResult res = API.DoCommand(val);
 						string sysname = System.Security.Principal.WindowsIdentity.GetCurrent().Name.ToString();
-						replymessage = sysname + " (" + res.Command + "): " + res.Result + " - " + res.ErrorMessage + " - " + res.OutputMessage;
+						replymessage = sysname + " (" + res.Command + "): " + res.Result + " - " + res.ErrorMessage + " - " + res.OutputMessage
+							+ res.ValuesToString();
 					}
 				}
 				catch (Exception ex)
