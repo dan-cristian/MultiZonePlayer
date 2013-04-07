@@ -85,10 +85,12 @@ namespace MultiZonePlayer
 			m_zoneDetails.ZoneClose();
 			m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
 			m_zoneDetails.Genre = "video";
-			
-            if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
-                MZPState.RestartXBMC();
-            
+
+			if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
+			{
+				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1], 
+					System.Diagnostics.ProcessWindowStyle.Normal);
+			}
             Display displayZone = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
             if (displayZone != null)
             {

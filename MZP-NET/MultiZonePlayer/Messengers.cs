@@ -401,4 +401,109 @@ namespace MultiZonePlayer
             MLog.Log(this, "Calling target number done, res=" + res);
         }
     }
+
+	class RFXCom : SerialBase, IMessenger
+	{
+		public RFXCom()
+		{
+			Reinitialise();
+		}
+		public void Reinitialise()
+		{
+			comm = new CommunicationManager("38400", "None", "One", "8", 
+				IniFile.PARAM_RFXCOM_PORT[1], this.handler);
+			comm.OpenPort();
+			comm.CurrentTransmissionType = CommunicationManager.TransmissionType.Hex;
+			//comm.WriteData("FF FA 2C 01 00 00 96 00 FF F0 FF FA 2C 02 08 FF F0 FF FA 2C 03 01 FF F0 FF FA 2C 04 01 FF F0 FF FA 2C 05 01 FF F0");
+			comm.WriteData("0D 00 00 00 00 00 00 00 00 00 00 00 00 00");
+			Thread.Sleep(3000);
+			comm.WriteData("0D 00 00 01 02 00 00 00 00 00 00 00 00 00");
+			m_waitForResponse = false;
+			m_lastOperationWasOK = true;
+		}
+		protected override void ReceiveSerialResponse(string response)
+		{
+			MLog.Log(this, "RFXCOMM: " + response);
+
+			do
+			{
+				RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
+				if (dev != null)
+				{
+					MLog.Log(this, "RFX result: " + dev.DisplayValues());
+					if (dev.ZoneId != -1)
+					{
+						Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(dev.ZoneId);
+						switch(dev.DeviceType)
+						{
+							case RFXDeviceDefinition.DeviceTypeEnum.TEMP_HUM:
+								zone.Temperature = (Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == "temperature").Value)/10).ToString();
+								zone.Humidity = dev.FieldValues.Find(x => x.Name == "humidity").Value;
+								break;
+						}
+						
+					}
+				}
+			} while (response.Length > 0);
+
+			
+			//String message = response.ToLower().Replace("\r", "").Replace("\n", "").ToLower();
+		}
+		public override string GetCommandStatus(Enum cmd)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override string SendCommand(Enum cmd, string value)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Close()
+		{
+			Disconnect();
+		}
+
+		public Boolean IsTargetAvailable()
+		{
+			return true;
+		}
+
+		public void MakeBuzz()
+		{
+		}
+		public void ReceiveMessage(String message, String sender)
+		{
+			//MLog.Log(this, "SMS from " +sender + " = " + message);
+		}
+
+		public void SendMessage(String message, String targetId)
+		{
+			
+		}
+
+		public bool TestConnection()
+		{
+			//bool result = false ;
+
+			/*if (m_waitForResponse == true)
+			{
+				MLog.Log(this, "Trying to test SMS conn while waiting for response, skip test");
+				return true;
+			}*/
+
+			if (!comm.IsPortOpen())
+				return false;
+
+			try
+			{
+				return true;
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Exception Test RFXComm");
+				return false;
+			}
+		}
+	}
 }

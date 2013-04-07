@@ -178,14 +178,14 @@ namespace MultiZonePlayer
                             //result = JsonResult(cmdres.Result, cmdres.ErrorMessage, null);
                             break;
                         case Metadata.GlobalCommands.restartispy:
-                            Utilities.CloseProcSync(IniFile.PARAM_ISPY_PROCNAME[1]);
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
-							Utilities.RunProcessWait(IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
+							MZPState.RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
 							//resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case Metadata.GlobalCommands.restartwinload:
-                            MZPState.RestartWinload();
+                            MZPState.RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
+								IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal);
                             //resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;

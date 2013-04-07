@@ -177,9 +177,12 @@ namespace MultiZonePlayer
                 m_winEventLogReader = new WinEventLogReader("Application");
                 m_winEventLogReader.AddSource("APC UPS Service");
 
+				RFXDeviceDefinition.LoadFromIni();
+
                 m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], //IniFile.PARAM_GTALK_SERVER[1], 
                     IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
+				m_messengerList.Add(new RFXCom());
 
 				LoadMacros();
 
@@ -196,21 +199,13 @@ namespace MultiZonePlayer
 				}
 			}
 
-            public static void RestartWinload()
-            {
-                MLog.Log(null, "Restarting Winload");
-                Utilities.CloseProcSync(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1]);
-				Utilities.RunProcessWait(IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], 
-					System.Diagnostics.ProcessWindowStyle.Normal);
-            }
-
-            public static void RestartXBMC()
-            {
-                MLog.Log(null, "Restarting XBMC");
-                Utilities.CloseProcSync(IniFile.PARAM_XBMC_PROCESS_NAME[1]);
-                Utilities.RunProcessWait(IniFile.PARAM_XBMC_APP_PATH[1],
-					System.Diagnostics.ProcessWindowStyle.Normal);
-            }
+			public static void RestartGenericProc(string procName, string procPath, System.Diagnostics.ProcessWindowStyle startState)
+			{
+				MLog.Log(null, "Restarting " + procName);
+				Utilities.CloseProcSync(procName);
+				Utilities.RunProcessWait(procPath,	System.Diagnostics.ProcessWindowStyle.Normal);
+			}
+            
 
             public void Shutdown()
             {
@@ -628,7 +623,18 @@ namespace MultiZonePlayer
                 return result;
             }
 
-
+			private void HealthCheckiSpy()
+			{
+				if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
+				{
+					if (!Utilities.IsProcAlive(IniFile.PARAM_ISPY_PROCNAME[1]))
+					{
+						MLog.Log(this, "iSpy proc not running, restarting");
+						Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
+						RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
+					}
+				}
+			}
             private void HealthCheckWinload()
             {
                 if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
@@ -636,7 +642,8 @@ namespace MultiZonePlayer
                     if (!Utilities.IsProcAlive(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1]))
                     {
                         MLog.Log(this, "WINLOAD proc not running, restarting");
-                        RestartWinload();
+						RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
+							IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal);
                     }
                     else
                     {
@@ -706,8 +713,6 @@ namespace MultiZonePlayer
                     }
                 }
             }
-
-            
 
             public bool SendMessengerMessageToOne(String message)
             {
@@ -974,7 +979,7 @@ namespace MultiZonePlayer
                     else
                         MLog.Log(null, "medialib not initialised, cannot do another init");
                 }*/
-
+				HealthCheckiSpy();
                 HealthCheckWinload();
                 HealthCheckMessengers();
                 AutoArmCheck();

@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text;
 
 
@@ -548,7 +547,10 @@ namespace MultiZonePlayer
             public DateTime LastLocalCommandDateTime = DateTime.MinValue;
 			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 			public DateTime LastNotifyZoneEventTriggered;
-            // not serializable, hidden from json
+
+			public string Temperature="";
+			public string Humidity="";
+			// not serializable, hidden from json
             
             
             protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
@@ -1317,6 +1319,132 @@ namespace MultiZonePlayer
             }
         }
     }
+
+	public class RFXDeviceDefinition
+	{
+		public enum DeviceTypeEnum
+		{
+			TEMP_HUM,
+			UKNOWN
+		}
+		public static List<RFXDevice> DeviceList;
+
+		public class RFXDevice
+		{
+			public int EntryId;
+			public int ZoneId=-1;
+			public string DeviceId;//DDDD
+			public DeviceTypeEnum DeviceType;
+			public string DeviceDefinition;// = "OregonSensor THGN132N-01/THGR122N-01";
+			public string DeviceName;
+			public string ResponseFormatPattern;//="DDDDDD-QQ-IIII-XX-TT-HH-XX-S-B";
+			public string FieldMap;// = "D=DeviceType;Q=Sequence;I=ID";
+			public string ResponseTypeMap;//D=String;Q=Hex;I=
+			public int ResponseLength;
+			public List<FieldValue> FieldValues;
+
+			private class Fields
+			{
+				public string Key;
+				public string Name;
+				public int StartPos;
+				public int Length;
+			};
+
+			public class FieldValue
+			{
+				public string Name;
+				public string Value;
+			}
+			private List<Fields> FieldDef;
+
+			public void PopulateFieldDefs()
+			{
+				FieldDef = new List<Fields>();
+				Fields field;
+
+				string[] fieldPair=FieldMap.Split(';');
+				string[] attrib;
+				string responsepattern = ResponseFormatPattern.Replace("-", "").ToLower();
+				ResponseLength = responsepattern.Length;
+				foreach (string s in fieldPair)
+				{
+					attrib = s.Split('=');
+					if (attrib.Length>1)
+					{
+						field = new Fields();
+						field.Key = attrib[0].ToLower();
+						field.Name = attrib[1].ToLower();
+						field.StartPos = responsepattern.IndexOf(field.Key);
+						field.Length = responsepattern.LastIndexOf(field.Key) - field.StartPos + 1;
+						FieldDef.Add(field);
+					}
+				}
+			}
+
+			public void GetFieldValues(ref string response)
+			{
+				FieldValues = new List<FieldValue>();
+				foreach(Fields f in FieldDef)
+				{
+					FieldValue fv = new FieldValue();
+					fv.Name = f.Name;
+					fv.Value = response.Substring(f.StartPos, f.Length);
+					fv.Value = int.Parse(fv.Value, System.Globalization.NumberStyles.HexNumber).ToString();
+					FieldValues.Add(fv);
+				}
+				response = response.Substring(ResponseLength);
+			}
+
+			public string DisplayValues()
+			{
+				String result = DeviceName;
+				foreach (FieldValue f in FieldValues)
+				{
+					result += "; " + f.Name + "=" + f.Value;
+				}
+				return result;
+			}
+		}
+		
+		public static RFXDevice GetDevice(ref string response)
+		{
+			string resp = response;
+			RFXDevice result = DeviceList.Find(x => resp.Contains(x.DeviceId));
+			if (result != null)
+				result.GetFieldValues(ref response);
+			else
+			{
+				MLog.Log(null, "Unknown RFX response:" + response);
+				response = "";
+			}
+			return result;
+		}
+
+		public static void LoadFromIni()
+		{
+			String json;
+			RFXDevice entry;
+			List<RFXDevice> list = new List<RFXDevice>();
+			int line = 0;
+			do
+			{
+				json = Utilities.IniReadValue(IniFile.SCHEDULER_SECTION_RFX,
+					line.ToString(), IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
+				if (json != "")
+				{
+					entry = fastJSON.JSON.Instance.ToObject<RFXDevice>(json);
+					entry.EntryId = line;
+					entry.PopulateFieldDefs();
+					list.Add(entry);
+				}
+				line++;
+			}
+			while (json != "");
+			MLog.Log(null, "Loaded " + (line - 1) + " scheduler events");
+			DeviceList = list;
+		}
+	}
 
     public class InputEntry
     {

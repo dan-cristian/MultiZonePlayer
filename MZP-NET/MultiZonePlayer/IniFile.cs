@@ -34,6 +34,7 @@ namespace MultiZonePlayer
             public static String DEFAULT_AUTO_DEV_NAME = "-AUTO BY KEYWORDS-";
             public static String DEFAULT_AUTO_DEV_ID = "-1";
 			public const String SCHEDULER_SECTION_MAIN = "Scheduler";
+			public const String SCHEDULER_SECTION_RFX = "RFX";
             
             public const String INI_SECTION_ZONES = "Zones";
             public const String INI_SECTION_ZONESTATE = "ZoneState";
@@ -56,7 +57,7 @@ namespace MultiZonePlayer
             public const String INI_SECTION_PARAMS = "Parameters";
             public const String INI_SECTION_MUSICMOOD = "MusicMood";
             public const String INI_SECTION_MUSICSCHEDULE = "MusicSchedule";
-            
+			
             public const String DEFAULT_EXT_PLAYLIST = ".m3u";
             public const String POPM_CREATOR_NAME = "MZP";
             public static String[] MUSIC_EXTENSION = new String[] { "mp3", "wav", "flac" };
@@ -150,6 +151,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_SMS_AT_LINES_COUNT = new String[] { "PARAM_SMS_AT_LINES_COUNT", "2", "Number of new lines expected to be received after an AT command" };
             public static String[] PARAM_SMS_ATD_LINES_COUNT = new String[] { "PARAM_SMS_ATD_LINES_COUNT", "5", "Number of new lines expected to be received after an ATD (dial) command" };
 
+			public static String[] PARAM_RFXCOM_PORT = new String[] { "PARAM_RFXCOM_PORT", "COM42" };
             public static String[] PARAM_VLC_AUDIOOUT = new String[] { "PARAM_VLC_AUDIOOUT", "directx", "DIRECTX or WAVEOUT" };
             public static String[] PARAM_GENERIC_INTERVAL_SPLIT = new String[] { "PARAM_GENERIC_INTERVAL_SPLIT", "10-60-240", "3 numbers, in minutes, separated by -" };
 

@@ -297,9 +297,8 @@ namespace MultiZonePlayer
                     //DisplayData(MessageType.Outgoing, msg + "\n");
                     break;
                 case TransmissionType.Hex:
-                    
                         //convert the message to byte array
-                        byte[] newMsg = HexToByte(msg);
+                        byte[] newMsg = Utilities.HexToByte(msg);
                         //send the message to the port
                         comPort.Write(newMsg, 0, newMsg.Length);
                         //convert back to hex and display
@@ -317,47 +316,7 @@ namespace MultiZonePlayer
         }
         #endregion
 
-        #region HexToByte
-        /// <summary>
-        /// method to convert hex string into a byte array
-        /// </summary>
-        /// <param name="msg">string to convert</param>
-        /// <returns>a byte array</returns>
-        private byte[] HexToByte(string msg)
-        {
-            //remove any spaces from the string
-            msg = msg.Replace(" ", "");
-            //create a byte array the length of the
-            //divided by 2 (Hex is 2 characters in length)
-            byte[] comBuffer = new byte[msg.Length / 2];
-            //loop through the length of the provided string
-            for (int i = 0; i < msg.Length; i += 2)
-                //convert each set of 2 characters to a byte
-                //and add to the array
-                comBuffer[i / 2] = (byte)Convert.ToByte(msg.Substring(i, 2), 16);
-            //return the array
-            return comBuffer;
-        }
-        #endregion
-
-        #region ByteToHex
-        /// <summary>
-        /// method to convert a byte array into a hex string
-        /// </summary>
-        /// <param name="comByte">byte array to convert</param>
-        /// <returns>a hex string</returns>
-        private string ByteToHex(byte[] comByte)
-        {
-            //create a new StringBuilder object
-            StringBuilder builder = new StringBuilder(comByte.Length * 3);
-            //loop through each byte in the array
-            foreach (byte data in comByte)
-                //convert the byte to a string and add to the stringbuilder
-                builder.Append(Convert.ToString(data, 16).PadLeft(2, '0').PadRight(3, ' '));
-            //return the converted value
-            return builder.ToString().ToUpper();
-        }
-        #endregion
+        
 
         public bool IsPortOpen()
         {
@@ -468,6 +427,7 @@ namespace MultiZonePlayer
         /// <param name="e"></param>
         void comPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+			string msg, msgDisplay;
             lock (m_lockThisReceive)
             {
                 try
@@ -483,7 +443,7 @@ namespace MultiZonePlayer
                         case TransmissionType.Text:
                             while (comPort != null && comPort.BytesToRead > 0)
                             {
-                                string msg, msgDisplay;
+                                
                                 //read data waiting in the buffer
                                 try
                                 {
@@ -494,9 +454,9 @@ namespace MultiZonePlayer
                                     //MLog.Log(this, "Timeout comport " + comPort.PortName);
                                     msg = comPort.ReadExisting();
                                 }
-                                msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
-                                MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
-                                /*if (msg.Length == 1)
+								msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
+								MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
+								/*if (msg.Length == 1)
                                 {
                                     MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
                                     //comPort.Close();
@@ -516,10 +476,14 @@ namespace MultiZonePlayer
                             byte[] comBuffer = new byte[bytes];
                             //read the data and store it
                             comPort.Read(comBuffer, 0, bytes);
+							msgDisplay = Utilities.ByteToHex(comBuffer);
+							MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, comBuffer.Length));
                             //display the data to the user
                             //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
-                            break;
-                        default:
+							_callback(msgDisplay);
+							break;
+                        
+						 default:
                             //read data waiting in the buffer
                             string str = comPort.ReadExisting();
                             //display the data to the user
@@ -538,9 +502,9 @@ namespace MultiZonePlayer
         {
 			try
 			{
-				if (Thread.CurrentThread.Name != null && !Thread.CurrentThread.Name.StartsWith("Serial Error"))
+				if (Thread.CurrentThread.Name == null || !Thread.CurrentThread.Name.StartsWith("Serial Error"))
 					Thread.CurrentThread.Name = "Serial Error Received " + comPort.PortName;
-				MLog.Log(this, "ERROR received sender=" + sender.ToString() + " errtype=" + e.ToString());
+				MLog.Log(this, "ERROR received sender=" + sender.ToString() + " evtype=" + e.EventType);
 			}
 			catch (Exception ex)
 			{
