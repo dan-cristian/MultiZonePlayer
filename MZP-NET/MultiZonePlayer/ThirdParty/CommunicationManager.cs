@@ -268,6 +268,14 @@ namespace MultiZonePlayer
 
         
         #endregion
+		public void Flush()
+		{
+			if (comPort != null && comPort.IsOpen)
+			{
+				comPort.DiscardInBuffer();
+				comPort.DiscardOutBuffer();
+			}
+		}
 
         #region WriteData
         public void WriteData(string msg)
@@ -443,7 +451,6 @@ namespace MultiZonePlayer
                         case TransmissionType.Text:
                             while (comPort != null && comPort.BytesToRead > 0)
                             {
-                                
                                 //read data waiting in the buffer
                                 try
                                 {

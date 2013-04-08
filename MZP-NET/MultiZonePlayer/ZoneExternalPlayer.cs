@@ -305,9 +305,10 @@ namespace MultiZonePlayer
 					if (!scr.Primary)
 					{
 						Rectangle area = scr.Bounds;
-						Utilities.SetWindowPos(GetXBMCHandle(), 0, area.Left, area.Top,
+						IntPtr handle = GetXBMCHandle();
+						Utilities.SetWindowPos(handle, 0, area.Left, area.Top,
 							area.Width, area.Height, Utilities.SWP.SHOWWINDOW);
-						MLog.Log(null, "XBMC sent to second screen at x="+area.Left+" y="+area.Top);
+						MLog.Log(null, "XBMC h="+handle+" sent to second screen at x="+area.Left+" y="+area.Top + " scrname="+scr.DeviceName);
 						break;
 					}
 				}
@@ -335,6 +336,9 @@ namespace MultiZonePlayer
                 {
 					if (!m_bringToForegroundOnce)
 					{
+						int i = 0;//wait for xbmc to launch
+						do { System.Threading.Thread.Sleep(100); i++; } 
+						while (GetXBMCHandle() == IntPtr.Zero && i < 50);
 						MoveToSecondScreen();
 						Utilities.SetForegroundWindow(GetXBMCHandle());
 						m_bringToForegroundOnce = true;

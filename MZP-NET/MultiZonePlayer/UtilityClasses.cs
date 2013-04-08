@@ -117,7 +117,8 @@ namespace MultiZonePlayer
 			remotepoweroff,
 			remoteadjustdim,
 			getpicture,
-			macro
+			macro,
+			rfxcmd
         }
         public enum GlobalParams
         {
@@ -1324,7 +1325,8 @@ namespace MultiZonePlayer
 	{
 		public enum DeviceTypeEnum
 		{
-			TEMP_HUM,
+			temp_hum,
+			lighting1,
 			UKNOWN
 		}
 		public static List<RFXDevice> DeviceList;

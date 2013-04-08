@@ -404,27 +404,36 @@ namespace MultiZonePlayer
 
 	class RFXCom : SerialBase, IMessenger
 	{
+		private static string CMD_RESET		= "0D 00 00 00 00 00 00 00 00 00 00 00 00 00";
+		private static string CMD_GETSTATUS = "0D 00 00 01 02 00 00 00 00 00 00 00 00 00";
+		private static string CMD_SETMODE	= "0D 00 00 3B 03 53 00 00 00 26 00 00 00 00";
+
 		public RFXCom()
 		{
 			Reinitialise();
 		}
 		public void Reinitialise()
 		{
-			comm = new CommunicationManager("38400", "None", "One", "8", 
-				IniFile.PARAM_RFXCOM_PORT[1], this.handler);
-			comm.OpenPort();
+			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1]);
+			//comm = new CommunicationManager("38400", "None", "One", "8", 
+			//	IniFile.PARAM_RFXCOM_PORT[1], this.handler);
+			//comm.OpenPort();
 			comm.CurrentTransmissionType = CommunicationManager.TransmissionType.Hex;
 			//comm.WriteData("FF FA 2C 01 00 00 96 00 FF F0 FF FA 2C 02 08 FF F0 FF FA 2C 03 01 FF F0 FF FA 2C 04 01 FF F0 FF FA 2C 05 01 FF F0");
-			comm.WriteData("0D 00 00 00 00 00 00 00 00 00 00 00 00 00");
-			Thread.Sleep(3000);
-			comm.WriteData("0D 00 00 01 02 00 00 00 00 00 00 00 00 00");
-			m_waitForResponse = false;
-			m_lastOperationWasOK = true;
+			WriteCommand(CMD_RESET, 1, 1000);
+			//comm.WriteData(CMD_RESET);
+			Thread.Sleep(1000);
+			comm.Flush();
+			string status = WriteCommand(CMD_GETSTATUS, 1, 1000);
+			MLog.Log(this, "RFX status is " + status);
+			//comm.WriteData(CMD_GETSTATUS);
+			
+			//m_waitForResponse = false;
+			//m_lastOperationWasOK = true;
 		}
 		protected override void ReceiveSerialResponse(string response)
 		{
 			MLog.Log(this, "RFXCOMM: " + response);
-
 			do
 			{
 				RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
@@ -436,9 +445,12 @@ namespace MultiZonePlayer
 						Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(dev.ZoneId);
 						switch(dev.DeviceType)
 						{
-							case RFXDeviceDefinition.DeviceTypeEnum.TEMP_HUM:
+							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
 								zone.Temperature = (Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == "temperature").Value)/10).ToString();
 								zone.Humidity = dev.FieldValues.Find(x => x.Name == "humidity").Value;
+								break;
+							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
+								
 								break;
 						}
 						
@@ -457,6 +469,11 @@ namespace MultiZonePlayer
 		public override string SendCommand(Enum cmd, string value)
 		{
 			throw new NotImplementedException();
+		}
+
+		public string SendCommand(string value)
+		{
+			return WriteCommand(value, 1, 1000);
 		}
 
 		public void Close()

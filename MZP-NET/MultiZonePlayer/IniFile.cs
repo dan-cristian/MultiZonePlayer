@@ -231,7 +231,8 @@ namespace MultiZonePlayer
                 PARAM_BOOT_TIME_SECONDS,
 				PARAM_LASTFM_API_KEY,
 				PARAM_LASTFM_SECRET_KEY,
-				PARAM_LASTFM_WS_URL
+				PARAM_LASTFM_WS_URL,
+				PARAM_RFXCOM_PORT
 
              };
             private static string m_iniFinalPath =  null;

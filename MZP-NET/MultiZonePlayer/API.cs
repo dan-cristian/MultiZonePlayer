@@ -88,7 +88,7 @@ namespace MultiZonePlayer
         
         public static Metadata.CommandResult DoCommand(Metadata.ValueList vals)
         {
-            Metadata.ValueList resvalue;
+            //Metadata.ValueList resvalue;
             Metadata.CommandResult cmdresult = new Metadata.CommandResult();
             String cmdName;
             String detailedStatus="";
@@ -244,10 +244,11 @@ namespace MultiZonePlayer
 							string face = vals.GetValue(Metadata.GlobalParams.face);
 							string picture = MediaLibrary.AllPictureFiles.IteratePicture(pictcount, interval,face);
 							string[] pictsplit = picture.Split('.');
-							resvalue = new Metadata.ValueList();
-							resvalue.BinaryData = Utilities.ReadBinaryFile(picture);
-							resvalue.Add(Metadata.GlobalParams.contenttype, "image/"+pictsplit[pictsplit.Length-1]);
+							cmdresult.ValueList= new Metadata.ValueList();
+							cmdresult.ValueList.BinaryData = Utilities.ReadBinaryFile(picture);
+							cmdresult.ValueList.Add(Metadata.GlobalParams.contenttype, "image/" + pictsplit[pictsplit.Length - 1]);
 							cmdresult.OutputMessage = "picture retrieved=" + picture;
+							
 							//result = JsonResult(Metadata.ResultEnum.OK, , null);
 							break;
 						case Metadata.GlobalCommands.remotepoweron:
@@ -280,6 +281,10 @@ namespace MultiZonePlayer
 							}
 							else
 								cmdresult.ErrorMessage = "macro not found name="+shortcut;
+							break;
+						case Metadata.GlobalCommands.rfxcmd:
+							string rfxc = vals.GetValue(Metadata.GlobalParams.command);
+							MZPState.Instance.ExecuteRFXCmd(rfxc);
 							break;
                         default:
                             cmdresult.Result = DoZoneCommand(apicmd, vals, out cmdresult.ErrorMessage, out cmdresult.ValueList);

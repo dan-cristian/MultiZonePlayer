@@ -195,6 +195,7 @@ namespace MultiZonePlayer
 				if (fileModified != m_lastScheduleFileModifiedDate)
 				{
 					m_macroList = Metadata.MacroEntry.LoadFromIni();
+					RFXDeviceDefinition.LoadFromIni();
 					m_lastScheduleFileModifiedDate = fileModified;
 				}
 			}
@@ -795,6 +796,25 @@ namespace MultiZonePlayer
 				return cmdresult;
 			}
 
+			public Metadata.CommandResult ExecuteRFXCmd(string cmd)
+			{
+				Metadata.CommandResult cmdresult = new Metadata.CommandResult();
+				cmdresult.Result = Metadata.ResultEnum.ERR;
+				if (cmd != null && cmd.Length > 0)
+				{
+					RFXCom rfx = (RFXCom)m_messengerList.Find(x => x.GetType() == typeof(RFXCom));
+					if (rfx != null)
+					{
+						cmdresult.OutputMessage = rfx.SendCommand(cmd);
+						cmdresult.Result = Metadata.ResultEnum.OK;
+					}
+					else
+						cmdresult.ErrorMessage = "RFXcomm instance not found";
+				}
+				else
+					cmdresult.ErrorMessage = "RFXcomm empty cmd";
+				return cmdresult;
+			}
             public void CheckForWakeTimers()
             {
                 String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
