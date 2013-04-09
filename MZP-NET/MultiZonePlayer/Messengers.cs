@@ -404,10 +404,13 @@ namespace MultiZonePlayer
 
 	class RFXCom : SerialBase, IMessenger
 	{
-		private static string CMD_RESET		= "0D 00 00 00 00 00 00 00 00 00 00 00 00 00";
-		private static string CMD_GETSTATUS = "0D 00 00 01 02 00 00 00 00 00 00 00 00 00";
-		private static string CMD_SETMODE	= "0D 00 00 3B 03 53 00 00 00 26 00 00 00 00";
-
+		private static string CMD_RESET		=	"0D 00 00 00 00 00 00 00 00 00 00 00 00 00";
+		private static string CMD_GETSTATUS =	"0D 00 00 01 02 00 00 00 00 00 00 00 00 00";
+		private static string CMD_SETMODE =		"0D 00 00 05 03 53 00 00 00 2E 00 00 00 00";//oregon&arc&ac&h eu	
+			//"0D 00 00 06 03 53 00 00 00 26 00 00 00 00";//oregon&arc&ac
+			//"0D 00 00 02 03 53 00 00 00 22 00 00 00 00";//oregon & arc
+		
+		
 		public RFXCom()
 		{
 			Reinitialise();
@@ -426,7 +429,7 @@ namespace MultiZonePlayer
 			comm.Flush();
 			string status = WriteCommand(CMD_GETSTATUS, 1, 1000);
 			MLog.Log(this, "RFX status is " + status);
-			//comm.WriteData(CMD_GETSTATUS);
+			WriteCommand(CMD_SETMODE, 1, 1000);
 			
 			//m_waitForResponse = false;
 			//m_lastOperationWasOK = true;
@@ -446,8 +449,9 @@ namespace MultiZonePlayer
 						switch(dev.DeviceType)
 						{
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
-								zone.Temperature = (Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == "temperature").Value)/10).ToString();
-								zone.Humidity = dev.FieldValues.Find(x => x.Name == "humidity").Value;
+								zone.SetTempHum(
+									(Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == "temperature").Value)/10).ToString(),
+									dev.FieldValues.Find(x => x.Name == "humidity").Value);
 								break;
 							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
 								

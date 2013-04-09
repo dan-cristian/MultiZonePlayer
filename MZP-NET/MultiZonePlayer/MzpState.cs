@@ -805,6 +805,7 @@ namespace MultiZonePlayer
 					RFXCom rfx = (RFXCom)m_messengerList.Find(x => x.GetType() == typeof(RFXCom));
 					if (rfx != null)
 					{
+						cmdresult.Command = Metadata.GlobalCommands.rfxcmd.ToString() + ":"+ cmd;
 						cmdresult.OutputMessage = rfx.SendCommand(cmd);
 						cmdresult.Result = Metadata.ResultEnum.OK;
 					}

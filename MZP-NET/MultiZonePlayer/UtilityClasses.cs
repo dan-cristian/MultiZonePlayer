@@ -119,6 +119,7 @@ namespace MultiZonePlayer
 			getpicture,
 			macro,
 			rfxcmd
+			
         }
         public enum GlobalParams
         {
@@ -241,7 +242,8 @@ namespace MultiZonePlayer
             new CommandSyntax(GlobalCommands.ratingset,         GlobalParams.ratingvalue),
             new CommandSyntax(GlobalCommands.remotepoweron,		GlobalParams.remoteid),
 			new CommandSyntax(GlobalCommands.remotepoweroff,	GlobalParams.remoteid),
-			new CommandSyntax(GlobalCommands.remoteadjustdim,	GlobalParams.remoteid, GlobalParams.dimvalue)
+			new CommandSyntax(GlobalCommands.remoteadjustdim,	GlobalParams.remoteid, GlobalParams.dimvalue),
+			new CommandSyntax(GlobalCommands.rfxcmd,			GlobalParams.action)
             /*
             genrelist,
             setgenrelist,
@@ -549,8 +551,8 @@ namespace MultiZonePlayer
 			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 			public DateTime LastNotifyZoneEventTriggered;
 
-			public string Temperature="";
-			public string Humidity="";
+			protected string m_temperature="", m_humidity="";
+			protected DateTime m_lastTempHumSet = DateTime.MinValue;
 			// not serializable, hidden from json
             
             
@@ -735,6 +737,31 @@ namespace MultiZonePlayer
 				get { return HasImmediateMove || HasRecentMove ? DIV_SHOW : DIV_HIDE; }
 			}
 
+			public String Temperature
+			{
+				get 
+				{
+					return DateTime.Now.Subtract(m_lastTempHumSet).TotalHours > 1 ? m_temperature + "!" : m_temperature;
+				}
+				set
+				{
+					m_temperature = value;
+					m_lastTempHumSet = DateTime.Now;
+				}
+			}
+
+			public String Humidity
+			{
+				get
+				{
+					return DateTime.Now.Subtract(m_lastTempHumSet).TotalHours > 1 ? m_humidity + "!" : m_humidity;
+				}
+				set
+				{
+					m_humidity = value;
+					m_lastTempHumSet = DateTime.Now;
+				}
+			}
 
             #endregion
             public static void LoadFromIni(ref List<ZoneDetails> zones)
@@ -811,7 +838,12 @@ namespace MultiZonePlayer
                 IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
             }
 
-			
+			public void SetTempHum(string temperature, string humidity)
+			{
+				m_temperature = temperature;
+				m_humidity = humidity;
+				m_lastTempHumSet = DateTime.Now;
+			}
 
 			public bool HasOutputDeviceAvailable()
 			{
@@ -1391,13 +1423,42 @@ namespace MultiZonePlayer
 				{
 					FieldValue fv = new FieldValue();
 					fv.Name = f.Name;
-					fv.Value = response.Substring(f.StartPos, f.Length);
-					fv.Value = int.Parse(fv.Value, System.Globalization.NumberStyles.HexNumber).ToString();
-					FieldValues.Add(fv);
+					if (f.StartPos + f.Length > response.Length)
+					{
+						MLog.Log(this, "Error string boundary rfx get values");
+					}
+					else
+					{
+						fv.Value = response.Substring(f.StartPos, f.Length);
+						fv.Value = int.Parse(fv.Value, System.Globalization.NumberStyles.HexNumber).ToString();
+						FieldValues.Add(fv);
+					}
 				}
-				response = response.Substring(ResponseLength);
+				if (ResponseLength < response.Length)
+					response = response.Substring(ResponseLength);
+				else
+					response = "";
 			}
 
+			/*public string GetCommandString(params string[] nameValuePair)
+			{
+				string commandString = ResponseFormatPattern.Replace("-", "");
+				string result = "", name, value,key;
+				string[] atoms;
+				foreach (string s in nameValuePair)
+				{
+					atoms = s.Split('=');
+					name = atoms[0].ToLower();
+					value = atoms[1].ToLower();
+					
+					key = FieldDef.Find(x=>x.Name==name).Key;
+					if (key != null)
+					{
+						
+					}
+				}
+				return result;
+			}*/
 			public string DisplayValues()
 			{
 				String result = DeviceName;
@@ -1421,6 +1482,18 @@ namespace MultiZonePlayer
 				response = "";
 			}
 			return result;
+		}
+
+		public static RFXDevice GetDevice(string deviceName)
+		{
+			RFXDevice result = DeviceList.Find(x => x.DeviceName.Contains(deviceName));
+			if (result != null)
+				return result;
+			else
+			{
+				MLog.Log(null, "Cannot find rfxdev " + deviceName);
+				return null;
+			}
 		}
 
 		public static void LoadFromIni()

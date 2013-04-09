@@ -435,7 +435,7 @@ namespace MultiZonePlayer
         /// <param name="e"></param>
         void comPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-			string msg, msgDisplay;
+			string msg, msgDisplay="";
             lock (m_lockThisReceive)
             {
                 try
@@ -477,14 +477,19 @@ namespace MultiZonePlayer
                             break;
                         //user chose binary
                         case TransmissionType.Hex:
-                            //retrieve number of bytes in the buffer
-                            int bytes = comPort.BytesToRead;
-                            //create a byte array to hold the awaiting data
-                            byte[] comBuffer = new byte[bytes];
-                            //read the data and store it
-                            comPort.Read(comBuffer, 0, bytes);
-							msgDisplay = Utilities.ByteToHex(comBuffer);
-							MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, comBuffer.Length));
+							byte[] comBuffer;
+							for (int i = 0; i <= 1; i++)
+							{
+								//retrieve number of bytes in the buffer
+								int bytes = comPort.BytesToRead;
+								//create a byte array to hold the awaiting data
+								comBuffer = new byte[bytes];
+								//read the data and store it
+								comPort.Read(comBuffer, 0, bytes);
+								msgDisplay += Utilities.ByteToHex(comBuffer);
+								Thread.Sleep(100);
+							}
+							MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msgDisplay.Length));
                             //display the data to the user
                             //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
 							_callback(msgDisplay);

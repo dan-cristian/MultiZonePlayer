@@ -283,8 +283,9 @@ namespace MultiZonePlayer
 								cmdresult.ErrorMessage = "macro not found name="+shortcut;
 							break;
 						case Metadata.GlobalCommands.rfxcmd:
-							string rfxc = vals.GetValue(Metadata.GlobalParams.command);
-							MZPState.Instance.ExecuteRFXCmd(rfxc);
+							string rfxc = vals.GetValue(Metadata.GlobalParams.action);
+							//string device = vals.GetValue(Metadata.GlobalParams.rfxdevicename);
+							cmdresult = MZPState.Instance.ExecuteRFXCmd(rfxc);//device, rfxc);
 							break;
                         default:
                             cmdresult.Result = DoZoneCommand(apicmd, vals, out cmdresult.ErrorMessage, out cmdresult.ValueList);
