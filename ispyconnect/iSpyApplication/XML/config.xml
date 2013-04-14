@@ -22,6 +22,7 @@
   <NoActivityColor>101,132,139</NoActivityColor>
   <TrackingColor>41,176,211</TrackingColor>
   <VolumeLevelColor>41,176,211</VolumeLevelColor>
+  <FloorPlanHighlightColor>0,217,0</FloorPlanHighlightColor>
   <MaxRecordingThreads>20</MaxRecordingThreads>
   <MainColor>153,153,153</MainColor>
   <AreaColor>255,255,255</AreaColor>
@@ -37,6 +38,7 @@
   <FFMPEG_Microphone>NotUsed</FFMPEG_Microphone>
   <TimestampColor>255,255,255</TimestampColor>
   <BorderHighlightColor>255,255,255</BorderHighlightColor>
+  <BorderDefaultColor>0,0,0</BorderDefaultColor>
   <UseUPNP>true</UseUPNP>
   <NextFloorPlanID>0</NextFloorPlanID>
   <YouTubeUsername />
@@ -88,7 +90,7 @@
   <Vendor></Vendor>
   <TalkMic></TalkMic>
   <PlaybackMode>1</PlaybackMode>
-  <JPEGQuality>80</JPEGQuality>
+  <JPEGQuality>90</JPEGQuality>
   <StopSavingOnStorageLimit>false</StopSavingOnStorageLimit>
   <ViewController>false</ViewController>
   <LayoutMode>0</LayoutMode>
@@ -97,5 +99,9 @@
   <LockLayout>false</LockLayout>
   <MediaPanelSize></MediaPanelSize>
   <WebServer>http://www.ispyconnect.com</WebServer>
-  <IPv6_Support_Disabled>false</IPv6_Support_Disabled>
+  <IPv6_Support_Disabled>true</IPv6_Support_Disabled>
+  <SpeechRecognition>false</SpeechRecognition>
+  <DefaultManufacturer></DefaultManufacturer>
+  <GridViews></GridViews>
+  <Joystick id="" XAxis="0" CenterX="0" YAxis="0" CenterY="0" ZAxis="0" CenterZ="0" Record="0" Snapshot="0" Listen="0" Play="0" Stop="0" Next="0" Previous="0" Talk="0"></Joystick>
 </configuration>

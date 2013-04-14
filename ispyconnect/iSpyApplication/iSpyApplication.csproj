@@ -180,6 +180,12 @@
     <Reference Include="AForge.Video">
       <HintPath>DLLS\AForge.Video.dll</HintPath>
     </Reference>
+    <Reference Include="AForge.Video.DirectShow">
+      <HintPath>..\Video.DirectShow\obj\Debug\AForge.Video.DirectShow.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Video.Kinect">
+      <HintPath>DLLS\AForge.Video.Kinect.dll</HintPath>
+    </Reference>
     <Reference Include="AForge.Video.Ximea, Version=2.2.3.0, Culture=neutral, PublicKeyToken=5cdcd64958730f99, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLS\AForge.Video.Ximea.dll</HintPath>
@@ -208,29 +214,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLS\Implementation.dll</HintPath>
     </Reference>
-    <Reference Include="Interop.NATUPNPLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>DLLS\Interop.NATUPNPLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Interop.NETCONLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>DLLS\Interop.NETCONLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Interop.NetFwTypeLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+    <Reference Include="Interop.NetFwTypeLib">
       <HintPath>DLLS\Interop.NetFwTypeLib.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="LibVlcWrapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLLS\LibVlcWrapper.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Kinect, Version=1.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Kinect, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Program Files\Microsoft SDKs\Kinect\v1.5\Assemblies\Microsoft.Kinect.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\Microsoft.Kinect.dll</HintPath>
     </Reference>
     <Reference Include="NAudio, Version=1.5.4.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -241,6 +235,10 @@
     </Reference>
     <Reference Include="Renderers">
       <HintPath>DLLS\Renderers.dll</HintPath>
+    </Reference>
+    <Reference Include="SlimDX, Version=4.0.13.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>DLLS\SlimDX.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
@@ -261,6 +259,7 @@
     <Reference Include="System.Windows.Forms">
       <Name>System.Windows.Forms</Name>
     </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
@@ -281,8 +280,28 @@
     <Compile Include="AddFloorPlan.Designer.cs">
       <DependentUpon>AddFloorPlan.cs</DependentUpon>
     </Compile>
+    <Compile Include="Audio\SpeechStreamer.cs" />
     <Compile Include="Audio\streams\AudioInStream.cs" />
     <Compile Include="Audio\talk\TalkNetworkKinect.cs" />
+    <Compile Include="Controls\jaxis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\jaxis.Designer.cs">
+      <DependentUpon>jaxis.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\jbutton.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\jbutton.Designer.cs">
+      <DependentUpon>jbutton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Joystick\JoystickDevice.cs" />
+    <Compile Include="Kinect\ConfigureTripWires.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Kinect\ConfigureTripWires.Designer.cs">
+      <DependentUpon>ConfigureTripWires.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\AngleSelector.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -357,8 +376,26 @@
     <Compile Include="ConfigureRepeat.Designer.cs">
       <DependentUpon>ConfigureRepeat.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ClipboardTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ClipboardTextBox.Designer.cs">
+      <DependentUpon>ClipboardTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Ranger.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\Ranger.designer.cs">
+      <DependentUpon>Ranger.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\GridView.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="downloader.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="downloader.Designer.cs">
+      <DependentUpon>downloader.cs</DependentUpon>
     </Compile>
     <Compile Include="FileOperations.cs" />
     <Compile Include="GridView.cs">
@@ -378,6 +415,16 @@
     </Compile>
     <Compile Include="GridViewCustom.Designer.cs">
       <DependentUpon>GridViewCustom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Kinect\DepthLine.cs" />
+    <Compile Include="Kinect\EditDepthLine.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Kinect\EditDepthLine.Designer.cs">
+      <DependentUpon>EditDepthLine.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Kinect\TripWireEditor.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="LayoutItem.cs" />
     <Compile Include="MainForm_Commands.cs">
@@ -415,6 +462,12 @@
     </Compile>
     <Compile Include="PTZTool.Designer.cs">
       <DependentUpon>PTZTool.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ShareCamera.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ShareCamera.Designer.cs">
+      <DependentUpon>ShareCamera.cs</DependentUpon>
     </Compile>
     <Compile Include="Video\AlertEvents.cs" />
     <Compile Include="Video\ByteArrayUtils.cs" />
@@ -473,10 +526,10 @@
     </Compile>
     <Compile Include="QueueWithEvents.cs" />
     <Compile Include="Screensaver.cs" />
-    <Compile Include="VideoNavigator.cs">
+    <Compile Include="Controls\VideoNavigator.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="VideoNavigator.Designer.cs">
+    <Compile Include="Controls\VideoNavigator.Designer.cs">
       <DependentUpon>VideoNavigator.cs</DependentUpon>
     </Compile>
     <Compile Include="ViewController.cs">
@@ -593,6 +646,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Vision\CustomFrameColorDifferenceDetector.cs" />
+    <Compile Include="Vision\SimpleColorBackgroundModelingDetector.cs" />
+    <Compile Include="Vision\Tools.cs" />
+    <Compile Include="Vision\TwoFramesColorDifferenceDetector.cs" />
     <Compile Include="Web References\iSpyWS\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -636,7 +693,6 @@
       <DependentUpon>Sources.xsd</DependentUpon>
     </Compile>
     <Compile Include="YouTubeUploader.cs" />
-    <None Include="backgrounds\circuitboard.jpg" />
     <Content Include="avcodec-53.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -652,11 +708,10 @@
     <Content Include="avutil-51.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="backgrounds\demo_mask.png" />
     <Content Include="backgrounds\FloorPlan_House.jpg" />
     <Content Include="backgrounds\FloorPlan_House2.jpg" />
     <Content Include="backgrounds\FloorPlan_Planet.jpg" />
-    <Content Include="backgrounds\iSpy.jpg" />
-    <Content Include="backgrounds\SolarBurstWallPaper.jpg" />
     <None Include="chk.png" />
     <Content Include="Copyright.txt" />
     <Content Include="lame_enc.dll">
@@ -785,6 +840,7 @@
     <Content Include="XML\Sources.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="XML\test.xml" />
     <Content Include="XML\Translations.xml">
       <SubType>Designer</SubType>
     </Content>
@@ -818,6 +874,15 @@
     <EmbeddedResource Include="AddFloorPlan.resx">
       <DependentUpon>AddFloorPlan.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\jaxis.resx">
+      <DependentUpon>jaxis.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\jbutton.resx">
+      <DependentUpon>jbutton.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Kinect\ConfigureTripWires.resx">
+      <DependentUpon>ConfigureTripWires.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\AngleSelector.resx">
       <DependentUpon>AngleSelector.cs</DependentUpon>
     </EmbeddedResource>
@@ -848,9 +913,15 @@
     <EmbeddedResource Include="ConfigureRepeat.resx">
       <DependentUpon>ConfigureRepeat.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Controls\Ranger.resx">
+      <DependentUpon>Ranger.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\GridView.resx">
       <DependentUpon>GridView.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="downloader.resx">
+      <DependentUpon>downloader.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GridView.resx">
       <DependentUpon>GridView.cs</DependentUpon>
@@ -861,8 +932,14 @@
     <EmbeddedResource Include="GridViewCustom.resx">
       <DependentUpon>GridViewCustom.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Kinect\EditDepthLine.resx">
+      <DependentUpon>EditDepthLine.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PTZTool.resx">
       <DependentUpon>PTZTool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShareCamera.resx">
+      <DependentUpon>ShareCamera.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Video\ScreenArea.resx">
       <DependentUpon>ScreenArea.cs</DependentUpon>
@@ -906,7 +983,7 @@
     <EmbeddedResource Include="RemoteCommands.resx">
       <DependentUpon>RemoteCommands.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="VideoNavigator.resx">
+    <EmbeddedResource Include="Controls\VideoNavigator.resx">
       <DependentUpon>VideoNavigator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ViewController.resx">
@@ -1101,20 +1178,35 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Video.DirectShow\Video.DirectShow.csproj">
-      <Project>{26CD2CE7-FF63-4669-83B0-7D9C8F3408EE}</Project>
-      <Name>Video.DirectShow</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Video.FFMPEG\Video.FFMPEG.vcxproj">
       <Project>{FF31DD24-127D-4EB1-929C-F5738147E886}</Project>
       <Name>Video.FFMPEG</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="NATUPNPLib">
+      <Guid>{1C565858-F302-471E-B409-F180AA4ABEC6}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="NETCONLib">
+      <Guid>{43E734CA-043D-4A70-9A2C-A8F254063D91}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>call "$(SolutionDir)signing\iSpyApplication.bat"</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -1,9 +1,11 @@
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Net;
+//using System.Windows.Media.Imaging;
 using AForge.Video;
 
 namespace iSpyApplication.Video
@@ -452,7 +454,6 @@ namespace iSpyApplication.Video
                     // set timeout value for the request
                     request.Timeout = _requestTimeout;
                     request.AllowAutoRedirect = true;
-                    ServicePointManager.ServerCertificateValidationCallback += Certificates.ValidateRemoteCertificate;
 
 
                     // set timeout value for the request
@@ -525,12 +526,21 @@ namespace iSpyApplication.Video
 						// provide new image to clients
 						if ( NewFrame != null )
 						{
-							var bitmap = (Bitmap) Image.FromStream( new MemoryStream( buffer, 0, total ) );
-							// notify client
-                            NewFrame( this, new NewFrameEventArgs( bitmap ) );
-							// release the image
-                            bitmap.Dispose( );
+                            var bitmap = (Bitmap)Image.FromStream(new MemoryStream(buffer, 0, total));
+                            // notify client
+                            NewFrame(this, new NewFrameEventArgs(bitmap));
+                            // release the image
+                            bitmap.Dispose();
                             bitmap = null;
+                            //var decoder = new JpegBitmapDecoder(new MemoryStream(buffer, 0, total), BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                            //BitmapSource frame = decoder.Frames[0];
+                            //Bitmap bmp = BitmapFromSource(frame);
+                            
+                            //NewFrame(this, new NewFrameEventArgs(bmp));
+                            //bmp.Dispose();
+                            ////// release the image
+                            ////bmp.Dispose();
+                            //bmp = null;
 						}
 					}
 
@@ -592,5 +602,21 @@ namespace iSpyApplication.Video
                 PlayingFinished( this, ReasonToFinishPlaying.StoppedByUser );
             }
 		}
+
+        //private System.Drawing.Bitmap BitmapFromSource(BitmapSource bitmapsource)
+        //{
+        //    System.Drawing.Bitmap bitmap;
+        //    using (MemoryStream outStream = new MemoryStream())
+        //    {
+        //        BitmapEncoder enc = new BmpBitmapEncoder();
+
+        //        enc.Frames.Add(BitmapFrame.Create(bitmapsource));
+        //        enc.Save(outStream);
+        //        bitmap = new System.Drawing.Bitmap(outStream);
+        //    }
+        //    return bitmap;
+        //}
+
+
 	}
 }

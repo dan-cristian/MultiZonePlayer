@@ -133,6 +133,8 @@ namespace MultiZonePlayer
             try
             {
                 DateTime eventDateTime = Convert.ToDateTime(date + " " + time);
+				if (MZPState.Instance.IsWinloadLoading)
+					MZPState.Instance.IsWinloadLoading = false;
 
                 if (DateTime.Now.Subtract(eventDateTime).TotalMinutes < 15)//ignore older events
                 {

@@ -560,13 +560,13 @@ namespace MultiZonePlayer
                                 //specific commands only to TV
                                 if (m_mainZoneActivity.GetType() == typeof(ZoneDisplayLG))
                                 {
-                                    ((ZoneDisplayLG)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
+                                    result = ((ZoneDisplayLG)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
                                 }
 
                                 //specific commands only to XBMC
                                 if (m_mainZoneActivity.GetType() == typeof(ZonePlayerXBMC))
                                 {
-                                    ((ZonePlayerXBMC)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
+                                    result = ((ZonePlayerXBMC)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
                                 }
 
                                 //specific commands only to Video

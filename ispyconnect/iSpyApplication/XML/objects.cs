@@ -635,6 +635,21 @@ public partial class objectsCameraSettings {
 
     private string cookiesField;
 
+    private int bordertimeoutField;
+
+    /// <remarks/>
+    public int bordertimeout
+    {
+        get
+        {
+            return this.bordertimeoutField;
+        }
+        set
+        {
+            this.bordertimeoutField = value;
+        }
+    }
+
     /// <remarks/>
     public string cookies
     {
@@ -1389,6 +1404,10 @@ public partial class objectsCameraFtp {
 
     private int countermaxField;
 
+    private int ftpcounterField;
+
+    private int ftpcountermaxField;
+
     private int modeField;
     
     private bool readyField;
@@ -1550,6 +1569,19 @@ public partial class objectsCameraFtp {
     }
 
     /// <remarks/>
+    public int ftpcounter
+    {
+        get
+        {
+            return this.ftpcounterField;
+        }
+        set
+        {
+            this.ftpcounterField = value;
+        }
+    }
+
+    /// <remarks/>
     public int mode
     {
         get
@@ -1606,6 +1638,10 @@ public partial class objectsCameraDetector {
     private int calibrationdelayField;
     
     private double sensitivityField;
+
+    private double maxsensitivityField;
+
+    private double minsensitivityField;
     
     private string colorField;
     
@@ -1758,6 +1794,32 @@ public partial class objectsCameraDetector {
             this.sensitivityField = value;
         }
     }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public double maxsensitivity
+    {
+        get {
+            return this.maxsensitivityField;
+        }
+        set {
+            this.maxsensitivityField = value;
+        }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlAttributeAttribute()]
+    public double minsensitivity
+    {
+        get {
+            return this.minsensitivityField;
+        }
+        set {
+            this.minsensitivityField = value;
+        }
+    }
+
+    
     
     /// <remarks/>
     [System.Xml.Serialization.XmlAttributeAttribute()]

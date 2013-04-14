@@ -27,6 +27,7 @@ namespace MultiZonePlayer
         String m_user, m_password;
         //List<String> m_rosterList;
         List<agsXMPP.protocol.client.Presence> m_presenceList;
+		private Metadata.ValueList m_lastCommand = null;
 
         public GTalkMessengers(String user, String password)
         {
@@ -143,11 +144,16 @@ namespace MultiZonePlayer
                 MLog.Log(this, "Messenger not authenticated, try relogin");
                 Login();
             }
-            
-            if (objXmpp != null && objXmpp.Authenticated)
-                objXmpp.Send(new agsXMPP.protocol.client.Message(new agsXMPP.Jid(targetId), agsXMPP.protocol.client.MessageType.chat, message));
-            else
-                MLog.Log(this, "Messenger not authenticated yet, message dropped");
+
+			string[] targets = IniFile.PARAM_GTALK_TARGETUSER[1].Split(';');
+			for (int i = 0; i < targets.Length; i++)
+			{
+				if (objXmpp != null && objXmpp.Authenticated)
+					objXmpp.Send(new agsXMPP.protocol.client.Message(new agsXMPP.Jid(targets[i]), 
+						agsXMPP.protocol.client.MessageType.chat, message));
+				else
+					MLog.Log(this, "Messenger not authenticated yet, message dropped");
+			}
         }
 
         public void ReceiveMessage(String message, String sender)
@@ -182,23 +188,38 @@ namespace MultiZonePlayer
 					}
 					else
 					{
-						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, cmdName, Metadata.CommandSources.messenger);
-						for (int i = 1; i < atoms.Length; i++)
+						Metadata.ValueList val;
+						if (cmdName != Metadata.GlobalCommands.r.ToString())
 						{
-							pair = atoms[i].Split(':');
-							if (pair.Length >= 2)
+							val = new Metadata.ValueList(Metadata.GlobalParams.command, cmdName, Metadata.CommandSources.messenger);
+							for (int i = 1; i < atoms.Length; i++)
 							{
-								val.Add(pair[0].ToLower(), pair[1].Replace('_', ' '));
-							}
-							else
-							{
-								if (i == 1)//assume first param is zonename. replace _ to allow space in words
-									val.Add(Metadata.GlobalParams.singleparamvalue, atoms[i].Replace('_', ' '));
+								pair = atoms[i].Split(':');
+								if (pair.Length >= 2)
+								{
+									val.Add(pair[0].ToLower(), pair[1].Replace('_', ' '));
+								}
 								else
-									MLog.Log(this, "Invalid parameter in " + atoms[i]);
+								{
+									if (i == 1)//assume first param is zonename. replace _ to allow space in words
+										val.Add(Metadata.GlobalParams.singleparamvalue, atoms[i].Replace('_', ' '));
+									else
+										MLog.Log(this, "Invalid parameter in " + atoms[i]);
+								}
 							}
 						}
-						Metadata.CommandResult res = API.DoCommand(val);
+						else
+						{
+							val = m_lastCommand;
+						}
+						Metadata.CommandResult res;
+						if (val != null)
+						{
+							res = API.DoCommand(val);
+							m_lastCommand = val;
+						}
+						else
+							res = new Metadata.CommandResult(Metadata.ResultEnum.ERR, "Error", "Error no last command exist");
 						string sysname = System.Security.Principal.WindowsIdentity.GetCurrent().Name.ToString();
 						replymessage = sysname + " (" + res.Command + "): " + res.Result + " - " + res.ErrorMessage + " - " + res.OutputMessage
 							+ res.ValuesToString();
@@ -229,16 +250,21 @@ namespace MultiZonePlayer
         public Boolean IsTargetAvailable()
         {
             agsXMPP.protocol.client.Presence item = null;
-            item = m_presenceList.Find(x => x.From.Bare.ToLower().Equals(IniFile.PARAM_GTALK_TARGETUSER[1].ToLower()) 
-                && x.Type.Equals(agsXMPP.protocol.client.PresenceType.available));
-            return (item != null);
+
+			string[] targets = IniFile.PARAM_GTALK_TARGETUSER[1].Split(';');
+			for (int i = 0; i < targets.Length; i++)
+			{
+				item = m_presenceList.Find(x => x.From.Bare.ToLower().Equals(targets[i].ToLower())
+					&& x.Type.Equals(agsXMPP.protocol.client.PresenceType.available));
+				if (item != null)
+					return true;
+			}
+			return false;
         }
 
         public void MakeBuzz()
         {
-			string[] targets = IniFile.PARAM_GTALK_TARGETUSER[1].Split(';');
-			for (int i=0;i<targets.Length;i++)
-				SendMessage("BUZZ", targets[i]);
+			SendMessage("BUZZ", IniFile.PARAM_GTALK_TARGETUSER[1]);
         }
     }
 
@@ -449,9 +475,8 @@ namespace MultiZonePlayer
 						switch(dev.DeviceType)
 						{
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
-								zone.SetTempHum(
-									(Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == "temperature").Value)/10).ToString(),
-									dev.FieldValues.Find(x => x.Name == "humidity").Value);
+								zone.Temperature = (Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value)/10).ToString();
+								zone.Humidity = dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value;
 								break;
 							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
 								

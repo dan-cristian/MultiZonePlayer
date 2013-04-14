@@ -45,7 +45,13 @@ namespace MultiZonePlayer
             private Boolean m_isFollowMeMusic = false;
             private Boolean m_isPowerFailure = false;
 
-            
+			private Boolean m_isWinloadLoading = false;
+
+			public Boolean IsWinloadLoading
+			{
+				get { return m_isWinloadLoading; }
+				set { m_isWinloadLoading = value; }
+			}
 
             public List<IMessenger> m_messengerList = new List<IMessenger>();
             private NotifyState m_notifyState;
@@ -643,6 +649,7 @@ namespace MultiZonePlayer
                     if (!Utilities.IsProcAlive(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1]))
                     {
                         MLog.Log(this, "WINLOAD proc not running, restarting");
+						m_isWinloadLoading = true;
 						RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
 							IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal);
                     }
@@ -763,6 +770,25 @@ namespace MultiZonePlayer
                 m_lastBuzzDateTime = DateTime.Now;
             }
 
+			public void NotifyEventToUsers(MZPEvent mzpevent, string cause)
+			{
+				MLog.Log(this, mzpevent.DisplayMessage() + " cause:" + cause);
+				SendMessengerMessageToOne(cause + "; " + mzpevent.DisplayMessage());
+				MessengerMakeBuzz();
+				List<Metadata.ZoneDetails> zonesToNotify = m_zoneList.FindAll(x => x.ZoneId != mzpevent.ZoneDetails.ZoneId && x.IsActive);
+				if (zonesToNotify == null)
+				{
+					zonesToNotify = m_zoneList.FindAll(x => x.HasImmediateMove || x.HasRecentMove).OrderBy(x=>x.HasImmediateMove).ToList();
+				}
+				Metadata.ValueList vals = new Metadata.ValueList();
+				vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.notifyuser.ToString());
+				foreach (Metadata.ZoneDetails zone in zonesToNotify)
+				{
+					vals.Set(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+					API.DoCommand(vals);
+				}
+			}
+
 			public Metadata.CommandResult ExecuteMacro(int macroId)
 			{
 				Metadata.CommandResult cmdresult = new Metadata.CommandResult();
@@ -856,16 +882,18 @@ namespace MultiZonePlayer
 
 			public int GetMacroIdByShortcut(string shortcut, string deviceName)
 			{
-				shortcut = shortcut.ToLower();
-				deviceName = deviceName.ToLower();
-				Metadata.MacroEntry entry = m_macroList.Find(x => 
-					x.ShortcutList != null 
-					&& x.ShortcutList.Find(y => y.Shortcut == shortcut) != null
-					&& (x.ShortcutList.Find(y => deviceName.Contains(y.DeviceName))!=null));
-				if (entry != null)
-					return entry.Id;
-				else
-					return -1;
+				if (shortcut != null)
+				{
+					shortcut = shortcut.ToLower();
+					deviceName = deviceName.ToLower();
+					Metadata.MacroEntry entry = m_macroList.Find(x =>
+						x.ShortcutList != null
+						&& x.ShortcutList.Find(y => y.Shortcut == shortcut) != null
+						&& (x.ShortcutList.Find(y => deviceName.Contains(y.DeviceName)) != null));
+					if (entry != null)
+						return entry.Id;
+				}
+				return -1;
 			}
 
             public void CheckForAlarm()
@@ -918,24 +946,22 @@ namespace MultiZonePlayer
 
             private void LogEvent(MZPEvent mzpevent)
             {
-                String message = mzpevent.Source + " | " + mzpevent.Message + " | " + mzpevent.TypeEv + " | " + mzpevent.Importance + " | " + mzpevent.DateTime;
+				string cause;
                 MLog.LogEvent(mzpevent);
 
 				if (mzpevent.ZoneDetails != null)
 				{
 					if (mzpevent.ZoneDetails.IsArmed)
 					{
-						MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone is armed, buzz required");
-						SendMessengerMessageToOne(message);
-						MessengerMakeBuzz();
+						cause = "Event detected on armed zone "+mzpevent.ZoneDetails.ZoneName;
+						NotifyEventToUsers(mzpevent, cause);
 					}
 
 					if (mzpevent.ZoneDetails != null && mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
 							(MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
 					{
-						MLog.Log(this, mzpevent.Source + " event on " + mzpevent.ZoneDetails.ZoneName + " when zone armed, hard notify required");
-						SendMessengerMessageToOne(message);
-						MessengerMakeBuzz();
+						cause = "Event detected on armed area";
+						NotifyEventToUsers(mzpevent, cause);
 					}
 					else
 					{
@@ -952,10 +978,8 @@ namespace MultiZonePlayer
 						switch (m_systemAlarm.AreaState)
 						{
 							case Alarm.EnumAreaState.entrydelay:
-								String msg = "Area entry when area is armed";
-								MLog.Log(this, msg);
-								SendMessengerMessageToOne(msg);
-								MessengerMakeBuzz();
+								cause = "Area entry when area is armed";
+								NotifyEventToUsers(mzpevent, cause);
 								break;
 						}
 					}
@@ -963,21 +987,22 @@ namespace MultiZonePlayer
 
                 if ((mzpevent.TypeEv.Equals(MZPEvent.EventType.Security) && mzpevent.Importance.Equals(MZPEvent.EventImportance.Critical)))
                 {
-                    MLog.Log(this, mzpevent.Source + " security critical event hard notify required");
-                    SendMessengerMessageToOne(message);
-                    MessengerMakeBuzz();
+					cause = "Security critical event";
+					NotifyEventToUsers(mzpevent, cause);
                 }
 
                 if (NotifyState.GTalkEnabled)
                 {
                     MLog.Log(this, mzpevent.Source + " event optional GTalk notify required");
-                    m_messengerList.Find(x => x.GetType().Equals(typeof(GTalkMessengers))).SendMessage(message, IniFile.PARAM_GTALK_TARGETUSER[1]);
+                    m_messengerList.Find(x => x.GetType().Equals(typeof(GTalkMessengers))).SendMessage(mzpevent.DisplayMessage(), 
+						IniFile.PARAM_GTALK_TARGETUSER[1]);
                 }
 
                 if (NotifyState.SMSEnabled)
                 {
                     MLog.Log(this, mzpevent.Source + " event optional SMS notify required");
-                    m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessage(message, IniFile.PARAM_SMS_TARGETNUMBER[1]);
+                    m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessage(mzpevent.DisplayMessage(), 
+						IniFile.PARAM_SMS_TARGETNUMBER[1]);
                 }
             }
 

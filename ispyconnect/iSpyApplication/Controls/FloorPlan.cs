@@ -1,5 +1,7 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -315,7 +317,7 @@ namespace iSpyApplication.Controls
             Margin = new Padding(0, 0, 0, 0);
             Padding = new Padding(0, 0, 5, 5);
             BorderStyle = BorderStyle.None;
-            BackColor = MainForm.Conf.BackColor.ToColor();
+            BackColor = MainForm.BackgroundColor;
             Fpobject = ofp;
             MouseClick += FloorPlanControlClick;
 
@@ -333,27 +335,67 @@ namespace iSpyApplication.Controls
             double wrat = Convert.ToDouble(ImageWidth) / 533d;
             double hrat = Convert.ToDouble(ImageHeight) / 400d;
 
-            foreach (objectsFloorplanObjectsEntry fpoe in Fpobject.objects.@object)
+
+            bool changeHighlight = true;
+
+            if (Highlighted)
             {
-                if (((fpoe.x*wrat)-hittargetw) * xRat <= local.X && ((fpoe.x*wrat) + hittargetw) * xRat > local.X &&
-                    ((fpoe.y*hrat)-hittargeth) * yRat <= local.Y && ((fpoe.y*hrat) + hittargeth) * yRat > local.Y)
+                foreach (objectsFloorplanObjectsEntry fpoe in Fpobject.objects.@object)
+                {
+                    if (((fpoe.x*wrat) - hittargetw)*xRat <= local.X && ((fpoe.x*wrat) + hittargetw)*xRat > local.X &&
+                        ((fpoe.y*hrat) - hittargeth)*yRat <= local.Y && ((fpoe.y*hrat) + hittargeth)*yRat > local.Y)
+                    {
+                        switch (fpoe.type)
+                        {
+                            case "camera":
+                                CameraWindow cw = Owner.GetCameraWindow(fpoe.id);
+                                //cw.Location = new Point(Location.X + e.X, Location.Y + e.Y);
+                                cw.BringToFront();
+                                cw.Focus();
+                                
+                                changeHighlight = false;
+                                break;
+                            case "microphone":
+                                VolumeLevel vl = Owner.GetMicrophone(fpoe.id);
+                                //vl.Location = new Point(Location.X + e.X, Location.Y + e.Y);
+                                vl.BringToFront();
+                                vl.Focus();
+                                
+                                changeHighlight = false;
+                                break;
+                        }
+                        break;
+                    }                   
+                }
+            }
+
+            if (changeHighlight)
+            {
+                bool hl = Highlighted;
+                Owner.ClearHighlights();
+
+                Highlighted = !hl;
+            }
+            if (Highlighted)
+            {
+                foreach (objectsFloorplanObjectsEntry fpoe in Fpobject.objects.@object)
                 {
                     switch (fpoe.type)
                     {
                         case "camera":
                             CameraWindow cw = Owner.GetCameraWindow(fpoe.id);
-                            cw.Location = new Point(Location.X + e.X, Location.Y + e.Y);
-                            cw.BringToFront();
+                            cw.Highlighted = true;
                             break;
                         case "microphone":
                             VolumeLevel vl = Owner.GetMicrophone(fpoe.id);
-                            vl.Location = new Point(Location.X + e.X, Location.Y + e.Y);
-                            vl.BringToFront();
+                            vl.Highlighted = true;
+
                             break;
                     }
-                    break;
                 }
             }
+
+            Owner.Invalidate(true);
         }
 
         protected override void OnLostFocus(EventArgs e)
@@ -368,10 +410,44 @@ namespace iSpyApplication.Controls
             base.OnGotFocus(e);
         }
 
+        public bool Highlighted;
+
+        public Color BorderColor
+        {
+            get
+            {
+                if (Highlighted)
+                    return MainForm.FloorPlanHighlightColor;
+
+                if (Focused)
+                    return MainForm.BorderHighlightColor;
+
+                return MainForm.BorderDefaultColor;
+
+            }
+        }
+
+        public int BorderWidth
+        {
+            get
+            {
+                if (Highlighted)
+                    return 4;
+                return 2;
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs pe)
         {
             // lock
             Graphics gPlan = pe.Graphics;
+            //gPlan.CompositingMode = CompositingMode.SourceCopy;
+            //gPlan.CompositingQuality = CompositingQuality.HighSpeed;
+            //gPlan.PixelOffsetMode = PixelOffsetMode.HighSpeed;
+            //gPlan.SmoothingMode = SmoothingMode.None;
+            //gPlan.InterpolationMode = InterpolationMode.Default;
+
+            
             Rectangle rc = ClientRectangle;
 
             var grabPoints = new[]
@@ -381,17 +457,16 @@ namespace iSpyApplication.Controls
                                     };
             int textpos = rc.Height - 20;
             var drawFont = new Font(FontFamily.GenericSansSerif, 9);
-            Color border = (!Focused) ? Color.Black : MainForm.Conf.BorderHighlightColor.ToColor();
-            var grabBrush = new SolidBrush(border);
-            var borderPen = new Pen(grabBrush);
+
+            var grabBrush = new SolidBrush(BorderColor);
+            var borderPen = new Pen(grabBrush, BorderWidth);
+            
             var drawBrush = new SolidBrush(Color.FromArgb(255, 255, 255, 255));
             var sbTs = new SolidBrush(Color.FromArgb(128, 0, 0, 0));
 
             try
             {
-                gPlan.DrawRectangle(borderPen, 0, 0, rc.Width - 1, rc.Height - 1);
-
-                gPlan.FillPolygon(grabBrush, grabPoints);
+                
 
 
                 if (_imgview != null)
@@ -399,6 +474,9 @@ namespace iSpyApplication.Controls
                     lock (_imgview)
                     {
                         gPlan.DrawImage(_imgview, rc.X + 1, rc.Y + 1, rc.Width - 2, rc.Height - 26);
+
+                        gPlan.CompositingMode = CompositingMode.SourceOver;
+                        gPlan.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
                         gPlan.DrawString(LocRm.GetString("FloorPlan") + ": " + Fpobject.name, drawFont,
                                     drawBrush,
                                     new PointF(5, textpos));
@@ -423,6 +501,10 @@ namespace iSpyApplication.Controls
                                  ypoint + ButtonOffset);
 
             }
+
+            gPlan.DrawRectangle(borderPen, 0, 0, rc.Width - 1, rc.Height - 1);
+
+            gPlan.FillPolygon(grabBrush, grabPoints);
 
             sbTs.Dispose();
             grabBrush.Dispose();
@@ -466,12 +548,31 @@ namespace iSpyApplication.Controls
                 {
                     if (RefreshImage || (_imgplan == null && Fpobject.image != ""))
                     {
-                        Image img = System.Drawing.Image.FromFile(Fpobject.image);
+                        if (_imgplan!=null)
+                        {
+                            try
+                            {
+                                _imgplan.Dispose();
+                            } catch
+                            {
+                            }
+                        }
+                        if (_imgview != null)
+                        {
+                            try
+                            {
+                                _imgview.Dispose();
+                            }
+                            catch
+                            {
+                            } 
+                        }
+                        Image img = Image.FromFile(Fpobject.image);
                         if (!Fpobject.originalsize)
                         {
                             var rf = new ResizeBilinear(533, 400);
-                            _imgplan = rf.Apply((Bitmap) img);
-                            _imgview = (Bitmap) _imgplan.Clone();
+                            _imgplan = rf.Apply((Bitmap)img);
+                            _imgview = (Bitmap)_imgplan.Clone();
                         }
                         else
                         {

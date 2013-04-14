@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using iSpyApplication;
@@ -9,7 +10,7 @@ using Microsoft.Win32;
 
 internal static class Program
 {
-    public static Mutex Mutex;
+    //public static Mutex Mutex;
     private static string _apppath = "", _appdatapath = "";
     public static string AppPath
     {
@@ -43,14 +44,9 @@ internal static class Program
     public static string ExecutableDirectory = "";
    
     public static Mutex WriterMutex;
-
-
     private static int _reportedExceptionCount;
     private static ErrorReporting _er;
 
-
-
-    
     /// <summary>
     /// The main entry point for the application.
     /// </summary>
@@ -77,10 +73,22 @@ internal static class Program
         {
             Application.EnableVisualStyles();            
             Application.SetCompatibleTextRenderingDefault(false);
-            
 
-            bool firstInstance;
-            Mutex = new Mutex(false, "iSpy", out firstInstance);
+
+            bool firstInstance = true;
+            //Mutex = new Mutex(false, "iSpy", out firstInstance);
+
+            var me = Process.GetCurrentProcess();
+            var arrProcesses = Process.GetProcessesByName(me.ProcessName);
+
+            if (arrProcesses.Length > 1)
+            {
+                File.WriteAllText(AppDataPath + "external_command.txt", "showform");
+                //ensures pickup by filesystemwatcher
+                Thread.Sleep(1000);
+                firstInstance = false;               
+            }
+            
             string executableName = Application.ExecutablePath;
             var executableFileInfo = new FileInfo(executableName);
             ExecutableDirectory = executableFileInfo.DirectoryName;
@@ -99,12 +107,24 @@ internal static class Program
                 //    EnsureInstall(false);
                 if (args[0].ToLower().Trim() == "-reset" && !ei)
                 {
-                    if (MessageBox.Show("Reset iSpy? This will overwrite all your settings.", "Confirm", MessageBoxButtons.OKCancel)==DialogResult.OK)
-                    EnsureInstall(true);
+                    if (firstInstance)
+                    {
+                        if (
+                            MessageBox.Show("Reset iSpy? This will overwrite all your settings.", "Confirm",
+                                            MessageBoxButtons.OKCancel) == DialogResult.OK)
+                            EnsureInstall(true);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please exit iSpy before resetting it.");
+                    }
                 }
                 if (args[0].ToLower().Trim() == "-silent" || args[0].ToLower().Trim('\\') == "s")
                 {
-                    silentstartup = true;
+                    if (firstInstance)
+                    {
+                        silentstartup = true;
+                    }
                 }
                 else
                 {
@@ -124,31 +144,27 @@ internal static class Program
                     //ensures pickup by filesystemwatcher
                     Thread.Sleep(1000);
                 }
-                else
-                {
-                    MessageBox.Show(LocRm.GetString("iSpyRunning"), LocRm.GetString("Note"), MessageBoxButtons.OK,
-                                    MessageBoxIcon.Error);
-                }
+                
                 Application.Exit();
-                Mutex.Close();
-                Mutex.Dispose();
                 return;
             }
-            File.WriteAllText(AppDataPath + "external_command.txt", "");
 
-            //VLC integration
             if (VlcHelper.VlcInstalled)
                 VlcHelper.AddVlcToPath();
 
+            File.WriteAllText(AppDataPath + "external_command.txt", "");
+
+            // in case our https certificate ever expires or there is some other issue
+            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+            
             WriterMutex = new Mutex();
             Application.ThreadException += ApplicationThreadException;
+                
             var mf = new MainForm(silentstartup, command);
-            
             Application.Run(mf);
-            Mutex.Close();
             WriterMutex.Close();
-            Mutex.Dispose();
             WriterMutex.Dispose();
+            
         }
         catch (Exception ex)
         {

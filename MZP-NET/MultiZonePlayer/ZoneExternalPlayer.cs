@@ -371,7 +371,8 @@ namespace MultiZonePlayer
 							m_zoneDetails.IsActive = true;
 							m_zoneDetails.Genre = resp.result.type;
 							m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
-							Utilities.SetForegroundWindow(GetXBMCHandle());
+							if (!MZPState.Instance.IsWinloadLoading)
+								Utilities.SetForegroundWindow(GetXBMCHandle());
 						}
 						else
 						{
@@ -397,7 +398,7 @@ namespace MultiZonePlayer
         {
             base.Tick();
             //slower tick
-            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 3)
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 5)
             {
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;

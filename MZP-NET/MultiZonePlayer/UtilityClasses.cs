@@ -118,7 +118,9 @@ namespace MultiZonePlayer
 			remoteadjustdim,
 			getpicture,
 			macro,
-			rfxcmd
+			rfxcmd,
+			r,//repeat last command
+			notifyuser
 			
         }
         public enum GlobalParams
@@ -389,6 +391,15 @@ namespace MultiZonePlayer
                     throw new Exception("Number of values is not equal to number of ids, incorrect use");
             }
 
+			public void Set(GlobalParams key, String value)
+            {
+				int index = Values.FindIndex(x=>x==value);
+				if (index!=-1)
+					Keys[index]=value;
+                else
+					Add(key,value);
+            }
+
             public void Add(String globalparamkey, String value)
             {
                 if (Enum.IsDefined(typeof(Metadata.GlobalParams), globalparamkey))
@@ -552,7 +563,8 @@ namespace MultiZonePlayer
 			public DateTime LastNotifyZoneEventTriggered;
 
 			protected string m_temperature="", m_humidity="";
-			protected DateTime m_lastTempHumSet = DateTime.MinValue;
+			protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
+
 			// not serializable, hidden from json
             
             
@@ -740,29 +752,34 @@ namespace MultiZonePlayer
 			public String Temperature
 			{
 				get 
-				{
-					return DateTime.Now.Subtract(m_lastTempHumSet).TotalHours > 1 ? m_temperature + "!" : m_temperature;
-				}
+				{	return m_temperature;}
 				set
 				{
 					m_temperature = value;
-					m_lastTempHumSet = DateTime.Now;
+					m_lastTempSet = DateTime.Now;
 				}
+			}
+
+			public String TemperatureAgeInMinutes
+			{
+				get { return Math.Round(DateTime.Now.Subtract(m_lastTempSet).TotalMinutes).ToString(); }
 			}
 
 			public String Humidity
 			{
 				get
-				{
-					return DateTime.Now.Subtract(m_lastTempHumSet).TotalHours > 1 ? m_humidity + "!" : m_humidity;
-				}
+				{	return m_humidity;}
 				set
 				{
 					m_humidity = value;
-					m_lastTempHumSet = DateTime.Now;
+					m_lastHumSet = DateTime.Now;
 				}
 			}
 
+			public String HumidityAgeInMinutes
+			{
+				get { return Math.Round(DateTime.Now.Subtract(m_lastHumSet).TotalMinutes).ToString(); }
+			}
             #endregion
             public static void LoadFromIni(ref List<ZoneDetails> zones)
             {
@@ -837,13 +854,6 @@ namespace MultiZonePlayer
                 String json = fastJSON.JSON.Instance.ToJSON(this, false);
                 IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
             }
-
-			public void SetTempHum(string temperature, string humidity)
-			{
-				m_temperature = temperature;
-				m_humidity = humidity;
-				m_lastTempHumSet = DateTime.Now;
-			}
 
 			public bool HasOutputDeviceAvailable()
 			{
@@ -1065,7 +1075,12 @@ namespace MultiZonePlayer
 							vals.Add(pair[0], pair[1]);
 						}
 						else
-							MLog.Log(null, "At AddParams Invalid parameter in " + atoms[i]);
+						{
+							if (i == 0)
+								vals.Add(Metadata.GlobalParams.singleparamvalue, atoms[i]);
+							else
+								MLog.Log(null, "At AddParams Invalid parameter in " + atoms[i]);
+						}
 					}
 				}
 			}
@@ -1361,6 +1376,13 @@ namespace MultiZonePlayer
 			lighting1,
 			UKNOWN
 		}
+
+		public enum DeviceAttributes
+		{
+			temperature,
+			humidity
+		}
+
 		public static List<RFXDevice> DeviceList;
 
 		public class RFXDevice
@@ -1658,6 +1680,11 @@ namespace MultiZonePlayer
             Importance = importance;
             ZoneDetails = zonedetails;
         }
+
+		public string DisplayMessage()
+		{
+			return Source + " | " + Message + " | " + TypeEv + " | " + Importance + " | " + DateTime;
+		}
     }
 
     public class NotifyState

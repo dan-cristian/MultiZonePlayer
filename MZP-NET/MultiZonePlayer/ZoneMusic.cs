@@ -63,8 +63,8 @@ namespace MultiZonePlayer
             {
                 m_zoneForm = p_zoneForm;
                 m_zoneDetails = p_zoneForm.ZoneDetails;
-                int volume = p_zoneForm.GetVolumeLevel();
-                m_dcPlay = new DCPlayer(m_zoneForm, p_fileName, volume);
+				Play(p_fileName);
+                
             }
 
             private void LoadPlaylist(String playListName)//, String fileNameToResume)
@@ -240,11 +240,12 @@ namespace MultiZonePlayer
 
             public void Play(String filePathName)
             {
+				Stop();
                 int volume = m_zoneForm.GetVolumeLevel();
 				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
-                m_dcPlay = new DCPlayer(m_zoneForm, filePathName, volume);
-                
+				System.Threading.Thread.Sleep(4000);//ensure we can hear this
+                DCPlayer tempPlay = new DCPlayer(m_zoneForm, IniFile.CurrentPath()+ filePathName, volume);
             }
 
             public void UpdateOutputDevices()
@@ -831,6 +832,9 @@ namespace MultiZonePlayer
                         else
                             HoldCriteriaToggle();
                         break;
+					case Metadata.GlobalCommands.notifyuser:
+						Play(IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1]);
+						break;
                     default:
                         MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
                         break;
