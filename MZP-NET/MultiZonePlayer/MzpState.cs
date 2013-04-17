@@ -69,11 +69,10 @@ namespace MultiZonePlayer
 			//private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
 			private List<Metadata.MacroEntry> m_macroList;
+			private List<Metadata.Rules.RuleEntry> m_ruleList;
 
-			public List<Metadata.MacroEntry> MacroList
-			{
-				get { return m_macroList; }
-			}
+
+			private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 			private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
 
 			/*internal USB_RC2.ELROUsbRC2 RemoteControl
@@ -93,7 +92,16 @@ namespace MultiZonePlayer
                 get { return m_displayList; }
                 set { m_displayList = value; }
             }
-           
+
+			public List<Metadata.MacroEntry> MacroList
+			{
+				get { return m_macroList; }
+			}
+
+			public List<Metadata.Rules.RuleEntry> RuleList
+			{
+				get { return m_ruleList; }
+			}
 
             public NotifyState NotifyState
             {
@@ -190,12 +198,12 @@ namespace MultiZonePlayer
                 m_messengerList.Add(new SMS());
 				m_messengerList.Add(new RFXCom());
 
-				LoadMacros();
+				LoadMacrosandRules();
 
                 LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
 
-			private void LoadMacros()
+			private void LoadMacrosandRules()
 			{
 				DateTime fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 				if (fileModified != m_lastScheduleFileModifiedDate)
@@ -203,6 +211,13 @@ namespace MultiZonePlayer
 					m_macroList = Metadata.MacroEntry.LoadFromIni();
 					RFXDeviceDefinition.LoadFromIni();
 					m_lastScheduleFileModifiedDate = fileModified;
+				}
+
+				fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.RULES_FILE);
+				if (fileModified != m_lastRulesFileModifiedDate)
+				{
+					m_ruleList = Metadata.Rules.LoadFromIni();
+					m_lastRulesFileModifiedDate = fileModified;
 				}
 			}
 
@@ -860,7 +875,7 @@ namespace MultiZonePlayer
 
 			public void CheckForScheduleMacroEvents()
 			{
-				LoadMacros();
+				LoadMacrosandRules();
 				String entrymonth, entryday;
 				String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
 				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2).ToUpper();

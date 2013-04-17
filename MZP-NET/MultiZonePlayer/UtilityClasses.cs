@@ -2,14 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-
+using System.Text.RegularExpressions;
 
 namespace MultiZonePlayer
 {
-
-    class UtilityClasses
-    {
-    }
 
 
     /*
@@ -1085,6 +1081,40 @@ namespace MultiZonePlayer
 				}
 			}
 		}
+
+		public class Rules
+		{
+			public class RuleEntry
+			{
+				public string Name;
+				public string Trigger;
+				public string JSCode;
+			}
+
+			public static List<RuleEntry> LoadFromIni()
+			{
+				List<RuleEntry> ruleList = new List<RuleEntry>();
+				string fileContent = Utilities.ReadFile(IniFile.CurrentPath()+ IniFile.RULES_FILE);
+				string[] rules = fileContent.Split(new String[]{"};"}, StringSplitOptions.RemoveEmptyEntries);
+				string[] atoms;
+				RuleEntry entry;
+				foreach (string rule in rules)
+				{
+					entry = new RuleEntry();
+					
+					atoms = rule.Split(new String[]{"={"}, StringSplitOptions.RemoveEmptyEntries);
+					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
+
+					atoms = atoms[1].Split(',');
+					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
+					entry.JSCode = atoms[1];
+
+					ruleList.Add(entry);
+				}
+
+				return ruleList;
+			}
+		}
         public class CamAlert
         {
             private static int startIndex = 0;
@@ -1712,5 +1742,7 @@ namespace MultiZonePlayer
         void SaveToIni();
     }
 
+	
+		
 
 }

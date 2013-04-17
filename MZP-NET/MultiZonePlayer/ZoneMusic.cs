@@ -8,8 +8,6 @@ using System.Windows.Forms;
 
 namespace MultiZonePlayer
 {
-   
-
     public enum PlayMode
     {
         Default1, 

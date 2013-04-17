@@ -19,6 +19,7 @@ namespace MultiZonePlayer
 
             public const String INI_FILE = "\\MultiZonePlayer.ini";
 			public const String SCHEDULER_FILE = "\\scheduler.ini";
+			public const String RULES_FILE = "\\rules.ini";
 
             public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";

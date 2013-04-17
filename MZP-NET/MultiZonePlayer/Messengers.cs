@@ -184,7 +184,7 @@ namespace MultiZonePlayer
 					if (cmd.StartsWith("?"))
 					{
 						replymessage = message;
-						HTMLInterface.GenericReflect(HTMLInterface.Instance, ref replymessage);
+						Reflect.GenericReflect(ReflectionInterface.Instance, ref replymessage);
 					}
 					else
 					{
