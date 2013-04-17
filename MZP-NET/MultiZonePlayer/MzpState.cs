@@ -69,7 +69,6 @@ namespace MultiZonePlayer
 			//private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
 			private List<Metadata.MacroEntry> m_macroList;
-			private List<Metadata.Rules.RuleEntry> m_ruleList;
 
 
 			private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
@@ -96,11 +95,6 @@ namespace MultiZonePlayer
 			public List<Metadata.MacroEntry> MacroList
 			{
 				get { return m_macroList; }
-			}
-
-			public List<Metadata.Rules.RuleEntry> RuleList
-			{
-				get { return m_ruleList; }
 			}
 
             public NotifyState NotifyState
@@ -216,7 +210,7 @@ namespace MultiZonePlayer
 				fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.RULES_FILE);
 				if (fileModified != m_lastRulesFileModifiedDate)
 				{
-					m_ruleList = Metadata.Rules.LoadFromIni();
+					Metadata.Rules.LoadFromIni();
 					m_lastRulesFileModifiedDate = fileModified;
 				}
 			}

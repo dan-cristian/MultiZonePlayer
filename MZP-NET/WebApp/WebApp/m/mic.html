@@ -79,8 +79,8 @@
     function startRecording() {
     recordButton.setActivity(0);
     playButton.setEnabled(false);
-    Wami.startRecording("http://#~HTMLWebServerPort#/direct/mic.html?command=micrecord&zoneid=%_zoneid", "onRecordStart", "onRecordFinish", "onError");
-    //Wami.startRecording("http://#~HTMLWebServerPort#/direct/mic.wav", "onRecordStart", "onRecordFinish", "onError");
+    Wami.startRecording("http://#WebServerPort#/direct/mic.html?command=micrecord&zoneid=%_zoneid", "onRecordStart", "onRecordFinish", "onError");
+    //Wami.startRecording("http://#WebServerPort#/direct/mic.wav", "onRecordStart", "onRecordFinish", "onError");
     }
 
     function stopRecording() {
@@ -92,7 +92,7 @@
     function startPlaying() {
     playButton.setActivity(0);
     recordButton.setEnabled(false);
-    Wami.startPlaying("http://#~HTMLWebServerPort#/direct/mic.html?command=micplay&zoneid=%_zoneid", "onPlayStart", "onPlayFinish", "onError");
+    Wami.startPlaying("http://#WebServerPort#/direct/mic.html?command=micplay&zoneid=%_zoneid", "onPlayStart", "onPlayFinish", "onError");
     }
 
     function stopPlaying() {

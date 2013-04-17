@@ -43,17 +43,7 @@ namespace MultiZonePlayer
         {
 			Metadata.Rules.LoadFromIni();
 
-			String result = ExpressionEvaluator.EvaluateToString(@"
-				switch (1) 
-				{
-					case 0:
-						result = 100;
-						break;
-					case 1:
-						result = 2+8;
-						break;
-				}
-				");
+			
         }
 
         /// <summary>

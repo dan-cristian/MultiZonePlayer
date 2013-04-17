@@ -559,6 +559,7 @@ namespace MultiZonePlayer
 			public DateTime LastNotifyZoneEventTriggered;
 
 			protected string m_temperature="", m_humidity="";
+			protected string m_temperatureLast = "", m_humidityLast = "";
 			protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 
 			// not serializable, hidden from json
@@ -753,6 +754,10 @@ namespace MultiZonePlayer
 				{
 					m_temperature = value;
 					m_lastTempSet = DateTime.Now;
+
+					if (m_temperature != m_temperatureLast)
+						Rules.ExecuteRule("zonename="+ZoneName);
+					m_temperatureLast = m_temperature;
 				}
 			}
 
@@ -840,7 +845,7 @@ namespace MultiZonePlayer
                     {
                         HasDisplay = true;
                     }
-                    //IsArmed = zonestorage.IsArmed;
+                    //Temperature = "1";
                 }
 
             }
@@ -1082,8 +1087,9 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public class Rules
+		public static class Rules
 		{
+			private static List<RuleEntry> m_ruleList;
 			public class RuleEntry
 			{
 				public string Name;
@@ -1091,9 +1097,9 @@ namespace MultiZonePlayer
 				public string JSCode;
 			}
 
-			public static List<RuleEntry> LoadFromIni()
+			public static void LoadFromIni()
 			{
-				List<RuleEntry> ruleList = new List<RuleEntry>();
+				m_ruleList = new List<RuleEntry>();
 				string fileContent = Utilities.ReadFile(IniFile.CurrentPath()+ IniFile.RULES_FILE);
 				string[] rules = fileContent.Split(new String[]{"};"}, StringSplitOptions.RemoveEmptyEntries);
 				string[] atoms;
@@ -1103,16 +1109,67 @@ namespace MultiZonePlayer
 					entry = new RuleEntry();
 					
 					atoms = rule.Split(new String[]{"={"}, StringSplitOptions.RemoveEmptyEntries);
-					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
+					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "").ToLower();
 
 					atoms = atoms[1].Split(',');
-					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
+					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "").ToLower();
 					entry.JSCode = atoms[1];
 
-					ruleList.Add(entry);
+					m_ruleList.Add(entry);
 				}
+			}
+			[System.Runtime.CompilerServices.MethodImpl(
+			System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+			public static void ExecuteRule(params object[] triggerField)
+			{
+				if (m_ruleList == null) LoadFromIni();
 
-				return ruleList;
+				string triggerName;
+				var currentMethod = System.Reflection.MethodInfo.GetCurrentMethod();
+				var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
+				
+				int i = callingMethod.Name.IndexOf("set_");
+				if (i >= 0)
+				{
+					triggerName = callingMethod.Name.Substring("set_".Length).ToLower();
+					triggerName = callingMethod.DeclaringType.Name.ToLower() + "." + triggerName;
+
+					if (triggerField.Length>0)
+						triggerName += ";"+triggerField[0].ToString();
+				}
+				else
+				{
+					MLog.Log(null, "Error no triggername found calling method=" + callingMethod.Name);
+					return;
+				}
+				
+				RuleEntry rule = m_ruleList.Find(x => x.Trigger == triggerName);
+				if (rule != null)
+				{
+					string parsedCode = rule.JSCode;
+					try
+					{
+						Reflect.GenericReflect(ref  parsedCode);
+						String JSResult = ExpressionEvaluator.EvaluateToString(parsedCode);
+
+						string[] pairs = JSResult.Split(';');
+						string[] entry;
+						Metadata.ValueList vals = new Metadata.ValueList();
+						
+						foreach (string pair in pairs)
+						{
+							entry = pair.Split('=');
+							vals.Add(entry[0].ToLower().Trim(), entry[1].ToLower());
+						}
+						MLog.Log(null, "Execute RuleEngine command="+ rule.Name +" trigger=" + triggerName);
+						API.DoCommand(vals);
+					}
+					catch (Exception ex)
+					{
+						MLog.Log(ex, "Error reflect / JS / execute");
+					}
+				}
+				else MLog.Log(null, "Info no ruleentry found name=" + triggerName);
 			}
 		}
         public class CamAlert

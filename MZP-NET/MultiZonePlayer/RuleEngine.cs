@@ -84,13 +84,15 @@ namespace MultiZonePlayer
 	}
 	public static class Reflect
 	{
-		public static String GenericReflect(Object instance, ref String result)
+		public static String GenericReflect(/*Object instance, */ref String result)
 		{
+			object instance = ReflectionInterface.Instance;
+
 			String[] parameters, methods;
 			object[] methodparams;
 			String property, methodparam, method;
 			object value, objinfo;
-			PropertyInfo propInfo;
+			
 			MethodInfo methInfo;
 			String[] varatoms;
 
@@ -99,82 +101,84 @@ namespace MultiZonePlayer
 			{
 				foreach (String atom in varatoms)
 				{
-					switch (atom[0])
+					value = GetProperty(instance, atom);
+					if (value != null)
+						result = result.Replace("#" + atom + "#", value.ToString());
+					else
 					{
-						case '!': //property read
-							property = atom.Replace("!", "");
-							propInfo = Type.GetType(instance.GetType().FullName).GetProperty(property);
-							if (propInfo != null)
+							/*switch (atom[0])
 							{
-								value = propInfo.GetValue(instance, null);
-								result = result.Replace("#" + atom + "#", value.ToString());
-							}
-							break;
-						case '~'://method invoke
-							methodparam = atom.Replace("~", "");
-							parameters = methodparam.Split(',');
-							method = parameters[0].ToString();
+								case '!': //property read
+									property = atom.Replace("!", "");
+									value = GetProperty(instance, property);
+									result = result.Replace("#" + atom + "#", value.ToString());
+									break;
+								case '~'://method invoke
+							 */ 
+									methodparam = atom.Replace("~", "");
+									parameters = methodparam.Split(',');
+									method = parameters[0].ToString();
 
-							methods = method.Split('.');
-							if (methods.Length > 1)//have fields
-							{
-								method = methods[0];
-								property = methods[1];
-							}
-							else
-								property = null;
-
-							methodparams = new object[parameters.Length];// + 1];
-							//methodparams[0] = context;
-							parameters.CopyTo(methodparams, 0);//1);
-							methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
-
-							if (methInfo != null)
-							{
-								try
-								{
-									value = methInfo.Invoke(instance, methodparams);
-								}
-								catch (Exception ex)
-								{
-									result = ex.Message;
-									value = null;
-								}
-
-								if (value != null)
-								{
-									//nested properties, check for the type and read value
-									if (property != null)
+									methods = method.Split('.');
+									if (methods.Length > 1)//have fields
 									{
-										objinfo = Type.GetType(value.GetType().FullName).GetField(property);
-
-										if (objinfo == null)
-										{
-											objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
-											if (objinfo == null)
-											{
-												objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
-												if (objinfo == null)
-													MLog.Log(instance, "Unknown call for atom=" + property);
-												else
-												{
-													value = ((PropertyInfo)objinfo).GetValue(value, null);
-												}
-											}
-											else
-												value = ((PropertyInfo)objinfo).GetValue(value, null);
-										}
-										else
-											value = ((FieldInfo)objinfo).GetValue(value);
+										method = methods[0];
+										property = methods[1];
 									}
-									if (value != null)
-										result = result.Replace("#" + atom + "#", value.ToString());
-								}
-							}
-							break;
-						case '*'://multiple values
+									else
+										property = null;
 
-							break;
+									methodparams = new object[parameters.Length];// + 1];
+									//methodparams[0] = context;
+									parameters.CopyTo(methodparams, 0);//1);
+									methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
+
+									if (methInfo != null)
+									{
+										try
+										{
+											value = methInfo.Invoke(instance, methodparams);
+										}
+										catch (Exception ex)
+										{
+											result = ex.Message;
+											value = null;
+										}
+
+										if (value != null)
+										{
+											//nested properties, check for the type and read value
+											if (property != null)
+											{
+												objinfo = Type.GetType(value.GetType().FullName).GetField(property);
+
+												if (objinfo == null)
+												{
+													objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
+													if (objinfo == null)
+													{
+														objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
+														if (objinfo == null)
+															MLog.Log(instance, "Unknown call for atom=" + property);
+														else
+														{
+															value = ((PropertyInfo)objinfo).GetValue(value, null);
+														}
+													}
+													else
+														value = ((PropertyInfo)objinfo).GetValue(value, null);
+												}
+												else
+													value = ((FieldInfo)objinfo).GetValue(value);
+											}
+											if (value != null)
+												result = result.Replace("#" + atom + "#", value.ToString());
+										}
+									}
+									//break;
+								
+							//}
+						
 					}
 				}
 			}
@@ -184,6 +188,44 @@ namespace MultiZonePlayer
 			}
 
 			return result;
+		}
+
+		private static string GetProperty(object instance, string propName)
+		{
+			PropertyInfo propInfo;
+			object value;
+			string result = null;
+
+			propInfo = Type.GetType(instance.GetType().FullName).GetProperty(propName);
+			if (propInfo != null)
+			{
+				value = propInfo.GetValue(instance, null);
+				if (value != null)
+					result = value.ToString();
+			}
+
+			return result;
+		}
+
+		private static string GetMethodNoFields(object instance, string methodName)
+		{
+			string value = null, method;
+			String[] parameters;
+			MethodInfo methInfo;
+
+			parameters = methodName.Split(',');
+			method = parameters[0].ToString();
+
+			methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
+
+			if (methInfo != null)
+			{
+					//value = methInfo.Invoke(instance, methodparams);
+					//objinfo = Type.GetType(value.GetType().FullName).GetField(property);
+					//value = ((FieldInfo)objinfo).GetValue(value);
+			}
+								
+			return value;
 		}
 	}
 

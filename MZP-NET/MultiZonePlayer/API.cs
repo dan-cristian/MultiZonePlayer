@@ -79,6 +79,19 @@ namespace MultiZonePlayer
             return JsonResult(DoCommand(vals));
         }
 
+		public static String DoCommandDirect(Metadata.GlobalCommands cmd, params string[] paramNameValuePair)
+		{
+			Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.command,
+								cmd.ToString(), Metadata.CommandSources.system);
+
+			for (int i = 0; i < paramNameValuePair.Length; i=i+2)
+			{
+				vals.Add(paramNameValuePair[i], paramNameValuePair[i + 1]);
+			}
+
+			return JsonResult(DoCommand(vals));
+		}
+
 		public static String DoCommandFromWeb(Metadata.ValueList vals, out Metadata.ValueList retvalues)
 		{
 			Metadata.CommandResult cmdres = DoCommand(vals);

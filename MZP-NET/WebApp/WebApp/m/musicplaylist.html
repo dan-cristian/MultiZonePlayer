@@ -22,7 +22,7 @@
         <form action="music.html?zoneid=%_zoneid" method="post">
         <input name="command" type="hidden" value="setmediaitem"/>
         <select multiple="no" size="10" name="selectedindex">
-        #~HTMLGetCmdValues,%_zoneid,medialist,option#
+        #GetCmdValues,%_zoneid,medialist,option#
         </select><br />
         <input type="submit" value="Play Title" />
         </form>
@@ -34,24 +34,24 @@
         
         <tr>
             <td>Title</td>
-            <td>#~HTMLZones.Title,%_zoneid#</td>
+            <td>#Zones.Title,%_zoneid#</td>
             <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=artist">Hold Artist</a></td>
-            <td>#~HTMLZones.Author,%_zoneid#</td>
+            <td>#Zones.Author,%_zoneid#</td>
         </tr>
         <tr>
             <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=genre">Hold Genre</a></td>
-            <td>#~HTMLZones.Genre,%_zoneid#</td>
+            <td>#Zones.Genre,%_zoneid#</td>
             <td>Year</td>
-            <td>#~HTMLZones.Year,%_zoneid#</td>
+            <td>#Zones.Year,%_zoneid#</td>
         </tr>
         <tr>
             <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=album">Hold Album</a></td>
-            <td>#~HTMLZones.Album,%_zoneid#</td>
+            <td>#Zones.Album,%_zoneid#</td>
         </tr>
         <tr>
             
             <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=rating">Hold Rating</a></td>
-            <td>#~HTMLZones.Rating,%_zoneid# </td>
+            <td>#Zones.Rating,%_zoneid# </td>
         </tr>
         <tr>
             <td><a href="music.html?command=holdcriteria&zoneid=%_zoneid&action=folder">Hold Folder</a></td>

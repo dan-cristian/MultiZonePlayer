@@ -399,7 +399,7 @@ namespace MultiZonePlayer
 					if (resvalue != null)
 						result = result.Replace("#HTMLCommandResult#", resvalue.GetValue(Metadata.GlobalParams.msg));
 
-					Reflect.GenericReflect(ReflectionInterface.Instance, ref result);
+					Reflect.GenericReflect(ref result);
 				}
 			}
 			catch (Exception ex)

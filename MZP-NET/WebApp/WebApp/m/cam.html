@@ -110,7 +110,7 @@
   <body>
   <table><tr><td>
     <div id="PHOTO_DIV">
-      <img src="http://#~HTMLDVRServerPort#/livefeed?oid=%_oid&amp;r=#!HTMLRandom#&amp;" id="PHOTOID"
+      <img src="http://#DVRServerPort#/livefeed?oid=%_oid&amp;r=#HTMLRandom#&amp;" id="PHOTOID"
         onerror="nextimageerror(this)" onload="nextimage(this)" alt="photo"/>
       </div>
       </td>
@@ -120,7 +120,7 @@
       <input id="RadioRefresh2" name="RadioRefresh" type="radio" value="1000" onclick="delay=1000"/>Medium<br />
       <input id="RadioRefresh3"  name="RadioRefresh" type="radio" value="10000" onclick="delay=10000"/>Slow<br />
       </form>
-	  Temp: #~HTMLZones.Temperature,%_zoneid#; Hum: #~HTMLZones.Humidity,%_zoneid#
+	  Temp: #Zones.Temperature,%_zoneid#; Hum: #Zones.Humidity,%_zoneid#
 	  <br />
       <a class="med" href="video.html?oid=%_oid&zoneid=%_zoneid">Video</a>
 	  <br /><br />
