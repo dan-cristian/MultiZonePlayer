@@ -101,7 +101,7 @@ namespace MultiZonePlayer
 			{
 				foreach (String atom in varatoms)
 				{
-					value = GetProperty(instance, atom);
+					value = GetPropertyField(instance, atom);
 					if (value != null)
 						result = result.Replace("#" + atom + "#", value.ToString());
 					else
@@ -190,20 +190,29 @@ namespace MultiZonePlayer
 			return result;
 		}
 
-		private static string GetProperty(object instance, string propName)
+		public static string GetPropertyField(object instance, string propName)
 		{
 			PropertyInfo propInfo;
+			FieldInfo fieldInfo;
 			object value;
 			string result = null;
 
 			propInfo = Type.GetType(instance.GetType().FullName).GetProperty(propName);
 			if (propInfo != null)
-			{
 				value = propInfo.GetValue(instance, null);
-				if (value != null)
-					result = value.ToString();
+			else
+			{
+				fieldInfo = instance.GetType().GetField(propName);
+				if (fieldInfo != null)
+					value = fieldInfo.GetValue(instance);
+				else
+				{
+					//method
+					value = null;
+				}
 			}
-
+			if (value != null)
+				result = value.ToString();
 			return result;
 		}
 

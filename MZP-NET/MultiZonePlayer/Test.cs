@@ -42,7 +42,8 @@ namespace MultiZonePlayer
         private void button1_Click(object sender, EventArgs e)
         {
 			Metadata.Rules.LoadFromIni();
-
+			List<Metadata.ZoneDetails> a = new List<Metadata.ZoneDetails>();
+			Metadata.ZoneDetails.LoadFromIni(ref a);
 			
         }
 

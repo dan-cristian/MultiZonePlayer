@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System.Reflection;
 
 namespace MultiZonePlayer
 {
@@ -11,6 +13,11 @@ namespace MultiZonePlayer
     /*
      * Interface collection of classes used for mobile client comm 
      */
+	public interface RuleEngineInterface
+	{
+		
+	}
+
     public class Metadata
     {
         //public static String ERR = "NotOK";
@@ -571,12 +578,6 @@ namespace MultiZonePlayer
             {
             }
 
-            /*public static void Initialise(List<String> p_systemOutputDevices, List<Utilities.WAVEOUTCAPS> p_systemWaveOutputDevices)
-            {
-                m_systemOutputDevices = p_systemOutputDevices;
-                m_systemWaveOutputDevices = p_systemWaveOutputDevices;
-            }*/
-
             public ZoneDetails(int p_zoneId, String p_zoneName)
             {
                 ZoneId = p_zoneId;
@@ -755,8 +756,8 @@ namespace MultiZonePlayer
 					m_temperature = value;
 					m_lastTempSet = DateTime.Now;
 
-					if (m_temperature != m_temperatureLast)
-						Rules.ExecuteRule("zonename="+ZoneName);
+					if (m_temperature != m_temperatureLast)	
+						Rules.ExecuteRule(this);
 					m_temperatureLast = m_temperature;
 				}
 			}
@@ -774,6 +775,10 @@ namespace MultiZonePlayer
 				{
 					m_humidity = value;
 					m_lastHumSet = DateTime.Now;
+
+					if (m_humidity != m_humidityLast)
+						Rules.ExecuteRule(this);
+					m_humidityLast = m_humidity;
 				}
 			}
 
@@ -845,7 +850,7 @@ namespace MultiZonePlayer
                     {
                         HasDisplay = true;
                     }
-                    //Temperature = "1";
+                    Temperature = "1";
                 }
 
             }
@@ -1094,6 +1099,9 @@ namespace MultiZonePlayer
 			{
 				public string Name;
 				public string Trigger;
+				public string FilterFieldName = null;
+				public string FilterFieldValue = null;
+				public List<String> VariableList = null;
 				public string JSCode;
 			}
 
@@ -1112,18 +1120,36 @@ namespace MultiZonePlayer
 					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "").ToLower();
 
 					atoms = atoms[1].Split(',');
-					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "").ToLower();
+					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
+					string[] vars = entry.Trigger.Split(';');
+					if (vars.Length > 1)
+					{
+						entry.Trigger = vars[0];
+						string[] fields = vars[1].Split('=');
+						if (fields.Length > 1)
+						{
+							entry.FilterFieldName = fields[0];
+							entry.FilterFieldValue = fields[1];
+						}
+					}
 					entry.JSCode = atoms[1];
-
+					//find variables
+					MatchCollection matchList;
+					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");
+					if (matchList.Count > 0) entry.VariableList = new List<string>();
+					foreach (Match m in matchList)
+					{
+						entry.VariableList.Add(m.Groups[1].Value);
+					}
 					m_ruleList.Add(entry);
 				}
+				MLog.Log(null, "Loaded " + m_ruleList.Count + " rules");
 			}
-			[System.Runtime.CompilerServices.MethodImpl(
-			System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-			public static void ExecuteRule(params object[] triggerField)
+			[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+			public static void ExecuteRule(object callingInstance)
 			{
 				if (m_ruleList == null) LoadFromIni();
-
+				//string parameters = triggerField.Length>0?triggerField[0].ToString():"";
 				string triggerName;
 				var currentMethod = System.Reflection.MethodInfo.GetCurrentMethod();
 				var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
@@ -1131,22 +1157,47 @@ namespace MultiZonePlayer
 				int i = callingMethod.Name.IndexOf("set_");
 				if (i >= 0)
 				{
-					triggerName = callingMethod.Name.Substring("set_".Length).ToLower();
-					triggerName = callingMethod.DeclaringType.Name.ToLower() + "." + triggerName;
-
-					if (triggerField.Length>0)
-						triggerName += ";"+triggerField[0].ToString();
+					triggerName = callingMethod.Name.Substring("set_".Length);
+					triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
 				}
 				else
 				{
 					MLog.Log(null, "Error no triggername found calling method=" + callingMethod.Name);
 					return;
 				}
+
+
+				List<RuleEntry> ruleList, filteredList;
+				ruleList = m_ruleList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName == null);
+				filteredList = m_ruleList.FindAll(x=> x.Trigger == triggerName && x.FilterFieldName!=null).ToList();
 				
-				RuleEntry rule = m_ruleList.Find(x => x.Trigger == triggerName);
-				if (rule != null)
+				if (filteredList!=null)
+				{
+					object val;
+					foreach (RuleEntry r in filteredList)
+					{
+						val = Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
+						if (val != null && r.FilterFieldValue == val.ToString())
+							ruleList.Add(r);
+					}
+				}
+
+				foreach (RuleEntry rule in ruleList)
 				{
 					string parsedCode = rule.JSCode;
+					if (rule.VariableList != null)
+					{
+						string value;
+						foreach (string variable in rule.VariableList)
+						{
+							value = Reflect.GetPropertyField(callingInstance, variable);
+							if (value != null)
+								parsedCode = parsedCode.Replace("[" + variable + "]", value);
+							else
+								MLog.Log(null, "No instance variable found for jscode, var="+variable);
+						}
+					}
+					
 					try
 					{
 						Reflect.GenericReflect(ref  parsedCode);
@@ -1155,21 +1206,21 @@ namespace MultiZonePlayer
 						string[] pairs = JSResult.Split(';');
 						string[] entry;
 						Metadata.ValueList vals = new Metadata.ValueList();
-						
+
 						foreach (string pair in pairs)
 						{
 							entry = pair.Split('=');
 							vals.Add(entry[0].ToLower().Trim(), entry[1].ToLower());
 						}
-						MLog.Log(null, "Execute RuleEngine command="+ rule.Name +" trigger=" + triggerName);
+						MLog.Log(null, "Execute RuleEngine command=" + rule.Name + " trigger=" + triggerName);
 						API.DoCommand(vals);
+						 
 					}
 					catch (Exception ex)
 					{
 						MLog.Log(ex, "Error reflect / JS / execute");
 					}
 				}
-				else MLog.Log(null, "Info no ruleentry found name=" + triggerName);
 			}
 		}
         public class CamAlert
