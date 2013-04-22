@@ -518,7 +518,7 @@ namespace MultiZonePlayer
             //public int MinutesUntilSleep = -1;
             public String SleepHourMin = "";//format HH:MM
             public String ZoneName;
-            public ZoneState ZoneState;
+			private ZoneState m_zoneState, m_zoneStateLast=ZoneState.Undefined;
             public int ParentZoneId = -1;
             public int PowerIndex;
             public String WakeTime = "";
@@ -558,7 +558,9 @@ namespace MultiZonePlayer
             public String SourceURL;
 
             public Boolean CameraAlertActive = true;
-            public Boolean MovementAlert = false;
+			private Boolean m_movementAlert = false, m_movementAlertLast = false;
+
+			
             public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
             public DateTime LastCamAlertDateTime = DateTime.MinValue;
             public DateTime LastLocalCommandDateTime = DateTime.MinValue;
@@ -592,7 +594,30 @@ namespace MultiZonePlayer
                 return "ID="+ZoneId+";Name="+ZoneName;
             }
             #region getters
-                        
+
+			public ZoneState ZoneState
+			{
+				get { return m_zoneState; }
+				set { m_zoneState = value;
+				if (m_zoneState != m_zoneStateLast)
+				{
+					Rules.ExecuteRule(this);
+					m_zoneStateLast = m_zoneState;
+				}
+				}
+			}
+
+			public Boolean MovementAlert
+			{
+				get { return m_movementAlert; }
+				set { m_movementAlert = value;
+					if (m_movementAlert != m_movementAlertLast)
+					{
+						Rules.ExecuteRule(this);
+						m_movementAlertLast = m_movementAlert;
+					}
+				}
+			}
             public String SummaryStatus
             {
                 get {
@@ -756,9 +781,11 @@ namespace MultiZonePlayer
 					m_temperature = value;
 					m_lastTempSet = DateTime.Now;
 
-					if (m_temperature != m_temperatureLast)	
+					if (m_temperature != m_temperatureLast)
+					{
 						Rules.ExecuteRule(this);
-					m_temperatureLast = m_temperature;
+						m_temperatureLast = m_temperature;
+					}
 				}
 			}
 
@@ -777,8 +804,10 @@ namespace MultiZonePlayer
 					m_lastHumSet = DateTime.Now;
 
 					if (m_humidity != m_humidityLast)
+					{
 						Rules.ExecuteRule(this);
-					m_humidityLast = m_humidity;
+						m_humidityLast = m_humidity;
+					}
 				}
 			}
 
@@ -1759,13 +1788,31 @@ namespace MultiZonePlayer
         { new_, restore };
 
         public int AreaId;
-
-        public EnumAreaState AreaState = EnumAreaState.ready;
+		private EnumAreaState m_areaState = EnumAreaState.ready, m_areaStateLast = EnumAreaState.ready;
         public Boolean IsMonitoringActive = false;
         public DateTime LastAlarmEventDateTime = DateTime.MinValue;
         public DateTime LastAreaStateChange = DateTime.MinValue;
-		public bool IsArmed = false;
+		private bool m_isArmed = false, m_isArmedLast=false;
 
+		public bool IsArmed
+		{
+			get { return m_isArmed; }
+			set { m_isArmed = value;
+				if (m_isArmed != m_isArmedLast)
+					Metadata.Rules.ExecuteRule(this);
+				m_isArmedLast = m_isArmed;
+			}
+		}
+
+		public EnumAreaState AreaState
+		{
+			get { return m_areaState; }
+			set { m_areaState = value;
+				if (m_areaState != m_areaStateLast)
+					Metadata.Rules.ExecuteRule(this);
+				m_areaStateLast = m_areaState;
+			}
+		}
         public Alarm(int areaid)
         {
             AreaId = areaid;
