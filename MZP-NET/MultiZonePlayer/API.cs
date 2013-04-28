@@ -228,7 +228,7 @@ namespace MultiZonePlayer
                             break;
                         case Metadata.GlobalCommands.sendsms:
                             String message = vals.GetValue(Metadata.GlobalParams.msg);
-                            MZPState.Instance.m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessage(message, IniFile.PARAM_SMS_TARGETNUMBER[1]);
+                            MZPState.Instance.m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessageToTarget(message);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case Metadata.GlobalCommands.restartsystem:

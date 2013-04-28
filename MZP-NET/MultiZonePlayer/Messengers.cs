@@ -11,7 +11,7 @@ namespace MultiZonePlayer
 {
     public interface IMessenger
     {
-        void SendMessage(String message, String targetId);
+        void SendMessageToTarget(String message);
         void ReceiveMessage(String message, String sender);
         Boolean TestConnection();
         void Reinitialise();
@@ -137,7 +137,7 @@ namespace MultiZonePlayer
         }*/
 
 
-        public void SendMessage(String message, String targetId)
+        public void SendMessageToTarget(String message)
         {
             if (!objXmpp.Authenticated)
             {
@@ -155,6 +155,21 @@ namespace MultiZonePlayer
 					MLog.Log(this, "Messenger not authenticated yet, message dropped");
 			}
         }
+
+		public void SendMessageToUser(String message, string user)
+		{
+			if (!objXmpp.Authenticated)
+			{
+				MLog.Log(this, "Messenger not authenticated, try relogin");
+				Login();
+			}
+
+			if (objXmpp != null && objXmpp.Authenticated)
+				objXmpp.Send(new agsXMPP.protocol.client.Message(new agsXMPP.Jid(user),
+					agsXMPP.protocol.client.MessageType.chat, message));
+			else
+				MLog.Log(this, "Messenger not authenticated yet, message dropped");
+		}
 
         public void ReceiveMessage(String message, String sender)
         {
@@ -175,7 +190,7 @@ namespace MultiZonePlayer
 					{
 						replymessage = "Not authorised gtalk sender " + sender;
 						MZPState.Instance.LogEvent(MZPEvent.EventSource.System, replymessage, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
-						SendMessage(replymessage, sender);
+						SendMessageToUser(replymessage, sender);
 						return;	
 					}
 				}
@@ -233,7 +248,7 @@ namespace MultiZonePlayer
 			}
 			else
 				replymessage = "Error no command received";
-			SendMessage(replymessage, sender);
+			SendMessageToUser(replymessage, sender);
         }
 
         public bool TestConnection()
@@ -264,169 +279,170 @@ namespace MultiZonePlayer
 
         public void MakeBuzz()
         {
-			SendMessage("BUZZ", IniFile.PARAM_GTALK_TARGETUSER[1]);
+			SendMessageToTarget("BUZZ");
         }
     }
 
-    class SMS : SerialBase, IMessenger
+	class GenericModem : SerialBase, IMessenger
+	{
+		public enum ModemCommandsEnum
+		{
+			[Description("ATD ")]
+			MODEM_CALL,
+			[Description("AT")]
+			MODEM_CHECK
+			
+		};
+
+		public class ModemCommand
+		{
+			public String Id;
+			public String ATCommand;
+			public String Response;
+			public ModemCommand(String Id, String ATCommand, String Response)
+			{
+				this.Id = Id;
+				this.ATCommand = ATCommand;
+				this.Response = Response;
+			}
+		}
+		private List<ModemCommand> m_commandList;
+		protected int m_stdtimeout = 2000;
+		protected int m_calltimeout = 60000;
+		protected int m_atlinescount, m_atdlinescount;
+		
+        ~GenericModem()
+        {
+            Close();
+        }
+		
+		public void Close()
+		{
+			Disconnect();
+		}
+
+		public virtual void Reinitialise()
+		{
+		}
+
+		public void Reinitialise(string baud, string parity, string stopBits, string dataBits, string comport,
+			int atlinescount, int atdlinescount)
+		{
+			comm = new CommunicationManager(baud, parity, stopBits, dataBits, comport, this.handler);
+			m_atlinescount = atlinescount;
+			m_atdlinescount = atdlinescount;
+			comm.OpenPort();
+			m_waitForResponse = false;
+			m_lastOperationWasOK = true;
+			m_commandList = new List<ModemCommand>();
+		}
+
+		public override string SendCommand(Enum cmd, string value)
+		{
+			throw new NotImplementedException();
+		}
+		public override string GetCommandStatus(Enum cmd)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void ReceiveSerialResponse(string response)
+		{
+			MLog.Log(this, "Received unexpected MODEM serial response: " + response);
+
+			String message = response.ToLower().Replace("\r", "").Replace("\n", "").ToLower();
+
+			ReceiveMessage(message, "");
+		}
+
+		public void ReceiveMessage(String message, String sender)
+		{
+			//MLog.Log(this, "SMS from " +sender + " = " + message);
+		}
+
+		public void SendMessageToTarget(String message)
+		{
+			MLog.Log(this, "ERROR send message not implemented in modem");
+		}
+
+		public bool TestConnection()
+		{
+			if (comm==null || !comm.IsPortOpen())
+				return false;
+
+			try
+			{
+				String res = WriteCommand(Utilities.GetEnumDescription((ModemCommandsEnum)ModemCommandsEnum.MODEM_CHECK), m_atlinescount, m_stdtimeout).ToLower();
+				if (res.Contains("ok") || res.Contains("at"))
+					return true;
+				else
+				{
+					MLog.Log(this, "Error health check res=" + res);
+					return true;
+				}
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Exception Test SMS");
+				return false;
+			}
+		}
+
+		public Boolean IsTargetAvailable()
+		{
+			return (comm!=null && comm.IsPortOpen());
+		}
+		public void MakeBuzz()
+		{
+			MLog.Log(this, "Calling target number " + IniFile.PARAM_MODEM_TARGETNUMBER[1]);
+			String res = WriteCommand(Utilities.GetEnumDescription((ModemCommandsEnum)ModemCommandsEnum.MODEM_CALL) 
+				+ IniFile.PARAM_MODEM_TARGETNUMBER[1] + ";", m_atdlinescount, m_calltimeout);
+			MLog.Log(this, "Calling target number done, res=" + res);
+			//comm.ClosePort();
+			//Reinitialise();
+			WriteCommand("ATH", 2, 3000);
+			MLog.Log(this, "Call reset");
+		}
+	}
+
+	class Modem : GenericModem
+	{
+		public override void Reinitialise()
+		{
+			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_MODEM_COMPORT[1],
+				Convert.ToInt16(IniFile.PARAM_MODEM_AT_LINES_COUNT[1]),
+				Convert.ToInt16(IniFile.PARAM_MODEM_ATD_LINES_COUNT[1]));
+
+		}
+	}
+
+    class SMS : GenericModem
     {
         public enum SMSCommandsEnum
         {
             [Description("AT+CMGF=1")] SMS_ENABLE,
             [Description("AT+CMGS=")] SMS_SEND,
-            [Description("ATD ")] SMS_CALL,
-            [Description("AT")] SMS_CHECK,
             [Description("AT+GMM")] SMS_DEVICEINFO,
         };
 
-        private List<SMSCommand> m_commandList;
-        private int m_stdtimeout = 2000;
-        private int m_calltimeout = 80000;
-        private int m_atlinescount, m_atdlinescount;
+		public override void Reinitialise()
+		{
+			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1],
+				Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]),
+				Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]));
+		}
 
-        public class SMSCommand
+        public new void SendMessageToTarget(String message)
         {
-            public String Id;
-            public String ATCommand;
-            public String Response;
-            public SMSCommand(String Id, String ATCommand, String Response)
-            {
-                this.Id = Id;
-                this.ATCommand = ATCommand;
-                this.Response = Response;
-            }
-        }
-
-        public SMS()
-        {
-            Reinitialise();
-        }
-
-        ~SMS()
-        {
-            Close();
-        }
-
-        public void Close()
-        {
-            Disconnect();
-        }
-
-        public void Reinitialise()
-        {
-            comm = new CommunicationManager("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1], this.handler);
-            m_atlinescount = Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]);
-            m_atdlinescount = Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]);
-            comm.OpenPort();
-            m_waitForResponse = false;
-            m_lastOperationWasOK = true;
-            m_commandList = new List<SMSCommand>();
-
-            //WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_DEVICEINFO), m_atlinescount, m_stdtimeout);
-        }
-
-        public override string SendCommand(Enum cmd, string value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void SendMessage(String message, String targetId)
-        {
-            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_ENABLE), m_atlinescount, m_stdtimeout);
-            WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_SEND) + "\"" + IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"", m_atlinescount, m_stdtimeout);
+			WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_ENABLE), 
+				m_atlinescount, m_stdtimeout);
+			WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_SEND) + "\"" 
+				+ IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"", m_atlinescount, m_stdtimeout);
             WriteCommand(message + (char)26, 6, m_stdtimeout * 3);
-        }
-
-        public override string GetCommandStatus(Enum cmd)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ReceiveMessage(String message, String sender)
-        {
-            //MLog.Log(this, "SMS from " +sender + " = " + message);
-        }
-
-        public bool TestConnection()
-        {
-            //bool result = false ;
-            
-            /*if (m_waitForResponse == true)
-            {
-                MLog.Log(this, "Trying to test SMS conn while waiting for response, skip test");
-                return true;
-            }*/
-
-            if (!comm.IsPortOpen())
-                return false;
-
-            try
-            {
-                String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CHECK), m_atlinescount, m_stdtimeout).ToLower();
-                if (res.Contains("ok") || res.Contains("at"))
-                    return true;
-                else
-                {
-                    MLog.Log(this, "Error health check res=" + res);
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                MLog.Log(ex, "Exception Test SMS");
-                return false;
-            }
-        }
-        
-        protected override void ReceiveSerialResponse(string response)
-        {
-            MLog.Log(this, "Received unexpected CELL MODEM serial response: " + response);
-
-            String message = response.ToLower().Replace("\r", "").Replace("\n","").ToLower();
-            /*
-            if (m_waitForResponse == false)
-                MLog.Log(this, "Err, Response received unexpected:" + message + " last cmd=" + m_lastCommand + " resp=" + m_lastResponse);
-            
-            if (message=="") return;
-            if (message.Equals(m_lastCommand))
-            {
-                m_CommandEchoReceived = true;
-                return;
-            }
-            
-            m_lastResponse = message + " at " + DateTime.Now;
-            if (m_CommandEchoReceived) m_waitForResponse = false;
-
-            if (message.Contains("ok") || message.Contains(">") || message.Contains("busy") 
-                || message.Contains("no answer"))// || message.Contains("AT"))
-            {
-                m_lastOperationWasOK = true;
-            }
-            else
-                if (message.Contains("error") || message.Contains("no dialtone"))
-                {
-                    m_lastOperationWasOK = false;
-                    
-                    MLog.Log(this, "SMS received response ERROR="+message);
-                }
-                else
-                    MLog.Log(this, "SMS Unclear response=" + message);
-            */
-            ReceiveMessage(message, "");
-        }
-
-        public Boolean IsTargetAvailable()
-        {
-            return true;
-        }
-
-        public void MakeBuzz()
-        {
-            MLog.Log(this, "Calling target number " + IniFile.PARAM_SMS_TARGETNUMBER[1]);
-            String res = WriteCommand(Utilities.GetEnumDescription((SMSCommandsEnum)SMSCommandsEnum.SMS_CALL) + IniFile.PARAM_SMS_TARGETNUMBER[1] + ";", m_atdlinescount, m_calltimeout);
-            MLog.Log(this, "Calling target number done, res=" + res);
-        }
+        }  
     }
+
+	
 
 	class RFXCom : SerialBase, IMessenger
 	{
@@ -523,9 +539,9 @@ namespace MultiZonePlayer
 			//MLog.Log(this, "SMS from " +sender + " = " + message);
 		}
 
-		public void SendMessage(String message, String targetId)
+		public void SendMessageToTarget(String message)
 		{
-			
+			MLog.Log(this, "RFX comm does not implement sendmessage");
 		}
 
 		public bool TestConnection()

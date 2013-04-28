@@ -150,9 +150,14 @@ namespace MultiZonePlayer
             //public static String[] PARAM_GTALK_SERVER = new String[] { "PARAM_GTALK_SERVER", "gmail.com" };
             public static String[] PARAM_GTALK_TARGETUSER = new String[] { "PARAM_GTALK_TARGETUSER", "dan.cristian@gmail.com" };
             public static String[] PARAM_SMS_TARGETNUMBER = new String[] { "PARAM_SMS_TARGETNUMBER", "0040726159521" };
-            public static String[] PARAM_SMS_COMPORT = new String[] { "PARAM_SMS_COMPORT", "COM8" };
+            public static String[] PARAM_SMS_COMPORT = new String[] { "PARAM_SMS_COMPORT", "COM3" };
             public static String[] PARAM_SMS_AT_LINES_COUNT = new String[] { "PARAM_SMS_AT_LINES_COUNT", "2", "Number of new lines expected to be received after an AT command" };
             public static String[] PARAM_SMS_ATD_LINES_COUNT = new String[] { "PARAM_SMS_ATD_LINES_COUNT", "5", "Number of new lines expected to be received after an ATD (dial) command" };
+
+			public static String[] PARAM_MODEM_TARGETNUMBER = new String[] { "PARAM_MODEM_TARGETNUMBER", "0726159521" };
+			public static String[] PARAM_MODEM_COMPORT = new String[] { "PARAM_MODEM_COMPORT", "COM8" };
+			public static String[] PARAM_MODEM_AT_LINES_COUNT = new String[] { "PARAM_MODEM_AT_LINES_COUNT", "2", "Number of new lines expected to be received after an AT command" };
+			public static String[] PARAM_MODEM_ATD_LINES_COUNT = new String[] { "PARAM_MODEM_ATD_LINES_COUNT", "5", "Number of new lines expected to be received after an ATD (dial) command" };
 
 			public static String[] PARAM_RFXCOM_PORT = new String[] { "PARAM_RFXCOM_PORT", "COM42" };
             public static String[] PARAM_VLC_AUDIOOUT = new String[] { "PARAM_VLC_AUDIOOUT", "directx", "DIRECTX or WAVEOUT" };
@@ -224,6 +229,10 @@ namespace MultiZonePlayer
                 PARAM_SMS_COMPORT,
                 PARAM_SMS_AT_LINES_COUNT,
                 PARAM_SMS_ATD_LINES_COUNT,
+				PARAM_MODEM_TARGETNUMBER,
+                PARAM_MODEM_COMPORT,
+                PARAM_MODEM_AT_LINES_COUNT,
+                PARAM_MODEM_ATD_LINES_COUNT,
                 PARAM_VLC_AUDIOOUT,
                 PARAM_GENERIC_INTERVAL_SPLIT,
                 PARAM_UPS_LOG_SOURCE,

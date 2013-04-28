@@ -121,24 +121,9 @@ namespace MultiZonePlayer
 
                 MLog.Log(this, "Retrieving system available audio output devices");
                 
-                //if (m_systemOutputDeviceNames == null) m_systemOutputDeviceNames = new List<String>(); else m_systemOutputDeviceNames.Clear();
 				String deviceName;
-                /*MLog.Log(this, "Retrieving system audio output devices details");
-                
-                if (m_systemOutputDeviceList != null)
-                {
-                    foreach (Object m in MZPState.Instance.m_systemOutputDeviceList)
-                    {
-                        deviceName = DShowUtility.GetDisplayName((IMoniker)m);
-                        m_systemOutputDeviceNames.Add(deviceName);
-                    }
-                }
-                m_systemOutputDeviceNames.Add(IniFile.DEFAULT_AUTO_DEV_NAME);
-				*/
-
                 MLog.Log(this, "Loading zones from ini");
                 m_zoneList = new List<Metadata.ZoneDetails>();
-                //Metadata.ZoneDetails.Initialise(m_systemOutputDeviceNames, m_waveoutdeviceList);
                 Metadata.ZoneDetails.LoadFromIni(ref m_zoneList);
 
                 m_moodMusicList = new List<MoodMusic>();
@@ -187,9 +172,9 @@ namespace MultiZonePlayer
 
 				RFXDeviceDefinition.LoadFromIni();
 
-                m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], //IniFile.PARAM_GTALK_SERVER[1], 
-                    IniFile.PARAM_GTALK_USERPASS[1]));
+                m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
+				m_messengerList.Add(new Modem());
 				m_messengerList.Add(new RFXCom());
 
 				LoadMacrosandRules();
@@ -281,8 +266,6 @@ namespace MultiZonePlayer
             {
                 get
                 {
-                    //if ((m_sysState == null))
-                    //    m_sysState = new MZPState();
                     return m_sysState;
                 }
             }
@@ -733,20 +716,11 @@ namespace MultiZonePlayer
 
             public bool SendMessengerMessageToOne(String message)
             {
-                foreach (IMessenger m in m_messengerList.FindAll(x => x.GetType().Equals(typeof(GTalkMessengers))))
+                foreach (IMessenger m in m_messengerList)
                 {
                     if (m.IsTargetAvailable())
                     {
-                        m.SendMessage(message, IniFile.PARAM_GTALK_TARGETUSER[1]);
-                        return true;
-                    }
-                }
-
-                foreach (IMessenger m in m_messengerList.FindAll(x => x.GetType().Equals(typeof(SMS))))
-                {
-                    if (m.IsTargetAvailable())
-                    {
-                        m.SendMessage(message, IniFile.PARAM_SMS_TARGETNUMBER[1]);
+                        m.SendMessageToTarget(message);
                         return true;
                     }
                 }
@@ -758,10 +732,7 @@ namespace MultiZonePlayer
             {
                 foreach (IMessenger m in m_messengerList)
                 {
-                    if (m.GetType() == typeof(GTalkMessengers))
-                        m.SendMessage(message, IniFile.PARAM_GTALK_TARGETUSER[1]);
-                    if (m.GetType() == typeof(SMS))
-                        m.SendMessage(message, IniFile.PARAM_SMS_TARGETNUMBER[1]);
+                    m.SendMessageToTarget(message);
                 }
             }
 
@@ -773,10 +744,14 @@ namespace MultiZonePlayer
                 {
                     foreach (IMessenger mess in MZPState.Instance.m_messengerList)
                     {
-                        mess.MakeBuzz();
+						if (mess.IsTargetAvailable())
+						{
+							mess.MakeBuzz();
+							m_lastBuzzDateTime = DateTime.Now;
+						}
                     }
                 }
-                m_lastBuzzDateTime = DateTime.Now;
+                
             }
 
 			public void NotifyEventToUsers(MZPEvent mzpevent, string cause)
@@ -952,7 +927,6 @@ namespace MultiZonePlayer
                 }
             }
 
-
             private void LogEvent(MZPEvent mzpevent)
             {
 				string cause;
@@ -1003,15 +977,13 @@ namespace MultiZonePlayer
                 if (NotifyState.GTalkEnabled)
                 {
                     MLog.Log(this, mzpevent.Source + " event optional GTalk notify required");
-                    m_messengerList.Find(x => x.GetType().Equals(typeof(GTalkMessengers))).SendMessage(mzpevent.DisplayMessage(), 
-						IniFile.PARAM_GTALK_TARGETUSER[1]);
+                    m_messengerList.Find(x => x.GetType().Equals(typeof(GTalkMessengers))).SendMessageToTarget(mzpevent.DisplayMessage());
                 }
 
                 if (NotifyState.SMSEnabled)
                 {
                     MLog.Log(this, mzpevent.Source + " event optional SMS notify required");
-                    m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessage(mzpevent.DisplayMessage(), 
-						IniFile.PARAM_SMS_TARGETNUMBER[1]);
+                    m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessageToTarget(mzpevent.DisplayMessage());
                 }
             }
 
@@ -1027,13 +999,6 @@ namespace MultiZonePlayer
 
             public void Tick()
             {
-                /*if (DateTime.Now.ToString(IniFile.DATETIME_FORMAT).Equals(IniFile.PARAM_LIBRARY_AUTOUPDATE_HOUR[1]))
-                {
-                    if (MediaLibrary.IsInitialised)
-                        InitMediaLibrary();
-                    else
-                        MLog.Log(null, "medialib not initialised, cannot do another init");
-                }*/
 				HealthCheckiSpy();
                 HealthCheckWinload();
                 HealthCheckMessengers();
@@ -1043,11 +1008,9 @@ namespace MultiZonePlayer
                 CheckForExternalZoneEvents();
 				CheckForScheduleMacroEvents();
                 PowerControl.timerPowerSaving_Tick();
-
 				
 				if (MediaLibrary.AllAudioFiles != null)
 					MediaLibrary.AllAudioFiles.SaveUpdatedItems();
             }
         }
-
     }
