@@ -98,6 +98,7 @@ namespace MultiZonePlayer
                     }
                 }
             }
+			MLog.Log(null, "RemotePipi null command code=" + cmdCode);
             return null;
         }
         public static RemotePipiCommand GetCommandByName(String cmdName)

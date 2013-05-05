@@ -171,6 +171,7 @@
     <Compile Include="AudioManagement.Designer.cs">
       <DependentUpon>AudioManagement.cs</DependentUpon>
     </Compile>
+    <Compile Include="Closures.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Messengers.cs" />
     <Compile Include="MzpState.cs" />

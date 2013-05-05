@@ -41,10 +41,12 @@ namespace MultiZonePlayer
 
         private void button1_Click(object sender, EventArgs e)
         {
-			Metadata.Rules.LoadFromIni();
-			List<Metadata.ZoneDetails> a = new List<Metadata.ZoneDetails>();
-			Metadata.ZoneDetails.LoadFromIni(ref a);
-			
+			foreach (COMPortInfo comPort in COMPortInfo.GetCOMPortsInfo())
+			{
+				MLog.Log(null, "COMPORT: "+ string.Format("{0} – {1}", comPort.Name, comPort.Description));
+			}
+
+			SetupDiWrap.ComPortNameFromFriendlyNamePrefix("modem");
         }
 
         /// <summary>

@@ -940,8 +940,9 @@ namespace MultiZonePlayer
 						NotifyEventToUsers(mzpevent, cause);
 					}
 
-					if (mzpevent.ZoneDetails != null && mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
-							(MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
+					if (mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
+							(MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) 
+							&& (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
 					{
 						cause = "Event detected on armed area";
 						NotifyEventToUsers(mzpevent, cause);

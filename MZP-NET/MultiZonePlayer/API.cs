@@ -18,20 +18,34 @@ namespace MultiZonePlayer
     {
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
-            int zoneId = -1;
-            
-            //ignore console KEYBOARD commands
-            if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1]))
+			int zoneId = -1;
+			Metadata.ZoneDetails zoneDetails;
+			try
             {
-                //MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
-                return;
-            }
+				
+				RemotePipiCommand cmdRemote;
+				cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
+				zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
+				//ignore console KEYBOARD commands
+				if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1])	&& zoneId == -1)
+				{
+					//MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
+					return;
+				}
+				
+				zoneDetails = MZPState.Instance.GetZoneById(zoneId);
+				if (zoneDetails != null && zoneDetails.ClosureRelayType!=Metadata.ClosureRelayType.None
+					&& zoneDetails.ClosureIdList.Contains(cmdRemote.CommandCode))
+				{
+					Closures.ProcessAction(zoneDetails, cmdRemote, kd);
+					return;
+				}
+				//normally let only key down message to pass through
+				if (kd.IsKeyUp)
+				{
+					return;
+				}
 
-            try
-            {
-                RemotePipiCommand cmdRemote;
-                cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
-                zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
                 MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " keyup="+kd.IsKeyUp + " keydown="+kd.IsKeyDown
                     +" apicmd="+cmdRemote+(cmdRemote==null?" IGNORING CMD":"") + " zoneid="+zoneId);
                 if (cmdRemote == null)
@@ -157,7 +171,8 @@ namespace MultiZonePlayer
                             //result = JsonResult(res, err, null);
                             break;
                         case Metadata.GlobalCommands.status:
-                            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+							detailedStatus += "\r\n" + MZPState.Instance.SystemAlarm.AreaState;
+							foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
                             {
                                 detailedStatus += "\r\n" + zone.SummaryStatus;
                             }

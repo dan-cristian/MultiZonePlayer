@@ -234,8 +234,10 @@ namespace MultiZonePlayer
                     String camId = vals.GetValue(Metadata.GlobalParams.oid);
                     string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
                     m_zoneDetails.MovementAlert = true;
-                    MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
+                    MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, 
+						MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
 					ZoneOpenActions();
+					
 					m_zoneDetails.MovementAlert = false;
                     /*if (m_zoneDetails.IsArmed || 
                         (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)&&(m_zoneDetails.AlarmAreaId==MZPState.Instance.SystemAlarm.AreaId)))
@@ -269,6 +271,7 @@ namespace MultiZonePlayer
                             vals.GetValue(Metadata.GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(Metadata.GlobalParams.status),
                             MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
 					ZoneOpenActions();
+					
                     /*
                     if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed ||
                         (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (m_zoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))

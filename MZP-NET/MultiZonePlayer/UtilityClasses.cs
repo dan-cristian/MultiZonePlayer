@@ -511,6 +511,50 @@ namespace MultiZonePlayer
 			Closed
 		}
 
+		public class ClosureOpenCloseRelayState
+		{
+			public enum EnumState
+			{
+				Undefined=-1,
+				Open=0,
+				Closed=1
+			}
+			public string Key;
+			public DateTime LastChange;
+			private EnumState m_relayState = EnumState.Undefined;
+
+			public EnumState RelayState
+			{
+				get { return m_relayState; }
+				//set { m_relayState = value; }
+			}
+
+			public bool RelayStateClosed
+			{
+				get { return m_relayState==ClosureOpenCloseRelayState.EnumState.Closed; }
+				set
+				{
+					m_relayState = GetRelayState(value);
+					LastChange = DateTime.Now;
+				}
+			}
+			public static EnumState GetRelayState(bool isRelayClosed)
+			{
+				return isRelayClosed ? ClosureOpenCloseRelayState.EnumState.Closed : ClosureOpenCloseRelayState.EnumState.Open;
+			}
+			public ClosureOpenCloseRelayState(string key, bool relayStateClosed)
+			{
+				Key = key;
+				RelayStateClosed = relayStateClosed;
+			}
+		}
+
+		public enum ClosureRelayType
+		{
+			None,
+			OpenClose,
+			Counter
+		}
         public class ZoneDetails
         {
             public int ZoneId = 0;
@@ -541,7 +585,11 @@ namespace MultiZonePlayer
             public String DisplayConnection = "";
             public String DisplayType = "";
             public Boolean RequirePower = false;
-            
+
+			public string ClosureIdList = "";//separated by ;
+			public ClosureRelayType ClosureRelayType = ClosureRelayType.None;
+			public ClosureOpenCloseRelayState ClosureOpenCloseRelayState;
+
             public int VolumeLevel;
             public long Position = 0;
             public int PositionPercent = 0;
@@ -879,6 +927,9 @@ namespace MultiZonePlayer
                     {
                         HasDisplay = true;
                     }
+
+					ClosureRelayType = zonestorage.ClosureRelayType;
+					ClosureIdList = zonestorage.ClosureIdList;
                     Temperature = "1";
                 }
 
@@ -1792,16 +1843,28 @@ namespace MultiZonePlayer
         public Boolean IsMonitoringActive = false;
         public DateTime LastAlarmEventDateTime = DateTime.MinValue;
         public DateTime LastAreaStateChange = DateTime.MinValue;
-		private bool m_isArmed = false, m_isArmedLast=false;
+		//private bool m_isArmed = false, m_isArmedLast=false;
 
 		public bool IsArmed
 		{
-			get { return m_isArmed; }
-			set { m_isArmed = value;
+			get {
+				bool result = false;
+				switch (m_areaState)
+				{
+					case Alarm.EnumAreaState.armed:
+						result = true;
+						break;
+					case Alarm.EnumAreaState.entrydelayfinished:
+						result = false;
+						break;
+				}
+				return result; 
+			}
+			/*set { m_isArmed = value;
 				if (m_isArmed != m_isArmedLast)
 					Metadata.Rules.ExecuteRule(this);
 				m_isArmedLast = m_isArmed;
-			}
+			}*/
 		}
 
 		public EnumAreaState AreaState

@@ -122,7 +122,8 @@ namespace MultiZonePlayer
             foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
             {
                 dgvZones.Rows.Add(zone.ZoneId, zone.ZoneName, zone.OutputKeywords, zone.OutputDeviceUserSelected, 
-                    zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId);
+                    zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId,
+					zone.ClosureRelayType.ToString(), zone.ClosureIdList);
 
                 if (zone.DisplayType!="")
                 {
@@ -166,7 +167,10 @@ namespace MultiZonePlayer
                     zone.CameraId = (dgvZones.Rows[r].Cells[Zones_CameraId.Name].Value ?? "").ToString();
                     zone.AlarmZoneId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmZoneId.Name].Value ?? "-1");
                     zone.AlarmAreaId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmAreadId.Name].Value ?? "-1");
-                    zone.SaveStateToIni();
+					zone.ClosureRelayType = (Metadata.ClosureRelayType)Enum.Parse(typeof(Metadata.ClosureRelayType), 
+						(dgvZones.Rows[r].Cells[Zones_ClosureRelayType.Name].Value ?? "None").ToString());
+					zone.ClosureIdList = (dgvZones.Rows[r].Cells[Zones_ClosureIdList.Name].Value ?? "").ToString();
+					zone.SaveStateToIni();
                 }
             }
 
