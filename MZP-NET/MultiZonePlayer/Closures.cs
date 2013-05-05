@@ -7,12 +7,12 @@ namespace MultiZonePlayer
 {
 	public static class Closures
 	{
-		public static void ProcessAction(Metadata.ZoneDetails zone, RemotePipiCommand cmdRemote, KeyDetail kd)
+		public static void ProcessAction(Metadata.ZoneDetails zone, KeyDetail kd)
 		{
 			Metadata.ClosureOpenCloseRelayState lastState = zone.ClosureOpenCloseRelayState;
 			if (lastState == null)
 			{
-				lastState = new Metadata.ClosureOpenCloseRelayState(cmdRemote.CommandCode, kd.IsKeyDown);
+				lastState = new Metadata.ClosureOpenCloseRelayState(kd.Key, kd.IsKeyDown);
 				zone.ClosureOpenCloseRelayState = lastState;
 			}
 			//else
@@ -22,7 +22,7 @@ namespace MultiZonePlayer
 				return;
 
 			lastState.RelayStateClosed = kd.IsKeyDown;
-			MLog.Log(null, "Current state " + cmdRemote.CommandCode + " is " + lastState.RelayState);
+			MLog.Log(null, "Current state " + kd.Key + " is " + lastState.RelayState);
 			
 		}
 	}

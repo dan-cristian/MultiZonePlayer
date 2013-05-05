@@ -24,7 +24,7 @@ namespace MultiZonePlayer
             {
 				
 				RemotePipiCommand cmdRemote;
-				cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
+				
 				zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
 				//ignore console KEYBOARD commands
 				if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1])	&& zoneId == -1)
@@ -35,16 +35,19 @@ namespace MultiZonePlayer
 				
 				zoneDetails = MZPState.Instance.GetZoneById(zoneId);
 				if (zoneDetails != null && zoneDetails.ClosureRelayType!=Metadata.ClosureRelayType.None
-					&& zoneDetails.ClosureIdList.Contains(cmdRemote.CommandCode))
+					&& zoneDetails.ClosureIdList.Contains(kd.Key))
 				{
-					Closures.ProcessAction(zoneDetails, cmdRemote, kd);
+					Closures.ProcessAction(zoneDetails, kd);
 					return;
 				}
+
 				//normally let only key down message to pass through
 				if (kd.IsKeyUp)
 				{
 					return;
 				}
+
+				cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
 
                 MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " keyup="+kd.IsKeyUp + " keydown="+kd.IsKeyDown
                     +" apicmd="+cmdRemote+(cmdRemote==null?" IGNORING CMD":"") + " zoneid="+zoneId);

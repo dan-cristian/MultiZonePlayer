@@ -523,6 +523,10 @@ namespace MultiZonePlayer
 			public DateTime LastChange;
 			private EnumState m_relayState = EnumState.Undefined;
 
+			public ClosureOpenCloseRelayState()
+			{
+			}
+
 			public EnumState RelayState
 			{
 				get { return m_relayState; }
