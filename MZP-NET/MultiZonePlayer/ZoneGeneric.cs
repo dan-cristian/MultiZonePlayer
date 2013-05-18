@@ -327,6 +327,10 @@ namespace MultiZonePlayer
                     Thread.Sleep(1000);
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
                     break;
+				case Metadata.GlobalCommands.closure:
+					ZoneClosures.ProcessAction(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.key),
+						vals.GetValue(Metadata.GlobalParams.iskeydown).ToLower()=="true");
+					break;
                 #endregion
                 default:
                     

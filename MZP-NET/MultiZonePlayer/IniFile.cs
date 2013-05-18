@@ -20,8 +20,9 @@ namespace MultiZonePlayer
             public const String INI_FILE = "\\MultiZonePlayer.ini";
 			public const String SCHEDULER_FILE = "\\scheduler.ini";
 			public const String RULES_FILE = "\\rules.ini";
-
-            public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
+			public const String CSV_TEMPERATURE_HUMIDITY = "\\temp-hum.csv";
+			public const String CSV_CLOSURES = "\\closures.csv";
+			public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";
             public const String LOG_MODEM_FILE = "\\MultiZonePlayerModem.log";
             public const String LOG_WEB_FILE = "\\MultiZonePlayerWeb.log";
@@ -179,6 +180,7 @@ namespace MultiZonePlayer
 
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
+			public static String DATETIME_FULL_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
             public static Object[] PARAMS = new Object[]
             {

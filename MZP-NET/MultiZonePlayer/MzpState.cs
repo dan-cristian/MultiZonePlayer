@@ -718,7 +718,7 @@ namespace MultiZonePlayer
             {
                 foreach (IMessenger m in m_messengerList)
                 {
-                    if (m.IsTargetAvailable())
+                    //if (m.IsTargetAvailable())
                     {
                         m.SendMessageToTarget(message);
                         return true;
@@ -744,7 +744,7 @@ namespace MultiZonePlayer
                 {
                     foreach (IMessenger mess in MZPState.Instance.m_messengerList)
                     {
-						if (mess.IsTargetAvailable())
+						//if (mess.IsTargetAvailable())
 						{
 							mess.MakeBuzz();
 							m_lastBuzzDateTime = DateTime.Now;
@@ -759,7 +759,8 @@ namespace MultiZonePlayer
 				MLog.Log(this, mzpevent.DisplayMessage() + " cause:" + cause);
 				SendMessengerMessageToOne(cause + "; " + mzpevent.DisplayMessage());
 				MessengerMakeBuzz();
-				List<Metadata.ZoneDetails> zonesToNotify = m_zoneList.FindAll(x => x.ZoneId != mzpevent.ZoneDetails.ZoneId && x.IsActive);
+				List<Metadata.ZoneDetails> zonesToNotify = m_zoneList.FindAll(x => 
+					(mzpevent.ZoneDetails==null || (x.ZoneId != mzpevent.ZoneDetails.ZoneId)) && x.IsActive);
 				if (zonesToNotify == null)
 				{
 					zonesToNotify = m_zoneList.FindAll(x => x.HasImmediateMove || x.HasRecentMove).OrderBy(x=>x.HasImmediateMove).ToList();
@@ -937,6 +938,7 @@ namespace MultiZonePlayer
 					if (mzpevent.ZoneDetails.IsArmed)
 					{
 						cause = "Event detected on armed zone "+mzpevent.ZoneDetails.ZoneName;
+						
 						NotifyEventToUsers(mzpevent, cause);
 					}
 

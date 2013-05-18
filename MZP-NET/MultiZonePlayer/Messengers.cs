@@ -493,6 +493,8 @@ namespace MultiZonePlayer
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
 								zone.Temperature = (Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value)/10).ToString();
 								zone.Humidity = dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value;
+								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
+								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Humidity);
 								break;
 							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
 								

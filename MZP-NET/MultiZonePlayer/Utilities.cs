@@ -295,6 +295,21 @@ namespace MultiZonePlayer
             int i = Utilities.GetPrivateProfileString(Section, Key, "", temp, 2048, path);
             return temp.ToString();
         }
+		
+		public static void AppendToCsvFile(string filename, string separator, params string[] values)
+		{
+			StreamWriter str = File.AppendText(IniFile.CurrentPath() + filename);
+
+			lock (str)
+			{
+				foreach (string val in values)
+				{
+					str.Write(val + separator);
+				}
+				str.Write("\r\n");
+				str.Close();
+			}
+		}
 
         public static void AppendToGenericLogFile(String text, MZPEvent.EventSource logType)
         {

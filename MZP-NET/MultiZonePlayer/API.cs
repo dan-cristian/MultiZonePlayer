@@ -16,6 +16,8 @@ namespace MultiZonePlayer
 {
     public static class API
     {
+		
+
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
 			int zoneId = -1;
@@ -32,50 +34,58 @@ namespace MultiZonePlayer
 					//MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
 					return;
 				}
-				
+
+				Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
+				val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
 				zoneDetails = MZPState.Instance.GetZoneById(zoneId);
-				if (zoneDetails != null && zoneDetails.ClosureRelayType!=Metadata.ClosureRelayType.None
+				if (zoneDetails != null && zoneDetails.ClosureRelayType != Metadata.ClosureRelayType.None
 					&& zoneDetails.ClosureIdList.Contains(kd.Key))
 				{
-					Closures.ProcessAction(zoneDetails, kd);
-					return;
+					val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
+					val.Add(Metadata.GlobalParams.key, kd.Key);
+					val.Add(Metadata.GlobalParams.iskeydown, kd.IsKeyDown.ToString());
+					//ZoneClosures.ProcessAction(zoneDetails, kd.Key, kd.IsKeyDown);
+					//return;
+					Thread th = new Thread(() => DoCommand(val));
+					th.Name = "RawInput Closure Key " + kd.Key;
+					th.Start();
 				}
-
-				//normally let only key down message to pass through
-				if (kd.IsKeyUp)
+				else
 				{
-					return;
-				}
-
-				cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
-
-                MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " keyup="+kd.IsKeyUp + " keydown="+kd.IsKeyDown
-                    +" apicmd="+cmdRemote+(cmdRemote==null?" IGNORING CMD":"") + " zoneid="+zoneId);
-                if (cmdRemote == null)
-                {
-					int macroId = MZPState.Instance.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
-					if (macroId != -1)
+					//normally let only key down message to pass through
+					if (kd.IsKeyUp)
 					{
-						MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);
-						MZPState.Instance.ExecuteMacro(macroId);
+						return;
 					}
-                    return;
-                }
-               
-                //check if is not a numeric key
-                short intResult;
-                string apicmd;
-                if (Int16.TryParse(cmdRemote.CommandName, out intResult))
-                    apicmd = "k" + intResult;
-                else
-                    apicmd = cmdRemote.CommandName.ToLower();
 
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
-                val.Add(Metadata.GlobalParams.command, apicmd);
-				val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
-                Thread th = new Thread(() => DoCommand(val));
-                th.Name = "RawInput Key " + cmdRemote.CommandName;
-                th.Start();
+					cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
+
+					MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
+						+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId);
+					if (cmdRemote == null)
+					{
+						int macroId = MZPState.Instance.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
+						if (macroId != -1)
+						{
+							MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);
+							MZPState.Instance.ExecuteMacro(macroId);
+						}
+						return;
+					}
+
+					//check if is not a numeric key
+					short intResult;
+					string apicmd;
+					if (Int16.TryParse(cmdRemote.CommandName, out intResult))
+						apicmd = "k" + intResult;
+					else
+						apicmd = cmdRemote.CommandName.ToLower();
+					val.Add(Metadata.GlobalParams.command, apicmd);
+					
+					Thread th = new Thread(() => DoCommand(val));
+					th.Name = "RawInput Key " + cmdRemote.CommandName;
+					th.Start();
+				}
             }
             catch (Exception ex)
             {
@@ -130,7 +140,8 @@ namespace MultiZonePlayer
                 //zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
                 cmdName = vals.GetValue(Metadata.GlobalParams.command);
 				cmdresult.Command = cmdName;
-				MLog.Log(null, "Executing DOCommand " + cmdName);
+				if (cmdName != Metadata.GlobalCommands.closure.ToString())
+					MLog.Log(null, "Executing DOCommand " + cmdName);
 				bool isCmdDefined = Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName);
                 
                 if (isCmdDefined)

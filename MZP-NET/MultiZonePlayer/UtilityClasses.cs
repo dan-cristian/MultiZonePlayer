@@ -123,7 +123,8 @@ namespace MultiZonePlayer
 			macro,
 			rfxcmd,
 			r,//repeat last command
-			notifyuser
+			notifyuser,
+			closure
 			
         }
         public enum GlobalParams
@@ -159,6 +160,7 @@ namespace MultiZonePlayer
 			moodindex,
 			dimvalue,
 			singleparamvalue,
+			key,iskeydown,
 			r//random no
         }
 
@@ -551,6 +553,11 @@ namespace MultiZonePlayer
 				Key = key;
 				RelayStateClosed = relayStateClosed;
 			}
+
+			public void ResetState()
+			{
+				m_relayState = EnumState.Undefined;
+			}
 		}
 
 		public enum ClosureRelayType
@@ -593,6 +600,7 @@ namespace MultiZonePlayer
 			public string ClosureIdList = "";//separated by ;
 			public ClosureRelayType ClosureRelayType = ClosureRelayType.None;
 			public ClosureOpenCloseRelayState ClosureOpenCloseRelayState;
+			public ulong ClosureCounts = 0;
 
             public int VolumeLevel;
             public long Position = 0;
@@ -611,7 +619,6 @@ namespace MultiZonePlayer
 
             public Boolean CameraAlertActive = true;
 			private Boolean m_movementAlert = false, m_movementAlertLast = false;
-
 			
             public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
             public DateTime LastCamAlertDateTime = DateTime.MinValue;
@@ -934,6 +941,7 @@ namespace MultiZonePlayer
 
 					ClosureRelayType = zonestorage.ClosureRelayType;
 					ClosureIdList = zonestorage.ClosureIdList;
+					ClosureCounts = zonestorage.ClosureCounts;
                     Temperature = "1";
                 }
 
@@ -1891,6 +1899,7 @@ namespace MultiZonePlayer
         public enum EventSource
         {
             Alarm,
+			Closure,
             GUI,
             Cam,
             System,
