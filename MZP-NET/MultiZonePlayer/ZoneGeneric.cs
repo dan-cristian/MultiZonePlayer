@@ -331,7 +331,22 @@ namespace MultiZonePlayer
 					ZoneClosures.ProcessAction(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.key),
 						vals.GetValue(Metadata.GlobalParams.iskeydown).ToLower()=="true");
 					break;
-                #endregion
+				case Metadata.GlobalCommands.closuresarm:
+				case Metadata.GlobalCommands.closuresdisarm:	
+					m_zoneDetails.IsClosureArmed = (cmdRemote == Metadata.GlobalCommands.closuresarm);
+					result.Add(Metadata.GlobalParams.msg, "Zone " + m_zoneDetails.ZoneName + " closure armed status=" + m_zoneDetails.IsClosureArmed);
+					break;
+                case Metadata.GlobalCommands.notifyuser:
+					bool needsPower = m_zoneDetails.RequirePower;
+					m_zoneDetails.RequirePower = true;
+					MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+					System.Threading.Thread.Sleep(4000);//ensure we can hear this
+					DCPlayer tempPlay = new DCPlayer(this, IniFile.CurrentPath() 
+						+ IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1], m_zoneDetails.GetDefaultVolume());
+					System.Threading.Thread.Sleep(4000);//ensure we can hear this
+					m_zoneDetails.RequirePower = needsPower;
+					break;
+				#endregion
                 default:
                     
                     action = vals.GetValue(Metadata.GlobalParams.action);
@@ -476,8 +491,10 @@ namespace MultiZonePlayer
                         default:
                             if (m_mainZoneActivity == null)
                             {
-                                MLog.Log(this, "No suitable zoneactivity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName);
-                                return result;
+								string msg = "No suitable zoneactivity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName;
+                                MLog.Log(this, msg);
+								result.Add(Metadata.GlobalParams.msg, msg);
+								return result;
                             }
 
                         #endregion 

@@ -754,17 +754,18 @@ namespace MultiZonePlayer
                 
             }
 
-			public void NotifyEventToUsers(MZPEvent mzpevent, string cause)
+			public void NotifyEventToUsers(MZPEvent mzpevent, string cause, bool excludeSource)
 			{
 				MLog.Log(this, mzpevent.DisplayMessage() + " cause:" + cause);
 				SendMessengerMessageToOne(cause + "; " + mzpevent.DisplayMessage());
 				MessengerMakeBuzz();
-				List<Metadata.ZoneDetails> zonesToNotify = m_zoneList.FindAll(x => 
-					(mzpevent.ZoneDetails==null || (x.ZoneId != mzpevent.ZoneDetails.ZoneId)) && x.IsActive);
-				if (zonesToNotify == null)
-				{
-					zonesToNotify = m_zoneList.FindAll(x => x.HasImmediateMove || x.HasRecentMove).OrderBy(x=>x.HasImmediateMove).ToList();
-				}
+				List<Metadata.ZoneDetails> zonesToNotify = null;
+ 				zonesToNotify = m_zoneList.FindAll(x => x.IsActive || x.HasImmediateMove || x.HasRecentMove)
+					.OrderBy(x=>x.IsActive).ThenBy(x=>x.HasImmediateMove).ToList();
+				
+				if (excludeSource && mzpevent.ZoneDetails != null)
+					zonesToNotify.RemoveAll(x => x.ZoneId == mzpevent.ZoneDetails.ZoneId);
+
 				Metadata.ValueList vals = new Metadata.ValueList();
 				vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.notifyuser.ToString());
 				foreach (Metadata.ZoneDetails zone in zonesToNotify)
@@ -939,7 +940,15 @@ namespace MultiZonePlayer
 					{
 						cause = "Event detected on armed zone "+mzpevent.ZoneDetails.ZoneName;
 						
-						NotifyEventToUsers(mzpevent, cause);
+						NotifyEventToUsers(mzpevent, cause, true);
+					}
+
+					if ((mzpevent.ZoneDetails.IsClosureArmed) 
+						&& (mzpevent.Source == MZPEvent.EventSource.Closure)
+						&& (mzpevent.ZoneDetails.ClosureOpenCloseRelayState.RelayState==Metadata.ClosureOpenCloseRelayState.EnumState.Closed))
+					{
+						cause = "Closure event detected on closure armed zone" + mzpevent.ZoneDetails.ZoneName;
+						NotifyEventToUsers(mzpevent, cause, false);
 					}
 
 					if (mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
@@ -947,7 +956,7 @@ namespace MultiZonePlayer
 							&& (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
 					{
 						cause = "Event detected on armed area";
-						NotifyEventToUsers(mzpevent, cause);
+						NotifyEventToUsers(mzpevent, cause, false);
 					}
 					else
 					{
@@ -965,7 +974,7 @@ namespace MultiZonePlayer
 						{
 							case Alarm.EnumAreaState.entrydelay:
 								cause = "Area entry when area is armed";
-								NotifyEventToUsers(mzpevent, cause);
+								NotifyEventToUsers(mzpevent, cause, false);
 								break;
 						}
 					}
@@ -974,7 +983,7 @@ namespace MultiZonePlayer
                 if ((mzpevent.TypeEv.Equals(MZPEvent.EventType.Security) && mzpevent.Importance.Equals(MZPEvent.EventImportance.Critical)))
                 {
 					cause = "Security critical event";
-					NotifyEventToUsers(mzpevent, cause);
+					NotifyEventToUsers(mzpevent, cause, false);
                 }
 
                 if (NotifyState.GTalkEnabled)

@@ -491,10 +491,25 @@ namespace MultiZonePlayer
 						switch(dev.DeviceType)
 						{
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
-								zone.Temperature = (Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value)/10).ToString();
-								zone.Humidity = dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value;
-								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
-								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Humidity);
+								decimal temp, hum, lasttemp, lasthum;
+								temp = Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value)/10;
+								hum = Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value);
+								lasttemp = Convert.ToDecimal(zone.Temperature);
+								lasthum = Convert.ToDecimal(zone.Humidity);
+
+								lasttemp = lasttemp == 0 ? 0.1m : lasttemp;
+								lasthum = lasthum == 0 ? 0.1m : lasthum;
+
+								if ((Math.Abs(temp - lasttemp) / lasttemp)*100 < 50 || zone.Temperature=="-0")
+								{
+									zone.Temperature = temp.ToString();
+									Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
+								}
+								if ((Math.Abs(hum- lasthum) / lasthum) * 100 < 50 || zone.Humidity=="-0")
+								{
+									zone.Humidity= hum.ToString();
+									Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Humidity);
+								}
 								break;
 							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
 								

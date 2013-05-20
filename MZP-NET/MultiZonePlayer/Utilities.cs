@@ -298,16 +298,23 @@ namespace MultiZonePlayer
 		
 		public static void AppendToCsvFile(string filename, string separator, params string[] values)
 		{
-			StreamWriter str = File.AppendText(IniFile.CurrentPath() + filename);
-
-			lock (str)
+			try
 			{
-				foreach (string val in values)
+				StreamWriter str = File.AppendText(IniFile.CurrentPath() + filename);
+
+				lock (str)
 				{
-					str.Write(val + separator);
+					foreach (string val in values)
+					{
+						str.Write(val + separator);
+					}
+					str.Write("\r\n");
+					str.Close();
 				}
-				str.Write("\r\n");
-				str.Close();
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "error append to csv file " + filename);
 			}
 		}
 

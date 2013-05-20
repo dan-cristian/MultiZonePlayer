@@ -124,7 +124,9 @@ namespace MultiZonePlayer
 			rfxcmd,
 			r,//repeat last command
 			notifyuser,
-			closure
+			closure,
+			closuresarm,
+			closuresdisarm
 			
         }
         public enum GlobalParams
@@ -524,6 +526,8 @@ namespace MultiZonePlayer
 			public string Key;
 			public DateTime LastChange;
 			private EnumState m_relayState = EnumState.Undefined;
+			private EnumState m_relayStateLast = EnumState.Undefined;
+			
 
 			public ClosureOpenCloseRelayState()
 			{
@@ -542,6 +546,12 @@ namespace MultiZonePlayer
 				{
 					m_relayState = GetRelayState(value);
 					LastChange = DateTime.Now;
+
+					if (m_relayState != m_relayStateLast)
+					{
+						Rules.ExecuteRule(this);
+						m_relayStateLast= m_relayState;
+					}
 				}
 			}
 			public static EnumState GetRelayState(bool isRelayClosed)
@@ -557,6 +567,7 @@ namespace MultiZonePlayer
 			public void ResetState()
 			{
 				m_relayState = EnumState.Undefined;
+				m_relayStateLast = EnumState.Undefined;
 			}
 		}
 
@@ -596,6 +607,7 @@ namespace MultiZonePlayer
             public String DisplayConnection = "";
             public String DisplayType = "";
             public Boolean RequirePower = false;
+			public Boolean IsClosureArmed = false;
 
 			public string ClosureIdList = "";//separated by ;
 			public ClosureRelayType ClosureRelayType = ClosureRelayType.None;
@@ -626,8 +638,8 @@ namespace MultiZonePlayer
 			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 			public DateTime LastNotifyZoneEventTriggered;
 
-			protected string m_temperature="", m_humidity="";
-			protected string m_temperatureLast = "", m_humidityLast = "";
+			protected string m_temperature="-0", m_humidity="-0";
+			protected string m_temperatureLast = "-0", m_humidityLast = "-0";
 			protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 
 			// not serializable, hidden from json
@@ -942,7 +954,7 @@ namespace MultiZonePlayer
 					ClosureRelayType = zonestorage.ClosureRelayType;
 					ClosureIdList = zonestorage.ClosureIdList;
 					ClosureCounts = zonestorage.ClosureCounts;
-                    Temperature = "1";
+                    //Temperature = "1";
                 }
 
             }
