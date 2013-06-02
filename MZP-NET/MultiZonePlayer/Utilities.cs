@@ -709,7 +709,7 @@ namespace MultiZonePlayer
                 if (zone != null)
                 {
                     aux = new ZoneAux(zone, (String)MZPState.Instance.zoneDefaultInputs["0"], 
-						zone.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted());
+						zone.GetClonedZones()[0].OutputDeviceAutoCompleted());
                     aux.SetVolumeLevel(zone.GetVolumeLevel());
                     aux.Play();
                 }

@@ -377,14 +377,23 @@ namespace MultiZonePlayer
                 return table;
             }
 
-            public int GetZoneByControlDevice(String deviceName)
+            public int GetZoneByControlDevice(String deviceName, string key)
             {
-                foreach (ControlDevice ctrl in MZPState.Instance.m_iniControlList)
-                {
-                    if (ctrl.DeviceName.Equals(deviceName))
-                        return ctrl.ZoneId;
-                }
-                return -1;
+				List<ControlDevice> devices = m_iniControlList.FindAll(x=>x.DeviceName==deviceName);
+				switch (devices.Count)
+				{
+					case 0:
+						return -1;
+					case 1:
+						return devices[0].ZoneId;
+					default:
+						foreach (ControlDevice dev in devices)
+						{
+							if (GetZoneById(dev.ZoneId).ClosureIdList == key)
+								return dev.ZoneId;
+						}
+						return -1;
+				}
             }
 
             public String GetControlDeviceByZone(int zoneId)
@@ -561,9 +570,11 @@ namespace MultiZonePlayer
 			//Music zone to clone
 			public ZoneGeneric GetFirstZoneMusic()
 			{
+				ZoneGeneric zone = null;
 				Metadata.ZoneDetails zonedetails = ZoneDetails.OrderBy(x => x.LastLocalCommandDateTime).ToList().Find(x =>
                         (x.ActivityType.Equals(Metadata.GlobalCommands.music) && x.IsActive));
-				ZoneGeneric zone = ActiveZones.Find(x => x.GetZoneId() == zonedetails.ZoneId);
+				if (zonedetails != null)
+					zone = ActiveZones.Find(x => x.GetZoneId() == zonedetails.ZoneId);
 				return zone;
 			}
 
@@ -704,12 +715,15 @@ namespace MultiZonePlayer
                     Boolean ok;
                     foreach (IMessenger m in m_messengerList)
                     {
-                        ok = m.TestConnection();
-                        if (!ok)
-                        {
-                            MLog.Log(this, "Error found on test mesenger health, reinitialise: " + m.ToString());
-                            m.Reinitialise();
-                        }
+						if (!m.IsFaulty())
+						{
+							ok = m.TestConnection();
+							if (!ok)
+							{
+								MLog.Log(this, "Error found on test mesenger health, reinitialise: " + m.ToString());
+								m.Reinitialise();
+							}
+						}
                     }
                 }
             }
@@ -754,23 +768,29 @@ namespace MultiZonePlayer
                 
             }
 
-			public void NotifyEventToUsers(MZPEvent mzpevent, string cause, bool excludeSource)
+			public void NotifyEventToUsers(MZPEvent mzpevent, string cause, bool excludeSource, bool notifyMessenger)
 			{
-				MLog.Log(this, mzpevent.DisplayMessage() + " cause:" + cause);
-				SendMessengerMessageToOne(cause + "; " + mzpevent.DisplayMessage());
-				MessengerMakeBuzz();
+				MLog.Log(this, "NotifyEvent "+ mzpevent.DisplayMessage() + " cause:" + cause);
+				if (notifyMessenger)
+				{
+					SendMessengerMessageToOne(cause + "; " + mzpevent.DisplayMessage());
+					MessengerMakeBuzz();
+				}
 				List<Metadata.ZoneDetails> zonesToNotify = null;
- 				zonesToNotify = m_zoneList.FindAll(x => x.IsActive || x.HasImmediateMove || x.HasRecentMove)
-					.OrderBy(x=>x.IsActive).ThenBy(x=>x.HasImmediateMove).ToList();
+ 				zonesToNotify = m_zoneList.FindAll(x => x.HasSpeakers && (x.IsActive || x.HasImmediateMove || x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
+					.OrderByDescending(x=>x.IsActive).ThenByDescending(x=>x.HasImmediateMove).ThenBy(x=>x.LastLocalCommandAgeInSeconds).ToList();
 				
 				if (excludeSource && mzpevent.ZoneDetails != null)
 					zonesToNotify.RemoveAll(x => x.ZoneId == mzpevent.ZoneDetails.ZoneId);
+
+				MLog.Log(this, "NotifyEvent to zones count="+zonesToNotify.Count);
 
 				Metadata.ValueList vals = new Metadata.ValueList();
 				vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.notifyuser.ToString());
 				foreach (Metadata.ZoneDetails zone in zonesToNotify)
 				{
 					vals.Set(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+					vals.Set(Metadata.GlobalParams.sourcezoneid, mzpevent.ZoneDetails.ZoneId.ToString());
 					API.DoCommand(vals);
 				}
 			}
@@ -940,7 +960,7 @@ namespace MultiZonePlayer
 					{
 						cause = "Event detected on armed zone "+mzpevent.ZoneDetails.ZoneName;
 						
-						NotifyEventToUsers(mzpevent, cause, true);
+						NotifyEventToUsers(mzpevent, cause, true, true);
 					}
 
 					if ((mzpevent.ZoneDetails.IsClosureArmed) 
@@ -948,7 +968,7 @@ namespace MultiZonePlayer
 						&& (mzpevent.ZoneDetails.ClosureOpenCloseRelayState.RelayState==Metadata.ClosureOpenCloseRelayState.EnumState.Closed))
 					{
 						cause = "Closure event detected on closure armed zone" + mzpevent.ZoneDetails.ZoneName;
-						NotifyEventToUsers(mzpevent, cause, false);
+						NotifyEventToUsers(mzpevent, cause, false, false);
 					}
 
 					if (mzpevent.ZoneDetails.MovementAlert && (mzpevent.ZoneDetails.IsArmed ||
@@ -956,7 +976,7 @@ namespace MultiZonePlayer
 							&& (mzpevent.ZoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
 					{
 						cause = "Event detected on armed area";
-						NotifyEventToUsers(mzpevent, cause, false);
+						NotifyEventToUsers(mzpevent, cause, false, true);
 					}
 					else
 					{
@@ -974,7 +994,7 @@ namespace MultiZonePlayer
 						{
 							case Alarm.EnumAreaState.entrydelay:
 								cause = "Area entry when area is armed";
-								NotifyEventToUsers(mzpevent, cause, false);
+								NotifyEventToUsers(mzpevent, cause, false, true);
 								break;
 						}
 					}
@@ -983,7 +1003,7 @@ namespace MultiZonePlayer
                 if ((mzpevent.TypeEv.Equals(MZPEvent.EventType.Security) && mzpevent.Importance.Equals(MZPEvent.EventImportance.Critical)))
                 {
 					cause = "Security critical event";
-					NotifyEventToUsers(mzpevent, cause, false);
+					NotifyEventToUsers(mzpevent, cause, false, true);
                 }
 
                 if (NotifyState.GTalkEnabled)

@@ -473,7 +473,7 @@ namespace MultiZonePlayer
                     m_isAlarm = value;
                     m_alarmStartMinute = DateTime.Now.ToString("mm");
                     if (value)
-                        SetVolumeLevel(Metadata.ZoneDetails.GetDefaultVolume(m_zoneForm.ZoneDetails.DefaultVolumePercent / 2));
+                        SetVolumeLevel(m_zoneDetails.GetDefaultAlarmVolume());
                 }
             }
            
@@ -830,9 +830,9 @@ namespace MultiZonePlayer
                         else
                             HoldCriteriaToggle();
                         break;
-					case Metadata.GlobalCommands.notifyuser:
-						Play(IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1]);
-						break;
+					//case Metadata.GlobalCommands.notifyuser:
+					//	Play(IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1]);
+					//	break;
                     default:
                         MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
                         break;
@@ -890,7 +890,7 @@ namespace MultiZonePlayer
 				m_cloneSourceZone.MainZoneActivity.SetVolumeLevel(m_cloneSourceZone.ZoneDetails.GetDefaultVolume());
 				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControl.PowerOn(m_parentZoneForm.ZoneDetails.ZoneId);
-                m_cloneSourceZone.AddClonedZone(this);
+                m_cloneSourceZone.AddClonedZone(this.ZoneDetails);
                 m_clonedZoneMusic = (ZoneMusic)m_cloneSourceZone.GetCurrentActivity();
                 m_clonedZoneMusic.UpdateOutputDevices();
                 m_zoneState = Metadata.ZoneState.Running;
@@ -901,7 +901,7 @@ namespace MultiZonePlayer
         {
             if ((m_clonedZoneMusic != null) && (m_parentZoneForm != null))
             {
-                m_cloneSourceZone.RemoveClonedZone(this);
+                m_cloneSourceZone.RemoveClonedZone(this.ZoneDetails);
                 m_clonedZoneMusic.UpdateOutputDevices();
             }
             m_zoneState = Metadata.ZoneState.NotStarted;

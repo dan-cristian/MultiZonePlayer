@@ -125,14 +125,15 @@ namespace MultiZonePlayer
 			r,//repeat last command
 			notifyuser,
 			closure,
-			closuresarm,
-			closuresdisarm
+			closurearm,
+			closuredisarm
 			
         }
         public enum GlobalParams
         {
             command,
             zoneid,
+			sourcezoneid,
             zonename,
             msg,
             result,
@@ -252,7 +253,9 @@ namespace MultiZonePlayer
             new CommandSyntax(GlobalCommands.remotepoweron,		GlobalParams.remoteid),
 			new CommandSyntax(GlobalCommands.remotepoweroff,	GlobalParams.remoteid),
 			new CommandSyntax(GlobalCommands.remoteadjustdim,	GlobalParams.remoteid, GlobalParams.dimvalue),
-			new CommandSyntax(GlobalCommands.rfxcmd,			GlobalParams.action)
+			new CommandSyntax(GlobalCommands.rfxcmd,			GlobalParams.action),
+			new CommandSyntax(GlobalCommands.powercycle,		GlobalParams.interval),
+			new CommandSyntax(GlobalCommands.notifyuser,		GlobalParams.sourcezoneid)
             /*
             genrelist,
             setgenrelist,
@@ -400,9 +403,9 @@ namespace MultiZonePlayer
 
 			public void Set(GlobalParams key, String value)
             {
-				int index = Values.FindIndex(x=>x==value);
+				int index = Keys.FindIndex(x=>x==key.ToString());
 				if (index!=-1)
-					Keys[index]=value;
+					Values[index]=value;
                 else
 					Add(key,value);
             }
@@ -586,7 +589,8 @@ namespace MultiZonePlayer
             public String ZoneName;
 			private ZoneState m_zoneState, m_zoneStateLast=ZoneState.Undefined;
             public int ParentZoneId = -1;
-            public int PowerIndex;
+            public int PowerIndex;//miliseconds
+			public int PowerOnDelay;
             public String WakeTime = "";
             public String WakeWeekDay = "";
             public String CameraId = "";
@@ -921,6 +925,7 @@ namespace MultiZonePlayer
                     ZoneName = zonestorage.ZoneName;
                     ParentZoneId = zonestorage.ParentZoneId;
                     PowerIndex = zonestorage.PowerIndex;
+					PowerOnDelay = zonestorage.PowerOnDelay;
                     DefaultVolumePercent = zonestorage.DefaultVolumePercent;
 
                     CameraId = zonestorage.CameraId;
@@ -954,6 +959,9 @@ namespace MultiZonePlayer
 					ClosureRelayType = zonestorage.ClosureRelayType;
 					ClosureIdList = zonestorage.ClosureIdList;
 					ClosureCounts = zonestorage.ClosureCounts;
+					if (ClosureRelayType == Metadata.ClosureRelayType.OpenClose)
+						IsClosureArmed = true;
+					
                     //Temperature = "1";
                 }
 
@@ -1070,14 +1078,22 @@ namespace MultiZonePlayer
             {
                 return GetDefaultVolume(DefaultVolumePercent);
             }
+			public int GetDefaultAlarmVolume()
+			{
+				return GetDefaultVolume(DefaultVolumePercent / 2);
+			}
+			public int GetDefaultNotifyUserVolume()
+			{
+				return (GetDefaultVolume() * Convert.ToInt16(IniFile.PARAM_NOTIFY_VOLUME_INCREASE[1]))/100;
+			}
 
-            public static int GetDefaultVolume(int percent)
+            private static int GetDefaultVolume(int percent)
             {
                 String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
                 String[] interval = IniFile.PARAM_SILENCE_SAFE_HOUR_INTERVAL[1].Split('-');
                 //reduce volume during silence interval - night
                 if (dt.CompareTo(interval[0]) >= 0 || dt.CompareTo(interval[1]) <= 0)
-                    percent = 25;
+                    percent = Convert.ToInt16(IniFile.PARAM_SILENCE_SAFE_VOLUME[1]);
                 double val = ((100 - Convert.ToDouble(percent)) / 100);
                 return Convert.ToInt16(VolumeLevels.VolumeSilence * val);
             }

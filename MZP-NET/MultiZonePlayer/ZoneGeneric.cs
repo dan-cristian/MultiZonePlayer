@@ -47,7 +47,7 @@ namespace MultiZonePlayer
             set { m_controlDevice = value; }
         }
         private Metadata.ZoneDetails m_zoneDetails;
-        private List<IZoneActivity> m_clonedZones;
+        private List<Metadata.ZoneDetails> m_clonedZones;
         private static int m_recIndex = 0;
         private ZonesForm m_zoneForm;
 
@@ -67,13 +67,12 @@ namespace MultiZonePlayer
             m_zoneDetails = MZPState.Instance.GetZoneById(zoneId);
             this.m_sourceZoneId = zoneId;
 
-            m_clonedZones = new List<IZoneActivity>();
+			m_clonedZones = new List<Metadata.ZoneDetails>();
+
             //default user - all
             m_zoneUser = new Users("0","all","000");//SystemState.iniUserList["000"] as Users;
             LoadZoneIni();
         }
-
-        
 
         public void CloseZone()
         {
@@ -95,9 +94,12 @@ namespace MultiZonePlayer
 
         private void StopRemoveClonedZones()
         {
-            foreach (IZoneActivity izone in m_clonedZones)
+			ZoneGeneric zone;
+            foreach (Metadata.ZoneDetails izone in m_clonedZones)
             {
-                izone.Stop();
+				zone = MZPState.Instance.ActiveZones.Find(x => x.ZoneDetails.ZoneId == izone.ZoneId);
+				if (zone!=null && zone.MainZoneActivity != null) 
+					zone.MainZoneActivity.Stop();
             }
             m_clonedZones.Clear();
         }
@@ -114,7 +116,7 @@ namespace MultiZonePlayer
                 m_zoneDetails.ActivityType = Metadata.GlobalCommands.music;
                 m_zoneDetails.IsActive = true;
                 
-                AddClonedZone(m_mainZoneActivity);
+                AddClonedZone(m_mainZoneActivity.ZoneDetails);
                 
             }
             else MLog.Log(this, "Initialising music not needed, already init");
@@ -324,26 +326,32 @@ namespace MultiZonePlayer
                     break;
                 case Metadata.GlobalCommands.powercycle:
                     MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
-                    Thread.Sleep(1000);
+                    Thread.Sleep(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.interval)));
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
                     break;
 				case Metadata.GlobalCommands.closure:
 					ZoneClosures.ProcessAction(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.key),
 						vals.GetValue(Metadata.GlobalParams.iskeydown).ToLower()=="true");
 					break;
-				case Metadata.GlobalCommands.closuresarm:
-				case Metadata.GlobalCommands.closuresdisarm:	
-					m_zoneDetails.IsClosureArmed = (cmdRemote == Metadata.GlobalCommands.closuresarm);
+				case Metadata.GlobalCommands.closurearm:
+				case Metadata.GlobalCommands.closuredisarm:	
+					m_zoneDetails.IsClosureArmed = (cmdRemote == Metadata.GlobalCommands.closurearm);
 					result.Add(Metadata.GlobalParams.msg, "Zone " + m_zoneDetails.ZoneName + " closure armed status=" + m_zoneDetails.IsClosureArmed);
 					break;
                 case Metadata.GlobalCommands.notifyuser:
 					bool needsPower = m_zoneDetails.RequirePower;
 					m_zoneDetails.RequirePower = true;
-					MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
-					System.Threading.Thread.Sleep(4000);//ensure we can hear this
-					DCPlayer tempPlay = new DCPlayer(this, IniFile.CurrentPath() 
-						+ IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1], m_zoneDetails.GetDefaultVolume());
-					System.Threading.Thread.Sleep(4000);//ensure we can hear this
+					if (!MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ZoneId))
+					{
+						MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+						System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
+					}
+					string sourcezoneid = vals.GetValue(Metadata.GlobalParams.sourcezoneid);
+					string file = IniFile.CurrentPath()+ IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1].Replace("x",sourcezoneid);
+					if (!System.IO.File.Exists(file))
+						file = IniFile.CurrentPath()+IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1];
+					DCPlayer tempPlay = new DCPlayer(this, file, m_zoneDetails.GetDefaultNotifyUserVolume());
+					//System.Threading.Thread.Sleep(4000);//ensure we can hear this
 					m_zoneDetails.RequirePower = needsPower;
 					break;
 				#endregion
@@ -442,7 +450,7 @@ namespace MultiZonePlayer
                         case Metadata.GlobalCommands.photo:
 						case Metadata.GlobalCommands.back:
                         case Metadata.GlobalCommands.musicclone:
-							if (!this.Equals(MZPState.Instance.GetFirstZoneMusic()))//cannot clone myself
+							if (MZPState.Instance.GetFirstZoneMusic()!=null && !this.Equals(MZPState.Instance.GetFirstZoneMusic()))//cannot clone myself
 							{
 								if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneMusicClone)))
 								{
@@ -453,7 +461,7 @@ namespace MultiZonePlayer
 								if (m_mainZoneActivity == null)
 									InitZoneMusicClone();
 							}
-							else MLog.Log(this, "Cannot clone myself clone zone="
+							else MLog.Log(this, "Cannot clone myself or no existing zone ="
 								+MZPState.Instance.GetFirstZoneMusic().ZoneDetails.ZoneName);
                             break;
 
@@ -658,18 +666,18 @@ namespace MultiZonePlayer
             }
         }
 
-        public List<IZoneActivity> GetClonedZones()
+		public List<Metadata.ZoneDetails> GetClonedZones()
         {
             return m_clonedZones;
             //return m_zoneDetails.OutputDevice;
         }
 
-        public void AddClonedZone(IZoneActivity zone)
+        public void AddClonedZone(Metadata.ZoneDetails zone)
         {
             m_clonedZones.Add(zone);
         }
 
-        public void RemoveClonedZone(IZoneActivity zone)
+        public void RemoveClonedZone(Metadata.ZoneDetails zone)
         {
             m_clonedZones.Remove(zone);
         }

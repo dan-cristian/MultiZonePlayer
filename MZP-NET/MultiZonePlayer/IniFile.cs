@@ -107,7 +107,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_POWER_CONTROL_DEVICE_NAME_GEMBIRD = new String[] { "PARAM_POWER_CONTROL_DEVICE_NAME", "Multi1" };
             public static String[] PARAM_FOLDER_DELETED_ITEMS = new String[] { "PARAM_FOLDER_DELETED_ITEMS", "\\DeletedMultiPlayerItems\\" };
 
-			public static String[] PARAM_NOTIFYUSER_SOUND_FILE = new String[] { "PARAM_NOTIFYUSER_SOUND_FILE", "\\notifyuser.mp3" };
+			public static String[] PARAM_NOTIFYUSER_SOUND_FILE = new String[] { "PARAM_NOTIFYUSER_SOUND_FILE", "\\notifyuser_x.mp3" };
 
             //public static String[] PARAM_VIDEO_APP_VLC_PATH = new String[] { "PARAM_VIDEO_APP_VLC_PATH", "C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe" };
             public static String[] PARAM_VIDEO_APP_VLC_PROCESSNAME = new String[] { "PARAM_VIDEO_APP_VLC_PROCESSNAME", "vlc" };
@@ -139,7 +139,9 @@ namespace MultiZonePlayer
             
             public static String[] PARAM_SILENCE_SAFE_HOUR_INTERVAL = new String[] { "PARAM_SILENCE_SAFE_HOUR_INTERVAL", "21:00-07:00" };
             public static String[] PARAM_LIBRARY_AUTOUPDATE_HOUR = new String[] { "PARAM_LIBRARY_AUTOUPDATE_HOUR", "04:00" };
-
+			public static String[] PARAM_SILENCE_SAFE_VOLUME = new String[] { "PARAM_SILENCE_SAFE_VOLUME", "50", "Volume percent during safe interval, minimum audible" };
+			public static String[] PARAM_NOTIFY_VOLUME_INCREASE = new String[] { "PARAM_NOTIFY_VOLUME_INCREASE", "25", "Volume percent increase on top of default volume for user notifications" };
+			
             public static String[] PARAM_PARADOX_WINLOAD_DATA_FILE = new String[] { "PARAM_PARADOX_WINLOAD_DATA_FILE", "1.txt" };
             public static String[] PARAM_PARADOX_WINLOAD_PROCNAME = new String[] { "PARAM_PARADOX_WINLOAD_PROCNAME", "WinLoad" };
             public static String[] PARAM_PARADOX_WINLOAD_USERNAME = new String[] { "PARAM_PARADOX_WINLOAD_USERNAME", "MASTER" };
@@ -217,6 +219,8 @@ namespace MultiZonePlayer
                 PARAM_WEB_PASS,
                 PARAM_WEB_DEFAULT_PAGE,
                 PARAM_SILENCE_SAFE_HOUR_INTERVAL,
+				PARAM_SILENCE_SAFE_VOLUME,
+				PARAM_NOTIFY_VOLUME_INCREASE,
                 PARAM_LIBRARY_AUTOUPDATE_HOUR,
                 PARAM_PARADOX_WINLOAD_DATA_FILE,
                 PARAM_PARADOX_WINLOAD_APP_PATH,

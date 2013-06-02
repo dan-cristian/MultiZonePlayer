@@ -187,6 +187,7 @@ namespace MultiZonePlayer
     {
 		try
 		{
+			MLog.Log(this, "Playing file " + filename);
 			int hr = 0;
 
 			this.graphBuilder = (IGraphBuilder)new FilterGraph();
@@ -202,10 +203,13 @@ namespace MultiZonePlayer
 			hr = this.graphBuilder.AddFilter(infiniteTeeFilter, "InfiniteTee");
 			DsError.ThrowExceptionForHR(hr);
 
-			foreach (IZoneActivity device in zoneForm.GetClonedZones())
+			List<Metadata.ZoneDetails> zones = zoneForm.GetClonedZones();
+			if (zones.Count == 0) zones.Add(zoneForm.ZoneDetails);
+
+			foreach (Metadata.ZoneDetails device in zones)
 			{
-				MLog.Log(this, "Playing " + device.ZoneDetails.ZoneName + " output " + device.ZoneDetails.OutputDeviceAutoCompleted() + " cloned count=" + zoneForm.GetClonedZones().Count);
-				IBaseFilter outFilter = (IBaseFilter)Marshal.BindToMoniker(device.ZoneDetails.OutputDeviceAutoCompleted());
+				MLog.Log(this, "Playing " + device.ZoneName + " output " + device.OutputDeviceAutoCompleted() + " cloned count=" + zoneForm.GetClonedZones().Count);
+				IBaseFilter outFilter = (IBaseFilter)Marshal.BindToMoniker(device.OutputDeviceAutoCompleted());
 				hr = this.graphBuilder.AddFilter(outFilter, "Out Renderer device " + device);
 				DsError.ThrowExceptionForHR(hr);
 			}

@@ -18,11 +18,12 @@ namespace MultiZonePlayer
         void Close();
         Boolean IsTargetAvailable();
         void MakeBuzz();
+		Boolean IsFaulty();
     }
 
     class GTalkMessengers:IMessenger
     {
-
+		private int m_reinitTries=0;
         agsXMPP.XmppClientConnection objXmpp;
         String m_user, m_password;
         //List<String> m_rosterList;
@@ -49,6 +50,7 @@ namespace MultiZonePlayer
 
         public void Reinitialise()
         {
+			m_reinitTries++;
             m_presenceList = new List<agsXMPP.protocol.client.Presence>();
             objXmpp = new agsXMPP.XmppClientConnection();
             agsXMPP.Jid jid = null;
@@ -73,14 +75,20 @@ namespace MultiZonePlayer
                 objXmpp.OnAuthError += loginFailed;
                 objXmpp.OnLogin += loggedIn;
                 objXmpp.Open();
+				m_reinitTries = 0;
                 MLog.Log(this, "GTalk Messenger login completed");
             }
             catch (Exception ex)
             {
                 MLog.Log(ex, this, "GTalk Messenger login error");
-            } 
+            }
         }
-        
+
+		public Boolean IsFaulty()
+		{
+			return (!objXmpp.Authenticated || m_reinitTries>5);
+		}
+
         private void messageReceived(object sender, agsXMPP.protocol.client.Message msg)
         {
 			if (Thread.CurrentThread.Name == null 
@@ -459,6 +467,7 @@ namespace MultiZonePlayer
 		}
 		public void Reinitialise()
 		{
+			m_reinitTries++;
 			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1]);
 			//comm = new CommunicationManager("38400", "None", "One", "8", 
 			//	IniFile.PARAM_RFXCOM_PORT[1], this.handler);
@@ -476,15 +485,17 @@ namespace MultiZonePlayer
 			//m_waitForResponse = false;
 			//m_lastOperationWasOK = true;
 		}
+		
+
 		protected override void ReceiveSerialResponse(string response)
 		{
-			MLog.Log(this, "RFXCOMM: " + response);
+			//MLog.Log(this, "RFXCOMM: " + response);
 			do
 			{
 				RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
 				if (dev != null)
 				{
-					MLog.Log(this, "RFX result: " + dev.DisplayValues());
+					//MLog.Log(this, "RFX result: " + dev.DisplayValues());
 					if (dev.ZoneId != -1)
 					{
 						Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(dev.ZoneId);

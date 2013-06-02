@@ -36,6 +36,7 @@ namespace MultiZonePlayer
 {
     public abstract class SerialBase
     {
+		protected int m_reinitTries = 0;
         public String Connection;
         protected CommunicationManager comm;
         protected Boolean m_waitForResponse = false;
@@ -60,11 +61,17 @@ namespace MultiZonePlayer
         public void Initialise(String baud, String parity, String stopbits, String databits, String port)
         {
             comm = new CommunicationManager(baud, parity, stopbits, databits, port, this.handler);
-            comm.OpenPort();
+            if (comm.OpenPort())
+				m_reinitTries = 0;
             m_waitForResponse = false;
             m_lastOperationWasOK = true;
             Connection = port;
         }
+
+		public Boolean IsFaulty()
+		{
+			return (comm == null || !comm.IsPortOpen()) || m_reinitTries > 5;
+		}
 
         public void Disconnect()
         {
@@ -361,6 +368,7 @@ namespace MultiZonePlayer
                 //display message
                 MLog.Log(this,"Port "+comPort.PortName +" opened with baud=" + comPort.BaudRate);
                 MLog.LogModem(comPort.PortName + " Opened with baud=" + comPort.BaudRate +"\r\n");
+				
                 //return true
                 return true;
             }

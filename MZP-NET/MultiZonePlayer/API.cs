@@ -27,7 +27,7 @@ namespace MultiZonePlayer
 				
 				RemotePipiCommand cmdRemote;
 				
-				zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device);
+				zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device, kd.Key);
 				//ignore console KEYBOARD commands
 				if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1])	&& zoneId == -1)
 				{
@@ -39,7 +39,7 @@ namespace MultiZonePlayer
 				val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
 				zoneDetails = MZPState.Instance.GetZoneById(zoneId);
 				if (zoneDetails != null && zoneDetails.ClosureRelayType != Metadata.ClosureRelayType.None
-					&& zoneDetails.ClosureIdList.Contains(kd.Key))
+					&& zoneDetails.ClosureIdList==kd.Key)
 				{
 					val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
 					val.Add(Metadata.GlobalParams.key, kd.Key);
@@ -140,7 +140,9 @@ namespace MultiZonePlayer
                 //zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
                 cmdName = vals.GetValue(Metadata.GlobalParams.command);
 				cmdresult.Command = cmdName;
-				if (cmdName != Metadata.GlobalCommands.closure.ToString())
+				if (cmdName != Metadata.GlobalCommands.closure.ToString() 
+					&& cmdName != Metadata.GlobalCommands.getpicture.ToString()
+					&& cmdName != Metadata.GlobalCommands.alarmevent.ToString())
 					MLog.Log(null, "Executing DOCommand " + cmdName);
 				bool isCmdDefined = Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName);
                 

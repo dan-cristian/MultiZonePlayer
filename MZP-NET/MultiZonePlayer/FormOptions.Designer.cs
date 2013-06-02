@@ -109,6 +109,7 @@
 			this.Zones_ParentZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Zones_ClosureRelayType = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.Zones_ClosureIdList = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_PowerOnDelay = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabParams.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvZones)).BeginInit();
@@ -192,7 +193,8 @@
             this.Zones_AlarmAreadId,
             this.Zones_ParentZoneId,
             this.Zones_ClosureRelayType,
-            this.Zones_ClosureIdList});
+            this.Zones_ClosureIdList,
+            this.Zones_PowerOnDelay});
 			this.dgvZones.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.dgvZones.Location = new System.Drawing.Point(3, 2);
 			this.dgvZones.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -806,6 +808,12 @@
 			this.Zones_ClosureIdList.Name = "Zones_ClosureIdList";
 			this.Zones_ClosureIdList.Width = 99;
 			// 
+			// Zones_PowerOnDelay
+			// 
+			this.Zones_PowerOnDelay.HeaderText = "PowerOnDelay";
+			this.Zones_PowerOnDelay.Name = "Zones_PowerOnDelay";
+			this.Zones_PowerOnDelay.Width = 127;
+			// 
 			// FormOptions
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -920,5 +928,6 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_ParentZoneId;
 		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_ClosureRelayType;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_ClosureIdList;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_PowerOnDelay;
     }
 }

@@ -81,7 +81,7 @@ namespace MultiZonePlayer
                  DsError.ThrowExceptionForHR(hr);
 
                  outputFilter = (IBaseFilter)Marshal.BindToMoniker(
-					 zoneForm.GetClonedZones()[0].ZoneDetails.OutputDeviceAutoCompleted());
+					 zoneForm.GetClonedZones()[0].OutputDeviceAutoCompleted());
 
                  hr = this.graphBuilder.AddFilter(outputFilter, "Out Renderer");
                  DsError.ThrowExceptionForHR(hr);
