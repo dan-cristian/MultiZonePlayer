@@ -241,16 +241,7 @@ namespace MultiZonePlayer
 					ZoneOpenActions();
 					
 					m_zoneDetails.MovementAlert = false;
-                    /*if (m_zoneDetails.IsArmed || 
-                        (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed)&&(m_zoneDetails.AlarmAreaId==MZPState.Instance.SystemAlarm.AreaId)))
-                    {
-                        String msg =  "CAM event on " + m_zoneDetails.ZoneName + " when zone armed";
-                        MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, msg, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
-                    }
-                    else
-                        MLog.Log(this, "Ignoring cam event on " + m_zoneDetails.ZoneName + " movementalert=" + m_zoneDetails.MovementAlert + " zonealarmareaid=" + m_zoneDetails.AlarmAreaId
-                                + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
-                    */
+                   
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
                         cmdRemote = Metadata.GlobalCommands.musicclone;
@@ -274,17 +265,7 @@ namespace MultiZonePlayer
                             MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
 					ZoneOpenActions();
 					
-                    /*
-                    if (m_zoneDetails.MovementAlert && (m_zoneDetails.IsArmed ||
-                        (MZPState.Instance.SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.armed) && (m_zoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId))))
-                    {
-                        String msg = "ALARM event on " + m_zoneDetails.ZoneName + " when zone armed";
-                        MZPState.Instance.LogEvent(MZPEvent.EventSource.Alarm, msg, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical);
-                    }
-                    else
-                        MLog.Log(this, "Ignoring alarm event on " + m_zoneDetails.ZoneName + " movementalert=" + m_zoneDetails.MovementAlert + " zonealarmareaid=" + m_zoneDetails.AlarmAreaId
-                                + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId + " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
-                     */
+                    
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
                         cmdRemote = Metadata.GlobalCommands.musicclone;

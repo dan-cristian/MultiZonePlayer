@@ -639,6 +639,7 @@ namespace MultiZonePlayer
             public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
             public DateTime LastCamAlertDateTime = DateTime.MinValue;
             public DateTime LastLocalCommandDateTime = DateTime.MinValue;
+			public DateTime LastClosureEventDateTime = DateTime.MinValue;
 			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 			public DateTime LastNotifyZoneEventTriggered;
 
@@ -709,11 +710,12 @@ namespace MultiZonePlayer
             {
                 get
                 {
-                    //todo add localcommand in compare
-                    if ((LastAlarmMovementDateTime).CompareTo(LastCamAlertDateTime) >= 1)
-                        return LastAlarmMovementDateTime;
-                    else
-                        return LastCamAlertDateTime;
+					List<DateTime> dates = new List<DateTime>();
+					dates.Add(LastAlarmMovementDateTime);
+					dates.Add(LastCamAlertDateTime);
+					dates.Add(LastClosureEventDateTime);
+					dates = dates.OrderByDescending(x=>x.Ticks).ToList();
+					return dates[0];
                 }
             }
 

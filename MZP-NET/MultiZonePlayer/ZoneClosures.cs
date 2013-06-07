@@ -22,7 +22,8 @@ namespace MultiZonePlayer
 				lastState.RelayStateClosed = isKeyDown;
 			}
 			zone.ClosureCounts++;
-			
+			zone.MovementAlert = true;
+			zone.LastClosureEventDateTime = DateTime.Now;
 			string message = "Closure state " + key + " is " + lastState.RelayState;
 			MLog.Log(null, message);
 			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString());
@@ -31,6 +32,7 @@ namespace MultiZonePlayer
 				MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message,	MZPEvent.EventType.Security, 
 					MZPEvent.EventImportance.Informative, zone);
 			}
+			zone.MovementAlert = false;
 		}
 	}
 }
