@@ -1086,7 +1086,9 @@ namespace MultiZonePlayer
 			}
 			public int GetDefaultNotifyUserVolume()
 			{
-				return (GetDefaultVolume() * Convert.ToInt16(IniFile.PARAM_NOTIFY_VOLUME_INCREASE[1]))/100;
+				int defvol = GetDefaultVolume(DefaultVolumePercent);
+				defvol = defvol - defvol * Convert.ToInt16(IniFile.PARAM_NOTIFY_VOLUME_INCREASE[1]) / 100;
+				return defvol;
 			}
 
             private static int GetDefaultVolume(int percent)

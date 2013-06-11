@@ -79,6 +79,7 @@ namespace MultiZonePlayer
             {
                 ((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add(deviceName);
             }
+			((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add("");
 			((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add(IniFile.DEFAULT_AUTO_DEV_NAME);
         }
 
@@ -397,7 +398,13 @@ namespace MultiZonePlayer
             {
                 pname = (String)dgvParams.Rows[r].Cells[ParamName.Name].Value;
                 pvalue = (String)dgvParams.Rows[r].Cells[ParamValue.Name].Value;
-
+				string[] param;
+				for (int i = 0; i < IniFile.PARAMS.Length; i++)
+				{
+					param = IniFile.PARAMS[i] as String[];
+					if (param[0] == pname)
+						param[1] = pvalue;
+				}
                 if (pname != null)
                 {
                     IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_PARAMS, pname,pvalue);
@@ -407,19 +414,20 @@ namespace MultiZonePlayer
 
         private void GUILoadParams()
         {
-            String pname;
-            String pvalue;
+            String pname, pvalue, pdesc;
             String[] param;
 
             for (int r = 0; r < IniFile.PARAMS.Length; r++)
             {
                 param = IniFile.PARAMS[r] as String[];
                 pname = param[0] as String;
-
+				if (param.Length >= 3)
+					pdesc = param[2] as String;
+				else pdesc = "";
                 pvalue = IniFile.IniReadValue(IniFile.INI_SECTION_PARAMS, pname);
                 if (pvalue == "")
                     pvalue = param[1];//default value
-                dgvParams.Rows.Add(pname,pvalue);
+                dgvParams.Rows.Add(pname,pvalue,pdesc);
             }
         }
 

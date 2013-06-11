@@ -123,13 +123,7 @@ namespace MultiZonePlayer
     /// </summary>
     protected void InitializeComponent()
     {
-      /*this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-      this.ClientSize = new System.Drawing.Size(240, 120);
-      //this.Menu = this.mainMenu1;
-      this.Name = "MainForm";
-      this.Text = "PlayWnd Media Player";
-      
-       */ this.Closing += new System.ComponentModel.CancelEventHandler(this.MainForm_Closing);
+      this.Closing += new System.ComponentModel.CancelEventHandler(this.MainForm_Closing);
     }
     #endregion
 
@@ -142,9 +136,7 @@ namespace MultiZonePlayer
       try
       {
           this.filename = musicFile;
-          //m_outputDeviceList = new Hashtable();
-          //m_outputDeviceList.Add(zoneForm.GetZoneId(), outputDevice);
-          //this.outputDeviceName = outputDevice;
+         
           this.zoneForm = zoneForm;
           if (this.filename == string.Empty)
         {
@@ -176,8 +168,6 @@ namespace MultiZonePlayer
     {
         long pos = Position;
         CloseClip();
-        //m_outputDeviceList.Add(p_zone.ZoneId, p_outputDeviceName);
-        //SetVolume(p_zone.GetDefaultVolume());
         ConnectAndRunGraph();
         Position = pos;
     }
@@ -187,7 +177,7 @@ namespace MultiZonePlayer
     {
 		try
 		{
-			MLog.Log(this, "Playing file " + filename);
+			MLog.Log(this, "Playing file " + filename + " vol=" + this.currentVolume);
 			int hr = 0;
 
 			this.graphBuilder = (IGraphBuilder)new FilterGraph();
@@ -208,7 +198,8 @@ namespace MultiZonePlayer
 
 			foreach (Metadata.ZoneDetails device in zones)
 			{
-				MLog.Log(this, "Playing " + device.ZoneName + " output " + device.OutputDeviceAutoCompleted() + " cloned count=" + zoneForm.GetClonedZones().Count);
+				MLog.Log(this, "Playing " + device.ZoneName + " output " + device.OutputDeviceAutoCompleted() 
+					+ " cloned count=" + zoneForm.GetClonedZones().Count);
 				IBaseFilter outFilter = (IBaseFilter)Marshal.BindToMoniker(device.OutputDeviceAutoCompleted());
 				hr = this.graphBuilder.AddFilter(outFilter, "Out Renderer device " + device);
 				DsError.ThrowExceptionForHR(hr);
