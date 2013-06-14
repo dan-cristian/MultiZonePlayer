@@ -9,17 +9,17 @@ namespace MultiZonePlayer
 	{
 		public static void ProcessAction(Metadata.ZoneDetails zone, string key, Boolean isKeyDown)// KeyDetail kd)
 		{
-			Metadata.ClosureOpenCloseRelayState lastState = zone.ClosureOpenCloseRelayState;
+			Metadata.ClosureOpenCloseRelay lastState = zone.ClosureOpenCloseRelay;
 			if (lastState == null)
 			{
-				lastState = new Metadata.ClosureOpenCloseRelayState(key, isKeyDown);
-				zone.ClosureOpenCloseRelayState = lastState;
+				lastState = new Metadata.ClosureOpenCloseRelay(isKeyDown);
+				zone.ClosureOpenCloseRelay = lastState;
 			}
 			else
 			{
-				if (lastState.RelayState == Metadata.ClosureOpenCloseRelayState.GetRelayState(isKeyDown))
+				if (lastState.RelayState == zone.ClosureOpenCloseRelay.GetRelayState(isKeyDown))
 					return;//return if state does not change
-				lastState.RelayStateClosed = isKeyDown;
+				lastState.RelayContactMade = isKeyDown;
 			}
 			zone.ClosureCounts++;
 			zone.MovementAlert = true;
@@ -27,7 +27,7 @@ namespace MultiZonePlayer
 			string message = "Closure state " + key + " is " + lastState.RelayState;
 			MLog.Log(null, message);
 			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString());
-			if (lastState.RelayState == Metadata.ClosureOpenCloseRelayState.EnumState.Closed)
+			if (lastState.RelayState == Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed)
 			{
 				MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message,	MZPEvent.EventType.Security, 
 					MZPEvent.EventImportance.Informative, zone);

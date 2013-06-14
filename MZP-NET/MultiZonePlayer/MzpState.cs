@@ -965,7 +965,7 @@ namespace MultiZonePlayer
 
 					if ((mzpevent.ZoneDetails.IsClosureArmed) 
 						&& (mzpevent.Source == MZPEvent.EventSource.Closure)
-						&& (mzpevent.ZoneDetails.ClosureOpenCloseRelayState.RelayState==Metadata.ClosureOpenCloseRelayState.EnumState.Closed))
+						&& (mzpevent.ZoneDetails.ClosureOpenCloseRelay.RelayState==Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed))
 					{
 						cause = "Closure event detected on closure armed zone" + mzpevent.ZoneDetails.ZoneName;
 						NotifyEventToUsers(mzpevent, cause, false, false);

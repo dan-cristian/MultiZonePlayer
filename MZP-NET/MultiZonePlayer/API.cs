@@ -38,7 +38,7 @@ namespace MultiZonePlayer
 				Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
 				val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
 				zoneDetails = MZPState.Instance.GetZoneById(zoneId);
-				if (zoneDetails != null && zoneDetails.ClosureRelayType != Metadata.ClosureRelayType.None
+				if (zoneDetails != null && zoneDetails.ClosureOpenCloseRelay.RelayType != Metadata.ClosureOpenCloseRelay.EnumRelayType.Undefined
 					&& zoneDetails.ClosureIdList==kd.Key)
 				{
 					val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());

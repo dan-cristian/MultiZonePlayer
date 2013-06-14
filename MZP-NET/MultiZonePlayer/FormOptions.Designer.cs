@@ -28,30 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.btnSave = new System.Windows.Forms.Button();
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
 			this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
 			this.tabParams = new System.Windows.Forms.TabControl();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this.dgvZones = new System.Windows.Forms.DataGridView();
-			this.ZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.ZoneName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_OutputKeywords = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.OutputDevice = new System.Windows.Forms.DataGridViewComboBoxColumn();
-			this.Zones_PowerIndexDK = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_DefaultVolume = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_CameraId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_AlarmZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_AlarmAreadId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_ParentZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_ClosureRelayType = new System.Windows.Forms.DataGridViewComboBoxColumn();
-			this.Zones_ClosureIdList = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Zones_PowerOnDelay = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabControl = new System.Windows.Forms.TabPage();
 			this.label1 = new System.Windows.Forms.Label();
 			this.txtLastControlDevice = new System.Windows.Forms.TextBox();
@@ -111,6 +98,19 @@
 			this.ParamName = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ParamValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Param_Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.ZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.ZoneName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_OutputKeywords = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.OutputDevice = new System.Windows.Forms.DataGridViewComboBoxColumn();
+			this.Zones_PowerIndexDK = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_DefaultVolume = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_CameraId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_AlarmZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_AlarmAreadId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_ParentZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_ClosureRelayType = new System.Windows.Forms.DataGridViewComboBoxColumn();
+			this.Zones_ClosureIdList = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_PowerOnDelay = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabParams.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvZones)).BeginInit();
@@ -205,95 +205,6 @@
 			this.dgvZones.TabIndex = 6;
 			this.dgvZones.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvZones_CellContentClick);
 			this.dgvZones.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvZones_DataError);
-			// 
-			// ZoneId
-			// 
-			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-			dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.ZoneId.DefaultCellStyle = dataGridViewCellStyle1;
-			this.ZoneId.HeaderText = "ZoneId";
-			this.ZoneId.Name = "ZoneId";
-			this.ZoneId.Width = 77;
-			// 
-			// ZoneName
-			// 
-			this.ZoneName.HeaderText = "ZoneName";
-			this.ZoneName.Name = "ZoneName";
-			this.ZoneName.Width = 103;
-			// 
-			// Zones_OutputKeywords
-			// 
-			this.Zones_OutputKeywords.HeaderText = "OutputKeywords";
-			this.Zones_OutputKeywords.Name = "Zones_OutputKeywords";
-			this.Zones_OutputKeywords.Width = 137;
-			// 
-			// OutputDevice
-			// 
-			this.OutputDevice.HeaderText = "OutputDevice";
-			this.OutputDevice.Name = "OutputDevice";
-			this.OutputDevice.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-			this.OutputDevice.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-			this.OutputDevice.Width = 119;
-			// 
-			// Zones_PowerIndexDK
-			// 
-			this.Zones_PowerIndexDK.HeaderText = "PowerIndex";
-			this.Zones_PowerIndexDK.Name = "Zones_PowerIndexDK";
-			this.Zones_PowerIndexDK.Width = 105;
-			// 
-			// Zones_DefaultVolume
-			// 
-			this.Zones_DefaultVolume.HeaderText = "DefaultVolume%";
-			this.Zones_DefaultVolume.Name = "Zones_DefaultVolume";
-			this.Zones_DefaultVolume.Width = 137;
-			// 
-			// Zones_CameraId
-			// 
-			this.Zones_CameraId.HeaderText = "CameraId";
-			this.Zones_CameraId.Name = "Zones_CameraId";
-			this.Zones_CameraId.Width = 93;
-			// 
-			// Zones_AlarmZoneId
-			// 
-			this.Zones_AlarmZoneId.HeaderText = "AlarmZoneId";
-			this.Zones_AlarmZoneId.Name = "Zones_AlarmZoneId";
-			this.Zones_AlarmZoneId.Width = 113;
-			// 
-			// Zones_AlarmAreadId
-			// 
-			this.Zones_AlarmAreadId.HeaderText = "AlarmAreaId";
-			this.Zones_AlarmAreadId.Name = "Zones_AlarmAreadId";
-			this.Zones_AlarmAreadId.Width = 110;
-			// 
-			// Zones_ParentZoneId
-			// 
-			this.Zones_ParentZoneId.HeaderText = "ParentId";
-			this.Zones_ParentZoneId.Name = "Zones_ParentZoneId";
-			this.Zones_ParentZoneId.Width = 86;
-			// 
-			// Zones_ClosureRelayType
-			// 
-			this.Zones_ClosureRelayType.HeaderText = "ClosureType";
-			this.Zones_ClosureRelayType.Items.AddRange(new object[] {
-            "None",
-            "OpenClose",
-            "Counter"});
-			this.Zones_ClosureRelayType.Name = "Zones_ClosureRelayType";
-			this.Zones_ClosureRelayType.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-			this.Zones_ClosureRelayType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-			this.Zones_ClosureRelayType.Width = 113;
-			// 
-			// Zones_ClosureIdList
-			// 
-			this.Zones_ClosureIdList.HeaderText = "ClosureIds";
-			this.Zones_ClosureIdList.Name = "Zones_ClosureIdList";
-			this.Zones_ClosureIdList.Width = 99;
-			// 
-			// Zones_PowerOnDelay
-			// 
-			this.Zones_PowerOnDelay.HeaderText = "PowerOnDelay";
-			this.Zones_PowerOnDelay.Name = "Zones_PowerOnDelay";
-			this.Zones_PowerOnDelay.Width = 127;
 			// 
 			// tabControl
 			// 
@@ -823,6 +734,95 @@
 			this.Param_Description.Name = "Param_Description";
 			this.Param_Description.Width = 104;
 			// 
+			// ZoneId
+			// 
+			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+			dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.ZoneId.DefaultCellStyle = dataGridViewCellStyle1;
+			this.ZoneId.HeaderText = "ZoneId";
+			this.ZoneId.Name = "ZoneId";
+			this.ZoneId.Width = 77;
+			// 
+			// ZoneName
+			// 
+			this.ZoneName.HeaderText = "ZoneName";
+			this.ZoneName.Name = "ZoneName";
+			this.ZoneName.Width = 103;
+			// 
+			// Zones_OutputKeywords
+			// 
+			this.Zones_OutputKeywords.HeaderText = "OutputKeywords";
+			this.Zones_OutputKeywords.Name = "Zones_OutputKeywords";
+			this.Zones_OutputKeywords.Width = 137;
+			// 
+			// OutputDevice
+			// 
+			this.OutputDevice.HeaderText = "OutputDevice";
+			this.OutputDevice.Name = "OutputDevice";
+			this.OutputDevice.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.OutputDevice.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			this.OutputDevice.Width = 119;
+			// 
+			// Zones_PowerIndexDK
+			// 
+			this.Zones_PowerIndexDK.HeaderText = "PowerIndex";
+			this.Zones_PowerIndexDK.Name = "Zones_PowerIndexDK";
+			this.Zones_PowerIndexDK.Width = 105;
+			// 
+			// Zones_DefaultVolume
+			// 
+			this.Zones_DefaultVolume.HeaderText = "DefaultVolume%";
+			this.Zones_DefaultVolume.Name = "Zones_DefaultVolume";
+			this.Zones_DefaultVolume.Width = 137;
+			// 
+			// Zones_CameraId
+			// 
+			this.Zones_CameraId.HeaderText = "CameraId";
+			this.Zones_CameraId.Name = "Zones_CameraId";
+			this.Zones_CameraId.Width = 93;
+			// 
+			// Zones_AlarmZoneId
+			// 
+			this.Zones_AlarmZoneId.HeaderText = "AlarmZoneId";
+			this.Zones_AlarmZoneId.Name = "Zones_AlarmZoneId";
+			this.Zones_AlarmZoneId.Width = 113;
+			// 
+			// Zones_AlarmAreadId
+			// 
+			this.Zones_AlarmAreadId.HeaderText = "AlarmAreaId";
+			this.Zones_AlarmAreadId.Name = "Zones_AlarmAreadId";
+			this.Zones_AlarmAreadId.Width = 110;
+			// 
+			// Zones_ParentZoneId
+			// 
+			this.Zones_ParentZoneId.HeaderText = "ParentId";
+			this.Zones_ParentZoneId.Name = "Zones_ParentZoneId";
+			this.Zones_ParentZoneId.Width = 86;
+			// 
+			// Zones_ClosureRelayType
+			// 
+			this.Zones_ClosureRelayType.HeaderText = "ClosureType";
+			this.Zones_ClosureRelayType.Items.AddRange(new object[] {
+            "Undefined",
+            "NormalOpen",
+            "NormalClosed"});
+			this.Zones_ClosureRelayType.Name = "Zones_ClosureRelayType";
+			this.Zones_ClosureRelayType.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.Zones_ClosureRelayType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			this.Zones_ClosureRelayType.Width = 113;
+			// 
+			// Zones_ClosureIdList
+			// 
+			this.Zones_ClosureIdList.HeaderText = "ClosureIds";
+			this.Zones_ClosureIdList.Name = "Zones_ClosureIdList";
+			this.Zones_ClosureIdList.Width = 99;
+			// 
+			// Zones_PowerOnDelay
+			// 
+			this.Zones_PowerOnDelay.HeaderText = "PowerOnDelay";
+			this.Zones_PowerOnDelay.Name = "Zones_PowerOnDelay";
+			this.Zones_PowerOnDelay.Width = 127;
+			// 
 			// FormOptions
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -923,6 +923,9 @@
 		private System.Windows.Forms.DataGridViewComboBoxColumn Control_DeviceName;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Control_Description;
 		private System.Windows.Forms.DataGridViewComboBoxColumn Control_Identify;
+		private System.Windows.Forms.DataGridViewTextBoxColumn ParamName;
+		private System.Windows.Forms.DataGridViewTextBoxColumn ParamValue;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Param_Description;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ZoneId;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ZoneName;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_OutputKeywords;
@@ -936,8 +939,5 @@
 		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_ClosureRelayType;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_ClosureIdList;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_PowerOnDelay;
-		private System.Windows.Forms.DataGridViewTextBoxColumn ParamName;
-		private System.Windows.Forms.DataGridViewTextBoxColumn ParamValue;
-		private System.Windows.Forms.DataGridViewTextBoxColumn Param_Description;
     }
 }

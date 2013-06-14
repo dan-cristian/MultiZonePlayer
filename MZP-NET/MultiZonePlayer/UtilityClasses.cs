@@ -518,22 +518,36 @@ namespace MultiZonePlayer
 			Closed
 		}
 
-		public class ClosureOpenCloseRelayState
+		public class ClosureOpenCloseRelay
 		{
 			public enum EnumState
 			{
 				Undefined=-1,
-				Open=0,
-				Closed=1
+				ContactOpen=0,
+				ContactClosed=1
 			}
-			public string Key;
+
+			public enum EnumRelayType
+			{
+				Undefined,
+				NormalOpen,
+				NormalClosed
+			}
+
+			//public string Key;
 			public DateTime LastChange;
 			private EnumState m_relayState = EnumState.Undefined;
 			private EnumState m_relayStateLast = EnumState.Undefined;
-			
+			public EnumRelayType RelayType = EnumRelayType.Undefined;
+			private bool m_contactMade = false;
 
-			public ClosureOpenCloseRelayState()
+			public ClosureOpenCloseRelay()
 			{
+			}
+			public ClosureOpenCloseRelay(bool isRelayContactMade)
+			{
+				//Key = key;
+				RelayContactMade = isRelayContactMade;
 			}
 
 			public EnumState RelayState
@@ -542,12 +556,13 @@ namespace MultiZonePlayer
 				//set { m_relayState = value; }
 			}
 
-			public bool RelayStateClosed
+			public bool RelayContactMade
 			{
-				get { return m_relayState==ClosureOpenCloseRelayState.EnumState.Closed; }
+				get { return m_contactMade; }
 				set
 				{
-					m_relayState = GetRelayState(value);
+					m_contactMade = value;
+					m_relayState = GetRelayState(m_contactMade);
 					LastChange = DateTime.Now;
 
 					if (m_relayState != m_relayStateLast)
@@ -557,15 +572,20 @@ namespace MultiZonePlayer
 					}
 				}
 			}
-			public static EnumState GetRelayState(bool isRelayClosed)
+
+			public EnumState GetRelayState(bool isRelayContactMade)
 			{
-				return isRelayClosed ? ClosureOpenCloseRelayState.EnumState.Closed : ClosureOpenCloseRelayState.EnumState.Open;
+				switch (RelayType)
+				{
+					case EnumRelayType.NormalOpen:
+						return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactClosed : ClosureOpenCloseRelay.EnumState.ContactOpen;
+					case EnumRelayType.NormalClosed:
+						return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactOpen: ClosureOpenCloseRelay.EnumState.ContactClosed;
+					default:
+						return EnumState.Undefined;
+				}
 			}
-			public ClosureOpenCloseRelayState(string key, bool relayStateClosed)
-			{
-				Key = key;
-				RelayStateClosed = relayStateClosed;
-			}
+			
 
 			public void ResetState()
 			{
@@ -574,12 +594,8 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public enum ClosureRelayType
-		{
-			None,
-			OpenClose,
-			Counter
-		}
+		
+
         public class ZoneDetails
         {
             public int ZoneId = 0;
@@ -614,8 +630,8 @@ namespace MultiZonePlayer
 			public Boolean IsClosureArmed = false;
 
 			public string ClosureIdList = "";//separated by ;
-			public ClosureRelayType ClosureRelayType = ClosureRelayType.None;
-			public ClosureOpenCloseRelayState ClosureOpenCloseRelayState;
+			//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
+			public ClosureOpenCloseRelay ClosureOpenCloseRelay;
 			public ulong ClosureCounts = 0;
 
             public int VolumeLevel;
@@ -766,6 +782,12 @@ namespace MultiZonePlayer
                 }
             }
 
+			public String ClosureState
+			{
+				get {
+						return ClosureOpenCloseRelay.RelayState.ToString();
+				}
+			}
             public String OutputDeviceDirectXName
             {
                 get
@@ -799,6 +821,10 @@ namespace MultiZonePlayer
                 }
             }
 
+			public String HasClosureNotifyAsDiv
+			{
+				get { return ClosureOpenCloseRelay.RelayState==Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed ? DIV_SHOW : DIV_HIDE; }
+			}
 			public String HasMediaActiveAsDiv
 			{
 				get
@@ -958,10 +984,20 @@ namespace MultiZonePlayer
                         HasDisplay = true;
                     }
 
-					ClosureRelayType = zonestorage.ClosureRelayType;
+					if (zonestorage.ClosureOpenCloseRelay != null)
+					{
+						ClosureOpenCloseRelay = zonestorage.ClosureOpenCloseRelay;
+						ClosureOpenCloseRelay.RelayType = zonestorage.ClosureOpenCloseRelay.RelayType;
+					}
+					else
+					{
+						ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
+						ClosureOpenCloseRelay.RelayType = Metadata.ClosureOpenCloseRelay.EnumRelayType.Undefined;
+					}
+					
 					ClosureIdList = zonestorage.ClosureIdList;
 					ClosureCounts = zonestorage.ClosureCounts;
-					if (ClosureRelayType == Metadata.ClosureRelayType.OpenClose)
+					if (ClosureOpenCloseRelay.RelayType == Metadata.ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
 						IsClosureArmed = true;
 					
                     //Temperature = "1";

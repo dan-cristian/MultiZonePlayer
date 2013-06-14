@@ -124,7 +124,7 @@ namespace MultiZonePlayer
             {
                 dgvZones.Rows.Add(zone.ZoneId, zone.ZoneName, zone.OutputKeywords, zone.OutputDeviceUserSelected, 
                     zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId,
-					zone.ClosureRelayType.ToString(), zone.ClosureIdList, zone.PowerOnDelay);
+					zone.ClosureOpenCloseRelay.RelayType.ToString(), zone.ClosureIdList, zone.PowerOnDelay);
 
                 if (zone.DisplayType!="")
                 {
@@ -168,8 +168,8 @@ namespace MultiZonePlayer
                     zone.CameraId = (dgvZones.Rows[r].Cells[Zones_CameraId.Name].Value ?? "").ToString();
                     zone.AlarmZoneId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmZoneId.Name].Value ?? "-1");
                     zone.AlarmAreaId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmAreadId.Name].Value ?? "-1");
-					zone.ClosureRelayType = (Metadata.ClosureRelayType)Enum.Parse(typeof(Metadata.ClosureRelayType), 
-						(dgvZones.Rows[r].Cells[Zones_ClosureRelayType.Name].Value ?? "None").ToString());
+					zone.ClosureOpenCloseRelay.RelayType = (Metadata.ClosureOpenCloseRelay.EnumRelayType)Enum.Parse(typeof(Metadata.ClosureOpenCloseRelay.EnumRelayType), 
+						(dgvZones.Rows[r].Cells[Zones_ClosureRelayType.Name].Value ?? "Undefined").ToString());
 					zone.ClosureIdList = (dgvZones.Rows[r].Cells[Zones_ClosureIdList.Name].Value ?? "").ToString();
 					zone.PowerOnDelay = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_PowerOnDelay.Name].Value ?? "0");
 					zone.SaveStateToIni();
@@ -399,12 +399,14 @@ namespace MultiZonePlayer
                 pname = (String)dgvParams.Rows[r].Cells[ParamName.Name].Value;
                 pvalue = (String)dgvParams.Rows[r].Cells[ParamValue.Name].Value;
 				string[] param;
+				//apply params live
 				for (int i = 0; i < IniFile.PARAMS.Length; i++)
 				{
 					param = IniFile.PARAMS[i] as String[];
 					if (param[0] == pname)
 						param[1] = pvalue;
 				}
+				//then save
                 if (pname != null)
                 {
                     IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_PARAMS, pname,pvalue);
