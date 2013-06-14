@@ -718,7 +718,8 @@ namespace MultiZonePlayer
                         + (IsArmed?" Armed ":" ") 
                         + (HasImmediateMove? " ImmediateMove ":" ")
                         + (HasRecentMove? " RecentMove ":" ")
-                        + Title;
+                        + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState:"")
+						+ Title;
                     return val;
                 }
             }
