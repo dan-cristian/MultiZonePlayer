@@ -190,7 +190,7 @@ namespace MultiZonePlayer
                     if (File.Exists(musicFile))
                     {
                         //m_currentPlayList.MediaItemValueChange(musicFile, WindowsMediaItem.keyPlayCount, 1, 0, int.MaxValue);
-                        
+						MLog.Log(this, "Playing file" + CurrentItem.SourceURL + " playcount=" + CurrentItem.PlayCount + " vol="+m_dcPlay.GetVolumeLevel());
                         //init amp power if needed
 						m_zoneDetails.RequirePower = true;
 						m_zoneDetails.IsActive = true;
@@ -198,7 +198,7 @@ namespace MultiZonePlayer
 						int loop = 0;
 						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50)
 						{
-							MLog.Log(this, "Device not yet available for zone " + m_zoneDetails.ZoneName);
+							MLog.Log(this, "Waiting, device not yet available for zone " + m_zoneDetails.ZoneName);
 							System.Threading.Thread.Sleep(500);
 							loop++;
 						}

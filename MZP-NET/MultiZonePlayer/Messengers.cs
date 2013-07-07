@@ -60,6 +60,7 @@ namespace MultiZonePlayer
             objXmpp.Server = jid.Server;
             objXmpp.AutoResolveConnectServer = true;
             objXmpp.OnPresence += new agsXMPP.protocol.client.PresenceHandler(xmpp_OnPresence);
+			objXmpp.OnError += new ErrorHandler(objXmpp_OnError);
             /*objXmpp.OnRosterStart += new ObjectHandler(OnRosterStart);
             objXmpp.OnRosterEnd += new ObjectHandler(OnRosterEnd);
             objXmpp.OnRosterItem += new XmppClientConnection.RosterHandler(OnRosterItem);*/
@@ -127,6 +128,11 @@ namespace MultiZonePlayer
                 m_presenceList.Remove(item);
             m_presenceList.Add(pres);
         }
+		private void objXmpp_OnError(object sender, Exception ex)
+		{
+			MLog.Log(ex, this, "GTALK ON ERROR");
+		}
+
         /*
         void OnRosterItem(object sender, agsXMPP.protocol.iq.roster.RosterItem item)
         {
@@ -184,83 +190,92 @@ namespace MultiZonePlayer
 			String[] atoms, pair;
 			String cmdName, replymessage;
 			string cmd = message;
-			atoms = cmd.Split(' ');
-			sender = sender.ToLower();
-			bool isPowerUser = IniFile.PARAM_GTALK_TARGETUSER[1].ToLower().Contains(sender);
-			if (atoms.Length > 0)
+			if (cmd.Length > 0)
 			{
-				cmdName = atoms[0].ToLower();
-				int macroId = MZPState.Instance.GetMacroIdByShortcut(cmdName, "");
-				if (!isPowerUser)
+				atoms = cmd.Split(' ');
+				sender = sender.ToLower();
+				bool isPowerUser = IniFile.PARAM_GTALK_TARGETUSER[1].ToLower().Contains(sender);
+				if (atoms.Length > 0)
 				{
-					Metadata.MacroEntry entry = MZPState.Instance.MacroList.Find(x => x.Id == macroId);
-					if (entry == null || !entry.AllowUserList.Contains(sender))
+					cmdName = atoms[0].ToLower();
+					int macroId = MZPState.Instance.GetMacroIdByShortcut(cmdName, "");
+					if (!isPowerUser)
 					{
-						replymessage = "Not authorised gtalk sender " + sender;
-						MZPState.Instance.LogEvent(MZPEvent.EventSource.System, replymessage, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
-						SendMessageToUser(replymessage, sender);
-						return;	
-					}
-				}
-				try
-				{
-					if (cmd.StartsWith("?"))
-					{
-						replymessage = message;
-						Reflect.GenericReflect(ref replymessage);
-					}
-					else
-					{
-						Metadata.ValueList val;
-						if (cmdName != Metadata.GlobalCommands.r.ToString())
+						Metadata.MacroEntry entry = MZPState.Instance.MacroList.Find(x => x.Id == macroId);
+						if (entry == null || !entry.AllowUserList.Contains(sender))
 						{
-							val = new Metadata.ValueList(Metadata.GlobalParams.command, cmdName, Metadata.CommandSources.messenger);
-							for (int i = 1; i < atoms.Length; i++)
+							replymessage = "Not authorised gtalk sender " + sender;
+							MZPState.Instance.LogEvent(MZPEvent.EventSource.System, replymessage, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
+							SendMessageToUser(replymessage, sender);
+							return;
+						}
+					}
+					try
+					{
+						if (cmd.StartsWith("?"))
+						{
+							replymessage = message;
+							Reflect.GenericReflect(ref replymessage);
+						}
+						else
+						{
+							Metadata.ValueList val;
+							if (cmdName != Metadata.GlobalCommands.r.ToString())
 							{
-								pair = atoms[i].Split(':');
-								if (pair.Length >= 2)
+								val = new Metadata.ValueList(Metadata.GlobalParams.command, cmdName, Metadata.CommandSources.messenger);
+								for (int i = 1; i < atoms.Length; i++)
 								{
-									val.Add(pair[0].ToLower(), pair[1].Replace('_', ' '));
-								}
-								else
-								{
-									if (i == 1)//assume first param is zonename. replace _ to allow space in words
-										val.Add(Metadata.GlobalParams.singleparamvalue, atoms[i].Replace('_', ' '));
+									pair = atoms[i].Split(':');
+									if (pair.Length >= 2)
+									{
+										val.Add(pair[0].ToLower(), pair[1].Replace('_', ' '));
+									}
 									else
-										MLog.Log(this, "Invalid parameter in " + atoms[i]);
+									{
+										if (i == 1)//assume first param is zonename. replace _ to allow space in words
+											val.Add(Metadata.GlobalParams.singleparamvalue, atoms[i].Replace('_', ' '));
+										else
+											MLog.Log(this, "Invalid parameter in " + atoms[i]);
+									}
 								}
 							}
+							else
+							{
+								val = m_lastCommand;
+							}
+							Metadata.CommandResult res;
+							if (val != null)
+							{
+								res = API.DoCommand(val);
+								m_lastCommand = val;
+							}
+							else
+								res = new Metadata.CommandResult(Metadata.ResultEnum.ERR, "Error", "Error no last command exist");
+							string sysname = System.Security.Principal.WindowsIdentity.GetCurrent().Name.ToString();
+							replymessage = sysname + " (" + res.Command + "): " + res.Result + " - " + res.ErrorMessage + " - " + res.OutputMessage
+								+ res.ValuesToString();
 						}
-						else
-						{
-							val = m_lastCommand;
-						}
-						Metadata.CommandResult res;
-						if (val != null)
-						{
-							res = API.DoCommand(val);
-							m_lastCommand = val;
-						}
-						else
-							res = new Metadata.CommandResult(Metadata.ResultEnum.ERR, "Error", "Error no last command exist");
-						string sysname = System.Security.Principal.WindowsIdentity.GetCurrent().Name.ToString();
-						replymessage = sysname + " (" + res.Command + "): " + res.Result + " - " + res.ErrorMessage + " - " + res.OutputMessage
-							+ res.ValuesToString();
+					}
+					catch (Exception ex)
+					{
+						replymessage = "Error parsing command " + ex.Message;
+						MLog.Log(ex, replymessage);
 					}
 				}
-				catch (Exception ex)
-				{
-					replymessage = "Error parsing command " + ex.Message;
-					MLog.Log(ex, replymessage);
-				}
+				else
+					replymessage = "Error no command received";
 			}
 			else
-				replymessage = "Error no command received";
+				replymessage = "Empty cmd received";
 			SendMessageToUser(replymessage, sender);
         }
 
         public bool TestConnection()
         {
+			if (!objXmpp.Binded)
+			{
+				MLog.Log(this, "Error GTALK, not binded");
+			}
             if (!objXmpp.Authenticated)
             {
                 MLog.Log(this, "Error GTALK, not authenticated");

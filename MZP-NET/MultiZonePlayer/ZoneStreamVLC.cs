@@ -32,16 +32,18 @@ namespace MultiZonePlayer
                 VlcContext.StartupOptions.ClearAllOptions();
             }
 
+			VlcContext.LibVlcDllsPath = IniFile.PARAM_VIDEO_APP_VLC_DIR_PATH[1];
             //VlcContext.LibVlcDllsPath = CommonStrings.LIBVLC_DLLS_PATH_DEFAULT_VALUE_X86;
-            //VlcContext.LibVlcPluginsPath = CommonStrings.PLUGINS_PATH_DEFAULT_VALUE_X86;
+            VlcContext.LibVlcPluginsPath = IniFile.PARAM_VIDEO_APP_VLC_DIR_PATH[1]+"plugins\\";
 
+			/*
 			if (IntPtr.Size == 8)
 			{
 				VlcContext.LibVlcDllsPath = CommonStrings.LIBVLC_DLLS_PATH_DEFAULT_VALUE_X86;
 				VlcContext.LibVlcPluginsPath = CommonStrings.PLUGINS_PATH_DEFAULT_VALUE_X86;
-			}
+			}*/
 
-            MLog.Log(this, "Initializing VLC DLL path=" + VlcContext.LibVlcDllsPath);
+            MLog.Log(this, "Initializing VLC DLL path=" + VlcContext.LibVlcDllsPath + " plugpath="+VlcContext.LibVlcPluginsPath);
             
             //Set the startup options
             VlcContext.StartupOptions.IgnoreConfig = true;

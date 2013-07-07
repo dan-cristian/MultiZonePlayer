@@ -177,7 +177,7 @@ namespace MultiZonePlayer
     {
 		try
 		{
-			MLog.Log(this, "Playing file " + filename + " vol=" + this.currentVolume);
+			//MLog.Log(this, "Playing file " + filename + " vol=" + this.currentVolume);
 			int hr = 0;
 
 			this.graphBuilder = (IGraphBuilder)new FilterGraph();

@@ -160,11 +160,13 @@ namespace MultiZonePlayer
                 if (deviceNode[i].Description.Equals(USB8_IDENTIFIER))
                 {
                     m_deviceSerial = deviceNode[i].SerialNumber;
+					MLog.Log(this, "Found Denkovi FTDI device com=" + m_deviceSerial);
                 }
             }
 
             if (m_deviceSerial == "")
                 MLog.Log(null,"No " + USB8_IDENTIFIER + " found in " + count + " devices");
+			MLog.Log(this, "FTDI serial=" + m_deviceSerial);
         }
 
         private void ResetBoard()

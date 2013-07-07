@@ -34,5 +34,24 @@ namespace MultiZonePlayer
 			}
 			zone.MovementAlert = false;
 		}
+
+		public static void Tick()
+		{
+            System.Windows.Forms.Keys key;
+			foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			{
+				if (zone.ClosureIdList.Length > 0)
+				{
+					if (Enum.IsDefined(typeof(System.Windows.Forms.Keys), zone.ClosureIdList.ToUpper()))
+					{
+						key = (System.Windows.Forms.Keys)Enum.Parse(typeof(System.Windows.Forms.Keys),
+							zone.ClosureIdList.ToUpper());
+						//ensure key is not stuck, signal key release
+						if (!KeyboardUtility.IsKeyDown(key))
+							ProcessAction(zone,zone.ClosureIdList,KeyboardUtility.IsKeyDown(key));
+					}
+				}
+			}
+		}
 	}
 }

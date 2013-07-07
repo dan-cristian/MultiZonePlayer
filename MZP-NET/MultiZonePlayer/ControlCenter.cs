@@ -142,7 +142,7 @@ namespace MultiZonePlayer
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
                         MZPState.Instance.Tick();
-
+						ZoneClosures.Tick();
 						foreach (Metadata.ZoneDetails details in MZPState.Instance.ZoneDetails)
 						{
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);

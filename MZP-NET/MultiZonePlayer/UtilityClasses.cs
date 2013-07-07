@@ -595,7 +595,7 @@ namespace MultiZonePlayer
 		}
 
 		
-
+		
         public class ZoneDetails
         {
             public int ZoneId = 0;
@@ -628,7 +628,7 @@ namespace MultiZonePlayer
             public String DisplayType = "";
             public Boolean RequirePower = false;
 			public Boolean IsClosureArmed = false;
-
+			public String NearbyZonesIdList = "";//zone id list separated by ;
 			public string ClosureIdList = "";//separated by ;
 			//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
 			public ClosureOpenCloseRelay ClosureOpenCloseRelay;
@@ -670,6 +670,7 @@ namespace MultiZonePlayer
 
             public ZoneDetails()
             {
+				ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
             }
 
             public ZoneDetails(int p_zoneId, String p_zoneName)
@@ -736,9 +737,13 @@ namespace MultiZonePlayer
                 }
             }
 
+			public double LastMovementAgeInMinutes
+			{
+				get { return Math.Round(DateTime.Now.Subtract(LastMovementDate).TotalMinutes); }
+			}
 			public double LastLocalCommandAgeInSeconds
 			{
-				get { return DateTime.Now.Subtract(LastLocalCommandDateTime).TotalSeconds; }
+				get { return Math.Round(DateTime.Now.Subtract(LastLocalCommandDateTime).TotalSeconds); }
 			}
             public Boolean HasImmediateMove
             {
@@ -996,11 +1001,13 @@ namespace MultiZonePlayer
 						ClosureOpenCloseRelay.RelayType = Metadata.ClosureOpenCloseRelay.EnumRelayType.Undefined;
 					}
 					
-					ClosureIdList = zonestorage.ClosureIdList;
+					ClosureIdList = zonestorage.ClosureIdList.Trim();
 					ClosureCounts = zonestorage.ClosureCounts;
 					if (ClosureOpenCloseRelay.RelayType == Metadata.ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
 						IsClosureArmed = true;
-					
+					NearbyZonesIdList = zonestorage.NearbyZonesIdList;
+					if (NearbyZonesIdList.Length>0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
+						NearbyZonesIdList += ";";
                     //Temperature = "1";
                 }
 
@@ -1159,6 +1166,11 @@ namespace MultiZonePlayer
                 ZoneState = Metadata.ZoneState.NotInitialised;
                 
             }
+
+			public Boolean IsNearbyZone(int zoneId)
+			{
+				return NearbyZonesIdList.Contains(zoneId.ToString()+";");
+			}
         }
 
 		public class MacroEntryCommand

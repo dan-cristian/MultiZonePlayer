@@ -442,8 +442,7 @@ namespace MultiZonePlayer
 								if (m_mainZoneActivity == null)
 									InitZoneMusicClone();
 							}
-							else MLog.Log(this, "Cannot clone myself or no existing zone ="
-								+MZPState.Instance.GetFirstZoneMusic().ZoneDetails.ZoneName);
+							else MLog.Log(this, "Cannot clone myself or no existing zone to clone");
                             break;
 
 

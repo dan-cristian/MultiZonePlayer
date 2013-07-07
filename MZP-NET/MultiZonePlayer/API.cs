@@ -59,12 +59,13 @@ namespace MultiZonePlayer
 					}
 
 					cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
+					int macroId = MZPState.Instance.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
 
 					MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
-						+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId);
-					if (cmdRemote == null)
+						+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId + " macroid="+macroId);
+					
+					if (cmdRemote == null || macroId != -1)
 					{
-						int macroId = MZPState.Instance.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
 						if (macroId != -1)
 						{
 							MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);

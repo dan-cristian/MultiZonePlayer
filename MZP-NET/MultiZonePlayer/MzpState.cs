@@ -789,9 +789,12 @@ namespace MultiZonePlayer
 				vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.notifyuser.ToString());
 				foreach (Metadata.ZoneDetails zone in zonesToNotify)
 				{
-					vals.Set(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
-					vals.Set(Metadata.GlobalParams.sourcezoneid, mzpevent.ZoneDetails.ZoneId.ToString());
-					API.DoCommand(vals);
+					if (!mzpevent.ZoneDetails.IsNearbyZone(zone.ZoneId) && !zone.IsNearbyZone(mzpevent.ZoneDetails.ZoneId))
+					{
+						vals.Set(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+						vals.Set(Metadata.GlobalParams.sourcezoneid, mzpevent.ZoneDetails.ZoneId.ToString());
+						API.DoCommand(vals);
+					}
 				}
 			}
 

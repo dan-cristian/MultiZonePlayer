@@ -177,14 +177,17 @@ namespace MultiZonePlayer
 				Metadata.GlobalParams param;
 				foreach (string key in request.QueryString.Keys)
 				{
-					if ((key != null) && Enum.IsDefined(typeof(Metadata.GlobalParams), key))
+					if (key != null && key.Trim().Length != 0)
 					{
-						param = (Metadata.GlobalParams)Enum.Parse(typeof(Metadata.GlobalParams), key);
-						vals.Add(param, request.QueryString[key]);
-					}
-					else
-					{
-						MLog.Log(null, "Webserver Unknown parameter received:" + key);
+						if (Enum.IsDefined(typeof(Metadata.GlobalParams), key))
+						{
+							param = (Metadata.GlobalParams)Enum.Parse(typeof(Metadata.GlobalParams), key);
+							vals.Add(param, request.QueryString[key]);
+						}
+						else
+						{
+							MLog.Log(null, "Webserver Unknown parameter received:" + key);
+						}
 					}
 				}
 
