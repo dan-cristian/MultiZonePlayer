@@ -504,46 +504,61 @@ namespace MultiZonePlayer
 
 		protected override void ReceiveSerialResponse(string response)
 		{
+			string origResponse = response;
 			//MLog.Log(this, "RFXCOMM: " + response);
 			do
 			{
 				RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
 				if (dev != null)
 				{
-					//MLog.Log(this, "RFX result: " + dev.DisplayValues());
+					MLog.Log(this, "RFX result for response:[" + origResponse + "] is " + dev.DisplayValues());
 					if (dev.ZoneId != -1)
 					{
 						Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(dev.ZoneId);
-						switch(dev.DeviceType)
+						switch (dev.DeviceType)
 						{
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
 								decimal temp, hum, lasttemp, lasthum;
-								temp = Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value)/10;
+								temp = Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value) / 10;
 								hum = Convert.ToDecimal(dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value);
 								lasttemp = Convert.ToDecimal(zone.Temperature);
 								lasthum = Convert.ToDecimal(zone.Humidity);
 
 								lasttemp = lasttemp == 0 ? 0.1m : lasttemp;
 								lasthum = lasthum == 0 ? 0.1m : lasthum;
-
-								if ((Math.Abs(temp - lasttemp) / lasttemp)*100 < 50 || zone.Temperature=="-0")
+								zone.Temperature = temp.ToString();
+								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
+								zone.Humidity = hum.ToString();
+								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Humidity);
+								/*if ((Math.Abs(temp - lasttemp) / lasttemp) * 100 < 50 || zone.Temperature == "-0")
 								{
 									zone.Temperature = temp.ToString();
 									Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
 								}
-								if ((Math.Abs(hum- lasthum) / lasthum) * 100 < 50 || zone.Humidity=="-0")
+								else
+									MLog.Log(this, "RFX out of range temperature new val=" + temp + " oldval="+lasttemp);
+								
+								if ((Math.Abs(hum - lasthum) / lasthum) * 100 < 50 || zone.Humidity == "-0")
 								{
-									zone.Humidity= hum.ToString();
+									zone.Humidity = hum.ToString();
 									Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Humidity);
 								}
+								else
+									MLog.Log(this, "RFX out of range humidity new val=" + hum+ " oldval=" + lasthum);
+								*/
 								break;
 							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
-								
+
+								break;
+							default:
+								MLog.Log(this, "Unknown RFX device type in response " + response);
 								break;
 						}
-						
 					}
+					else
+						MLog.Log(this, "Unknown zone for RFX response " + response);
 				}
+				else MLog.Log(this, "No RFX device identified for response "+response);
 			} while (response.Length > 0);
 
 			

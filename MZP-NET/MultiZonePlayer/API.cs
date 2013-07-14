@@ -332,6 +332,11 @@ namespace MultiZonePlayer
 							//string device = vals.GetValue(Metadata.GlobalParams.rfxdevicename);
 							cmdresult = MZPState.Instance.ExecuteRFXCmd(rfxc);//device, rfxc);
 							break;
+						case Metadata.GlobalCommands.runscript:
+							System.Diagnostics.Process proc = Utilities.RunProcessWait(IniFile.CurrentPath() + "\\scripts\\"+vals.GetValue(Metadata.GlobalParams.name),
+								System.Diagnostics.ProcessWindowStyle.Hidden);
+							cmdresult.OutputMessage = "Exit code="+proc.ExitCode;
+							break;
                         default:
                             cmdresult.Result = DoZoneCommand(apicmd, vals, out cmdresult.ErrorMessage, out cmdresult.ValueList);
                             //resvalue = values;

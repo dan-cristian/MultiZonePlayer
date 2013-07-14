@@ -1,0 +1,7 @@
+REM N (movies)
+select volume=N
+remove
+
+REM T (pictures)
+select volume=T
+remove

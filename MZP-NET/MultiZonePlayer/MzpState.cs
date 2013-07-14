@@ -776,24 +776,29 @@ namespace MultiZonePlayer
 					SendMessengerMessageToOne(cause + "; " + mzpevent.DisplayMessage());
 					MessengerMakeBuzz();
 				}
-				List<Metadata.ZoneDetails> zonesToNotify = null;
- 				zonesToNotify = m_zoneList.FindAll(x => x.HasSpeakers && (x.IsActive || x.HasImmediateMove || x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
-					.OrderByDescending(x=>x.IsActive).ThenByDescending(x=>x.HasImmediateMove).ThenBy(x=>x.LastLocalCommandAgeInSeconds).ToList();
-				
-				if (excludeSource && mzpevent.ZoneDetails != null)
-					zonesToNotify.RemoveAll(x => x.ZoneId == mzpevent.ZoneDetails.ZoneId);
 
-				MLog.Log(this, "NotifyEvent to zones count="+zonesToNotify.Count);
-
-				Metadata.ValueList vals = new Metadata.ValueList();
-				vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.notifyuser.ToString());
-				foreach (Metadata.ZoneDetails zone in zonesToNotify)
+				if (mzpevent != null)
 				{
-					if (!mzpevent.ZoneDetails.IsNearbyZone(zone.ZoneId) && !zone.IsNearbyZone(mzpevent.ZoneDetails.ZoneId))
+					List<Metadata.ZoneDetails> zonesToNotify = null;
+					zonesToNotify = m_zoneList.FindAll(x => x.HasSpeakers && (x.IsActive || x.HasImmediateMove || x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
+						.OrderByDescending(x => x.IsActive).ThenByDescending(x => x.HasImmediateMove).ThenBy(x => x.LastLocalCommandAgeInSeconds).ToList();
+
+					if (excludeSource && mzpevent.ZoneDetails != null)
+						zonesToNotify.RemoveAll(x => x.ZoneId == mzpevent.ZoneDetails.ZoneId);
+
+					MLog.Log(this, "NotifyEvent to zones count=" + zonesToNotify.Count);
+
+					Metadata.ValueList vals = new Metadata.ValueList();
+					vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.notifyuser.ToString());
+
+					foreach (Metadata.ZoneDetails zone in zonesToNotify)
 					{
-						vals.Set(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
-						vals.Set(Metadata.GlobalParams.sourcezoneid, mzpevent.ZoneDetails.ZoneId.ToString());
-						API.DoCommand(vals);
+						if (!mzpevent.ZoneDetails.IsNearbyZone(zone.ZoneId) && !zone.IsNearbyZone(mzpevent.ZoneDetails.ZoneId))
+						{
+							vals.Set(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+							vals.Set(Metadata.GlobalParams.sourcezoneid, mzpevent.ZoneDetails.ZoneId.ToString());
+							API.DoCommand(vals);
+						}
 					}
 				}
 			}

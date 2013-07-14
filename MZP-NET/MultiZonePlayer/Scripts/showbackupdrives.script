@@ -1,0 +1,7 @@
+REM 8=N (movies)
+select volume=8
+assign letter=N
+
+REM 7=T (pictures)
+select volume=7
+assign letter T

@@ -34,8 +34,11 @@ namespace FTD2XX_NET
 					MultiZonePlayer.MLog.Log(this,"Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
 					hFTD2XXDLL = LoadLibrary(@Path.GetDirectoryName(GetType().Assembly.Location) + "\\FTD2XX.DLL");
 				}
+				else 
+					MultiZonePlayer.MLog.Log(this, "Loaded FTD2XX.DLL from system path");
 			}
 
+			
 			// If we have succesfully loaded the library, get the function pointers set up
 			if (hFTD2XXDLL != IntPtr.Zero)
 			{
@@ -93,7 +96,7 @@ namespace FTD2XX_NET
 			else
 			{
 				// Failed to load our DLL - alert the user
-				MultiZonePlayer.MLog.Log(null,"Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
+				MultiZonePlayer.MLog.Log(this,"Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
 			}
 		}
 

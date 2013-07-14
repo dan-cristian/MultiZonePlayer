@@ -169,7 +169,7 @@ namespace MultiZonePlayer
 
 				String requestServer;
 
-				MLog.LogWeb(context.Request);
+				//MLog.LogWeb(context.Request);
 				requestServer = Utilities.ExtractServerNameFromURL(request.Url.AbsoluteUri);
 				String localPath = request.Url.LocalPath.Replace("..", "");//.Replace("/", "");
 

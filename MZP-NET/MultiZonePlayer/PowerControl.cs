@@ -129,13 +129,28 @@ namespace MultiZonePlayer
 
         public DenkoviPowerControl(String deviceName):base(deviceName)
         {
-            LoadFromIni();
-            m_usb8Relay = new FTD2XX_NET.FTDI();
-            ScanForDevices();
-            m_lastOpenDateTime = DateTime.MinValue;
-            m_threadList = new List<Thread>();
-            PowerOff();
+			Reinitialise();
         }
+
+		public void Reinitialise()
+		{
+			MLog.Log(this, "Reinitialise Denkovi");
+			try
+			{
+				if (m_usb8Relay != null)
+					m_usb8Relay.Close();
+				MLog.Log(this, "Reinitialising, closed existing relay instance");
+			}
+			catch (Exception)
+			{
+			}
+			MLog.Log(this, "Reinitialising, opening relay");
+			m_usb8Relay = new FTD2XX_NET.FTDI();
+			ScanForDevices();
+			m_lastOpenDateTime = DateTime.MinValue;
+			m_threadList = new List<Thread>();
+			PowerOff();
+		}
 
         ~DenkoviPowerControl()
         {
@@ -172,17 +187,7 @@ namespace MultiZonePlayer
         private void ResetBoard()
         {
             MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Relay Action freezed, recovery needed", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Error, null);
-            MZPState.RestartComputer("power control freezed");
-            /*
-            MLog.Log(this,"Reseting board");
-            //MLog.Log(this, "Reseting port");
-            m_usb8Relay.ResetPort();
-            //MLog.Log(this, "Reseting device");
-            m_usb8Relay.ResetDevice();
-            //MLog.Log(this, "Cycling port");
-            m_usb8Relay.CyclePort();
-            MLog.Log(this,"Reseting board done");
-             */
+			Reinitialise();
         }
 
         protected override void Open()
@@ -190,16 +195,19 @@ namespace MultiZonePlayer
             FTD2XX_NET.FTDI.FT_STATUS status;
             try{
                 status = m_usb8Relay.OpenBySerialNumber(m_deviceSerial);
-                if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                {
-                    m_lastOpenDateTime = DateTime.Now;
-                    status = m_usb8Relay.SetBitMode(255, 1);
-                    status = m_usb8Relay.SetTimeouts(1000, 1000);
-                    if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                        MLog.Log(null, "Setbit failed on Open, status = " + status);
-                }
-                else
-                    MLog.Log(null,"Open failed, status = " + status);
+				if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+				{
+					m_lastOpenDateTime = DateTime.Now;
+					status = m_usb8Relay.SetBitMode(255, 1);
+					status = m_usb8Relay.SetTimeouts(1000, 1000);
+					if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+						MLog.Log(null, "Setbit failed on Open, status = " + status);
+				}
+				else
+				{
+					MLog.Log(null, "Open failed, status = " + status);
+					Reinitialise();
+				}
                 LogDebugInfo();
             }
             catch (Exception ex)
@@ -508,20 +516,7 @@ namespace MultiZonePlayer
         {
             //int[] result;
             List<int> res=new List<int>();
-            /*
-            if (m_zoneIndexes.ContainsKey(zoneId))
-            {
-                List<Object> value = Utilities.ParseStringForValues(m_zoneIndexes[zoneId].ToString(), ',', typeof(int));
-                result = new int[value.Count];
-
-                for (int i = 0; i < value.Count; i++)
-                {
-                    result[i] = (int)value[i];
-                }
-            }
-            else
-                result = new int[0];
-            */
+            
             foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
             {
                 if (zone.ZoneId == zoneId && zone.PowerIndex>0)
@@ -534,12 +529,10 @@ namespace MultiZonePlayer
 
         public override void LoadFromIni()
         {
-            //m_zoneIndexes = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONEPOWERCTRLINDEX_DK);
         }
 
         public override void SaveToIni()
         {
-            //not needed
         }
     }
 

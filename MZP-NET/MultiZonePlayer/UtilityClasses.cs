@@ -126,8 +126,8 @@ namespace MultiZonePlayer
 			notifyuser,
 			closure,
 			closurearm,
-			closuredisarm
-			
+			closuredisarm,
+			runscript
         }
         public enum GlobalParams
         {
@@ -164,6 +164,7 @@ namespace MultiZonePlayer
 			dimvalue,
 			singleparamvalue,
 			key,iskeydown,
+			name,
 			r//random no
         }
 
@@ -255,7 +256,8 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.remoteadjustdim,	GlobalParams.remoteid, GlobalParams.dimvalue),
 			new CommandSyntax(GlobalCommands.rfxcmd,			GlobalParams.action),
 			new CommandSyntax(GlobalCommands.powercycle,		GlobalParams.interval),
-			new CommandSyntax(GlobalCommands.notifyuser,		GlobalParams.sourcezoneid)
+			new CommandSyntax(GlobalCommands.notifyuser,		GlobalParams.sourcezoneid),
+			new CommandSyntax(GlobalCommands.runscript,			GlobalParams.name)
             /*
             genrelist,
             setgenrelist,
