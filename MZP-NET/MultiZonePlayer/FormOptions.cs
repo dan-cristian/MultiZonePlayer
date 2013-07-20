@@ -209,6 +209,7 @@ namespace MultiZonePlayer
                     list.Add(new ControlDevice(Convert.ToInt16(zoneId), controlDeviceName.ToString(), "not used"));
             }
             ControlDevice.SaveToIni(list);
+			MZPState.Instance.LoadSystemAndUserControls();
         }
 
         private void GUILoadControls()

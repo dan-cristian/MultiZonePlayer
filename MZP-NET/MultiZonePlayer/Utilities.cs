@@ -790,6 +790,30 @@ namespace MultiZonePlayer
 
     public class MLog
     {
+		private static HashSet<String> m_keywords = new HashSet<String>();
+
+		public static void LoadFromIni()
+		{
+			m_keywords.Clear();
+			string inientry;
+			string[] keywords;
+			int line = 0;
+			do
+			{
+				inientry = Utilities.IniReadValue(IniFile.SCHEDULER_SECTION_LOG,
+					line.ToString(), IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
+				if (inientry != "")
+				{
+					keywords = inientry.Split(',');
+					foreach (string key in keywords)
+						m_keywords.Add(key.ToLower());
+				}
+				line++;
+			}
+			while (inientry != "");
+			MLog.Log(null, "Loaded " + (line - 1) + " log definition lines");
+		}
+
         public static void Log(Object o, Metadata.CommandResult res)
         {
             Log(o, res.ErrorMessage);
@@ -811,18 +835,22 @@ namespace MultiZonePlayer
             {
                 if (e != null)
                 {
-                    if (e.GetType().ToString().ToLower().Contains("exception"))
-                        text += " err=" + ((Exception)e).Message + " \nstack=" + ((Exception)e).StackTrace;
-                    else
-                        text += " sender=" + e.ToString();
+					if (e.GetType().ToString().ToLower().Contains("exception"))
+						text += " err=" + ((Exception)e).Message + " \nstack=" + ((Exception)e).StackTrace;
+					else
+						text += " sender=" + e.ToString();
                 }
             }
             catch (Exception)
             { }
             try
             {
-                Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [") 
-                    + Thread.CurrentThread.Name +"]:" + text + "\n", MZPEvent.EventSource.System);
+				if (m_keywords.Contains(e.ToString().ToLower())
+					|| m_keywords.Contains(Thread.CurrentThread.Name.ToLower()))
+				{
+					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
+						+ Thread.CurrentThread.Name + "]:" + text + "\n", MZPEvent.EventSource.System);
+				}
             }
             catch (Exception)
             { }

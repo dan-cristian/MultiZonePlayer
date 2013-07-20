@@ -37,6 +37,7 @@ namespace MultiZonePlayer
             public static String DEFAULT_AUTO_DEV_ID = "-1";
 			public const String SCHEDULER_SECTION_MAIN = "Scheduler";
 			public const String SCHEDULER_SECTION_RFX = "RFX";
+			public const String SCHEDULER_SECTION_LOG = "LOG";
             
             public const String INI_SECTION_ZONES = "Zones";
             public const String INI_SECTION_ZONESTATE = "ZoneState";

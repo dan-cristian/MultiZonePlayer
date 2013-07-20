@@ -112,7 +112,7 @@ namespace MultiZonePlayer
             {
                 m_sysState = this;
                 m_notifyState = new NotifyState();
-
+				MLog.LoadFromIni();
                 MLog.Log(this, "\r\n-----------------START--------------------");
 
                 m_systemAlarm = new Alarm(1);
@@ -132,9 +132,10 @@ namespace MultiZonePlayer
                 LoadIniParams();
                 LoadIniSections();
                 LoadIniUsers();
-                PopulateSystemControlDevices();
 
-                ControlDevice.LoadFromIni(m_iniControlList);
+				LoadSystemAndUserControls();
+                
+
 
                 MLog.Log(this, "Retrieving system available audio input devices");
                 DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
@@ -182,6 +183,13 @@ namespace MultiZonePlayer
                 LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
 
+			public void LoadSystemAndUserControls()
+			{
+				PopulateSystemControlDevices();
+				//loading user selected controls for each zone
+				ControlDevice.LoadFromIni(m_iniControlList);
+			}
+
 			private void LoadMacrosandRules()
 			{
 				DateTime fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
@@ -189,6 +197,7 @@ namespace MultiZonePlayer
 				{
 					m_macroList = Metadata.MacroEntry.LoadFromIni();
 					RFXDeviceDefinition.LoadFromIni();
+					MLog.LoadFromIni();
 					m_lastScheduleFileModifiedDate = fileModified;
 				}
 
@@ -418,6 +427,7 @@ namespace MultiZonePlayer
             {
                 RawInputDevice.EnumerateDevices();
                 IDictionaryEnumerator enumerator = RawInputDevice.GetDeviceList().GetEnumerator();
+				m_systemAvailableControlDevices.Clear();
                 while (enumerator.MoveNext())
                 {
                     m_systemAvailableControlDevices.Add(new ControlDevice(-1, 

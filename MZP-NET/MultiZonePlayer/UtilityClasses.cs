@@ -1885,7 +1885,8 @@ namespace MultiZonePlayer
             int zoneId;
             String deviceName, devDisplayName;
             ControlDevice dev;
-            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			p_list.Clear();
+			foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
             {
                 zoneId = zone.ZoneId;//(int)enumerator.Key;
                 int r = 0;
