@@ -46,7 +46,7 @@ namespace MultiZonePlayer
         {
             if (!ControlCenter.IsPowerControlEnabled)
                 return;
-
+			/*
             MLog.Log(null,"Power saving");
             //tell windows it can go into idle
             Utilities.SetThreadExecutionState(Utilities.EXECUTION_STATE.ES_CONTINUOUS);
@@ -57,6 +57,7 @@ namespace MultiZonePlayer
             MLog.Log(null,"Wait completed for power saving action");
 
             isPowerSavingMode = true;
+			 */
         }
 
         public void ResumeFromPowerSaving()
@@ -67,7 +68,7 @@ namespace MultiZonePlayer
             if (!isPowerSavingMode)
                 return;
             MLog.Log(null,"Power resume");
-
+			/*
             isPowerSavingMode = false;
             //tell windows it cannot go into idle
             Utilities.SetThreadExecutionState(Utilities.EXECUTION_STATE.ES_SYSTEM_REQUIRED);
@@ -77,6 +78,7 @@ namespace MultiZonePlayer
 
             //resume from power saving
             powerSavingCycleCount = 0;
+			 */
         }
 
         public int GetInactivityCycles()
@@ -141,15 +143,23 @@ namespace MultiZonePlayer
 					m_usb8Relay.Close();
 				MLog.Log(this, "Reinitialising, closed existing relay instance");
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				MLog.Log(ex, this, "Unable to close usb relay");
 			}
 			MLog.Log(this, "Reinitialising, opening relay");
-			m_usb8Relay = new FTD2XX_NET.FTDI();
-			ScanForDevices();
-			m_lastOpenDateTime = DateTime.MinValue;
-			m_threadList = new List<Thread>();
-			PowerOff();
+			try
+			{
+				m_usb8Relay = new FTD2XX_NET.FTDI();
+				ScanForDevices();
+				m_lastOpenDateTime = DateTime.MinValue;
+				m_threadList = new List<Thread>();
+				PowerOff();
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, this, "Unable to reinitialise usb relay");
+			}
 		}
 
         ~DenkoviPowerControl()
@@ -312,16 +322,18 @@ namespace MultiZonePlayer
 
         public override void PowerOn(int zoneId)
         {
-            //MLog.Log(null,"Running async power on, active thread count=" + m_threadList.Count);
+            MLog.Log(this,"Running async power on, active thread count=" + m_threadList.Count);
             //making an async call
             if (!IsPowerOn(zoneId))
             {
-                Thread th = new Thread(() => PowerOnSync(zoneId));
+                /*Thread th = new Thread(() => PowerOnSync(zoneId));
                 th.Name = "PowerOn zoneid=" + zoneId;
                 m_threadList.Add(th);
                 th.Start();
                 WaitForThreadEnd(th);
                 MLog.Log(null, "Running async power on completed, active thread count=" + m_threadList.Count);
+				 */
+				PowerOnSync(zoneId);
             }
             //else
             //    MLog.Log(this, "Power already on, power on ignored zoneid=" + zoneId 
@@ -330,7 +342,7 @@ namespace MultiZonePlayer
 
         private bool PowerOnSync(int zoneId)
         {
-            MLog.Log(null,"Power ON started zoneid = " + zoneId +" Index count="+ GetSocketIndexForZone(zoneId).Length);
+            MLog.Log(this,"Power ON started zoneid = " + zoneId +" Index count="+ GetSocketIndexForZone(zoneId).Length);
             Open();
             String status = SendPowerCommand(zoneId, "1").ToString();
             LogDebugInfo();
@@ -343,11 +355,13 @@ namespace MultiZonePlayer
         {
             //MLog.Log(null,"Running async power off ALL, active thread count=" + m_threadList.Count);
             //making an async call
-            Thread th = new Thread(() => PowerOffSync());
+            /*Thread th = new Thread(() => PowerOffSync());
             th.Name = "PowerOff zoneid=all";
             m_threadList.Add(th);
             th.Start();
             WaitForThreadEnd(th);
+			 */
+			PowerOffSync();
             MLog.Log(null,"Running async power off ALL completed, active thread count=" + m_threadList.Count);
         }
 
@@ -357,12 +371,15 @@ namespace MultiZonePlayer
             //making an async call
             if (IsPowerOn(zoneId))
             {
+				/*
                 Thread th = new Thread(() => PowerOffSync(zoneId));
                 th.Name = "PowerOff zoneid="+zoneId;
                 m_threadList.Add(th);
                 th.Start();
                 WaitForThreadEnd(th);
-                MLog.Log(null, "Running async power off completed, active thread count=" + m_threadList.Count);
+				 */
+				PowerOffSync(zoneId);
+                MLog.Log(this, "Running async power off completed, active thread count=" + m_threadList.Count);
             }
             //else MLog.Log(this, "Power already off, off not needed zone " + zoneId);
         }
@@ -416,7 +433,7 @@ namespace MultiZonePlayer
             }
             if (!done)
             {
-                MLog.Log(null,th.Name + " Action freezed, recovery needed, pas="+i);
+                MLog.Log(this,th.Name + " Action freezed, recovery needed, pas="+i);
                 ResetBoard();
             }
             return done;
@@ -448,7 +465,7 @@ namespace MultiZonePlayer
                 status = SendPowerCommand(stateToSend);
                 if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
                 {
-                    MLog.Log(null,"Error send command " +state+ ", status=" + status);
+                    MLog.Log(this,"Error send command " +state+ ", status=" + status);
                     if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_IO_ERROR)
                     {
                         //MLog.Log(null,"Reseting device started");
@@ -456,7 +473,7 @@ namespace MultiZonePlayer
                         //MLog.Log(null,"Reseting device completed, status=" + status);
                     }
                 }
-                Application.DoEvents();
+                //Application.DoEvents();
             }
 
             UpdateSocketsStatus();
@@ -506,7 +523,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-                MLog.Log(null,"Unable to change power state " + stateToSend + " ex=" + ex.Message);
+                MLog.Log(ex,this,"Unable to change power state " + stateToSend + " ex=" + ex.Message);
             }
             return status;
         }

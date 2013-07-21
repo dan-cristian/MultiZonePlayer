@@ -1,3 +1,23 @@
+/*
+** FTD2XX_NET.cs
+**
+** Copyright © 2009-2012 Future Technology Devices International Limited
+**
+** C# Source file for .NET wrapper of the Windows FTD2XX.dll API calls.
+** Main module
+**
+** Author: FTDI
+** Project: CDM Windows Driver Package
+** Module: FTD2XX_NET Managed Wrapper
+** Requires: 
+** Comments:
+**
+** History:
+**  1.0.0	-	Initial version
+**  1.0.12	-	Included support for the FT232H device.
+**  1.0.14	-	Included Support for the X-Series of devices.
+**
+*/
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,15 +26,14 @@ using System.Threading;
 using System.Windows.Forms;
 using System.IO;
 
-
 namespace FTD2XX_NET
 {
-
 	/// <summary>
 	/// Class wrapper for FTD2XX.DLL
 	/// </summary>
 	public class FTDI
 	{
+		#region CONSTRUCTOR_DESTRUCTOR
 		// constructor
 		/// <summary>
 		/// Constructor for the FTDI class.
@@ -25,20 +44,18 @@ namespace FTD2XX_NET
 			if (hFTD2XXDLL == IntPtr.Zero)
 			{
 				// Load our FTD2XX.DLL library
-                MultiZonePlayer.MLog.Log(this,"Loading FTD2XX.DLL");
 				hFTD2XXDLL = LoadLibrary(@"FTD2XX.DLL");
 				if (hFTD2XXDLL == IntPtr.Zero)
 				{
 					// Failed to load our FTD2XX.DLL library from System32 or the application directory
 					// Try the same directory that this FTD2XX_NET DLL is in
-					MultiZonePlayer.MLog.Log(this,"Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
+					MultiZonePlayer.MLog.Log(this, "Attempting to load FTD2XX.DLL from:\n" + Path.GetDirectoryName(GetType().Assembly.Location));
 					hFTD2XXDLL = LoadLibrary(@Path.GetDirectoryName(GetType().Assembly.Location) + "\\FTD2XX.DLL");
 				}
-				else 
+				else
 					MultiZonePlayer.MLog.Log(this, "Loaded FTD2XX.DLL from system path");
 			}
 
-			
 			// If we have succesfully loaded the library, get the function pointers set up
 			if (hFTD2XXDLL != IntPtr.Zero)
 			{
@@ -92,11 +109,13 @@ namespace FTD2XX_NET
 				pFT_EE_UAWrite = GetProcAddress(hFTD2XXDLL, "FT_EE_UAWrite");
 				pFT_EE_Read = GetProcAddress(hFTD2XXDLL, "FT_EE_Read");
 				pFT_EE_Program = GetProcAddress(hFTD2XXDLL, "FT_EE_Program");
+				pFT_EEPROM_Read = GetProcAddress(hFTD2XXDLL, "FT_EEPROM_Read");
+				pFT_EEPROM_Program = GetProcAddress(hFTD2XXDLL, "FT_EEPROM_Program");
 			}
 			else
 			{
 				// Failed to load our DLL - alert the user
-				MultiZonePlayer.MLog.Log(this,"Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
+				MultiZonePlayer.MLog.Log(this, "Failed to load FTD2XX.DLL.  Are the FTDI drivers installed?");
 			}
 		}
 
@@ -109,7 +128,9 @@ namespace FTD2XX_NET
 			FreeLibrary(hFTD2XXDLL);
 			hFTD2XXDLL = IntPtr.Zero;
 		}
+		#endregion
 
+		#region LOAD_LIBRARIES
 		/// <summary>
 		/// Built-in Windows API functions to allow us to dynamically load our own DLL.
 		/// Will allow us to use old versions of the DLL that do not have all of these functions available.
@@ -120,7 +141,9 @@ namespace FTD2XX_NET
 		private static extern IntPtr GetProcAddress(IntPtr hModule, string procedureName);
 		[DllImport("kernel32.dll")]
 		private static extern bool FreeLibrary(IntPtr hModule);
+		#endregion
 
+		#region DELEGATES
 		// Definitions for FTD2XX functions
 		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 		private delegate FT_STATUS tFT_CreateDeviceInfoList(ref UInt32 numdevs);
@@ -232,12 +255,13 @@ namespace FTD2XX_NET
 		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 		private delegate FT_STATUS tFT_EE_Program(IntPtr ftHandle, FT_PROGRAM_DATA pData);
 
-		//**************************************************************************
-		//
-		// CONSTANTS
-		//
-		//**************************************************************************
+		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+		private delegate FT_STATUS tFT_EEPROM_Read(IntPtr ftHandle, IntPtr eepromData, UInt32 eepromDataSize, byte[] manufacturer, byte[] manufacturerID, byte[] description, byte[] serialnumber);
+		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+		private delegate FT_STATUS tFT_EEPROM_Program(IntPtr ftHandle, IntPtr eepromData, UInt32 eepromDataSize, byte[] manufacturer, byte[] manufacturerID, byte[] description, byte[] serialnumber);
+		#endregion
 
+		#region CONSTANT_VALUES
 		// Constants for FT_STATUS
 		/// <summary>
 		/// Status values for FTDI devices.
@@ -330,13 +354,10 @@ namespace FTD2XX_NET
 			FT_BUFFER_SIZE
 		};
 
-
-
 		// Flags for FT_OpenEx
 		private const UInt32 FT_OPEN_BY_SERIAL_NUMBER	= 0x00000001;
 		private const UInt32 FT_OPEN_BY_DESCRIPTION		= 0x00000002;
 		private const UInt32 FT_OPEN_BY_LOCATION		= 0x00000004;
-
 
 		// Word Lengths
 		/// <summary>
@@ -354,7 +375,6 @@ namespace FTD2XX_NET
 			public const byte FT_BITS_7 = 0x07;
 		}
 
-
 		// Stop Bits
 		/// <summary>
 		/// Permitted stop bits for FTDI devices
@@ -370,7 +390,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public const byte FT_STOP_BITS_2 = 0x02;
 		}
-
 
 		// Parity
 		/// <summary>
@@ -400,7 +419,6 @@ namespace FTD2XX_NET
 			public const byte FT_PARITY_SPACE	= 0x04;
 		}
 
-
 		// Flow Control
 		/// <summary>
 		/// Permitted flow control values for FTDI devices
@@ -425,7 +443,6 @@ namespace FTD2XX_NET
 			public const UInt16 FT_FLOW_XON_XOFF	= 0x0400;
 		}
 
-
 		// Purge Rx and Tx buffers
 		/// <summary>
 		/// Purge buffer constant definitions
@@ -441,7 +458,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public const byte FT_PURGE_TX = 0x02;
 		}
-
 
 		// Modem Status bits
 		/// <summary>
@@ -467,7 +483,6 @@ namespace FTD2XX_NET
 			public const byte FT_DCD	= 0x80;
 		}
 
-
 		// Line Status bits
 		/// <summary>
 		/// Line status bit definitions
@@ -492,7 +507,6 @@ namespace FTD2XX_NET
 			public const byte FT_BI = 0x10;
 		}
 
-
 		// Events
 		/// <summary>
 		/// FTDI device event types that can be monitored
@@ -512,7 +526,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public const UInt32 FT_EVENT_LINE_STATUS	= 0x00000004;
 		}
-
 
 		// Bit modes
 		/// <summary>
@@ -553,7 +566,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public const byte FT_BIT_MODE_SYNC_FIFO		= 0x40;
 		}
-
 
 		// FT232R CBUS Options
 		/// <summary>
@@ -615,7 +627,6 @@ namespace FTD2XX_NET
 			public const byte FT_CBUS_BITBANG_RD	= 0x0C;
 		}
 
-
 		// FT232H CBUS Options
 		/// <summary>
 		/// Available functions for the FT232H CBUS pins.  Controlled by FT232H EEPROM settings
@@ -627,19 +638,19 @@ namespace FTD2XX_NET
 			/// </summary>
 			public const byte FT_CBUS_TRISTATE = 0x00;
 			/// <summary>
-			/// FT232H CBUS EEPROM options - Tx LED
-			/// </summary>
-			public const byte FT_CBUS_TXLED = 0x01;
-			/// <summary>
 			/// FT232H CBUS EEPROM options - Rx LED
 			/// </summary>
-			public const byte FT_CBUS_RXLED = 0x02;
+			public const byte FT_CBUS_RXLED = 0x01;
+			/// <summary>
+			/// FT232H CBUS EEPROM options - Tx LED
+			/// </summary>
+			public const byte FT_CBUS_TXLED = 0x02;
 			/// <summary>
 			/// FT232H CBUS EEPROM options - Tx and Rx LED
 			/// </summary>
 			public const byte FT_CBUS_TXRXLED = 0x03;
 			/// <summary>
-			/// FT232H CBUS EEPROM options - Power Enable#
+			/// FT232H CBUS EEPROM options - Power Enable
 			/// </summary>
 			public const byte FT_CBUS_PWREN = 0x04;
 			/// <summary>
@@ -675,6 +686,100 @@ namespace FTD2XX_NET
 			public const byte FT_CBUS_CLK7_5 = 0x0C;
 		}
 
+		/// <summary>
+		/// Available functions for the X-Series CBUS pins.  Controlled by X-Series EEPROM settings
+		/// </summary>
+		public class FT_XSERIES_CBUS_OPTIONS
+		{
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Tristate
+			/// </summary>
+			public const byte FT_CBUS_TRISTATE = 0x00;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - RxLED#
+			/// </summary>
+			public const byte FT_CBUS_RXLED = 0x01;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - TxLED#
+			/// </summary>
+			public const byte FT_CBUS_TXLED = 0x02;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - TxRxLED
+			/// </summary>
+			public const byte FT_CBUS_TXRXLED = 0x03;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - PwrEn#
+			/// </summary>
+			public const byte FT_CBUS_PWREN = 0x04;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Sleep#
+			/// </summary>
+			public const byte FT_CBUS_SLEEP = 0x05;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Drive_0
+			/// </summary>
+			public const byte FT_CBUS_Drive_0 = 0x06;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Drive_1
+			/// </summary>
+			public const byte FT_CBUS_Drive_1 = 0x07;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - GPIO
+			/// </summary>
+			public const byte FT_CBUS_GPIO = 0x08;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - TxdEn
+			/// </summary>
+			public const byte FT_CBUS_TXDEN = 0x09;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Clk24MHz
+			/// </summary>
+			public const byte FT_CBUS_CLK24MHz = 0x0A;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Clk12MHz
+			/// </summary>
+			public const byte FT_CBUS_CLK12MHz = 0x0B;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Clk6MHz
+			/// </summary>
+			public const byte FT_CBUS_CLK6MHz = 0x0C;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - BCD_Charger
+			/// </summary>
+			public const byte FT_CBUS_BCD_Charger = 0x0D;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - BCD_Charger#
+			/// </summary>
+			public const byte FT_CBUS_BCD_Charger_N = 0x0E;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - I2C_TXE#
+			/// </summary>
+			public const byte FT_CBUS_I2C_TXE = 0x0F;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - I2C_RXF#
+			/// </summary>
+			public const byte FT_CBUS_I2C_RXF = 0x10;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - VBUS_Sense
+			/// </summary>
+			public const byte FT_CBUS_VBUS_Sense = 0x11;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - BitBang_WR#
+			/// </summary>
+			public const byte FT_CBUS_BitBang_WR = 0x12;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - BitBang_RD#
+			/// </summary>
+			public const byte FT_CBUS_BitBang_RD = 0x13;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Time_Stampe
+			/// </summary>
+			public const byte FT_CBUS_Time_Stamp = 0x14;
+			/// <summary>
+			/// FT X-Series CBUS EEPROM options - Keep_Awake#
+			/// </summary>
+			public const byte FT_CBUS_Keep_Awake = 0x15;
+		}
 
 		// Flag values for FT_GetDeviceInfoDetail and FT_GetDeviceInfo
 		/// <summary>
@@ -691,7 +796,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public const UInt32 FT_FLAGS_HISPEED	= 0x00000002;
 		}
-
 
 		// Valid drive current values for FT2232H, FT4232H and FT232H devices
 		/// <summary>
@@ -716,7 +820,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public const byte FT_DRIVE_CURRENT_16MA	= 16;
 		}
-
 
 		// Device type identifiers for FT_GetDeviceInfoDetail and FT_GetDeviceInfo
 		/// <summary>
@@ -759,11 +862,15 @@ namespace FTD2XX_NET
 			/// <summary>
 			/// FT232H device
 			/// </summary>
-			FT_DEVICE_232H
+			FT_DEVICE_232H,
+			/// <summary>
+			/// FT232X device
+			/// </summary>
+			FT_DEVICE_X_SERIES
 		};
+#endregion
 
-
-		// Default values
+		#region DEFAULT_VALUES
 		private const UInt32 FT_DEFAULT_BAUD_RATE			= 9600;
 		private const UInt32 FT_DEFAULT_DEADMAN_TIMEOUT		= 5000;
 		private const Int32 FT_COM_PORT_NOT_ASSIGNED		= -1;
@@ -771,28 +878,14 @@ namespace FTD2XX_NET
 		private const UInt32 FT_DEFAULT_OUT_TRANSFER_SIZE	= 0x1000;
 		private const byte FT_DEFAULT_LATENCY				= 16;
 		private const UInt32 FT_DEFAULT_DEVICE_ID			= 0x04036001;
+		#endregion
 
-
-
-
-
-		//**************************************************************************
-		//
-		// VARIABLES
-		//
-		//**************************************************************************
-
+		#region VARIABLES
 		// Create private variables for the device within the class
 		private IntPtr ftHandle = IntPtr.Zero;
+		#endregion
 
-
-
-		//**************************************************************************
-		//
-		// TYPE DEFINITIONS
-		//
-		//**************************************************************************
-
+		#region TYPEDEFS
 		/// <summary>
 		/// Type that holds device information for GetDeviceInformation method.
 		/// Used with FT_GetDeviceInfo and FT_GetDeviceInfoDetail in FTD2XX.DLL
@@ -804,8 +897,7 @@ namespace FTD2XX_NET
 			/// </summary>
 			public UInt32 Flags;
 			/// <summary>
-            /// Indicates the device type.  Can be one of the following: FT_DEVICE_232H, FT_DEVICE_4232H, FT_DEVICE_2232H,
-            /// FT_DEVICE_232R, FT_DEVICE_2232C, FT_DEVICE_BM, FT_DEVICE_AM, FT_DEVICE_100AX or FT_DEVICE_UNKNOWN
+			/// Indicates the device type.  Can be one of the following: FT_DEVICE_232R, FT_DEVICE_2232C, FT_DEVICE_BM, FT_DEVICE_AM, FT_DEVICE_100AX or FT_DEVICE_UNKNOWN
 			/// </summary>
 			public FT_DEVICE Type;
 			/// <summary>
@@ -830,11 +922,12 @@ namespace FTD2XX_NET
 			/// </summary>
 			public IntPtr ftHandle;
 		}
+		#endregion
 
-
+		#region EEPROM_STRUCTURES
 		// Internal structure for reading and writing EEPROM contents
 		// NOTE:  NEED Pack=1 for byte alignment!  Without this, data is garbage
-		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		[StructLayout(LayoutKind.Sequential, Pack = 4)]
 		private class FT_PROGRAM_DATA
 		{
 			public UInt32 Signature1;
@@ -977,6 +1070,68 @@ namespace FTD2XX_NET
 			public byte PowerSaveEnableH;	// non-zero if using ACBUS7 to save power for self-powered designs
 		}
 
+		[StructLayout(LayoutKind.Sequential, Pack = 4)]
+		struct FT_EEPROM_HEADER
+		{
+			public UInt32 deviceType;		// FTxxxx device type to be programmed
+			// Device descriptor options
+			public UInt16 VendorId;				// 0x0403
+			public UInt16 ProductId;				// 0x6001
+			public byte SerNumEnable;			// non-zero if serial number to be used
+			// Config descriptor options
+			public UInt16 MaxPower;				// 0 < MaxPower <= 500
+			public byte SelfPowered;			// 0 = bus powered, 1 = self powered
+			public byte RemoteWakeup;			// 0 = not capable, 1 = capable
+			// Hardware options
+			public byte PullDownEnable;		// non-zero if pull down in suspend enabled
+		}
+
+		[StructLayout(LayoutKind.Sequential, Pack = 4)]
+		struct FT_XSERIES_DATA
+		{
+			public FT_EEPROM_HEADER common;
+
+			public byte ACSlowSlew;			// non-zero if AC bus pins have slow slew
+			public byte ACSchmittInput;		// non-zero if AC bus pins are Schmitt input
+			public byte ACDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+			public byte ADSlowSlew;			// non-zero if AD bus pins have slow slew
+			public byte ADSchmittInput;		// non-zero if AD bus pins are Schmitt input
+			public byte ADDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+			// CBUS options
+			public byte Cbus0;				// Cbus Mux control
+			public byte Cbus1;				// Cbus Mux control
+			public byte Cbus2;				// Cbus Mux control
+			public byte Cbus3;				// Cbus Mux control
+			public byte Cbus4;				// Cbus Mux control
+			public byte Cbus5;				// Cbus Mux control
+			public byte Cbus6;				// Cbus Mux control
+			// UART signal options
+			public byte InvertTXD;			// non-zero if invert TXD
+			public byte InvertRXD;			// non-zero if invert RXD
+			public byte InvertRTS;			// non-zero if invert RTS
+			public byte InvertCTS;			// non-zero if invert CTS
+			public byte InvertDTR;			// non-zero if invert DTR
+			public byte InvertDSR;			// non-zero if invert DSR
+			public byte InvertDCD;			// non-zero if invert DCD
+			public byte InvertRI;				// non-zero if invert RI
+			// Battery Charge Detect options
+			public byte BCDEnable;			// Enable Battery Charger Detection
+			public byte BCDForceCbusPWREN;	// asserts the power enable signal on CBUS when charging port detected
+			public byte BCDDisableSleep;		// forces the device never to go into sleep mode
+			// I2C options
+			public UInt16 I2CSlaveAddress;		// I2C slave device address
+			public UInt32 I2CDeviceId;			// I2C device ID
+			public byte I2CDisableSchmitt;	// Disable I2C Schmitt trigger
+			// FT1248 options
+			public byte FT1248Cpol;			// FT1248 clock polarity - clock idle high (1) or clock idle low (0)
+			public byte FT1248Lsb;			// FT1248 data is LSB (1) or MSB (0)
+			public byte FT1248FlowControl;	// FT1248 flow control enable
+			// Hardware options
+			public byte RS485EchoSuppress;	// 
+			public byte PowerSaveEnable;		// 
+			// Driver option
+			public byte DriverType;			// 
+		}
 
 		// Base class for EEPROM structures - these elements are common to all devices
 		/// <summary>
@@ -1026,7 +1181,6 @@ namespace FTD2XX_NET
 			public bool RemoteWakeup = false;
 		}
 
-
 		// EEPROM class for FT232B and FT245B
 		/// <summary>
 		/// EEPROM structure specific to FT232B and FT245B devices.
@@ -1054,7 +1208,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public UInt16 USBVersion = 0x0200;
 		}
-
 
 		// EEPROM class for FT2232C, FT2232L and FT2232D
 		/// <summary>
@@ -1125,7 +1278,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public bool BIsVCP = true;
 		}
-
 
 		// EEPROM class for FT232R and FT245R
 		/// <summary>
@@ -1227,7 +1379,6 @@ namespace FTD2XX_NET
 			/// </summary>
 			public bool RIsD2XX = false;
 		}
-
 
 		// EEPROM class for FT2232H
 		/// <summary>
@@ -1566,9 +1717,195 @@ namespace FTD2XX_NET
 			/// For self-powered designs, keeps the FT232H in low power state until ACBUS7 is high
 			/// </summary>
 			public bool PowerSaveEnable = false;
-
 		}
 
+		/// <summary>
+		/// EEPROM structure specific to X-Series devices.
+		/// Inherits from FT_EEPROM_DATA.
+		/// </summary>
+		public class FT_XSERIES_EEPROM_STRUCTURE : FT_EEPROM_DATA
+		{
+			/// <summary>
+			/// Determines if IOs are pulled down when the device is in suspend
+			/// </summary>
+			public bool PullDownEnable = false;
+			/// <summary>
+			/// Determines if the serial number is enabled
+			/// </summary>
+			public bool SerNumEnable = true;
+			/// <summary>
+			/// Determines if the USB version number is enabled
+			/// </summary>
+			public bool USBVersionEnable = true;
+			/// <summary>
+			/// The USB version number: 0x0200 (USB 2.0)
+			/// </summary>
+			public UInt16 USBVersion = 0x0200;
+			/// <summary>
+			/// Determines if AC pins have a slow slew rate
+			/// </summary>
+			public byte ACSlowSlew;
+			/// <summary>
+			/// Determines if the AC pins have a Schmitt input
+			/// </summary>
+			public byte ACSchmittInput;
+			/// <summary>
+			/// Determines the AC pins drive current in mA.  Valid values are FT_DRIVE_CURRENT_4MA, FT_DRIVE_CURRENT_8MA, FT_DRIVE_CURRENT_12MA or FT_DRIVE_CURRENT_16MA
+			/// </summary>
+			public byte ACDriveCurrent;
+			/// <summary>
+			/// Determines if AD pins have a slow slew rate
+			/// </summary>
+			public byte ADSlowSlew;
+			/// <summary>
+			/// Determines if AD pins have a schmitt input
+			/// </summary>
+			public byte ADSchmittInput;
+			/// <summary>
+			/// Determines the AD pins drive current in mA.  Valid values are FT_DRIVE_CURRENT_4MA, FT_DRIVE_CURRENT_8MA, FT_DRIVE_CURRENT_12MA or FT_DRIVE_CURRENT_16MA
+			/// </summary>
+			public byte ADDriveCurrent;
+			/// <summary>
+			/// Sets the function of the CBUS0 pin for FT232H devices.
+			/// Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+			/// FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+			/// FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+			/// FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+			/// </summary>
+			public byte Cbus0;
+			/// <summary>
+			/// Sets the function of the CBUS1 pin for FT232H devices.
+			/// Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+			/// FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+			/// FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+			/// FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+			/// </summary>
+			public byte Cbus1;
+			/// <summary>
+			/// Sets the function of the CBUS2 pin for FT232H devices.
+			/// Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+			/// FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+			/// FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+			/// FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+			/// </summary>
+			public byte Cbus2;
+			/// <summary>
+			/// Sets the function of the CBUS3 pin for FT232H devices.
+			/// Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+			/// FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+			/// FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+			/// FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+			/// </summary>
+			public byte Cbus3;
+			/// <summary>
+			/// Sets the function of the CBUS4 pin for FT232H devices.
+			/// Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+			/// FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+			/// FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+			/// FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+			/// </summary>
+			public byte Cbus4;
+			/// <summary>
+			/// Sets the function of the CBUS5 pin for FT232H devices.
+			/// Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+			/// FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+			/// FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+			/// FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+			/// </summary>
+			public byte Cbus5;
+			/// <summary>
+			/// Sets the function of the CBUS6 pin for FT232H devices.
+			/// Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+			/// FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+			/// FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+			/// FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+			/// </summary>
+			public byte Cbus6;
+			/// <summary>
+			/// Inverts the sense of the TXD line
+			/// </summary>
+			public byte InvertTXD;
+			/// <summary>
+			/// Inverts the sense of the RXD line
+			/// </summary>
+			public byte InvertRXD;
+			/// <summary>
+			/// Inverts the sense of the RTS line
+			/// </summary>
+			public byte InvertRTS;
+			/// <summary>
+			/// Inverts the sense of the CTS line
+			/// </summary>
+			public byte InvertCTS;
+			/// <summary>
+			/// Inverts the sense of the DTR line
+			/// </summary>
+			public byte InvertDTR;
+			/// <summary>
+			/// Inverts the sense of the DSR line
+			/// </summary>
+			public byte InvertDSR;
+			/// <summary>
+			/// Inverts the sense of the DCD line
+			/// </summary>
+			public byte InvertDCD;
+			/// <summary>
+			/// Inverts the sense of the RI line
+			/// </summary>
+			public byte InvertRI;
+			/// <summary>
+			/// Determines whether the Battery Charge Detection option is enabled.
+			/// </summary>
+			public byte BCDEnable;
+			/// <summary>
+			/// Asserts the power enable signal on CBUS when charging port detected.
+			/// </summary>
+			public byte BCDForceCbusPWREN;
+			/// <summary>
+			/// Forces the device never to go into sleep mode.
+			/// </summary>
+			public byte BCDDisableSleep;
+			/// <summary>
+			/// I2C slave device address.
+			/// </summary>
+			public ushort I2CSlaveAddress;
+			/// <summary>
+			/// I2C device ID
+			/// </summary>
+			public UInt32 I2CDeviceId;
+			/// <summary>
+			/// Disable I2C Schmitt trigger.
+			/// </summary>
+			public byte I2CDisableSchmitt;
+			/// <summary>
+			/// FT1248 clock polarity - clock idle high (1) or clock idle low (0)
+			/// </summary>
+			public byte FT1248Cpol;
+			/// <summary>
+			/// FT1248 data is LSB (1) or MSB (0)
+			/// </summary>
+			public byte FT1248Lsb;
+			/// <summary>
+			/// FT1248 flow control enable.
+			/// </summary>
+			public byte FT1248FlowControl;
+			/// <summary>
+			/// Enable RS485 Echo Suppression
+			/// </summary>
+			public byte RS485EchoSuppress;
+			/// <summary>
+			/// Enable Power Save mode.
+			/// </summary>
+			public byte PowerSaveEnable;
+			/// <summary>
+			/// Determines whether the VCP driver is loaded.
+			/// </summary>
+			public byte IsVCP;
+		}
+
+		#endregion
+
+		#region EXCEPTION_HANDLING
 		/// <summary>
 		/// Exceptions thrown by errors within the FTDI class.
 		/// </summary>
@@ -1600,19 +1937,9 @@ namespace FTD2XX_NET
 			System.Runtime.Serialization.StreamingContext context)
 				: base(info, context) { }
 		}
+		#endregion
 
-
-
-
-
-
-
-		//**************************************************************************
-		//
-		// FUNCTION IMPORTS FROM FTD2XX DLL
-		//
-		//**************************************************************************
-
+		#region FUNCTION_IMPORTS_FTD2XX.DLL
 		// Handle to our DLL - used with GetProcAddress to load all of our functions
 		IntPtr hFTD2XXDLL = IntPtr.Zero;
 		// Declare pointers to each of the functions we are going to use in FT2DXX.DLL
@@ -1666,17 +1993,11 @@ namespace FTD2XX_NET
 		IntPtr pFT_EE_UAWrite = IntPtr.Zero;
 		IntPtr pFT_EE_Read = IntPtr.Zero;
 		IntPtr pFT_EE_Program = IntPtr.Zero;
+		IntPtr pFT_EEPROM_Read = IntPtr.Zero;
+		IntPtr pFT_EEPROM_Program = IntPtr.Zero;
+		#endregion
 
-
-
-		//**************************************************************************
-		//**************************************************************************
-		//
-		// METHOD DEFINITIONS
-		//
-		//**************************************************************************
-		//**************************************************************************
-
+		#region METHOD_DEFINITIONS
 		//**************************************************************************
 		// GetNumberOfDevices
 		//**************************************************************************
@@ -1705,7 +2026,7 @@ namespace FTD2XX_NET
 			}
 			else
 			{
-				MultiZonePlayer.MLog.Log(null,"Failed to load function FT_CreateDeviceInfoList.");
+				MessageBox.Show("Failed to load function FT_CreateDeviceInfoList.");
 			}
 			return ftStatus;
 
@@ -1778,11 +2099,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_CreateDeviceInfoList == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_CreateDeviceInfoList.");
+					MessageBox.Show("Failed to load function FT_CreateDeviceInfoList.");
 				}
 				if (pFT_GetDeviceInfoDetail == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetDeviceInfoListDetail.");
+					MessageBox.Show("Failed to load function FT_GetDeviceInfoListDetail.");
 				}
 			}
 			return ftStatus;
@@ -1820,6 +2141,10 @@ namespace FTD2XX_NET
 				// Call FT_Open
 				ftStatus = FT_Open(index, ref ftHandle);
 
+				// Appears that the handle value can be non-NULL on a fail, so set it explicitly
+				if (ftStatus != FT_STATUS.FT_OK)
+					ftHandle = IntPtr.Zero;
+
 				if (ftHandle != IntPtr.Zero)
 				{
 					// Initialise port data characteristics
@@ -1841,19 +2166,19 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Open == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Open.");
+					MessageBox.Show("Failed to load function FT_Open.");
 				}
 				if (pFT_SetDataCharacteristics == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetDataCharacteristics.");
+					MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 				}
 				if (pFT_SetFlowControl == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetFlowControl.");
+					MessageBox.Show("Failed to load function FT_SetFlowControl.");
 				}
 				if (pFT_SetBaudRate == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBaudRate.");
+					MessageBox.Show("Failed to load function FT_SetBaudRate.");
 				}
 			}
 			return ftStatus;
@@ -1890,6 +2215,10 @@ namespace FTD2XX_NET
 				// Call FT_OpenEx
 				ftStatus = FT_OpenEx(serialnumber, FT_OPEN_BY_SERIAL_NUMBER, ref ftHandle);
 
+				// Appears that the handle value can be non-NULL on a fail, so set it explicitly
+				if (ftStatus != FT_STATUS.FT_OK)
+					ftHandle = IntPtr.Zero;
+
 				if (ftHandle != IntPtr.Zero)
 				{
 					// Initialise port data characteristics
@@ -1911,19 +2240,19 @@ namespace FTD2XX_NET
 			{
 				if (pFT_OpenEx == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_OpenEx.");
+					MessageBox.Show("Failed to load function FT_OpenEx.");
 				}
 				if (pFT_SetDataCharacteristics == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetDataCharacteristics.");
+					MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 				}
 				if (pFT_SetFlowControl == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetFlowControl.");
+					MessageBox.Show("Failed to load function FT_SetFlowControl.");
 				}
 				if (pFT_SetBaudRate == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBaudRate.");
+					MessageBox.Show("Failed to load function FT_SetBaudRate.");
 				}
 			}
 			return ftStatus;
@@ -1960,6 +2289,10 @@ namespace FTD2XX_NET
 				// Call FT_OpenEx
 				ftStatus = FT_OpenEx(description, FT_OPEN_BY_DESCRIPTION, ref ftHandle);
 
+				// Appears that the handle value can be non-NULL on a fail, so set it explicitly
+				if (ftStatus != FT_STATUS.FT_OK)
+					ftHandle = IntPtr.Zero;
+
 				if (ftHandle != IntPtr.Zero)
 				{
 					// Initialise port data characteristics
@@ -1981,19 +2314,19 @@ namespace FTD2XX_NET
 			{
 				if (pFT_OpenEx == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_OpenEx.");
+					MessageBox.Show("Failed to load function FT_OpenEx.");
 				}
 				if (pFT_SetDataCharacteristics == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetDataCharacteristics.");
+					MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 				}
 				if (pFT_SetFlowControl == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetFlowControl.");
+					MessageBox.Show("Failed to load function FT_SetFlowControl.");
 				}
 				if (pFT_SetBaudRate == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBaudRate.");
+					MessageBox.Show("Failed to load function FT_SetBaudRate.");
 				}
 			}
 			return ftStatus;
@@ -2030,6 +2363,10 @@ namespace FTD2XX_NET
 				// Call FT_OpenEx
 				ftStatus = FT_OpenEx(location, FT_OPEN_BY_LOCATION, ref ftHandle);
 
+				// Appears that the handle value can be non-NULL on a fail, so set it explicitly
+				if (ftStatus != FT_STATUS.FT_OK)
+					ftHandle = IntPtr.Zero;
+
 				if (ftHandle != IntPtr.Zero)
 				{
 					// Initialise port data characteristics
@@ -2051,19 +2388,19 @@ namespace FTD2XX_NET
 			{
 				if (pFT_OpenEx == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_OpenEx.");
+					MessageBox.Show("Failed to load function FT_OpenEx.");
 				}
 				if (pFT_SetDataCharacteristics == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetDataCharacteristics.");
+					MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 				}
 				if (pFT_SetFlowControl == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetFlowControl.");
+					MessageBox.Show("Failed to load function FT_SetFlowControl.");
 				}
 				if (pFT_SetBaudRate == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBaudRate.");
+					MessageBox.Show("Failed to load function FT_SetBaudRate.");
 				}
 			}
 			return ftStatus;
@@ -2090,11 +2427,9 @@ namespace FTD2XX_NET
 			// Check for our required function pointers being set up
 			if (pFT_Close != IntPtr.Zero)
 			{
-                //MultiZonePlayer.MLog.Log(null,"Low level close call get function ptr started");
 				tFT_Close FT_Close = (tFT_Close)Marshal.GetDelegateForFunctionPointer(pFT_Close, typeof(tFT_Close));
 
 				// Call FT_Close
-                //MultiZonePlayer.MLog.Log(null,"Low level close call started");
 				ftStatus = FT_Close(ftHandle);
 
 				if (ftStatus == FT_STATUS.FT_OK)
@@ -2106,7 +2441,7 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Close == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Close.");
+					MessageBox.Show("Failed to load function FT_Close.");
 				}
 			}
 			return ftStatus;
@@ -2155,7 +2490,7 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Read.");
+					MessageBox.Show("Failed to load function FT_Read.");
 				}
 			}
 			return ftStatus;
@@ -2203,12 +2538,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Read.");
+					MessageBox.Show("Failed to load function FT_Read.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// Write
@@ -2245,12 +2579,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Write == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Write.");
+					MessageBox.Show("Failed to load function FT_Write.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		// Intellisense comments
 		/// <summary>
@@ -2284,12 +2617,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Write == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Write.");
+					MessageBox.Show("Failed to load function FT_Write.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		// Intellisense comments
 		/// <summary>
@@ -2326,12 +2658,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Write == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Write.");
+					MessageBox.Show("Failed to load function FT_Write.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		// Intellisense comments
 		/// <summary>
@@ -2368,12 +2699,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Write == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Write.");
+					MessageBox.Show("Failed to load function FT_Write.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ResetDevice
@@ -2407,12 +2737,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_ResetDevice == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_ResetDevice.");
+					MessageBox.Show("Failed to load function FT_ResetDevice.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// Purge
@@ -2447,12 +2776,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Purge == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Purge.");
+					MessageBox.Show("Failed to load function FT_Purge.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetEventNotification
@@ -2489,12 +2817,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetEventNotification == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetEventNotification.");
+					MessageBox.Show("Failed to load function FT_SetEventNotification.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// StopInTask
@@ -2528,12 +2855,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_StopInTask == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_StopInTask.");
+					MessageBox.Show("Failed to load function FT_StopInTask.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// RestartInTask
@@ -2567,12 +2893,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_RestartInTask == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_RestartInTask.");
+					MessageBox.Show("Failed to load function FT_RestartInTask.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ResetPort
@@ -2606,12 +2931,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_ResetPort == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_ResetPort.");
+					MessageBox.Show("Failed to load function FT_ResetPort.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// CyclePort
@@ -2656,16 +2980,15 @@ namespace FTD2XX_NET
 			{
 				if (pFT_CyclePort == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_CyclePort.");
+					MessageBox.Show("Failed to load function FT_CyclePort.");
 				}
 				if (pFT_Close == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Close.");
+					MessageBox.Show("Failed to load function FT_Close.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// Rescan
@@ -2696,12 +3019,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Rescan == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Rescan.");
+					MessageBox.Show("Failed to load function FT_Rescan.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// Reload
@@ -2735,12 +3057,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_Reload == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_Reload.");
+					MessageBox.Show("Failed to load function FT_Reload.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetBitMode
@@ -2880,12 +3201,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetBitMode == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBitMode.");
+					MessageBox.Show("Failed to load function FT_SetBitMode.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetPinStates
@@ -2920,12 +3240,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetBitMode == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetBitMode.");
+					MessageBox.Show("Failed to load function FT_GetBitMode.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ReadEEPROMLocation
@@ -2961,12 +3280,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_ReadEE == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_ReadEE.");
+					MessageBox.Show("Failed to load function FT_ReadEE.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// WriteEEPROMLocation
@@ -3002,12 +3320,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_WriteEE == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_WriteEE.");
+					MessageBox.Show("Failed to load function FT_WriteEE.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// EraseEEPROM
@@ -3053,12 +3370,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EraseEE == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EraseEE.");
+					MessageBox.Show("Failed to load function FT_EraseEE.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ReadFT232BEEPROM
@@ -3143,12 +3459,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Read.");
+					MessageBox.Show("Failed to load function FT_EE_Read.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ReadFT2232EEPROM
@@ -3243,12 +3558,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Read.");
+					MessageBox.Show("Failed to load function FT_EE_Read.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ReadFT232REEPROM
@@ -3348,12 +3662,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Read.");
+					MessageBox.Show("Failed to load function FT_EE_Read.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ReadFT2232HEEPROM
@@ -3457,12 +3770,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Read.");
+					MessageBox.Show("Failed to load function FT_EE_Read.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ReadFT4232HEEPROM
@@ -3565,12 +3877,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Read.");
+					MessageBox.Show("Failed to load function FT_EE_Read.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// ReadFT232HEEPROM
@@ -3678,12 +3989,144 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Read == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Read.");
+					MessageBox.Show("Failed to load function FT_EE_Read.");
 				}
 			}
 			return ftStatus;
 		}
 
+		//**************************************************************************
+		// ReadXSeriesEEPROM
+		//**************************************************************************
+		// Intellisense comments
+		/// <summary>
+		/// Reads the EEPROM contents of an X-Series device.
+		/// </summary>
+		/// <returns>FT_STATUS value from FT_EEPROM_Read in FTD2XX DLL</returns>
+		/// <param name="eeX">An FT_XSERIES_EEPROM_STRUCTURE which contains only the relevant information for an X-Series device.</param>
+		/// <exception cref="FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
+		public FT_STATUS ReadXSeriesEEPROM(FT_XSERIES_EEPROM_STRUCTURE eeX)
+		{
+			// Initialise ftStatus to something other than FT_OK
+			FT_STATUS ftStatus = FT_STATUS.FT_OTHER_ERROR;
+			FT_ERROR ftErrorCondition = FT_ERROR.FT_NO_ERROR;
+
+			// If the DLL hasn't been loaded, just return here
+			if (hFTD2XXDLL == IntPtr.Zero)
+				return ftStatus;
+
+			// Check for our required function pointers being set up
+			if (pFT_EEPROM_Read != IntPtr.Zero)
+			{
+				tFT_EEPROM_Read FT_EEPROM_Read = (tFT_EEPROM_Read)Marshal.GetDelegateForFunctionPointer(pFT_EEPROM_Read, typeof(tFT_EEPROM_Read));
+
+				if (ftHandle != IntPtr.Zero)
+				{
+					FT_DEVICE DeviceType = FT_DEVICE.FT_DEVICE_UNKNOWN;
+					// Check that it is an FT232H that we are trying to read
+					GetDeviceType(ref DeviceType);
+					if (DeviceType != FT_DEVICE.FT_DEVICE_X_SERIES)
+					{
+						// If it is not, throw an exception
+						ftErrorCondition = FT_ERROR.FT_INCORRECT_DEVICE;
+						ErrorHandler(ftStatus, ftErrorCondition);
+					}
+
+					FT_XSERIES_DATA eeData = new FT_XSERIES_DATA();
+					FT_EEPROM_HEADER eeHeader = new FT_EEPROM_HEADER();
+
+					byte[] manufacturer = new byte[32];
+					byte[] manufacturerID = new byte[16];
+					byte[] description = new byte[64];
+					byte[] serialNumber = new byte[16];
+
+					eeHeader.deviceType = (uint)FT_DEVICE.FT_DEVICE_X_SERIES;
+					eeData.common = eeHeader;
+
+					// Calculate the size of our data structure...
+					int size = Marshal.SizeOf(eeData);
+
+					// Allocate space for our pointer...
+					IntPtr eeDataMarshal = Marshal.AllocHGlobal(size);
+					Marshal.StructureToPtr(eeData, eeDataMarshal, false);
+					
+					// Call FT_EEPROM_Read
+					ftStatus = FT_EEPROM_Read(ftHandle, eeDataMarshal, (uint)size, manufacturer, manufacturerID, description, serialNumber);
+
+					if (ftStatus == FT_STATUS.FT_OK)
+					{
+						// Get the data back from the pointer...
+						eeData = (FT_XSERIES_DATA)Marshal.PtrToStructure(eeDataMarshal, typeof(FT_XSERIES_DATA));
+
+						// Retrieve string values
+						System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
+						eeX.Manufacturer = enc.GetString(manufacturer);
+						eeX.ManufacturerID = enc.GetString(manufacturerID);
+						eeX.Description = enc.GetString(description);
+						eeX.SerialNumber = enc.GetString(serialNumber);
+						// Map non-string elements to structure to be returned
+						// Standard elements
+						eeX.VendorID = eeData.common.VendorId;
+						eeX.ProductID = eeData.common.ProductId;
+						eeX.MaxPower = eeData.common.MaxPower;
+						eeX.SelfPowered = Convert.ToBoolean(eeData.common.SelfPowered);
+						eeX.RemoteWakeup = Convert.ToBoolean(eeData.common.RemoteWakeup);
+						eeX.SerNumEnable = Convert.ToBoolean(eeData.common.SerNumEnable);
+						eeX.PullDownEnable = Convert.ToBoolean(eeData.common.PullDownEnable);
+						// X-Series specific fields
+						// CBUS
+						eeX.Cbus0 = eeData.Cbus0;
+						eeX.Cbus1 = eeData.Cbus1;
+						eeX.Cbus2 = eeData.Cbus2;
+						eeX.Cbus3 = eeData.Cbus3;
+						eeX.Cbus4 = eeData.Cbus4;
+						eeX.Cbus5 = eeData.Cbus5;
+						eeX.Cbus6 = eeData.Cbus6;
+						// Drive Options
+						eeX.ACDriveCurrent = eeData.ACDriveCurrent;
+						eeX.ACSchmittInput = eeData.ACSchmittInput;
+						eeX.ACSlowSlew = eeData.ACSlowSlew;
+						eeX.ADDriveCurrent = eeData.ADDriveCurrent;
+						eeX.ADSchmittInput = eeData.ADSchmittInput;
+						eeX.ADSlowSlew = eeData.ADSlowSlew;
+						// BCD
+						eeX.BCDDisableSleep = eeData.BCDDisableSleep;
+						eeX.BCDEnable = eeData.BCDEnable;
+						eeX.BCDForceCbusPWREN = eeData.BCDForceCbusPWREN;
+						// FT1248
+						eeX.FT1248Cpol = eeData.FT1248Cpol;
+						eeX.FT1248FlowControl = eeData.FT1248FlowControl;
+						eeX.FT1248Lsb = eeData.FT1248Lsb;
+						// I2C
+						eeX.I2CDeviceId = eeData.I2CDeviceId;
+						eeX.I2CDisableSchmitt = eeData.I2CDisableSchmitt;
+						eeX.I2CSlaveAddress = eeData.I2CSlaveAddress;
+						// RS232 Signals
+						eeX.InvertCTS = eeData.InvertCTS;
+						eeX.InvertDCD = eeData.InvertDCD;
+						eeX.InvertDSR = eeData.InvertDSR;
+						eeX.InvertDTR = eeData.InvertDTR;
+						eeX.InvertRI = eeData.InvertRI;
+						eeX.InvertRTS = eeData.InvertRTS;
+						eeX.InvertRXD = eeData.InvertRXD;
+						eeX.InvertTXD = eeData.InvertTXD;
+						// Hardware Options
+						eeX.PowerSaveEnable = eeData.PowerSaveEnable;
+						eeX.RS485EchoSuppress = eeData.RS485EchoSuppress;
+						// Driver Option
+						eeX.IsVCP = eeData.DriverType;
+					}
+				}
+			}
+			else
+			{
+				if (pFT_EE_Read == IntPtr.Zero)
+				{
+					MessageBox.Show("Failed to load function FT_EE_Read.");
+				}
+			}
+			return ftStatus;
+		}
 
 		//**************************************************************************
 		// WriteFT232BEEPROM
@@ -3788,12 +4231,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Program == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Program.");
+					MessageBox.Show("Failed to load function FT_EE_Program.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// WriteFT2232EEPROM
@@ -3909,12 +4351,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Program == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Program.");
+					MessageBox.Show("Failed to load function FT_EE_Program.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// WriteFT232REEPROM
@@ -4038,12 +4479,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Program == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Program.");
+					MessageBox.Show("Failed to load function FT_EE_Program.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// WriteFT2232HEEPROM
@@ -4167,12 +4607,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Program == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Program.");
+					MessageBox.Show("Failed to load function FT_EE_Program.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// WriteFT4232HEEPROM
@@ -4295,12 +4734,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Program == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Program.");
+					MessageBox.Show("Failed to load function FT_EE_Program.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// WriteFT232HEEPROM
@@ -4428,12 +4866,152 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_Program == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_Program.");
+					MessageBox.Show("Failed to load function FT_EE_Program.");
 				}
 			}
 			return ftStatus;
 		}
 
+		//**************************************************************************
+		// WriteXSeriesEEPROM
+		//**************************************************************************
+		// Intellisense comments
+		/// <summary>
+		/// Writes the specified values to the EEPROM of an X-Series device.
+		/// Calls FT_EEPROM_Program in FTD2XX DLL
+		/// </summary>
+		/// <returns>FT_STATUS value from FT_EEPROM_Program in FTD2XX DLL</returns>
+		/// <param name="eeX">The EEPROM settings to be written to the device</param>
+		/// <remarks>If the strings are too long, they will be truncated to their maximum permitted lengths</remarks>
+		/// <exception cref="FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
+		public FT_STATUS WriteXSeriesEEPROM(FT_XSERIES_EEPROM_STRUCTURE eeX)
+		{
+			// Initialise ftStatus to something other than FT_OK
+			FT_STATUS ftStatus = FT_STATUS.FT_OTHER_ERROR;
+			FT_ERROR ftErrorCondition = FT_ERROR.FT_NO_ERROR;
+
+			byte[] manufacturer, manufacturerID, description, serialNumber;
+
+			// If the DLL hasn't been loaded, just return here
+			if (hFTD2XXDLL == IntPtr.Zero)
+				return ftStatus;
+
+			// Check for our required function pointers being set up
+			if (pFT_EEPROM_Program != IntPtr.Zero) 
+			{
+				tFT_EEPROM_Program FT_EEPROM_Program = (tFT_EEPROM_Program)Marshal.GetDelegateForFunctionPointer(pFT_EEPROM_Program, typeof(tFT_EEPROM_Program));
+
+				if (ftHandle != IntPtr.Zero)
+				{
+					FT_DEVICE DeviceType = FT_DEVICE.FT_DEVICE_UNKNOWN;
+					// Check that it is an FT232H that we are trying to write
+					GetDeviceType(ref DeviceType);
+					if (DeviceType != FT_DEVICE.FT_DEVICE_X_SERIES)
+					{
+						// If it is not, throw an exception
+						ftErrorCondition = FT_ERROR.FT_INCORRECT_DEVICE;
+						ErrorHandler(ftStatus, ftErrorCondition);
+					}
+
+					// Check for VID and PID of 0x0000
+					if ((eeX.VendorID == 0x0000) | (eeX.ProductID == 0x0000))
+					{
+						// Do not allow users to program the device with VID or PID of 0x0000
+						return FT_STATUS.FT_INVALID_PARAMETER;
+					}
+
+					FT_XSERIES_DATA eeData = new FT_XSERIES_DATA();
+
+					// String manipulation...
+					// Allocate space from unmanaged heap
+					manufacturer = new byte[32];
+					manufacturerID = new byte[16];
+					description = new byte[64];
+					serialNumber = new byte[16];
+
+					// Check lengths of strings to make sure that they are within our limits
+					// If not, trim them to make them our maximum length
+					if (eeX.Manufacturer.Length > 32)
+						eeX.Manufacturer = eeX.Manufacturer.Substring(0, 32);
+					if (eeX.ManufacturerID.Length > 16)
+						eeX.ManufacturerID = eeX.ManufacturerID.Substring(0, 16);
+					if (eeX.Description.Length > 64)
+						eeX.Description = eeX.Description.Substring(0, 64);
+					if (eeX.SerialNumber.Length > 16)
+						eeX.SerialNumber = eeX.SerialNumber.Substring(0, 16);
+
+					// Set string values
+					System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+					manufacturer = encoding.GetBytes(eeX.Manufacturer);
+					manufacturerID = encoding.GetBytes(eeX.ManufacturerID);
+					description = encoding.GetBytes(eeX.Description);
+					serialNumber = encoding.GetBytes(eeX.SerialNumber);
+
+					// Map non-string elements to structure to be returned
+					// Standard elements
+					eeData.common.deviceType = (uint)FT_DEVICE.FT_DEVICE_X_SERIES;
+					eeData.common.VendorId = eeX.VendorID;
+					eeData.common.ProductId = eeX.ProductID;
+					eeData.common.MaxPower = eeX.MaxPower;
+					eeData.common.SelfPowered = Convert.ToByte(eeX.SelfPowered);
+					eeData.common.RemoteWakeup = Convert.ToByte(eeX.RemoteWakeup);
+					eeData.common.SerNumEnable = Convert.ToByte(eeX.SerNumEnable);
+					eeData.common.PullDownEnable = Convert.ToByte(eeX.PullDownEnable);
+					// X-Series specific fields
+					// CBUS
+					eeData.Cbus0 = eeX.Cbus0;
+					eeData.Cbus1 = eeX.Cbus1;
+					eeData.Cbus2 = eeX.Cbus2;
+					eeData.Cbus3 = eeX.Cbus3;
+					eeData.Cbus4 = eeX.Cbus4;
+					eeData.Cbus5 = eeX.Cbus5;
+					eeData.Cbus6 = eeX.Cbus6;
+					// Drive Options
+					eeData.ACDriveCurrent = eeX.ACDriveCurrent;
+					eeData.ACSchmittInput = eeX.ACSchmittInput;
+					eeData.ACSlowSlew = eeX.ACSlowSlew;
+					eeData.ADDriveCurrent = eeX.ADDriveCurrent;
+					eeData.ADSchmittInput = eeX.ADSchmittInput;
+					eeData.ADSlowSlew = eeX.ADSlowSlew;
+					// BCD
+					eeData.BCDDisableSleep = eeX.BCDDisableSleep;
+					eeData.BCDEnable = eeX.BCDEnable;
+					eeData.BCDForceCbusPWREN = eeX.BCDForceCbusPWREN;
+					// FT1248
+					eeData.FT1248Cpol = eeX.FT1248Cpol;
+					eeData.FT1248FlowControl = eeX.FT1248FlowControl;
+					eeData.FT1248Lsb = eeX.FT1248Lsb;
+					// I2C
+					eeData.I2CDeviceId = eeX.I2CDeviceId;
+					eeData.I2CDisableSchmitt = eeX.I2CDisableSchmitt;
+					eeData.I2CSlaveAddress = eeX.I2CSlaveAddress;
+					// RS232 Signals
+					eeData.InvertCTS = eeX.InvertCTS;
+					eeData.InvertDCD = eeX.InvertDCD;
+					eeData.InvertDSR = eeX.InvertDSR;
+					eeData.InvertDTR = eeX.InvertDTR;
+					eeData.InvertRI = eeX.InvertRI;
+					eeData.InvertRTS = eeX.InvertRTS;
+					eeData.InvertRXD = eeX.InvertRXD;
+					eeData.InvertTXD = eeX.InvertTXD;
+					// Hardware Options
+					eeData.PowerSaveEnable = eeX.PowerSaveEnable;
+					eeData.RS485EchoSuppress = eeX.RS485EchoSuppress;
+					// Driver Option
+					eeData.DriverType = eeX.IsVCP;
+
+					// Check the size of the structure...
+					int size = Marshal.SizeOf(eeData);
+					// Allocate space for our pointer...
+					IntPtr eeDataMarshal = Marshal.AllocHGlobal(size);
+					Marshal.StructureToPtr(eeData, eeDataMarshal, false);
+
+					ftStatus = FT_EEPROM_Program(ftHandle, eeDataMarshal, (uint)size, manufacturer, manufacturerID, description, serialNumber);
+				}
+			}
+
+			return FT_STATUS.FT_DEVICE_NOT_FOUND;
+		}
 
 		//**************************************************************************
 		// EEReadUserArea
@@ -4479,16 +5057,15 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_UASize == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_UASize.");
+					MessageBox.Show("Failed to load function FT_EE_UASize.");
 				}
 				if (pFT_EE_UARead == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_UARead.");
+					MessageBox.Show("Failed to load function FT_EE_UARead.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// EEWriteUserArea
@@ -4533,16 +5110,15 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_UASize == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_UASize.");
+					MessageBox.Show("Failed to load function FT_EE_UASize.");
 				}
 				if (pFT_EE_UAWrite == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_UAWrite.");
+					MessageBox.Show("Failed to load function FT_EE_UAWrite.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetDeviceType
@@ -4583,13 +5159,12 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetDeviceInfo == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetDeviceInfo.");
+					MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 				}
 			}
 			return ftStatus;
 		}
-
-
+		
 		//**************************************************************************
 		// GetDeviceID
 		//**************************************************************************
@@ -4627,12 +5202,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetDeviceInfo == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetDeviceInfo.");
+					MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetDescription
@@ -4677,12 +5251,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetDeviceInfo == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetDeviceInfo.");
+					MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetSerialNumber
@@ -4727,12 +5300,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetDeviceInfo == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetDeviceInfo.");
+					MessageBox.Show("Failed to load function FT_GetDeviceInfo.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetRxBytesAvailable
@@ -4767,12 +5339,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetQueueStatus == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetQueueStatus.");
+					MessageBox.Show("Failed to load function FT_GetQueueStatus.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetTxBytesWaiting
@@ -4810,12 +5381,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetStatus == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetStatus.");
+					MessageBox.Show("Failed to load function FT_GetStatus.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetEventType
@@ -4853,7 +5423,7 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetStatus == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetStatus.");
+					MessageBox.Show("Failed to load function FT_GetStatus.");
 				}
 			}
 			return ftStatus;
@@ -4896,12 +5466,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetModemStatus == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetModemStatus.");
+					MessageBox.Show("Failed to load function FT_GetModemStatus.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetLineStatus
@@ -4939,12 +5508,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetModemStatus == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetModemStatus.");
+					MessageBox.Show("Failed to load function FT_GetModemStatus.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetBaudRate
@@ -4979,12 +5547,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetBaudRate == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBaudRate.");
+					MessageBox.Show("Failed to load function FT_SetBaudRate.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetDataCharacteristics
@@ -5021,12 +5588,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetDataCharacteristics == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetDataCharacteristics.");
+					MessageBox.Show("Failed to load function FT_SetDataCharacteristics.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetFlowControl
@@ -5063,12 +5629,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetFlowControl == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetFlowControl.");
+					MessageBox.Show("Failed to load function FT_SetFlowControl.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetRTS
@@ -5112,16 +5677,15 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetRts == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetRts.");
+					MessageBox.Show("Failed to load function FT_SetRts.");
 				}
 				if (pFT_ClrRts == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_ClrRts.");
+					MessageBox.Show("Failed to load function FT_ClrRts.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetDTR
@@ -5165,16 +5729,15 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetDtr == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetDtr.");
+					MessageBox.Show("Failed to load function FT_SetDtr.");
 				}
 				if (pFT_ClrDtr == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_ClrDtr.");
+					MessageBox.Show("Failed to load function FT_ClrDtr.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetTimeouts
@@ -5210,12 +5773,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetTimeouts == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetTimeouts.");
+					MessageBox.Show("Failed to load function FT_SetTimeouts.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetBreak
@@ -5259,17 +5821,16 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetBreakOn == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBreakOn.");
+					MessageBox.Show("Failed to load function FT_SetBreakOn.");
 				}
 				if (pFT_SetBreakOff == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetBreakOff.");
+					MessageBox.Show("Failed to load function FT_SetBreakOff.");
 				}
 			}
 			return ftStatus;
 		}
-
-
+		
 		//**************************************************************************
 		// SetResetPipeRetryCount
 		//**************************************************************************
@@ -5304,12 +5865,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetResetPipeRetryCount == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetResetPipeRetryCount.");
+					MessageBox.Show("Failed to load function FT_SetResetPipeRetryCount.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetDriverVersion
@@ -5344,12 +5904,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetDriverVersion == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetDriverVersion.");
+					MessageBox.Show("Failed to load function FT_GetDriverVersion.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetLibraryVersion
@@ -5381,12 +5940,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetLibraryVersion == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetLibraryVersion.");
+					MessageBox.Show("Failed to load function FT_GetLibraryVersion.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetDeadmanTimeout
@@ -5421,12 +5979,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetDeadmanTimeout == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetDeadmanTimeout.");
+					MessageBox.Show("Failed to load function FT_SetDeadmanTimeout.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetLatency
@@ -5474,12 +6031,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetLatencyTimer == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetLatencyTimer.");
+					MessageBox.Show("Failed to load function FT_SetLatencyTimer.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetLatency
@@ -5514,12 +6070,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetLatencyTimer == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetLatencyTimer.");
+					MessageBox.Show("Failed to load function FT_GetLatencyTimer.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetUSBTransferSizes
@@ -5558,12 +6113,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetUSBParameters == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetUSBParameters.");
+					MessageBox.Show("Failed to load function FT_SetUSBParameters.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// SetCharacters
@@ -5601,12 +6155,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_SetChars == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_SetChars.");
+					MessageBox.Show("Failed to load function FT_SetChars.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetEEUserAreaSize
@@ -5640,12 +6193,11 @@ namespace FTD2XX_NET
 			{
 				if (pFT_EE_UASize == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_EE_UASize.");
+					MessageBox.Show("Failed to load function FT_EE_UASize.");
 				}
 			}
 			return ftStatus;
 		}
-
 
 		//**************************************************************************
 		// GetCOMPort
@@ -5696,23 +6248,14 @@ namespace FTD2XX_NET
 			{
 				if (pFT_GetComPortNumber == IntPtr.Zero)
 				{
-					MultiZonePlayer.MLog.Log(null,"Failed to load function FT_GetComPortNumber.");
+					MessageBox.Show("Failed to load function FT_GetComPortNumber.");
 				}
 			}
 			return ftStatus;
 		}
+		#endregion
 
-
-
-
-		//**************************************************************************
-		//**************************************************************************
-		//
-		// PROPERTY DEFINITIONS
-		//
-		//**************************************************************************
-		//**************************************************************************
-
+		#region PROPERTY_DEFINITIONS
 		//**************************************************************************
 		// IsOpen
 		//**************************************************************************
@@ -5730,7 +6273,6 @@ namespace FTD2XX_NET
 					return true;
 			}
 		}
-
 
 		//**************************************************************************
 		// InterfaceIdentifier
@@ -5760,17 +6302,9 @@ namespace FTD2XX_NET
 				return Identifier;
 			}
 		}
+		#endregion
 
-
-
-		//**************************************************************************
-		//**************************************************************************
-		//
-		// HELPER METHODS
-		//
-		//**************************************************************************
-		//**************************************************************************       
-
+		#region HELPER_METHODS
 		//**************************************************************************
 		// ErrorHandler
 		//**************************************************************************
@@ -5882,5 +6416,6 @@ namespace FTD2XX_NET
 
 			return;
 		}
+		#endregion
 	}
 }

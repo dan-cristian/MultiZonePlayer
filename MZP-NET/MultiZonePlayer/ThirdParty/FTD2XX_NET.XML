@@ -106,7 +106,25 @@
             <param name="numBytesToWrite">The number of bytes to be written to the device.</param>
             <param name="numBytesWritten">The number of bytes actually written to the device.</param>
         </member>
+        <member name="M:FTD2XX_NET.FTDI.Write(System.Byte[],System.UInt32,System.UInt32@)">
+            <summary>
+            Write data to an open FTDI device.
+            </summary>
+            <returns>FT_STATUS value from FT_Write in FTD2XX.DLL</returns>
+            <param name="dataBuffer">An array of bytes which contains the data to be written to the device.</param>
+            <param name="numBytesToWrite">The number of bytes to be written to the device.</param>
+            <param name="numBytesWritten">The number of bytes actually written to the device.</param>
+        </member>
         <member name="M:FTD2XX_NET.FTDI.Write(System.String,System.Int32,System.UInt32@)">
+            <summary>
+            Write data to an open FTDI device.
+            </summary>
+            <returns>FT_STATUS value from FT_Write in FTD2XX.DLL</returns>
+            <param name="dataBuffer">A  string which contains the data to be written to the device.</param>
+            <param name="numBytesToWrite">The number of bytes to be written to the device.</param>
+            <param name="numBytesWritten">The number of bytes actually written to the device.</param>
+        </member>
+        <member name="M:FTD2XX_NET.FTDI.Write(System.String,System.UInt32,System.UInt32@)">
             <summary>
             Write data to an open FTDI device.
             </summary>
@@ -184,7 +202,8 @@
             <returns>FT_STATUS value from FT_SetBitMode in FTD2XX.DLL</returns>
             <param name="Mask">Sets up which bits are inputs and which are outputs.  A bit value of 0 sets the corresponding pin to an input, a bit value of 1 sets the corresponding pin to an output.
             In the case of CBUS Bit Bang, the upper nibble of this value controls which pins are inputs and outputs, while the lower nibble controls which of the outputs are high and low.</param>
-            <param name="BitMode"> For FT2232H devices, valid values are FT_BIT_MODE_RESET, FT_BIT_MODE_ASYNC_BITBANG, FT_BIT_MODE_MPSSE, FT_BIT_MODE_SYNC_BITBANG, FT_BIT_MODE_MCU_HOST, FT_BIT_MODE_FAST_SERIAL, FT_BIT_MODE_SYNC_FIFO.
+            <param name="BitMode"> For FT232H devices, valid values are FT_BIT_MODE_RESET, FT_BIT_MODE_ASYNC_BITBANG, FT_BIT_MODE_MPSSE, FT_BIT_MODE_SYNC_BITBANG, FT_BIT_MODE_CBUS_BITBANG, FT_BIT_MODE_MCU_HOST, FT_BIT_MODE_FAST_SERIAL, FT_BIT_MODE_SYNC_FIFO.
+            For FT2232H devices, valid values are FT_BIT_MODE_RESET, FT_BIT_MODE_ASYNC_BITBANG, FT_BIT_MODE_MPSSE, FT_BIT_MODE_SYNC_BITBANG, FT_BIT_MODE_MCU_HOST, FT_BIT_MODE_FAST_SERIAL, FT_BIT_MODE_SYNC_FIFO.
             For FT4232H devices, valid values are FT_BIT_MODE_RESET, FT_BIT_MODE_ASYNC_BITBANG, FT_BIT_MODE_MPSSE, FT_BIT_MODE_SYNC_BITBANG.
             For FT232R devices, valid values are FT_BIT_MODE_RESET, FT_BIT_MODE_ASYNC_BITBANG, FT_BIT_MODE_SYNC_BITBANG, FT_BIT_MODE_CBUS_BITBANG.
             For FT245R devices, valid values are FT_BIT_MODE_RESET, FT_BIT_MODE_ASYNC_BITBANG, FT_BIT_MODE_SYNC_BITBANG.
@@ -262,6 +281,22 @@
             <param name="ee4232h">An FT4232H_EEPROM_STRUCTURE which contains only the relevant information for an FT4232H device.</param>
             <exception cref="T:FTD2XX_NET.FTDI.FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
         </member>
+        <member name="M:FTD2XX_NET.FTDI.ReadFT232HEEPROM(FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE)">
+            <summary>
+            Reads the EEPROM contents of an FT232H device.
+            </summary>
+            <returns>FT_STATUS value from FT_EE_Read in FTD2XX DLL</returns>
+            <param name="ee232h">An FT232H_EEPROM_STRUCTURE which contains only the relevant information for an FT232H device.</param>
+            <exception cref="T:FTD2XX_NET.FTDI.FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
+        </member>
+        <member name="M:FTD2XX_NET.FTDI.ReadXSeriesEEPROM(FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE)">
+            <summary>
+            Reads the EEPROM contents of an X-Series device.
+            </summary>
+            <returns>FT_STATUS value from FT_EEPROM_Read in FTD2XX DLL</returns>
+            <param name="eeX">An FT_XSERIES_EEPROM_STRUCTURE which contains only the relevant information for an X-Series device.</param>
+            <exception cref="T:FTD2XX_NET.FTDI.FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
+        </member>
         <member name="M:FTD2XX_NET.FTDI.WriteFT232BEEPROM(FTD2XX_NET.FTDI.FT232B_EEPROM_STRUCTURE)">
             <summary>
             Writes the specified values to the EEPROM of an FT232B or FT245B device.
@@ -308,6 +343,26 @@
             </summary>
             <returns>FT_STATUS value from FT_EE_Program in FTD2XX DLL</returns>
             <param name="ee4232h">The EEPROM settings to be written to the device</param>
+            <remarks>If the strings are too long, they will be truncated to their maximum permitted lengths</remarks>
+            <exception cref="T:FTD2XX_NET.FTDI.FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
+        </member>
+        <member name="M:FTD2XX_NET.FTDI.WriteFT232HEEPROM(FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE)">
+            <summary>
+            Writes the specified values to the EEPROM of an FT232H device.
+            Calls FT_EE_Program in FTD2XX DLL
+            </summary>
+            <returns>FT_STATUS value from FT_EE_Program in FTD2XX DLL</returns>
+            <param name="ee232h">The EEPROM settings to be written to the device</param>
+            <remarks>If the strings are too long, they will be truncated to their maximum permitted lengths</remarks>
+            <exception cref="T:FTD2XX_NET.FTDI.FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
+        </member>
+        <member name="M:FTD2XX_NET.FTDI.WriteXSeriesEEPROM(FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE)">
+            <summary>
+            Writes the specified values to the EEPROM of an X-Series device.
+            Calls FT_EEPROM_Program in FTD2XX DLL
+            </summary>
+            <returns>FT_STATUS value from FT_EEPROM_Program in FTD2XX DLL</returns>
+            <param name="eeX">The EEPROM settings to be written to the device</param>
             <remarks>If the strings are too long, they will be truncated to their maximum permitted lengths</remarks>
             <exception cref="T:FTD2XX_NET.FTDI.FT_EXCEPTION">Thrown when the current device does not match the type required by this method.</exception>
         </member>
@@ -821,7 +876,7 @@
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT_BIT_MODES.FT_BIT_MODE_MPSSE">
             <summary>
-            MPSSE bit mode - only available on FT2232, FT2232H and FT4232H
+            MPSSE bit mode - only available on FT2232, FT2232H, FT4232H and FT232H
             </summary>
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT_BIT_MODES.FT_BIT_MODE_SYNC_BITBANG">
@@ -831,22 +886,22 @@
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT_BIT_MODES.FT_BIT_MODE_MCU_HOST">
             <summary>
-            MCU host bus emulation mode - only available on FT2232, FT2232H and FT4232H
+            MCU host bus emulation mode - only available on FT2232, FT2232H, FT4232H and FT232H
             </summary>
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT_BIT_MODES.FT_BIT_MODE_FAST_SERIAL">
             <summary>
-            Fast opto-isolated serial mode - only available on FT2232, FT2232H and FT4232H
+            Fast opto-isolated serial mode - only available on FT2232, FT2232H, FT4232H and FT232H
             </summary>
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT_BIT_MODES.FT_BIT_MODE_CBUS_BITBANG">
             <summary>
-            CBUS bit-bang mode - only available on FT232R
+            CBUS bit-bang mode - only available on FT232R and FT232H
             </summary>
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT_BIT_MODES.FT_BIT_MODE_SYNC_FIFO">
             <summary>
-            Single channel synchronous 245 FIFO mode - only available on FT2232H channel A
+            Single channel synchronous 245 FIFO mode - only available on FT2232H channel A and FT232H
             </summary>
         </member>
         <member name="T:FTD2XX_NET.FTDI.FT_CBUS_OPTIONS">
@@ -919,6 +974,191 @@
             FT232R CBUS EEPROM options - Bit-bang read strobe
             </summary>
         </member>
+        <member name="T:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS">
+            <summary>
+            Available functions for the FT232H CBUS pins.  Controlled by FT232H EEPROM settings
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_TRISTATE">
+            <summary>
+            FT232H CBUS EEPROM options - Tristate
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_RXLED">
+            <summary>
+            FT232H CBUS EEPROM options - Rx LED
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_TXLED">
+            <summary>
+            FT232H CBUS EEPROM options - Tx LED
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_TXRXLED">
+            <summary>
+            FT232H CBUS EEPROM options - Tx and Rx LED
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_PWREN">
+            <summary>
+            FT232H CBUS EEPROM options - Power Enable
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_SLEEP">
+            <summary>
+            FT232H CBUS EEPROM options - Sleep
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_DRIVE_0">
+            <summary>
+            FT232H CBUS EEPROM options - Drive pin to logic 0
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_DRIVE_1">
+            <summary>
+            FT232H CBUS EEPROM options - Drive pin to logic 1
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_IOMODE">
+            <summary>
+            FT232H CBUS EEPROM options - IO Mode
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_TXDEN">
+            <summary>
+            FT232H CBUS EEPROM options - Tx Data Enable
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_CLK30">
+            <summary>
+            FT232H CBUS EEPROM options - 30MHz clock
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_CLK15">
+            <summary>
+            FT232H CBUS EEPROM options - 15MHz clock
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_232H_CBUS_OPTIONS.FT_CBUS_CLK7_5">
+            <summary>
+            FT232H CBUS EEPROM options - 7.5MHz clock
+            </summary>
+        </member>
+        <member name="T:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS">
+            <summary>
+            Available functions for the X-Series CBUS pins.  Controlled by X-Series EEPROM settings
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_TRISTATE">
+            <summary>
+            FT X-Series CBUS EEPROM options - Tristate
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_RXLED">
+            <summary>
+            FT X-Series CBUS EEPROM options - RxLED#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_TXLED">
+            <summary>
+            FT X-Series CBUS EEPROM options - TxLED#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_TXRXLED">
+            <summary>
+            FT X-Series CBUS EEPROM options - TxRxLED
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_PWREN">
+            <summary>
+            FT X-Series CBUS EEPROM options - PwrEn#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_SLEEP">
+            <summary>
+            FT X-Series CBUS EEPROM options - Sleep#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_Drive_0">
+            <summary>
+            FT X-Series CBUS EEPROM options - Drive_0
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_Drive_1">
+            <summary>
+            FT X-Series CBUS EEPROM options - Drive_1
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_GPIO">
+            <summary>
+            FT X-Series CBUS EEPROM options - GPIO
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_TXDEN">
+            <summary>
+            FT X-Series CBUS EEPROM options - TxdEn
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_CLK24MHz">
+            <summary>
+            FT X-Series CBUS EEPROM options - Clk24MHz
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_CLK12MHz">
+            <summary>
+            FT X-Series CBUS EEPROM options - Clk12MHz
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_CLK6MHz">
+            <summary>
+            FT X-Series CBUS EEPROM options - Clk6MHz
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_BCD_Charger">
+            <summary>
+            FT X-Series CBUS EEPROM options - BCD_Charger
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_BCD_Charger_N">
+            <summary>
+            FT X-Series CBUS EEPROM options - BCD_Charger#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_I2C_TXE">
+            <summary>
+            FT X-Series CBUS EEPROM options - I2C_TXE#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_I2C_RXF">
+            <summary>
+            FT X-Series CBUS EEPROM options - I2C_RXF#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_VBUS_Sense">
+            <summary>
+            FT X-Series CBUS EEPROM options - VBUS_Sense
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_BitBang_WR">
+            <summary>
+            FT X-Series CBUS EEPROM options - BitBang_WR#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_BitBang_RD">
+            <summary>
+            FT X-Series CBUS EEPROM options - BitBang_RD#
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_Time_Stamp">
+            <summary>
+            FT X-Series CBUS EEPROM options - Time_Stampe
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_CBUS_OPTIONS.FT_CBUS_Keep_Awake">
+            <summary>
+            FT X-Series CBUS EEPROM options - Keep_Awake#
+            </summary>
+        </member>
         <member name="T:FTD2XX_NET.FTDI.FT_FLAGS">
             <summary>
             Flags that provide information on the FTDI device state
@@ -936,7 +1176,7 @@
         </member>
         <member name="T:FTD2XX_NET.FTDI.FT_DRIVE_CURRENT">
             <summary>
-            Valid values for drive current options on FT2232H and FT4232H devices.
+            Valid values for drive current options on FT2232H, FT4232H and FT232H devices.
             </summary>
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT_DRIVE_CURRENT.FT_DRIVE_CURRENT_4MA">
@@ -1002,6 +1242,16 @@
         <member name="F:FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_4232H">
             <summary>
             FT4232H device
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_232H">
+            <summary>
+            FT232H device
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_DEVICE.FT_DEVICE_X_SERIES">
+            <summary>
+            FT232X device
             </summary>
         </member>
         <member name="T:FTD2XX_NET.FTDI.FT_DEVICE_INFO_NODE">
@@ -1307,7 +1557,7 @@
             Sets the function of the CBUS4 pin for FT232R devices.
             Valid values are FT_CBUS_TXDEN, FT_CBUS_PWRON , FT_CBUS_RXLED, FT_CBUS_TXLED, 
             FT_CBUS_TXRXLED, FT_CBUS_SLEEP, FT_CBUS_CLK48, FT_CBUS_CLK24, FT_CBUS_CLK12, 
-            FT_CBUS_CLK6, FT_CBUS_IOMODE, FT_CBUS_BITBANG_WR, FT_CBUS_BITBANG_RD
+            FT_CBUS_CLK6
             </summary>
         </member>
         <member name="F:FTD2XX_NET.FTDI.FT232R_EEPROM_STRUCTURE.RIsD2XX">
@@ -1550,6 +1800,391 @@
         <member name="F:FTD2XX_NET.FTDI.FT4232H_EEPROM_STRUCTURE.DIsVCP">
             <summary>
             Determines if channel D loads the VCP driver
+            </summary>
+        </member>
+        <member name="T:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE">
+            <summary>
+            EEPROM structure specific to FT232H devices.
+            Inherits from FT_EEPROM_DATA.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.PullDownEnable">
+            <summary>
+            Determines if IOs are pulled down when the device is in suspend
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.SerNumEnable">
+            <summary>
+            Determines if the serial number is enabled
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.ACSlowSlew">
+            <summary>
+            Determines if AC pins have a slow slew rate
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.ACSchmittInput">
+            <summary>
+            Determines if the AC pins have a Schmitt input
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.ACDriveCurrent">
+            <summary>
+            Determines the AC pins drive current in mA.  Valid values are FT_DRIVE_CURRENT_4MA, FT_DRIVE_CURRENT_8MA, FT_DRIVE_CURRENT_12MA or FT_DRIVE_CURRENT_16MA
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.ADSlowSlew">
+            <summary>
+            Determines if AD pins have a slow slew rate
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.ADSchmittInput">
+            <summary>
+            Determines if the AD pins have a Schmitt input
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.ADDriveCurrent">
+            <summary>
+            Determines the AD pins drive current in mA.  Valid values are FT_DRIVE_CURRENT_4MA, FT_DRIVE_CURRENT_8MA, FT_DRIVE_CURRENT_12MA or FT_DRIVE_CURRENT_16MA
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus0">
+            <summary>
+            Sets the function of the CBUS0 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK30,
+            FT_CBUS_CLK15, FT_CBUS_CLK7_5
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus1">
+            <summary>
+            Sets the function of the CBUS1 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK30,
+            FT_CBUS_CLK15, FT_CBUS_CLK7_5
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus2">
+            <summary>
+            Sets the function of the CBUS2 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus3">
+            <summary>
+            Sets the function of the CBUS3 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus4">
+            <summary>
+            Sets the function of the CBUS4 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus5">
+            <summary>
+            Sets the function of the CBUS5 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_IOMODE,
+            FT_CBUS_TXDEN, FT_CBUS_CLK30, FT_CBUS_CLK15, FT_CBUS_CLK7_5
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus6">
+            <summary>
+            Sets the function of the CBUS6 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_IOMODE,
+            FT_CBUS_TXDEN, FT_CBUS_CLK30, FT_CBUS_CLK15, FT_CBUS_CLK7_5
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus7">
+            <summary>
+            Sets the function of the CBUS7 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus8">
+            <summary>
+            Sets the function of the CBUS8 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_IOMODE,
+            FT_CBUS_TXDEN, FT_CBUS_CLK30, FT_CBUS_CLK15, FT_CBUS_CLK7_5
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.Cbus9">
+            <summary>
+            Sets the function of the CBUS9 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_IOMODE,
+            FT_CBUS_TXDEN, FT_CBUS_CLK30, FT_CBUS_CLK15, FT_CBUS_CLK7_5
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.IsFifo">
+            <summary>
+            Determines if the device is in FIFO mode
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.IsFifoTar">
+            <summary>
+            Determines if the device is in FIFO target mode
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.IsFastSer">
+            <summary>
+            Determines if the device is in fast serial mode
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.IsFT1248">
+            <summary>
+            Determines if the device is in FT1248 mode
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.FT1248Cpol">
+            <summary>
+            Determines FT1248 mode clock polarity
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.FT1248Lsb">
+            <summary>
+            Determines if data is ent MSB (0) or LSB (1) in FT1248 mode
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.FT1248FlowControl">
+            <summary>
+            Determines if FT1248 mode uses flow control
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.IsVCP">
+            <summary>
+            Determines if the VCP driver is loaded
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT232H_EEPROM_STRUCTURE.PowerSaveEnable">
+            <summary>
+            For self-powered designs, keeps the FT232H in low power state until ACBUS7 is high
+            </summary>
+        </member>
+        <member name="T:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE">
+            <summary>
+            EEPROM structure specific to X-Series devices.
+            Inherits from FT_EEPROM_DATA.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.PullDownEnable">
+            <summary>
+            Determines if IOs are pulled down when the device is in suspend
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.SerNumEnable">
+            <summary>
+            Determines if the serial number is enabled
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.USBVersionEnable">
+            <summary>
+            Determines if the USB version number is enabled
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.USBVersion">
+            <summary>
+            The USB version number: 0x0200 (USB 2.0)
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.ACSlowSlew">
+            <summary>
+            Determines if AC pins have a slow slew rate
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.ACSchmittInput">
+            <summary>
+            Determines if the AC pins have a Schmitt input
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.ACDriveCurrent">
+            <summary>
+            Determines the AC pins drive current in mA.  Valid values are FT_DRIVE_CURRENT_4MA, FT_DRIVE_CURRENT_8MA, FT_DRIVE_CURRENT_12MA or FT_DRIVE_CURRENT_16MA
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.ADSlowSlew">
+            <summary>
+            Determines if AD pins have a slow slew rate
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.ADSchmittInput">
+            <summary>
+            Determines if AD pins have a schmitt input
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.ADDriveCurrent">
+            <summary>
+            Determines the AD pins drive current in mA.  Valid values are FT_DRIVE_CURRENT_4MA, FT_DRIVE_CURRENT_8MA, FT_DRIVE_CURRENT_12MA or FT_DRIVE_CURRENT_16MA
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.Cbus0">
+            <summary>
+            Sets the function of the CBUS0 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+            FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+            FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.Cbus1">
+            <summary>
+            Sets the function of the CBUS1 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+            FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+            FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.Cbus2">
+            <summary>
+            Sets the function of the CBUS2 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+            FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+            FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.Cbus3">
+            <summary>
+            Sets the function of the CBUS3 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_GPIO, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+            FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+            FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.Cbus4">
+            <summary>
+            Sets the function of the CBUS4 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+            FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+            FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.Cbus5">
+            <summary>
+            Sets the function of the CBUS5 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+            FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+            FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.Cbus6">
+            <summary>
+            Sets the function of the CBUS6 pin for FT232H devices.
+            Valid values are FT_CBUS_TRISTATE, FT_CBUS_RXLED, FT_CBUS_TXLED, FT_CBUS_TXRXLED,
+            FT_CBUS_PWREN, FT_CBUS_SLEEP, FT_CBUS_DRIVE_0, FT_CBUS_DRIVE_1, FT_CBUS_TXDEN, FT_CBUS_CLK24,
+            FT_CBUS_CLK12, FT_CBUS_CLK6, FT_CBUS_BCD_CHARGER, FT_CBUS_BCD_CHARGER_N, FT_CBUS_VBUS_SENSE, FT_CBUS_BITBANG_WR,
+            FT_CBUS_BITBANG_RD, FT_CBUS_TIME_STAMP, FT_CBUS_KEEP_AWAKE
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertTXD">
+            <summary>
+            Inverts the sense of the TXD line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertRXD">
+            <summary>
+            Inverts the sense of the RXD line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertRTS">
+            <summary>
+            Inverts the sense of the RTS line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertCTS">
+            <summary>
+            Inverts the sense of the CTS line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertDTR">
+            <summary>
+            Inverts the sense of the DTR line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertDSR">
+            <summary>
+            Inverts the sense of the DSR line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertDCD">
+            <summary>
+            Inverts the sense of the DCD line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.InvertRI">
+            <summary>
+            Inverts the sense of the RI line
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.BCDEnable">
+            <summary>
+            Determines whether the Battery Charge Detection option is enabled.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.BCDForceCbusPWREN">
+            <summary>
+            Asserts the power enable signal on CBUS when charging port detected.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.BCDDisableSleep">
+            <summary>
+            Forces the device never to go into sleep mode.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.I2CSlaveAddress">
+            <summary>
+            I2C slave device address.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.I2CDeviceId">
+            <summary>
+            I2C device ID
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.I2CDisableSchmitt">
+            <summary>
+            Disable I2C Schmitt trigger.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.FT1248Cpol">
+            <summary>
+            FT1248 clock polarity - clock idle high (1) or clock idle low (0)
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.FT1248Lsb">
+            <summary>
+            FT1248 data is LSB (1) or MSB (0)
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.FT1248FlowControl">
+            <summary>
+            FT1248 flow control enable.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.RS485EchoSuppress">
+            <summary>
+            Enable RS485 Echo Suppression
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.PowerSaveEnable">
+            <summary>
+            Enable Power Save mode.
+            </summary>
+        </member>
+        <member name="F:FTD2XX_NET.FTDI.FT_XSERIES_EEPROM_STRUCTURE.IsVCP">
+            <summary>
+            Determines whether the VCP driver is loaded.
             </summary>
         </member>
         <member name="T:FTD2XX_NET.FTDI.FT_EXCEPTION">

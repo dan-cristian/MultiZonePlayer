@@ -171,6 +171,7 @@
     <Compile Include="AudioManagement.Designer.cs">
       <DependentUpon>AudioManagement.cs</DependentUpon>
     </Compile>
+    <Compile Include="ThirdParty\FTD2XX_NET.cs" />
     <Compile Include="ZoneClosures.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Messengers.cs" />
@@ -214,7 +215,6 @@
     <Compile Include="ThirdParty\fastJSON\JsonSerializer.cs" />
     <Compile Include="ThirdParty\fastJSON\SafeDictionary.cs" />
     <Compile Include="ThirdParty\FileIOApiDeclarations.cs" />
-    <Compile Include="ThirdParty\FTD2XX_NETclass.cs" />
     <Compile Include="ThirdParty\Hid.cs" />
     <Compile Include="ThirdParty\HidApiDeclarations.cs" />
     <Compile Include="ThirdParty\HtmlParser.cs" />
