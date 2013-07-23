@@ -190,7 +190,7 @@ namespace MultiZonePlayer
 			String[] atoms, pair;
 			String cmdName, replymessage;
 			string cmd = message;
-			if (cmd.Length > 0)
+			if (cmd !=null && cmd.Length > 0)
 			{
 				atoms = cmd.Split(' ');
 				sender = sender.ToLower();

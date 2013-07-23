@@ -130,13 +130,15 @@ namespace MultiZonePlayer
                     // FAST TICK
                     RefreshState();
 
-					activeZoneClone = MZPState.Instance.ActiveZones.ToArray();
-					foreach (ZoneGeneric zone in activeZoneClone)
-                    {
-						if (MZPState.Instance == null) break;
-						zone.Tick();
-                    }
-
+					if (MZPState.Instance != null)
+					{
+						activeZoneClone = MZPState.Instance.ActiveZones.ToArray();
+						foreach (ZoneGeneric zone in activeZoneClone)
+						{
+							if (MZPState.Instance == null) break;
+							zone.Tick();
+						}
+					}
                     // SLOW TICK
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
                     {

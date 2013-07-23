@@ -322,32 +322,35 @@ namespace MultiZonePlayer
 
         public override void PowerOn(int zoneId)
         {
-            MLog.Log(this,"Running async power on, active thread count=" + m_threadList.Count);
+            //MLog.Log(this,"Running async power on, active thread count=" + m_threadList.Count);
             //making an async call
             if (!IsPowerOn(zoneId))
             {
-                /*Thread th = new Thread(() => PowerOnSync(zoneId));
+				AutoResetEvent ev = new AutoResetEvent(false);
+                Thread th = new Thread(() => PowerOnSync(zoneId, ev));
                 th.Name = "PowerOn zoneid=" + zoneId;
-                m_threadList.Add(th);
                 th.Start();
-                WaitForThreadEnd(th);
-                MLog.Log(null, "Running async power on completed, active thread count=" + m_threadList.Count);
-				 */
-				PowerOnSync(zoneId);
+
+				if (!ev.WaitOne(3000))
+				{
+					MLog.Log(this, "Running async power on ERROR");
+					Reinitialise();
+				}
             }
             //else
             //    MLog.Log(this, "Power already on, power on ignored zoneid=" + zoneId 
             //        + " status=" + m_socketsStatus + " socketindex=" + GetSocketIndexForZone(zoneId));
         }
 
-        private bool PowerOnSync(int zoneId)
+        private bool PowerOnSync(int zoneId, AutoResetEvent ev)
         {
             MLog.Log(this,"Power ON started zoneid = " + zoneId +" Index count="+ GetSocketIndexForZone(zoneId).Length);
             Open();
             String status = SendPowerCommand(zoneId, "1").ToString();
             LogDebugInfo();
             Close();
-            //MLog.Log(null,"Power ON completed status = " + status + " state=" + m_relayState);
+            MLog.Log(this,"Power ON completed status = " + status + " state=" + m_relayState);
+			ev.Set();
             return true;
         }
 
@@ -355,48 +358,51 @@ namespace MultiZonePlayer
         {
             //MLog.Log(null,"Running async power off ALL, active thread count=" + m_threadList.Count);
             //making an async call
-            /*Thread th = new Thread(() => PowerOffSync());
+            AutoResetEvent ev = new AutoResetEvent(false);
+			Thread th = new Thread(() => PowerOffSync(ev));
             th.Name = "PowerOff zoneid=all";
-            m_threadList.Add(th);
+            
+			//m_threadList.Add(th);
             th.Start();
-            WaitForThreadEnd(th);
-			 */
-			PowerOffSync();
-            MLog.Log(null,"Running async power off ALL completed, active thread count=" + m_threadList.Count);
+            if (!ev.WaitOne(3000))
+			{
+				MLog.Log(this,"Running async power off ALL ERROR");
+				Reinitialise();
+			};
         }
 
         public override void PowerOff(int zoneId)
         {
-            //MLog.Log(null,"Running async power off, active thread count=" + m_threadList.Count);
             //making an async call
             if (IsPowerOn(zoneId))
             {
-				/*
-                Thread th = new Thread(() => PowerOffSync(zoneId));
+				AutoResetEvent ev = new AutoResetEvent(false);
+                Thread th = new Thread(() => PowerOffSync(zoneId, ev));
                 th.Name = "PowerOff zoneid="+zoneId;
-                m_threadList.Add(th);
+                //m_threadList.Add(th);
                 th.Start();
-                WaitForThreadEnd(th);
-				 */
-				PowerOffSync(zoneId);
-                MLog.Log(this, "Running async power off completed, active thread count=" + m_threadList.Count);
+				if (!ev.WaitOne(3000))
+				{
+					MLog.Log(this, "Running async power off ERROR");
+					Reinitialise();
+				}
             }
-            //else MLog.Log(this, "Power already off, off not needed zone " + zoneId);
         }
 
-        private bool PowerOffSync(int zoneId)
+        private bool PowerOffSync(int zoneId, AutoResetEvent ev)
         {
 
-            MLog.Log(null,"Power OFF started zoneid = " + zoneId + " Index=" + GetSocketIndexForZone(zoneId));
+            MLog.Log(this,"Power OFF started zoneid = " + zoneId + " Index=" + GetSocketIndexForZone(zoneId));
             Open();
             String status = SendPowerCommand(zoneId, "0").ToString();
             LogDebugInfo();
             Close();
-            //MLog.Log(null,"Power OFF completed status = " + status + " state=" + m_relayState);
+            MLog.Log(this,"Power OFF completed status = " + status + " state=" + m_relayState);
+			ev.Set();
             return true;
         }
 
-        private bool PowerOffSync()
+        private bool PowerOffSync(AutoResetEvent ev)
         {
 
             MLog.Log(this,"Power OFF All started");
@@ -407,12 +413,13 @@ namespace MultiZonePlayer
                 LogDebugInfo();
                 Close();
                 MLog.Log(this, "Power OFF ALL completed status = " + status + " state=" + m_relayState);
+				ev.Set();
             //}
             //else
             //    MLog.Log(this, "Power OFF not needed as status is = " + m_relayState);
             return true;
         }
-
+		/*
         private bool WaitForThreadEnd(Thread th)
         {
             bool done=false;
@@ -437,7 +444,7 @@ namespace MultiZonePlayer
                 ResetBoard();
             }
             return done;
-        }
+        }*/
 
         private FTD2XX_NET.FTDI.FT_STATUS SendPowerCommand(int zoneId, String state)
         {
@@ -456,7 +463,7 @@ namespace MultiZonePlayer
                 // checking if this zone is still active, if active and bool param is false will ignore
                 //TODO
 
-                MLog.Log(null,"Sending power command "+state+" to zoneindex " + zoneIndex);
+                MLog.Log(this,"Sending power command "+state+" to zoneindex " + zoneIndex);
                 initialState = initialState.Substring(0, zoneIndex - 1) + state + initialState.Substring(zoneIndex);
                 m_relayState = initialState;
 
@@ -518,7 +525,7 @@ namespace MultiZonePlayer
                 buffer[0] = value;
                 status = m_usb8Relay.Write(buffer, 1, ref numBytesWritten);
                 if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                    MLog.Log(null,"SendPowercmd failed status="+status);
+                    MLog.Log(this,"SendPowercmd failed status="+status);
                 UpdateSocketsStatus();
             }
             catch (Exception ex)
