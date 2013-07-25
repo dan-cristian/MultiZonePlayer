@@ -202,58 +202,67 @@ namespace MultiZonePlayer
 
         protected override void Open()
         {
-            FTD2XX_NET.FTDI.FT_STATUS status;
-            try{
-                status = m_usb8Relay.OpenBySerialNumber(m_deviceSerial);
-				if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+			if (!m_usb8Relay.IsOpen)
+			{
+				FTD2XX_NET.FTDI.FT_STATUS status;
+				try
 				{
-					m_lastOpenDateTime = DateTime.Now;
-					status = m_usb8Relay.SetBitMode(255, 1);
-					status = m_usb8Relay.SetTimeouts(1000, 1000);
-					if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-						MLog.Log(null, "Setbit failed on Open, status = " + status);
+					status = m_usb8Relay.OpenBySerialNumber(m_deviceSerial);
+					if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+					{
+						m_lastOpenDateTime = DateTime.Now;
+						status = m_usb8Relay.SetBitMode(255, 1);
+						status = m_usb8Relay.SetTimeouts(1000, 1000);
+						if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+							MLog.Log(null, "Setbit failed on Open, status = " + status);
+					}
+					else
+					{
+						MLog.Log(null, "Open failed, status = " + status);
+						Reinitialise();
+					}
+					LogDebugInfo();
 				}
-				else
+				catch (Exception ex)
 				{
-					MLog.Log(null, "Open failed, status = " + status);
-					Reinitialise();
+					MLog.Log(null, "Unable to open device " + m_deviceName + " id=" + m_deviceSerial + " err=" + ex.Message);
+					//Close();
 				}
-                LogDebugInfo();
-            }
-            catch (Exception ex)
-            {
-                MLog.Log(null,"Unable to open device " + m_deviceName + " id="+ m_deviceSerial + " err=" + ex.Message);
-                Close();
-            }
+			}
+			else MLog.Log(this, "Relay already opened on open, skip");
         }
 
         protected override void Close()
         {
-            FTD2XX_NET.FTDI.FT_STATUS status;
+			if (m_usb8Relay.IsOpen)
+			{
+				FTD2XX_NET.FTDI.FT_STATUS status;
 
-            try
-            {
-                //MLog.Log(null,"Closing relay, reading all data");
-                ReadAllData();
-                //MLog.Log(null,"Closing relay, purge rx");
-                m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_RX);
-                //MLog.Log(null,"Closing relay, purge tx");
-                m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_TX);
-                //MLog.Log(null,"Now closing");
-                status = m_usb8Relay.Close();
-                //MLog.Log(null,"Now closed");
-                if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                {
-                    SaveToIni();
-                    //MLog.Log(null,"Close OK device serial= " + m_deviceSerial);
-                }
-                else
-                    MLog.Log(null,"Close failed, status = " + status);
-            }
-                catch (Exception ex)
-                {
-                    MLog.Log(null,"Unable to close device " + m_deviceName + " id="+ m_deviceSerial + " err=" + ex.Message);
-                }
+				try
+				{
+					//MLog.Log(null,"Closing relay, reading all data");
+					ReadAllData();
+					//MLog.Log(null,"Closing relay, purge rx");
+					m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_RX);
+					//MLog.Log(null,"Closing relay, purge tx");
+					m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_TX);
+					//MLog.Log(null,"Now closing");
+					status = m_usb8Relay.Close();
+					//MLog.Log(null,"Now closed");
+					if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+					{
+						SaveToIni();
+						//MLog.Log(null,"Close OK device serial= " + m_deviceSerial);
+					}
+					else
+						MLog.Log(null, "Close failed, status = " + status);
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(null, "Unable to close device " + m_deviceName + " id=" + m_deviceSerial + " err=" + ex.Message);
+				}
+			}
+			else MLog.Log(this, "Relay already closed on close, skip");
         }
 
         public override bool IsPowerControlOn()
@@ -455,6 +464,7 @@ namespace MultiZonePlayer
 
             int[] index = GetSocketIndexForZone(zoneId);
 
+			
             for (int j = 0; j < index.Length; j++)
             {
                 stateToSend = "";
@@ -517,21 +527,24 @@ namespace MultiZonePlayer
             uint numBytesWritten = 0;
             byte[] buffer = new byte[1];
             FTD2XX_NET.FTDI.FT_STATUS status = FTD2XX_NET.FTDI.FT_STATUS.FT_OTHER_ERROR;
-            
-            try
-            {
-                //MLog.Log(null,"Sending power command " + stateToSend);
-                value = Convert.ToByte(stateToSend, 2);
-                buffer[0] = value;
-                status = m_usb8Relay.Write(buffer, 1, ref numBytesWritten);
-                if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                    MLog.Log(this,"SendPowercmd failed status="+status);
-                UpdateSocketsStatus();
-            }
-            catch (Exception ex)
-            {
-                MLog.Log(ex,this,"Unable to change power state " + stateToSend + " ex=" + ex.Message);
-            }
+
+			lock (m_usb8Relay)
+			{
+				try
+				{
+					//MLog.Log(null,"Sending power command " + stateToSend);
+					value = Convert.ToByte(stateToSend, 2);
+					buffer[0] = value;
+					status = m_usb8Relay.Write(buffer, 1, ref numBytesWritten);
+					if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+						MLog.Log(this, "SendPowercmd failed status=" + status);
+					UpdateSocketsStatus();
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, this, "Unable to change power state " + stateToSend + " ex=" + ex.Message);
+				}
+			}
             return status;
         }
 
