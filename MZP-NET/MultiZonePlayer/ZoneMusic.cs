@@ -229,11 +229,15 @@ namespace MultiZonePlayer
             }
 
             //media index, not the zero based index
-            public void Play(int index)
+            public void Play(int mediaIndex)
             {
-                m_currentSongKey = m_songList.FindIndex(x => x.Index.Equals(index));//index;
-                m_dcPlay.StopClip();
-                Play();
+                m_currentSongKey = m_songList.FindIndex(x => x.Index.Equals(mediaIndex));//index;
+				if (m_currentSongKey != -1)
+				{
+					m_dcPlay.StopClip();
+					Play();
+				}
+				else MLog.Log(this, "Invalid index on Play, i=" + mediaIndex);
             }
 
             public void Play(String filePathName)
@@ -734,7 +738,7 @@ namespace MultiZonePlayer
             }
         }
 
-            public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
+            public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
             {
                 Metadata.ValueList result = new Metadata.ValueList();
                 String action = action = vals.GetValue(Metadata.GlobalParams.action);
@@ -797,7 +801,24 @@ namespace MultiZonePlayer
                         result = GetSongValueList();
                         break;
                     case Metadata.GlobalCommands.setmediaitem:
-                        Play(Convert.ToInt16(vals.IndexValueList[0]));
+						string keyword = vals.GetValue(Metadata.GlobalParams.singleparamvalue);
+						if (keyword != null)
+						{
+							keyword = keyword.ToLower();
+							int songIndex = m_songList.FindIndex(x=>x.Title.ToLower().Contains(keyword)
+								|| x.SourceURL.ToLower().Contains(keyword)
+								|| x.Album.ToLower().Contains(keyword));
+							if (songIndex != -1)
+							{
+								m_currentSongKey = songIndex;
+								Play();
+								cmdresult.OutputMessage += " Media found:" + CurrentItem.SourceURL;
+							}
+							else 
+								cmdresult.ErrorMessage += " No media found for keyword:" + keyword;
+						}
+						else
+							Play(Convert.ToInt16(vals.IndexValueList[0]));
                         break;
                     case Metadata.GlobalCommands.getmoodmusiclist:
                         result = GetMoodValueList();
@@ -1071,7 +1092,7 @@ namespace MultiZonePlayer
         {
         }
 
-        public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
+		public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
         {
             Metadata.ValueList result = new Metadata.ValueList();
             String action = action = vals.GetValue(Metadata.GlobalParams.action);

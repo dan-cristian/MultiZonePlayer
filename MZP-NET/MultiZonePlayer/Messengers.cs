@@ -264,10 +264,9 @@ namespace MultiZonePlayer
 				}
 				else
 					replymessage = "Error no command received";
+				SendMessageToUser(replymessage, sender);
 			}
-			else
-				replymessage = "Empty cmd received";
-			SendMessageToUser(replymessage, sender);
+			//"Empty cmd received";
         }
 
         public bool TestConnection()

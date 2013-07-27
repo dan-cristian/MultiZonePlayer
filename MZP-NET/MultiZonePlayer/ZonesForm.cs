@@ -283,7 +283,7 @@ namespace MultiZonePlayer
             Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.setwaketimer.ToString(), Metadata.CommandSources.gui);
             vals.Add(Metadata.GlobalParams.datetime, txWakeTime.Text);
             vals.Add(Metadata.GlobalParams.weekday, "WK");
-            m_zone.ProcessAction(Metadata.GlobalCommands.setwaketimer, vals);
+            //m_zone.ProcessAction(Metadata.GlobalCommands.setwaketimer, vals);
         }
 
         private void txSleepTimer_MouseDoubleClick(object sender, MouseEventArgs e)

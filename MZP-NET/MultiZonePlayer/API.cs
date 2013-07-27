@@ -179,7 +179,7 @@ namespace MultiZonePlayer
                             int oid = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.oid));
                             vals.Add(Metadata.GlobalParams.zoneid, MZPState.Instance.GetZoneIdByCamZoneId(oid).ToString());
                             //then pass command
-                            cmdresult.Result = DoZoneCommand(apicmd, vals, out cmdresult.ErrorMessage, out cmdresult.ValueList);
+                            DoZoneCommand(apicmd, vals, ref cmdresult);
                             //resvalue = values;
                             //result = JsonResult(res, err, values);
                             break;
@@ -338,9 +338,7 @@ namespace MultiZonePlayer
 							cmdresult.OutputMessage = "Exit code="+proc.ExitCode;
 							break;
                         default:
-                            cmdresult.Result = DoZoneCommand(apicmd, vals, out cmdresult.ErrorMessage, out cmdresult.ValueList);
-                            //resvalue = values;
-                            //result = JsonResult(res, err, values);
+                            DoZoneCommand(apicmd, vals, ref cmdresult);
                             break;
 					}
 					#endregion
@@ -370,21 +368,20 @@ namespace MultiZonePlayer
             return cmdresult;
         }
 
-        public static Metadata.ResultEnum DoZoneCommand(Metadata.GlobalCommands apicmd, Metadata.ValueList vals, out String errorMessage, out Metadata.ValueList values)
+        public static void DoZoneCommand(Metadata.GlobalCommands apicmd, Metadata.ValueList vals, ref Metadata.CommandResult result)
             //private static String DoZoneCommand(String cmdName, int zoneId, out String errorMessage)
         {
             try
             {
-                values = null;
-                errorMessage = "";
                 int zoneId = InferZone(vals.GetValue(Metadata.GlobalParams.zoneid),
 					vals.GetValue(Metadata.GlobalParams.zonename), vals.GetValue(Metadata.GlobalParams.singleparamvalue));
 
                 if (zoneId == -1)
                 {
-                    errorMessage = "ERROR no zone found to process command" + apicmd;
-                    MLog.Log(null, errorMessage);
-                    return Metadata.ResultEnum.ERR; ;
+					result.ErrorMessage = "ERROR no zone found to process command" + apicmd;
+					MLog.Log(null, result.ErrorMessage);
+					result.Result = Metadata.ResultEnum.ERR;
+					return;
                 }
 
                 ZoneGeneric zone;
@@ -409,31 +406,31 @@ namespace MultiZonePlayer
                     if (zone == null)
                     {
                         MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
-                        errorMessage = "Zone not active " + zoneId;
-                        return Metadata.ResultEnum.ERR;
+                        result.ErrorMessage = "Zone not active " + zoneId;
+                        result.Result = Metadata.ResultEnum.ERR;
+						return;
                     }
                     else
                     {
                         lock (zone)
                         {
-							errorMessage = "cmdzone="+zone.ZoneName;
-                            values = zone.ProcessAction(apicmd, vals);
+							result.ErrorMessage = "cmdzone="+zone.ZoneName;
+                            zone.ProcessAction(apicmd, vals, ref result);
                         }
-                        return Metadata.ResultEnum.OK;
                     }
                 }
                 else
                 {
-                    errorMessage = "ControlCenter instance is null";
-                    return Metadata.ResultEnum.ERR;
+                    result.ErrorMessage = "ControlCenter instance is null";
+					result.Result = Metadata.ResultEnum.ERR;
+					return;
                 }
             }
             catch (Exception ex)
             {
                 MLog.Log(ex, "Error DoZoneCommand cmd=" + apicmd);
-                errorMessage = ex.Message;
-                values = null;
-                return Metadata.ResultEnum.ERR;
+                result.ErrorMessage = ex.Message;
+                result.Result = Metadata.ResultEnum.ERR;
             }
         }
 

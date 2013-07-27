@@ -206,9 +206,9 @@ namespace MultiZonePlayer
 				MLog.Log(this, "no display connection details, zone not initialised " + m_zoneDetails.ZoneName);
         }
         
-        public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
+        public void ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
         {
-            Metadata.ValueList result = new Metadata.ValueList();
+            //Metadata.ValueList result = new Metadata.ValueList();
             String cmdSource = vals.GetValue(Metadata.GlobalParams.cmdsource);
             Metadata.CommandSources cmdSourceEnum;
             if (cmdSource == null)
@@ -303,7 +303,7 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.zonearm:
                 case Metadata.GlobalCommands.zonedisarm:
                     m_zoneDetails.IsArmed = (cmdRemote == Metadata.GlobalCommands.zonearm);
-                    result.Add(Metadata.GlobalParams.msg, "Zone " + m_zoneDetails.ZoneName + " armed status=" + m_zoneDetails.IsArmed);
+					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " armed status=" + m_zoneDetails.IsArmed;
                     break;
                 case Metadata.GlobalCommands.powercycle:
                     MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
@@ -317,7 +317,7 @@ namespace MultiZonePlayer
 				case Metadata.GlobalCommands.closurearm:
 				case Metadata.GlobalCommands.closuredisarm:	
 					m_zoneDetails.IsClosureArmed = (cmdRemote == Metadata.GlobalCommands.closurearm);
-					result.Add(Metadata.GlobalParams.msg, "Zone " + m_zoneDetails.ZoneName + " closure armed status=" + m_zoneDetails.IsClosureArmed);
+					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " closure armed status=" + m_zoneDetails.IsClosureArmed;
 					break;
                 case Metadata.GlobalCommands.notifyuser:
 					bool needsPower = m_zoneDetails.RequirePower;
@@ -479,10 +479,9 @@ namespace MultiZonePlayer
                         default:
                             if (m_mainZoneActivity == null)
                             {
-								string msg = "No suitable zoneactivity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName;
-                                MLog.Log(this, msg);
-								result.Add(Metadata.GlobalParams.msg, msg);
-								return result;
+								cmdresult.OutputMessage+= "No suitable zoneactivity for cmd=" + cmdRemote + " zone=" + m_zoneDetails.ZoneName;
+								MLog.Log(this, cmdresult.OutputMessage);
+								return;
                             }
 
                         #endregion 
@@ -540,14 +539,14 @@ namespace MultiZonePlayer
                                 if (m_mainZoneActivity.GetType() == typeof(ZoneMusic))
                                 {
                                     zMusic = ((ZoneMusic)m_mainZoneActivity);
-                                    result = zMusic.ProcessAction(cmdRemote, vals);
+                                    zMusic.ProcessAction(cmdRemote, vals, ref cmdresult);
                                 }
 
                                 //music clone commands
                                 if (m_mainZoneActivity.GetType() == typeof(ZoneMusicClone))
                                 {
                                     ZoneMusicClone zMusicClone = ((ZoneMusicClone)m_mainZoneActivity);
-                                    result = zMusicClone.ProcessAction(cmdRemote, vals);
+                                    zMusicClone.ProcessAction(cmdRemote, vals, ref cmdresult);
                                 }
 
                                 //specific commands only to internettream
@@ -572,13 +571,13 @@ namespace MultiZonePlayer
                                 //specific commands only to TV
                                 if (m_mainZoneActivity.GetType() == typeof(ZoneDisplayLG))
                                 {
-                                    result = ((ZoneDisplayLG)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
+                                    ((ZoneDisplayLG)m_mainZoneActivity).ProcessAction(cmdRemote, vals, ref cmdresult);
                                 }
 
                                 //specific commands only to XBMC
                                 if (m_mainZoneActivity.GetType() == typeof(ZonePlayerXBMC))
                                 {
-                                    result = ((ZonePlayerXBMC)m_mainZoneActivity).ProcessAction(cmdRemote, vals);
+                                    ((ZonePlayerXBMC)m_mainZoneActivity).ProcessAction(cmdRemote, vals, ref cmdresult);
                                 }
 
                                 //specific commands only to Video
@@ -625,7 +624,7 @@ namespace MultiZonePlayer
 			if (m_mainZoneActivity != null)
 				m_mainZoneActivity.Tick();//update zone details after command
 				//RefreshState();
-            return result;
+            return;
         }
 
         public IZoneActivity GetCurrentActivity()

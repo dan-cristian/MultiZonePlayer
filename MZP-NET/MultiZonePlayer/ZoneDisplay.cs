@@ -98,7 +98,7 @@ namespace MultiZonePlayer
         }
 
 
-        public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals)
+		public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
         {
             Metadata.ValueList result = new Metadata.ValueList();
             String action = action = vals.GetValue(Metadata.GlobalParams.action);
