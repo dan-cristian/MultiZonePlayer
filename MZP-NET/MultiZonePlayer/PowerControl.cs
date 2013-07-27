@@ -120,7 +120,6 @@ namespace MultiZonePlayer
     class DenkoviPowerControl : BasePowerControl
     {
         private FTD2XX_NET.FTDI m_usb8Relay;
-        private static String USB8_IDENTIFIER = "FT245R USB FIFO";
         private String m_deviceSerial="";
         private const String STATE_ALL_ON  = "11111111";
         private const String STATE_ALL_OFF = "00000000";
@@ -139,10 +138,7 @@ namespace MultiZonePlayer
 			MLog.Log(this, "Reinitialise Denkovi, trying to close");
 			try
 			{
-				if (m_usb8Relay != null)
-				{
-					m_usb8Relay.Close();
-				}
+				Close();
 				MLog.Log(this, "Reinitialising, closed existing relay instance");
 			}
 			catch (Exception ex)
@@ -154,6 +150,7 @@ namespace MultiZonePlayer
 			{
 				m_usb8Relay = new FTD2XX_NET.FTDI();
 				ScanForDevices();
+				m_usb8Relay.SetLatency(32);//!!! check this
 				m_lastOpenDateTime = DateTime.MinValue;
 				m_threadList = new List<Thread>();
 				PowerOff();
@@ -175,27 +172,55 @@ namespace MultiZonePlayer
             m_usb8Relay.GetNumberOfDevices(ref count);
             FTD2XX_NET.FTDI.FT_DEVICE_INFO_NODE[] deviceNode = new FTD2XX_NET.FTDI.FT_DEVICE_INFO_NODE[count];
             m_usb8Relay.GetDeviceList(deviceNode);
+			MLog.Log(this, "Found FTDI devices count=" + count);
+            
+			FTD2XX_NET.FTDI.FT_STATUS status;
+			string serial,com;
+			FTD2XX_NET.FTDI ftdiDevice = new FTD2XX_NET.FTDI();
 
-            for (int i=0; i<count; i++)
+			for (int i=0; i<count; i++)
             {
-                MLog.Log(null,
-                    "desc="+deviceNode[i].Description
+                MLog.Log(this,
+                    "FTDI desc="+deviceNode[i].Description
                     +" id="+deviceNode[i].ID
                     +" serial="+deviceNode[i].SerialNumber
                     +" type="+deviceNode[i].Type
-                    +" locid="+deviceNode[i].LocId);
-                if (deviceNode[i].Description.Equals(USB8_IDENTIFIER))
+                    +" locid="+deviceNode[i].LocId
+					);
+				serial = deviceNode[i].SerialNumber;
+				try
+				{
+					status = ftdiDevice.OpenBySerialNumber(serial);
+					if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+					{
+						ftdiDevice.GetCOMPort(out com);
+						MLog.Log(this, "Device opened ok, COM=" + com);
+
+						if (deviceNode[i].Description.ToLower().Equals(IniFile.PARAM_RFX_DEVICE_NAME[1].ToLower()))
+						{
+							IniFile.PARAM_RFXCOM_PORT[1] = com;
+							MLog.Log(this, "RFX COM port set to " + com);
+						}
+
+						ftdiDevice.Close();
+					}
+					else
+						MLog.Log(this, "Error, unable to open device " + serial);
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, this, "Error opening ftdi device "+serial);
+				}
+
+                if (deviceNode[i].Description.ToLower().Equals(IniFile.PARAM_RELAY_DEVICE_NAME[1].ToLower()))
                 {
-                    m_deviceSerial = deviceNode[i].SerialNumber;
-					MLog.Log(this, "Found Denkovi FTDI device com=" + m_deviceSerial);
+                    m_deviceSerial = serial;
+					MLog.Log(this, "Found RELAY FTDI device " + m_deviceSerial);
                 }
             }
 
             if (m_deviceSerial == "")
-                MLog.Log(null,"No " + USB8_IDENTIFIER + " found in " + count + " devices");
-			string com;
-			m_usb8Relay.GetCOMPort(out com);
-			MLog.Log(this, "FTDI com=" + com);
+				MLog.Log(this, "No " + IniFile.PARAM_RELAY_DEVICE_NAME[1] + " found in " + count + " devices");
         }
 
         private void ResetBoard()
@@ -218,18 +243,18 @@ namespace MultiZonePlayer
 						status = m_usb8Relay.SetBitMode(255, 1);
 						status = m_usb8Relay.SetTimeouts(1000, 1000);
 						if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-							MLog.Log(null, "Setbit failed on Open, status = " + status);
+							MLog.Log(this, "Setbit failed on Open, status = " + status);
 					}
 					else
 					{
-						MLog.Log(null, "Open failed, status = " + status);
+						MLog.Log(this, "Open failed, status = " + status);
 						Reinitialise();
 					}
 					LogDebugInfo();
 				}
 				catch (Exception ex)
 				{
-					MLog.Log(null, "Unable to open device " + m_deviceName + " id=" + m_deviceSerial + " err=" + ex.Message);
+					MLog.Log(ex,this, "Unable to open device " + m_deviceName + " id=" + m_deviceSerial + " err=" + ex.Message);
 					//Close();
 				}
 			}
@@ -238,25 +263,30 @@ namespace MultiZonePlayer
 
         protected override void Close()
         {
-			if (m_usb8Relay.IsOpen)
+			if (m_usb8Relay!=null && m_usb8Relay.IsOpen)
 			{
 				FTD2XX_NET.FTDI.FT_STATUS status;
 
 				try
 				{
+					Thread.Sleep(100);
 					MLog.Log(this,"Closing relay, reading all data");
 					ReadAllData();
 					MLog.Log(this,"Closing relay, purge rx");
 					m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_RX);
 					MLog.Log(this,"Closing relay, purge tx");
 					m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_TX);
+					Thread.Sleep(100);
+					MLog.Log(this, "Now resetting");
+					m_usb8Relay.ResetDevice();
+					Thread.Sleep(100);
 					MLog.Log(this,"Now closing");
 					status = m_usb8Relay.Close();
 					MLog.Log(this,"Now closed");
 				}
 				catch (Exception ex)
 				{
-					MLog.Log(null, "Unable to close device " + m_deviceName + " id=" + m_deviceSerial + " err=" + ex.Message);
+					MLog.Log(ex,this, "Unable to close device " + m_deviceName + " id=" + m_deviceSerial + " err=" + ex.Message);
 				}
 			}
 			else MLog.Log(this, "Relay already closed on close, skip");
@@ -274,13 +304,6 @@ namespace MultiZonePlayer
 			if (index.Length > 0)
 			{
 				res = m_socketsStatus[index[0] - 1] == '1';
-				/*for (int r = 0; r < index.Length; r++)
-				{
-					if ()
-						return false;
-					else
-						return true;
-				}*/
 			}
 			else res = false;
 			return res;
@@ -301,13 +324,13 @@ namespace MultiZonePlayer
                     uint numRead = 0;
                     status = m_usb8Relay.Read(dataBuffer, uvalue, ref numRead);
                     if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                        MLog.Log(null,"Read data numread=" + numRead + " status=" + status);
+                        MLog.Log(this,"Read data numread=" + numRead + " status=" + status);
                     else
-                        MLog.Log(null,"Read failed, status = " + status);
+                        MLog.Log(this,"Read failed, status = " + status);
                 }
             }
             else
-                MLog.Log(null,"GetRXBytes failed, status = " + status);
+                MLog.Log(this,"GetRXBytes failed, status = " + status);
         }
 
         public override String GetPowerControlName()
@@ -338,6 +361,7 @@ namespace MultiZonePlayer
 				if (!ev.WaitOne(3000))
 				{
 					MLog.Log(this, "Running async power on ERROR");
+					th.Abort();
 					Reinitialise();
 				}
             }
@@ -368,6 +392,7 @@ namespace MultiZonePlayer
             if (!ev.WaitOne(3000))
 			{
 				MLog.Log(this,"Running async power off ALL ERROR");
+				th.Abort();
 				Reinitialise();
 			};
         }
@@ -385,6 +410,7 @@ namespace MultiZonePlayer
 				if (!ev.WaitOne(3000))
 				{
 					MLog.Log(this, "Running async power off ERROR");
+					th.Abort();
 					Reinitialise();
 				}
             }
@@ -561,11 +587,11 @@ namespace MultiZonePlayer
 
                 if (IsSocketOn(/*IniFile.PARAM_POWER_CONTROL_DEVICE_NAME[1], */zoneIndex.ToString()))
                 {
-                    MLog.Log(null,"Power resume action OK, socket is on zone " + zoneId);
+                    MLog.Log(this,"Power resume action OK, socket is on zone " + zoneId);
                     break;
                 }
                 //something went wrong
-                MLog.Log(null,"Power resume action did not worked, retrying for zone " + zoneId);
+                MLog.Log(this,"Power resume action did not worked, retrying for zone " + zoneId);
                 Close();
                 Open();
             }

@@ -847,7 +847,7 @@ namespace MultiZonePlayer
             {
 				if (m_keywords.Contains(e.ToString().ToLower())//sender
 					|| m_keywords.Contains(Thread.CurrentThread.Name.ToLower())//thread
-					|| e.GetType().ToString().ToLower().Contains("exception"))//any error
+					|| e.GetType().ToString().ToLower().Contains("exception") || text.ToLower().Contains("error"))//any error
 				{
 					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", MZPEvent.EventSource.System);

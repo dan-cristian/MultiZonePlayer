@@ -163,7 +163,10 @@ namespace MultiZonePlayer
 			public static String[] PARAM_MODEM_AT_LINES_COUNT = new String[] { "PARAM_MODEM_AT_LINES_COUNT", "2", "Number of new lines expected to be received after an AT command" };
 			public static String[] PARAM_MODEM_ATD_LINES_COUNT = new String[] { "PARAM_MODEM_ATD_LINES_COUNT", "5", "Number of new lines expected to be received after an ATD (dial) command" };
 
+			public static String[] PARAM_RELAY_DEVICE_NAME = new String[] { "PARAM_RELAY_DEVICE_NAME", "FT245R USB FIFO" };
+
 			public static String[] PARAM_RFXCOM_PORT = new String[] { "PARAM_RFXCOM_PORT", "COM42" };
+			public static String[] PARAM_RFX_DEVICE_NAME = new String[] { "PARAM_RFX_DEVICE_NAME", "RFXtrx433" };
             public static String[] PARAM_VLC_AUDIOOUT = new String[] { "PARAM_VLC_AUDIOOUT", "directx", "DIRECTX or WAVEOUT" };
             public static String[] PARAM_GENERIC_INTERVAL_SPLIT = new String[] { "PARAM_GENERIC_INTERVAL_SPLIT", "10-60-240", "3 numbers, in minutes, separated by -" };
 
@@ -252,7 +255,9 @@ namespace MultiZonePlayer
 				PARAM_LASTFM_API_KEY,
 				PARAM_LASTFM_SECRET_KEY,
 				PARAM_LASTFM_WS_URL,
-				PARAM_RFXCOM_PORT
+				//PARAM_RFXCOM_PORT,
+				PARAM_RFX_DEVICE_NAME,
+				PARAM_RELAY_DEVICE_NAME
 
              };
             private static string m_iniFinalPath =  null;
