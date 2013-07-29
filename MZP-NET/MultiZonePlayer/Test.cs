@@ -47,6 +47,17 @@ namespace MultiZonePlayer
 			}
 
 			SetupDiWrap.ComPortNameFromFriendlyNamePrefix("modem");
+
+			ManagementObjectSearcher mos = new ManagementObjectSearcher("SELECT * FROM Win32_POTSModem");
+			foreach (ManagementObject mo in mos.Get())
+			{
+				// for modem name
+				MLog.Log(this, "Modem " + mo["Caption"].ToString());
+
+				// for modem port
+				MLog.Log(this, "Port " + mo["AttachedTo"].ToString());
+			}
+ 
         }
 
         /// <summary>

@@ -162,6 +162,8 @@ namespace MultiZonePlayer
 			public static String[] PARAM_MODEM_COMPORT = new String[] { "PARAM_MODEM_COMPORT", "COM8" };
 			public static String[] PARAM_MODEM_AT_LINES_COUNT = new String[] { "PARAM_MODEM_AT_LINES_COUNT", "2", "Number of new lines expected to be received after an AT command" };
 			public static String[] PARAM_MODEM_ATD_LINES_COUNT = new String[] { "PARAM_MODEM_ATD_LINES_COUNT", "5", "Number of new lines expected to be received after an ATD (dial) command" };
+			public static String[] PARAM_MODEM_DEVICE_NAME = new String[] { "PARAM_MODEM_DEVICE_NAME", "Zoom V92", "Entire or partial modem name used to find modem port" };
+			
 
 			public static String[] PARAM_RELAY_DEVICE_NAME = new String[] { "PARAM_RELAY_DEVICE_NAME", "FT245R USB FIFO" };
 
@@ -240,9 +242,10 @@ namespace MultiZonePlayer
                 PARAM_SMS_AT_LINES_COUNT,
                 PARAM_SMS_ATD_LINES_COUNT,
 				PARAM_MODEM_TARGETNUMBER,
-                PARAM_MODEM_COMPORT,
+                //PARAM_MODEM_COMPORT,
                 PARAM_MODEM_AT_LINES_COUNT,
                 PARAM_MODEM_ATD_LINES_COUNT,
+				PARAM_MODEM_DEVICE_NAME,
                 PARAM_VLC_AUDIOOUT,
                 PARAM_GENERIC_INTERVAL_SPLIT,
                 PARAM_UPS_LOG_SOURCE,

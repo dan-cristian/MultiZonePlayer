@@ -135,8 +135,6 @@ namespace MultiZonePlayer
 
 				LoadSystemAndUserControls();
                 
-
-
                 MLog.Log(this, "Retrieving system available audio input devices");
                 DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
                 if (m_systemInputDeviceNames == null) m_systemInputDeviceNames = new Hashtable(); else m_systemInputDeviceNames.Clear();

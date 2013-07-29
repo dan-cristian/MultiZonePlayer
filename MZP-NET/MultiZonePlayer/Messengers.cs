@@ -87,7 +87,7 @@ namespace MultiZonePlayer
 
 		public Boolean IsFaulty()
 		{
-			return (!objXmpp.Authenticated || m_reinitTries>5);
+			return (!objXmpp.Authenticated);// || m_reinitTries>5);
 		}
 
         private void messageReceived(object sender, agsXMPP.protocol.client.Message msg)
@@ -429,12 +429,29 @@ namespace MultiZonePlayer
 
 	class Modem : GenericModem
 	{
+		public Modem()
+		{
+			Reinitialise();
+		}
+
 		public override void Reinitialise()
 		{
+			MLog.Log(this, "Reinitialising Modem");
+			System.Management.ManagementObjectSearcher mos = new System.Management.ManagementObjectSearcher("SELECT * FROM Win32_POTSModem");
+			foreach (System.Management.ManagementObject mo in mos.Get())
+			{
+				MLog.Log(this, "Found Modem " + mo["Caption"].ToString() + " at port " + mo["AttachedTo"].ToString());
+				if (mo["Caption"].ToString().ToLower().Contains(IniFile.PARAM_MODEM_DEVICE_NAME[1].ToLower()))
+				{
+					IniFile.PARAM_MODEM_COMPORT[1] = mo["AttachedTo"].ToString();
+					MLog.Log(this, "Selected modem port is " + IniFile.PARAM_MODEM_COMPORT[1]);
+					break;
+				}
+			}
+
 			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_MODEM_COMPORT[1],
 				Convert.ToInt16(IniFile.PARAM_MODEM_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_MODEM_ATD_LINES_COUNT[1]));
-
 		}
 	}
 
@@ -446,6 +463,11 @@ namespace MultiZonePlayer
             [Description("AT+CMGS=")] SMS_SEND,
             [Description("AT+GMM")] SMS_DEVICEINFO,
         };
+
+		public SMS()
+		{
+			Reinitialise();
+		}
 
 		public override void Reinitialise()
 		{
@@ -526,10 +548,16 @@ namespace MultiZonePlayer
 								lasttemp = lasttemp == 0 ? 0.1m : lasttemp;
 								lasthum = lasthum == 0 ? 0.1m : lasthum;
 								zone.Temperature = temp.ToString();
-								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
+								if (temp != lasttemp)
+								{
+									Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
+								}
 								zone.Humidity = hum.ToString();
-								Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Humidity);
-								/*if ((Math.Abs(temp - lasttemp) / lasttemp) * 100 < 50 || zone.Temperature == "-0")
+								if (hum != lasthum)
+								{
+									Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Humidity);
+								}
+									/*if ((Math.Abs(temp - lasttemp) / lasttemp) * 100 < 50 || zone.Temperature == "-0")
 								{
 									zone.Temperature = temp.ToString();
 									Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", zone.ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), zone.Temperature);
