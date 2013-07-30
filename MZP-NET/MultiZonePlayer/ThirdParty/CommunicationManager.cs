@@ -36,6 +36,7 @@ namespace MultiZonePlayer
 {
     public abstract class SerialBase
     {
+		protected DateTime m_lastReinitTryDate = DateTime.MinValue;
 		protected int m_reinitTries = 0;
         public String Connection;
         protected CommunicationManager comm;
@@ -60,6 +61,8 @@ namespace MultiZonePlayer
 
         public void Initialise(String baud, String parity, String stopbits, String databits, String port)
         {
+			m_reinitTries++;
+			m_lastReinitTryDate = DateTime.Now;
             comm = new CommunicationManager(baud, parity, stopbits, databits, port, this.handler);
             if (comm.OpenPort())
 				m_reinitTries = 0;
@@ -70,7 +73,7 @@ namespace MultiZonePlayer
 
 		public Boolean IsFaulty()
 		{
-			return (comm == null || !comm.IsPortOpen()) || m_reinitTries > 5;
+			return m_reinitTries > 10 || DateTime.Now.Subtract(m_lastReinitTryDate).TotalHours>1;
 		}
 
         public void Disconnect()

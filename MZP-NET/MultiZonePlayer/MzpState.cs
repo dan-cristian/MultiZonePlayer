@@ -728,7 +728,7 @@ namespace MultiZonePlayer
 							ok = m.TestConnection();
 							if (!ok)
 							{
-								MLog.Log(this, "Error found on test mesenger health, reinitialise: " + m.ToString());
+								MLog.Log(this, "Error found on test messenger health, reinitialise: " + m.ToString());
 								m.Reinitialise();
 							}
 						}

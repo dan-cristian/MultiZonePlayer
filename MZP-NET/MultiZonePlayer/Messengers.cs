@@ -87,7 +87,8 @@ namespace MultiZonePlayer
 
 		public Boolean IsFaulty()
 		{
-			return (!objXmpp.Authenticated);// || m_reinitTries>5);
+			return false;//gtalk canot be faulty
+			//return (!objXmpp.Authenticated);// || m_reinitTries>5);
 		}
 
         private void messageReceived(object sender, agsXMPP.protocol.client.Message msg)
@@ -350,12 +351,13 @@ namespace MultiZonePlayer
 		public void Reinitialise(string baud, string parity, string stopBits, string dataBits, string comport,
 			int atlinescount, int atdlinescount)
 		{
-			comm = new CommunicationManager(baud, parity, stopBits, dataBits, comport, this.handler);
+			Initialise(baud, parity, stopBits, dataBits, comport);
+			//comm = new CommunicationManager(baud, parity, stopBits, dataBits, comport, this.handler);
 			m_atlinescount = atlinescount;
 			m_atdlinescount = atdlinescount;
-			comm.OpenPort();
-			m_waitForResponse = false;
-			m_lastOperationWasOK = true;
+			//comm.OpenPort();
+			//m_waitForResponse = false;
+			//m_lastOperationWasOK = true;
 			m_commandList = new List<ModemCommand>();
 		}
 
@@ -503,7 +505,6 @@ namespace MultiZonePlayer
 		}
 		public void Reinitialise()
 		{
-			m_reinitTries++;
 			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1]);
 			//comm = new CommunicationManager("38400", "None", "One", "8", 
 			//	IniFile.PARAM_RFXCOM_PORT[1], this.handler);
@@ -631,26 +632,10 @@ namespace MultiZonePlayer
 
 		public bool TestConnection()
 		{
-			//bool result = false ;
-
-			/*if (m_waitForResponse == true)
-			{
-				MLog.Log(this, "Trying to test SMS conn while waiting for response, skip test");
-				return true;
-			}*/
-
 			if (!comm.IsPortOpen())
 				return false;
 
-			try
-			{
-				return true;
-			}
-			catch (Exception ex)
-			{
-				MLog.Log(ex, "Exception Test RFXComm");
-				return false;
-			}
+			return true;
 		}
 	}
 }
