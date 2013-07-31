@@ -438,7 +438,7 @@ namespace MultiZonePlayer
 
 		public override void Reinitialise()
 		{
-			MLog.Log(this, "Reinitialising Modem");
+			
 			System.Management.ManagementObjectSearcher mos = new System.Management.ManagementObjectSearcher("SELECT * FROM Win32_POTSModem");
 			foreach (System.Management.ManagementObject mo in mos.Get())
 			{
@@ -450,7 +450,7 @@ namespace MultiZonePlayer
 					break;
 				}
 			}
-
+			MLog.Log(this, "Reinitialising Modem on com " + IniFile.PARAM_MODEM_COMPORT[1]);
 			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_MODEM_COMPORT[1],
 				Convert.ToInt16(IniFile.PARAM_MODEM_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_MODEM_ATD_LINES_COUNT[1]));
@@ -473,6 +473,7 @@ namespace MultiZonePlayer
 
 		public override void Reinitialise()
 		{
+			MLog.Log(this, "Reinitialising SMS on com " + IniFile.PARAM_SMS_COMPORT[1]);
 			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1],
 				Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]));
@@ -505,6 +506,7 @@ namespace MultiZonePlayer
 		}
 		public void Reinitialise()
 		{
+			MLog.Log(this, "Initialise RFX on COM " + IniFile.PARAM_RFXCOM_PORT[1]);
 			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1]);
 			//comm = new CommunicationManager("38400", "None", "One", "8", 
 			//	IniFile.PARAM_RFXCOM_PORT[1], this.handler);
