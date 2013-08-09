@@ -346,11 +346,10 @@ namespace MultiZonePlayer
 
             
                 
-            lock (str)
-            {
+            
                 str.Write(text);
                 str.Close();
-            }
+            
         }
 
         public static String ReadFileRelativeToAppPath(String fileName)
@@ -884,7 +883,7 @@ namespace MultiZonePlayer
             try
             {
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r", DateTime.Now.ToString(),
-                    request.RemoteEndPoint.Address, request.Url.AbsoluteUri, request.Headers.ToString()), 
+                    request.RemoteEndPoint.Address, request.Url.AbsoluteUri, request.Headers.ToString().Replace('\n',' ').Replace('\r',' ')), 
                     MZPEvent.EventSource.Web);
             }
             catch (Exception)
@@ -897,7 +896,7 @@ namespace MultiZonePlayer
             {
                 
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r", DateTime.Now.ToString(),
-                    request.RequestUri.AbsoluteUri, request.Headers.ToString()),
+					request.RequestUri.AbsoluteUri, request.Headers.ToString().Replace('\n', ' ').Replace('\r', ' ')),
                     MZPEvent.EventSource.Web);
             }
             catch (Exception)
@@ -909,7 +908,7 @@ namespace MultiZonePlayer
             try
             {
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r", DateTime.Now.ToString(),
-                    response.ResponseUri.AbsoluteUri, response.Headers.ToString()),
+					response.ResponseUri.AbsoluteUri, response.Headers.ToString().Replace('\n', ' ').Replace('\r', ' ')),
                     MZPEvent.EventSource.Web);
             }
             catch (Exception)

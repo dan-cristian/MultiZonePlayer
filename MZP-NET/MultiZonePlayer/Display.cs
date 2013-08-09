@@ -86,7 +86,7 @@ namespace MultiZonePlayer
 
         public DisplayLGTV(String connection, Metadata.ZoneDetails p_zoneDetails)
         {
-            Initialise("9600", "None", "One", "8", connection);
+            Initialise("9600", "None", "One", "8", connection, CommunicationManager.TransmissionType.Text);
             m_zoneDetails = p_zoneDetails;
             m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
         }

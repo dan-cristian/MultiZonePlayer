@@ -170,11 +170,16 @@ namespace MultiZonePlayer
                 m_winEventLogReader.AddSource("APC UPS Service");
 
 				RFXDeviceDefinition.LoadFromIni();
-
+				GPIO gpio = new GPIO();
                 m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
 				m_messengerList.Add(new Modem());
 				m_messengerList.Add(new RFXCom());
+				m_messengerList.Add(gpio);
+
+				Thread th = new Thread(() => gpio.LoopForEvents());
+				th.Name = "GPIO Event Loop";
+				th.Start();
 
 				LoadMacrosandRules();
 

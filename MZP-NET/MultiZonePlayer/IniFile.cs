@@ -186,6 +186,9 @@ namespace MultiZonePlayer
 			public static String[] PARAM_LASTFM_SECRET_KEY = new String[] { "PARAM_LASTFM_SECRET_KEY", "812f830d23965715878d5cd1390ada1a" };
 			public static String[] PARAM_LASTFM_WS_URL = new String[] { "PARAM_LASTFM_WS_URL", "http://ws.audioscrobbler.com/2.0/?" };
 
+			public static String[] PARAM_GPIO_CDC_MANUFACTURER_NAME = new String[] { "PARAM_GPIO_CDC_MANUFACTURER_NAME", "Microchip Technology, Inc.", "GPIO manufacturer name used to auto identify COM port name" };
+			public static String[] PARAM_GPIO_CDC_COMPORT = new String[] { "PARAM_GPIO_CDC_COMPORT", "COM7" };
+
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
 			public static String DATETIME_FULL_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -260,7 +263,8 @@ namespace MultiZonePlayer
 				PARAM_LASTFM_WS_URL,
 				//PARAM_RFXCOM_PORT,
 				PARAM_RFX_DEVICE_NAME,
-				PARAM_RELAY_DEVICE_NAME
+				PARAM_RELAY_DEVICE_NAME,
+				PARAM_GPIO_CDC_MANUFACTURER_NAME
 
              };
             private static string m_iniFinalPath =  null;

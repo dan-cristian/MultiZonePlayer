@@ -54,16 +54,19 @@ namespace MultiZonePlayer
         private AutoResetEvent m_autoEventReceive = new AutoResetEvent(false);
         private int m_responseTimeoutsCount = 0;
 
+		public const string STR_TIMEOUT = "[timeout]";
+		public const string STR_EXCEPTION = "[exception]";
+
         public int ResponseTimeoutsCount
         {
             get { return m_responseTimeoutsCount; }
         }
 
-        public void Initialise(String baud, String parity, String stopbits, String databits, String port)
+        public void Initialise(String baud, String parity, String stopbits, String databits, String port, CommunicationManager.TransmissionType type)
         {
 			m_reinitTries++;
 			m_lastReinitTryDate = DateTime.Now;
-            comm = new CommunicationManager(baud, parity, stopbits, databits, port, this.handler);
+            comm = new CommunicationManager(baud, parity, stopbits, databits, port, type, this.handler);
             if (comm.OpenPort())
 				m_reinitTries = 0;
             m_waitForResponse = false;
@@ -73,7 +76,14 @@ namespace MultiZonePlayer
 
 		public Boolean IsFaulty()
 		{
-			return m_reinitTries > 10 || DateTime.Now.Subtract(m_lastReinitTryDate).TotalHours>1;
+			return m_reinitTries > 5 && DateTime.Now.Subtract(m_lastReinitTryDate).TotalMinutes<30;
+		}
+
+		public virtual Boolean TestConnection()
+		{
+			if (comm == null || !comm.IsPortOpen())
+				return false;
+			else return true;
 		}
 
         public void Disconnect()
@@ -85,56 +95,80 @@ namespace MultiZonePlayer
             m_autoEventSend.Set();
         }
 
-        protected String WriteCommand(String cmd, int responseLinesCountExpected, int timeoutms)
+		protected String WriteCommand(String cmd, int responseLinesCountExpected, int timeoutms)
+		{
+			return WriteCommand(cmd, responseLinesCountExpected, timeoutms, null);
+		}
+
+        protected String WriteCommand(String cmd, int responseLinesCountExpected, int timeoutms, string expectedResponse)
         {
             String responseMessage="";
-            lock (m_lockThisSend)
-            {
-                if (m_waitForResponse == true)
-                {
-                    MLog.Log(this, "Error, trying to write " + this.ToString() + " command: " + cmd + " while waiting for response");
-                    return "[thread conflict]";
-                }
+			try
+			{
+				lock (m_lockThisSend)
+				{
+					if (m_waitForResponse == true)
+					{
+						MLog.Log(this, "Error, trying to write " + this.ToString() + " command: " + cmd + " while waiting for response");
+						return "[thread conflict]";
+					}
 
-                m_autoEventSend.Reset();
-                m_lastMessageResponse = "";
-                m_waitForResponse = true;
-                comm.WriteData(cmd);
+					m_autoEventSend.Reset();
+					m_lastMessageResponse = "";
+					m_waitForResponse = true;
+					comm.WriteData(cmd);
 
-                //WAIT FOR RESPONSE - ----------------------
-                bool signalReceived;
-                
-                int responseCount = 0;
-                do
-                {
-                    signalReceived = m_autoEventSend.WaitOne(timeoutms);
+					//WAIT FOR RESPONSE - ----------------------
+					bool signalReceived;
 
-                    if (!signalReceived)
-                    {
-                        int decim;
-                        m_responseTimeoutsCount++;
-                        Math.DivRem(m_responseTimeoutsCount, 400, out decim);
-                        if (m_responseTimeoutsCount < 5 || decim == 0 )
-                            MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp="+m_lastMessageResponse + " number of timeouts="+m_responseTimeoutsCount);
-                        m_lastMessageResponse += "[timeout]";
-                    }
-                    else
-                    {
-                        m_responseTimeoutsCount = 0;
-                        responseCount++;
-                        if (responseCount < responseLinesCountExpected)
-                            m_waitForResponse = true;
-                        responseMessage = m_lastMessageResponse;
-                    }
-                    m_autoEventReceive.Set();
-                }
-                while (responseCount<responseLinesCountExpected && signalReceived);
-                if (responseMessage == "")
-                    responseMessage = m_lastMessageResponse;
-                m_lastMessageResponse = "";
-                m_waitForResponse = false;
-                return responseMessage;
-            }
+					int responseCount = 0;
+					do
+					{
+						signalReceived = m_autoEventSend.WaitOne(timeoutms);
+						if (expectedResponse != null)
+						{
+							//MLog.Log(this, "Received GPIO response:"+m_lastMessageResponse);
+						}
+						if (!signalReceived)
+						{
+							int decim;
+							m_responseTimeoutsCount++;
+							Math.DivRem(m_responseTimeoutsCount, 400, out decim);
+							if (m_responseTimeoutsCount < 5 || decim == 0)
+								MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp=" + m_lastMessageResponse + " number of timeouts=" + m_responseTimeoutsCount);
+							m_lastMessageResponse += STR_TIMEOUT;
+						}
+						else
+						{
+							m_responseTimeoutsCount = 0;
+							responseCount++;
+							if (responseCount < responseLinesCountExpected)
+								m_waitForResponse = true;
+							responseMessage = m_lastMessageResponse;
+						}
+						m_autoEventReceive.Set();
+						
+						if (MZPState.Instance == null)
+							break;
+					}
+					while ((responseCount < responseLinesCountExpected && signalReceived && expectedResponse==null) 
+						|| (expectedResponse!= null && !m_lastMessageResponse.Contains(expectedResponse)));
+				}
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, this, "Error writeserialcommand");
+				if (comm != null) comm.ClosePort();
+				m_lastMessageResponse += STR_EXCEPTION;
+			}
+			finally
+			{
+				if (responseMessage == "")
+					responseMessage = m_lastMessageResponse;
+				m_lastMessageResponse = "";
+				m_waitForResponse = false;
+			}
+			return responseMessage;
         }
 
 
@@ -171,7 +205,7 @@ namespace MultiZonePlayer
         /// <summary>
         /// enumeration to hold our transmission types
         /// </summary>
-        public enum TransmissionType { Text, Hex }
+        public enum TransmissionType { Text, Hex, TextCR }
 
         /// <summary>
         /// enumeration to hold our message types
@@ -267,14 +301,14 @@ namespace MultiZonePlayer
         /// <param name="sBits">Desired StopBits</param>
         /// <param name="dBits">Desired DataBits</param>
         /// <param name="name">Desired PortName</param>
-        public CommunicationManager(string baud, string par, string sBits, string dBits, string name, Func<String, int> callback)
+        public CommunicationManager(string baud, string par, string sBits, string dBits, string name, TransmissionType type, Func<String, int> callback)
         {
             _baudRate = baud;
             _parity = par;
             _stopBits = sBits;
             _dataBits = dBits;
             _portName = name;
-            _transType = TransmissionType.Text;
+			_transType = type;// TransmissionType.Text;
             _callback = callback;
             //now add an event handler
             comPort.DataReceived += new SerialDataReceivedEventHandler(comPort_DataReceived);
@@ -319,6 +353,12 @@ namespace MultiZonePlayer
                     //display the message
                     //DisplayData(MessageType.Outgoing, msg + "\n");
                     break;
+				case TransmissionType.TextCR:
+					//send the message to the port
+					comPort.Write(msg + "\r");
+					//display the message
+					//DisplayData(MessageType.Outgoing, msg + "\n");
+					break;
                 case TransmissionType.Hex:
                         //convert the message to byte array
                         byte[] newMsg = Utilities.HexToByte(msg);
@@ -491,6 +531,33 @@ namespace MultiZonePlayer
                             //display the data to the user
                             //DisplayData(MessageType.Incoming, msg + "\n");
                             break;
+						case TransmissionType.TextCR:
+							while (comPort != null && comPort.BytesToRead > 0)
+							{
+								//read data waiting in the buffer
+								try
+								{
+									msg = comPort.ReadExisting();
+								}
+								catch (TimeoutException)
+								{
+									//MLog.Log(this, "Timeout comport " + comPort.PortName);
+									msg = comPort.ReadExisting();
+								}
+								msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
+								MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
+								/*if (msg.Length == 1)
+                                {
+                                    MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
+                                    //comPort.Close();
+                                }*/
+								_callback(msg);
+							}
+							//string msg = comPort.ReadLine();
+
+							//display the data to the user
+							//DisplayData(MessageType.Incoming, msg + "\n");
+							break;
                         //user chose binary
                         case TransmissionType.Hex:
 							byte[] comBuffer;
@@ -788,30 +855,38 @@ namespace MultiZonePlayer
 		}
 	}
 
-	public class COMPortInfo
+	public class ManagementItem
 	{
 		public string Name { get; set; }
 		public string Description { get; set; }
+		public string Manufacturer { get; set; }
+		public ManagementObject Object { get; set; }
 
-		public COMPortInfo() { }
+		public ManagementItem() { }
 
-		public static List<COMPortInfo> GetCOMPortsInfo()
+		public static List<ManagementItem> GetManagementItemsInfo()
 		{
-			List<COMPortInfo> comPortInfoList = new List<COMPortInfo>();
+			List<ManagementItem> itemInfoList = new List<ManagementItem>();
 
 			ConnectionOptions options = ProcessConnection.ProcessConnectionOptions();
 			ManagementScope connectionScope = ProcessConnection.ConnectionScope(Environment.MachineName, options, @"\root\CIMV2");
 
 			ObjectQuery objectQuery = new ObjectQuery("SELECT * FROM Win32_PnPEntity WHERE ConfigManagerErrorCode = 0");
-			ManagementObjectSearcher comPortSearcher = new ManagementObjectSearcher(connectionScope, objectQuery);
+			ManagementObjectSearcher itemSearcher = new ManagementObjectSearcher(connectionScope, objectQuery);
 
-			using (comPortSearcher)
+			using (itemSearcher)
 			{
-				string caption = null;
-				foreach (ManagementObject obj in comPortSearcher.Get())
+				foreach (ManagementObject obj in itemSearcher.Get())
 				{
 					if (obj != null)
 					{
+						ManagementItem item = new ManagementItem();
+						item.Name = obj["Caption"]!=null?obj["Caption"].ToString():"";
+						item.Description = obj["Description"] != null ? obj["Description"].ToString() : "";
+						item.Manufacturer = obj["Manufacturer"] != null ? obj["Manufacturer"].ToString() : "";
+						item.Object = obj;
+						itemInfoList.Add(item);
+						/*
 						object captionObj = obj["Caption"];
 						if (captionObj != null)
 						{
@@ -820,17 +895,17 @@ namespace MultiZonePlayer
 								", devid=" + obj["DeviceID"] + ", name=" + obj["Name"] + ", pnpid=" + obj["PNPDeviceID"]);
 							if (caption.Contains("(COM"))
 							{
-								COMPortInfo comPortInfo = new COMPortInfo();
+								ManagementItem comPortInfo = new ManagementItem();
 								comPortInfo.Name = caption.Substring(caption.LastIndexOf("(COM")).Replace("(", string.Empty).Replace(")",
 																	 string.Empty);
 								comPortInfo.Description = caption;
 								comPortInfoList.Add(comPortInfo);
 							}
-						}
+						}*/
 					}
 				}
 			}
-			return comPortInfoList;
+			return itemInfoList;
 		}
 	}
 }

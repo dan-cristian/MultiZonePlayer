@@ -104,8 +104,6 @@ namespace MultiZonePlayer
             //agsXMPP.protocol.client.Message reply = null;
 
             ReceiveMessage(msg.Body, chatMessage[0]);
-
-            
         }
         
         private void loginFailed(object o, agsXMPP.Xml.Dom.Element el)
@@ -191,6 +189,7 @@ namespace MultiZonePlayer
 			String[] atoms, pair;
 			String cmdName, replymessage;
 			string cmd = message;
+			MLog.Log(this, "Message:"+message+", from:"+sender);
 			if (cmd !=null && cmd.Length > 0)
 			{
 				atoms = cmd.Split(' ');
@@ -275,6 +274,7 @@ namespace MultiZonePlayer
 			if (!objXmpp.Binded)
 			{
 				MLog.Log(this, "Error GTALK, not binded");
+				return false;
 			}
             if (!objXmpp.Authenticated)
             {
@@ -348,10 +348,10 @@ namespace MultiZonePlayer
 		{
 		}
 
-		public void Reinitialise(string baud, string parity, string stopBits, string dataBits, string comport,
+		public void Reinitialise(string baud, string parity, string stopBits, string dataBits, string comport, CommunicationManager.TransmissionType type,
 			int atlinescount, int atdlinescount)
 		{
-			Initialise(baud, parity, stopBits, dataBits, comport);
+			Initialise(baud, parity, stopBits, dataBits, comport, type);
 			//comm = new CommunicationManager(baud, parity, stopBits, dataBits, comport, this.handler);
 			m_atlinescount = atlinescount;
 			m_atdlinescount = atdlinescount;
@@ -381,7 +381,7 @@ namespace MultiZonePlayer
 
 		public void ReceiveMessage(String message, String sender)
 		{
-			//MLog.Log(this, "SMS from " +sender + " = " + message);
+			MLog.Log(this, "ReceiveMessage from " + sender + " = " + message);
 		}
 
 		public void SendMessageToTarget(String message)
@@ -389,10 +389,9 @@ namespace MultiZonePlayer
 			MLog.Log(this, "ERROR send message not implemented in modem");
 		}
 
-		public bool TestConnection()
+		public override bool TestConnection()
 		{
-			if (comm==null || !comm.IsPortOpen())
-				return false;
+			if (base.TestConnection() == false) return false;
 
 			try
 			{
@@ -401,13 +400,13 @@ namespace MultiZonePlayer
 					return true;
 				else
 				{
-					MLog.Log(this, "Error health check res=" + res);
+					MLog.Log(this, "Error health check GenericModem res=" + res);
 					return true;
 				}
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, "Exception Test SMS");
+				MLog.Log(ex, "Exception Test GenericModem");
 				return false;
 			}
 		}
@@ -451,7 +450,7 @@ namespace MultiZonePlayer
 				}
 			}
 			MLog.Log(this, "Reinitialising Modem on com " + IniFile.PARAM_MODEM_COMPORT[1]);
-			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_MODEM_COMPORT[1],
+			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_MODEM_COMPORT[1],CommunicationManager.TransmissionType.Text,
 				Convert.ToInt16(IniFile.PARAM_MODEM_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_MODEM_ATD_LINES_COUNT[1]));
 		}
@@ -474,7 +473,7 @@ namespace MultiZonePlayer
 		public override void Reinitialise()
 		{
 			MLog.Log(this, "Reinitialising SMS on com " + IniFile.PARAM_SMS_COMPORT[1]);
-			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1],
+			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_SMS_COMPORT[1],CommunicationManager.TransmissionType.Text,
 				Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]));
 		}
@@ -507,7 +506,7 @@ namespace MultiZonePlayer
 		public void Reinitialise()
 		{
 			MLog.Log(this, "Initialise RFX on COM " + IniFile.PARAM_RFXCOM_PORT[1]);
-			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1]);
+			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1], CommunicationManager.TransmissionType.Text);
 			//comm = new CommunicationManager("38400", "None", "One", "8", 
 			//	IniFile.PARAM_RFXCOM_PORT[1], this.handler);
 			//comm.OpenPort();
@@ -517,14 +516,19 @@ namespace MultiZonePlayer
 			//comm.WriteData(CMD_RESET);
 			Thread.Sleep(1000);
 			comm.Flush();
-			string status = WriteCommand(CMD_GETSTATUS, 1, 1000);
-			MLog.Log(this, "RFX status is " + status);
+			GetStatus();
 			WriteCommand(CMD_SETMODE, 1, 1000);
 			
 			//m_waitForResponse = false;
 			//m_lastOperationWasOK = true;
 		}
-		
+
+		private string GetStatus()
+		{
+			string status = WriteCommand(CMD_GETSTATUS, 1, 1000);
+			MLog.Log(this, "RFX status is " + status);
+			return status;
+		}
 
 		protected override void ReceiveSerialResponse(string response)
 		{
@@ -636,8 +640,100 @@ namespace MultiZonePlayer
 		{
 			if (!comm.IsPortOpen())
 				return false;
+			if (GetStatus() != "")
+				return true;
+			else
+				return false;
+		}
+	}
 
+	class GPIO : GenericModem, IMessenger
+	{
+		private String m_state;
+		private const string STR_ENDLINE = ">";
+
+		public String State
+		{
+			get { return m_state; }
+		}
+
+		public GPIO()
+		{
+			Reinitialise();
+		}
+
+		public override void Reinitialise()
+		{
+			ManagementItem item = ManagementItem.GetManagementItemsInfo().Find(x=>x.Manufacturer.ToLower().Equals(IniFile.PARAM_GPIO_CDC_MANUFACTURER_NAME[1].ToLower()));
+			if (item != null)
+			{
+				int start = item.Name.IndexOf("COM");
+				string port = item.Name.Substring(start);
+				port = port.Remove(port.Length-1);
+				IniFile.PARAM_GPIO_CDC_COMPORT[1]=port;
+			}
+			MLog.Log(this, "Reinitialising GPIO on com " + IniFile.PARAM_GPIO_CDC_COMPORT[1]);
+			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_GPIO_CDC_COMPORT[1],
+				CommunicationManager.TransmissionType.TextCR,
+				Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]),
+				Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]));
+			ClearPins();
+		}
+
+		public override Boolean TestConnection()
+		{
+			if (comm == null || !comm.IsPortOpen())
+				return false;
+
+			//String result = WriteCommand("\r\n", 1, 100);
 			return true;
+		}
+
+		private void ClearPins()
+		{
+			WriteCommand("", 1, 100);
+			Thread.Sleep(100);
+			String cmd, result, cmdprefix = "gpio clear ";
+
+			for (int i = 0; i < 32; i++)
+			{
+				cmd = cmdprefix + i;
+				result = WriteCommand(cmd, 1, 300, STR_ENDLINE);
+			}
+
+			MLog.Log(this, "GPIO Pins cleared");
+		}
+
+		public void LoopForEvents()
+		{
+			String pinstate, cmd, pin;
+			String cmdprefix = "gpio read ";
+			//int start;
+			do
+			{
+				m_state = "";
+				for (int i = 0; i < 32; i++)
+				{
+					cmd = cmdprefix + i;
+					pinstate = WriteCommand(cmd, 1, 300, STR_ENDLINE);
+					pinstate = pinstate.Replace(STR_TIMEOUT, "?").Replace(STR_EXCEPTION, "!");
+					/*start = pinstate.IndexOf(cmdprefix);
+					if (start != -1)
+					{
+						pin = pinstate.Substring(start+cmdprefix.Length, 2).Replace("\n", "").Replace("\r", "");
+						pinstate = pinstate.Replace(cmdprefix + pin, "").Replace("\n", "").Replace("\r", "").Replace(">", "");
+						m_state += pinstate;
+						//Thread.Sleep(10);
+					}
+					 */
+					
+					//else						MLog.Log(this, "GPIO response unexpected " + pinstate);
+					pinstate = pinstate.Replace(cmd, "").Replace("\n", "").Replace("\r", "").Replace(">", "");
+					m_state += pinstate;
+				}
+				MLog.Log(this, "Read GPIO " + m_state);
+			}
+			while (MZPState.Instance != null);
 		}
 	}
 }

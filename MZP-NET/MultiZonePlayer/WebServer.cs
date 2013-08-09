@@ -46,21 +46,22 @@ namespace MultiZonePlayer
 			String extlistener = "https://*:" + IniFile.PARAM_WEBSERVER_PORT_EXT[1] + "/";
 			String extlistener_safe = "http://*:" + IniFile.PARAM_WEBSERVER_PORT_EXT_SAFE[1] + "/";
 			String intlistener = "http://*:" + IniFile.PARAM_WEBSERVER_PORT_INT[1] + "/";
+			Thread th;
 
-			MLog.Log(null, "Initialising ext web servers " + extlistener);
+			/*MLog.Log(null, "Initialising ext web servers " + extlistener);
 			m_extlistener.Prefixes.Add(extlistener);
 			m_extlistener.AuthenticationSchemes = AuthenticationSchemes.Basic;
 			Thread th = new Thread(() => m_instance.RunMainThread(m_extlistener, extlistener));
 			th.Name = "WebListener External";
 			th.Start();
-
+			
 			MLog.Log(null, "Initialising ext safe web servers " + extlistener_safe);
 			m_extlistenersafe.Prefixes.Add(extlistener_safe);
 			m_extlistenersafe.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
 			th = new Thread(() => m_instance.RunMainThread(m_extlistenersafe, extlistener_safe));
 			th.Name = "WebListener External Safe";
 			th.Start();
-
+			*/
 			MLog.Log(null, "Initialising int web servers " + intlistener);
 			m_intlistener.Prefixes.Add(intlistener);
 			m_intlistener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
@@ -99,7 +100,7 @@ namespace MultiZonePlayer
 				{
 					//MLog.Log(null, "Web server waiting for requests");
 					HttpListenerContext ctx = listener.GetContext();
-					//MLog.Log(null, "Web request " + ctx.Request.Url.AbsoluteUri + " from " + ctx.Request.RemoteEndPoint.Address);
+					//MLog.LogWeb(listener.GetContext().Request);//, "Web request " + ctx.Request.Url.AbsoluteUri + " from " + ctx.Request.RemoteEndPoint.Address);
 
 					if (listener.AuthenticationSchemes.Equals(AuthenticationSchemes.Basic))
 					{
@@ -119,7 +120,7 @@ namespace MultiZonePlayer
 					}
 					else
 					{
-						bool safe = false;
+						bool safe = true;//false;
 						if (ctx.Request.LocalEndPoint.Port.ToString().Equals(IniFile.PARAM_WEBSERVER_PORT_EXT_SAFE[1]))
 						{
 							foreach (String atom in IniFile.PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS[1].Split('|'))
@@ -131,7 +132,8 @@ namespace MultiZonePlayer
 								}
 							}
 						}
-						else safe = true;
+						else 
+							safe = true;
 
 						if (safe)
 						{
@@ -148,11 +150,11 @@ namespace MultiZonePlayer
 				}
 				catch (Exception ex)
 				{
-					MLog.Log(null, "Exception on web server listener " + ex.Message);
+					MLog.Log(ex, this, "Exception on web server listener " + ex.Message);
 					break;
 				}
 			}
-			MLog.Log(null, "Web server listener exit");
+			MLog.Log(this, "Web server listener exit");
 		}
 
 		private void ProcessRequest(HttpListenerContext context)
@@ -186,7 +188,7 @@ namespace MultiZonePlayer
 						}
 						else
 						{
-							MLog.Log(null, "Webserver Unknown parameter received:" + key);
+							MLog.Log(this, "Webserver Unknown parameter received:" + key);
 						}
 					}
 				}
@@ -285,7 +287,7 @@ namespace MultiZonePlayer
 						}
 						else
 						{
-							MLog.Log(null, "POST has no entity body, unexpected. " + request.Url.OriginalString);
+							MLog.Log(this, "POST has no entity body, unexpected. " + request.Url.OriginalString);
 						}
 					}
 					String contentType;
@@ -310,10 +312,11 @@ namespace MultiZonePlayer
 					String html = ServeDirectHtml(context, requestServer, resvalue, out contentType, out binaryData);
 					WriteResponse(contentType, html, response, binaryData);
 				}
+				MLog.LogWeb(context.Request);
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, "Error process request " + context.Request.Url.AbsoluteUri);
+				MLog.Log(ex, this, "Error process request " + context.Request.Url.AbsoluteUri);
 			}
 
 			//MLog.Log(null, "Web req done " + context.Request.Url.AbsoluteUri);

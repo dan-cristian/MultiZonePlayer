@@ -41,9 +41,9 @@ namespace MultiZonePlayer
 
         private void button1_Click(object sender, EventArgs e)
         {
-			foreach (COMPortInfo comPort in COMPortInfo.GetCOMPortsInfo())
+			foreach (ManagementItem comPort in ManagementItem.GetManagementItemsInfo())
 			{
-				MLog.Log(null, "COMPORT: "+ string.Format("{0} – {1}", comPort.Name, comPort.Description));
+				MLog.Log(null, "Item: "+ string.Format("{0} – {1} - {2}", comPort.Name, comPort.Description, comPort.Manufacturer));
 			}
 
 			SetupDiWrap.ComPortNameFromFriendlyNamePrefix("modem");

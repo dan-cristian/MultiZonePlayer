@@ -131,6 +131,7 @@ namespace MultiZonePlayer
         public DenkoviPowerControl(String deviceName):base(deviceName)
         {
 			Reinitialise();
+			PowerOff();
         }
 
 		public void Reinitialise()
@@ -153,7 +154,7 @@ namespace MultiZonePlayer
 				m_usb8Relay.SetLatency(32);//!!! check this
 				m_lastOpenDateTime = DateTime.MinValue;
 				m_threadList = new List<Thread>();
-				PowerOff();
+				
 			}
 			catch (Exception ex)
 			{
