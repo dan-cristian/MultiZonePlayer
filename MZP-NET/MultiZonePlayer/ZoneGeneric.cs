@@ -311,8 +311,8 @@ namespace MultiZonePlayer
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
                     break;
 				case Metadata.GlobalCommands.closure:
-					ZoneClosures.ProcessAction(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.key),
-						vals.GetValue(Metadata.GlobalParams.iskeydown).ToLower()=="true");
+					ZoneClosures.ProcessAction(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.id),
+						vals.GetValue(Metadata.GlobalParams.iscontactmade).ToLower()=="true");
 					break;
 				case Metadata.GlobalCommands.closurearm:
 				case Metadata.GlobalCommands.closuredisarm:	

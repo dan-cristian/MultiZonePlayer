@@ -74,6 +74,8 @@ namespace MultiZonePlayer
 			private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 			private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
 
+			private GPIO m_gpio;
+
 			/*internal USB_RC2.ELROUsbRC2 RemoteControl
 			{
 				get { return m_remoteControl; }
@@ -107,6 +109,11 @@ namespace MultiZonePlayer
                 get { return m_isPowerFailure; }
                 set { m_isPowerFailure = value; }
             }
+
+			public GPIO Gpio
+			{
+				get { return m_gpio; }
+			}
 
             public MZPState()
             {
@@ -170,14 +177,14 @@ namespace MultiZonePlayer
                 m_winEventLogReader.AddSource("APC UPS Service");
 
 				RFXDeviceDefinition.LoadFromIni();
-				GPIO gpio = new GPIO();
+				m_gpio = new GPIO();
                 m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
 				m_messengerList.Add(new Modem());
 				m_messengerList.Add(new RFXCom());
-				m_messengerList.Add(gpio);
+				m_messengerList.Add(m_gpio);
 
-				Thread th = new Thread(() => gpio.LoopForEvents());
+				Thread th = new Thread(() => m_gpio.LoopForEvents());
 				th.Name = "GPIO Event Loop";
 				th.Start();
 

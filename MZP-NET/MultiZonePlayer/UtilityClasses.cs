@@ -163,7 +163,7 @@ namespace MultiZonePlayer
 			moodindex,
 			dimvalue,
 			singleparamvalue,
-			key,iskeydown,
+			id,iscontactmade,
 			name,
 			r//random no
         }
@@ -257,7 +257,9 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.rfxcmd,			GlobalParams.action),
 			new CommandSyntax(GlobalCommands.powercycle,		GlobalParams.interval),
 			new CommandSyntax(GlobalCommands.notifyuser,		GlobalParams.sourcezoneid),
-			new CommandSyntax(GlobalCommands.runscript,			GlobalParams.name)
+			new CommandSyntax(GlobalCommands.runscript,			GlobalParams.name),
+			new CommandSyntax(GlobalCommands.closure,			GlobalParams.id, GlobalParams.iscontactmade)
+
             /*
             genrelist,
             setgenrelist,
@@ -631,7 +633,7 @@ namespace MultiZonePlayer
             public Boolean RequirePower = false;
 			public Boolean IsClosureArmed = false;
 			public String NearbyZonesIdList = "";//zone id list separated by ;
-			public string ClosureIdList = "";//separated by ;
+			public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
 			//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
 			public ClosureOpenCloseRelay ClosureOpenCloseRelay;
 			public ulong ClosureCounts = 0;

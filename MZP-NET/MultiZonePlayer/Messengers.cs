@@ -306,7 +306,7 @@ namespace MultiZonePlayer
         }
     }
 
-	class GenericModem : SerialBase, IMessenger
+	public class GenericModem : SerialBase, IMessenger
 	{
 		public enum ModemCommandsEnum
 		{
@@ -647,14 +647,19 @@ namespace MultiZonePlayer
 		}
 	}
 
-	class GPIO : GenericModem, IMessenger
+	public class GPIO : GenericModem, IMessenger
 	{
-		private String m_state;
-		private const string STR_ENDLINE = ">";
+		private String m_state, m_lastState;
+		private const string STR_ENDLINE = ">", GPIO_ATTRIB_INI_NAME="iopin=";
+		private const int GPIO_PIN_COUNT = 32;
+		private const char STATE_CONTACT_MADE = '0', STATE_CONTACT_NOTMADE='1', 
+			STR_TIMEOUT_CHAR='?', STR_EXCEPTION_CHAR='!';
+
+		private int[] m_zoneIdMap = new int[GPIO_PIN_COUNT];
 
 		public String State
 		{
-			get { return m_state; }
+			get { return m_lastState; }
 		}
 
 		public GPIO()
@@ -673,11 +678,40 @@ namespace MultiZonePlayer
 				IniFile.PARAM_GPIO_CDC_COMPORT[1]=port;
 			}
 			MLog.Log(this, "Reinitialising GPIO on com " + IniFile.PARAM_GPIO_CDC_COMPORT[1]);
-			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_GPIO_CDC_COMPORT[1],
+			Reinitialise("38400", "None", "One", "8", IniFile.PARAM_GPIO_CDC_COMPORT[1],
 				CommunicationManager.TransmissionType.TextCR,
 				Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]));
+			comm.VerboseDebug = false;
 			ClearPins();
+
+			for (int i = 0; i < m_zoneIdMap.Length; i++)
+			{
+				m_zoneIdMap[i]=-1;
+				m_lastState += STATE_CONTACT_NOTMADE;
+			}
+			string pin;
+			int startindex,end,pinindex;
+			foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			{
+				startindex = zone.ClosureIdList.IndexOf(GPIO_ATTRIB_INI_NAME);
+				if (startindex != -1)
+				{
+					end = zone.ClosureIdList.IndexOf(";", startindex);
+					if (end ==-1) end = zone.ClosureIdList.Length-1;
+					pin = zone.ClosureIdList.Substring(startindex+GPIO_ATTRIB_INI_NAME.Length, 
+						end - startindex-GPIO_ATTRIB_INI_NAME.Length+1);
+					if (int.TryParse(pin, out pinindex))
+						pinindex = Convert.ToInt16(pin);
+					else
+						MLog.Log(this, "Error parsing pin=" + zone.ClosureIdList+ " for zone " + zone.ZoneName);
+					if (pinindex >= 0 && pinindex < m_zoneIdMap.Length)
+						m_zoneIdMap[pinindex] = zone.ZoneId;
+					else
+						MLog.Log(this, "Error pin index in zone " + zone.ZoneName + " is out of range: "+pinindex);
+				}
+				
+			}
 		}
 
 		public override Boolean TestConnection()
@@ -695,7 +729,7 @@ namespace MultiZonePlayer
 			Thread.Sleep(100);
 			String cmd, result, cmdprefix = "gpio clear ";
 
-			for (int i = 0; i < 32; i++)
+			for (int i = 0; i < GPIO_PIN_COUNT; i++)
 			{
 				cmd = cmdprefix + i;
 				result = WriteCommand(cmd, 1, 300, STR_ENDLINE);
@@ -706,17 +740,18 @@ namespace MultiZonePlayer
 
 		public void LoopForEvents()
 		{
-			String pinstate, cmd, pin;
+			String pinstate, cmd;
+			int zoneid;
 			String cmdprefix = "gpio read ";
 			//int start;
 			do
 			{
 				m_state = "";
-				for (int i = 0; i < 32; i++)
+				for (int i = 0; i < GPIO_PIN_COUNT; i++)
 				{
 					cmd = cmdprefix + i;
 					pinstate = WriteCommand(cmd, 1, 300, STR_ENDLINE);
-					pinstate = pinstate.Replace(STR_TIMEOUT, "?").Replace(STR_EXCEPTION, "!");
+					pinstate = pinstate.Replace(STR_TIMEOUT, STR_TIMEOUT_CHAR.ToString()).Replace(STR_EXCEPTION, STR_EXCEPTION_CHAR.ToString());
 					/*start = pinstate.IndexOf(cmdprefix);
 					if (start != -1)
 					{
@@ -731,9 +766,37 @@ namespace MultiZonePlayer
 					pinstate = pinstate.Replace(cmd, "").Replace("\n", "").Replace("\r", "").Replace(">", "");
 					m_state += pinstate;
 				}
-				MLog.Log(this, "Read GPIO " + m_state);
+				if (m_state != m_lastState)
+				{
+					for (int i=0;i<Math.Min(m_state.Length, m_lastState.Length);i++)
+					{
+						if (m_state[i]!=m_lastState[i])
+						{
+							MLog.Log(this, "Pin " + i + " changed to " + m_state[i]);
+							if (m_state[i] != STR_TIMEOUT_CHAR && m_state[i] != STR_EXCEPTION_CHAR)//ignore timeouts on pin reads
+							{
+								zoneid = m_zoneIdMap[i];
+								if (zoneid != -1)
+								{
+									Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid,
+										zoneid.ToString(), Metadata.CommandSources.rawinput);
+									val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
+									val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
+									val.Add(Metadata.GlobalParams.id, GPIO_ATTRIB_INI_NAME + i);
+									val.Add(Metadata.GlobalParams.iscontactmade, (m_state[i] == STATE_CONTACT_MADE).ToString());
+									API.DoCommand(val);
+								}
+							}
+						}
+					}
+				}
+
+				m_lastState = m_state;
+				//MLog.Log(this, "Read GPIO " + m_state);
 			}
 			while (MZPState.Instance != null);
 		}
+
+		
 	}
 }

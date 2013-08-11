@@ -88,6 +88,8 @@ namespace MultiZonePlayer
 			this.label13 = new System.Windows.Forms.Label();
 			this.txPictureCount = new System.Windows.Forms.TextBox();
 			this.label14 = new System.Windows.Forms.Label();
+			this.label15 = new System.Windows.Forms.Label();
+			this.txtGPIO = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
 			this.tbButtons.SuspendLayout();
 			this.SuspendLayout();
@@ -95,10 +97,10 @@ namespace MultiZonePlayer
 			// txtError
 			// 
 			this.txtError.HideSelection = false;
-			this.txtError.Location = new System.Drawing.Point(12, 148);
+			this.txtError.Location = new System.Drawing.Point(12, 190);
 			this.txtError.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.txtError.Name = "txtError";
-			this.txtError.Size = new System.Drawing.Size(675, 189);
+			this.txtError.Size = new System.Drawing.Size(675, 147);
 			this.txtError.TabIndex = 0;
 			this.txtError.Text = "";
 			// 
@@ -205,7 +207,7 @@ namespace MultiZonePlayer
 			// label7
 			// 
 			this.label7.AutoSize = true;
-			this.label7.Location = new System.Drawing.Point(277, 126);
+			this.label7.Location = new System.Drawing.Point(277, 118);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(103, 17);
 			this.label7.TabIndex = 16;
@@ -215,7 +217,7 @@ namespace MultiZonePlayer
 			// 
 			this.txtZoneCount.AcceptsReturn = true;
 			this.txtZoneCount.AcceptsTab = true;
-			this.txtZoneCount.Location = new System.Drawing.Point(393, 118);
+			this.txtZoneCount.Location = new System.Drawing.Point(393, 115);
 			this.txtZoneCount.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.txtZoneCount.Name = "txtZoneCount";
 			this.txtZoneCount.Size = new System.Drawing.Size(76, 22);
@@ -291,7 +293,7 @@ namespace MultiZonePlayer
 			this.bt1.Location = new System.Drawing.Point(3, 2);
 			this.bt1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt1.Name = "bt1";
-			this.bt1.Size = new System.Drawing.Size(17, 23);
+			this.bt1.Size = new System.Drawing.Size(16, 23);
 			this.bt1.TabIndex = 23;
 			this.bt1.Text = "1";
 			this.bt1.UseVisualStyleBackColor = true;
@@ -299,10 +301,10 @@ namespace MultiZonePlayer
 			// 
 			// bt2
 			// 
-			this.bt2.Location = new System.Drawing.Point(26, 2);
+			this.bt2.Location = new System.Drawing.Point(25, 2);
 			this.bt2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt2.Name = "bt2";
-			this.bt2.Size = new System.Drawing.Size(19, 23);
+			this.bt2.Size = new System.Drawing.Size(18, 23);
 			this.bt2.TabIndex = 23;
 			this.bt2.Text = "2";
 			this.bt2.UseVisualStyleBackColor = true;
@@ -315,7 +317,7 @@ namespace MultiZonePlayer
 			this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 51.92308F));
 			this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 21F));
 			this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 21F));
-			this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 25F));
+			this.tbButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 27F));
 			this.tbButtons.Controls.Add(this.bt1, 0, 0);
 			this.tbButtons.Controls.Add(this.bt2, 1, 0);
 			this.tbButtons.Controls.Add(this.bt3, 2, 0);
@@ -346,7 +348,7 @@ namespace MultiZonePlayer
 			// 
 			// bt3
 			// 
-			this.bt3.Location = new System.Drawing.Point(51, 2);
+			this.bt3.Location = new System.Drawing.Point(49, 2);
 			this.bt3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt3.Name = "bt3";
 			this.bt3.Size = new System.Drawing.Size(15, 23);
@@ -360,7 +362,7 @@ namespace MultiZonePlayer
 			this.bt4.Location = new System.Drawing.Point(3, 31);
 			this.bt4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt4.Name = "bt4";
-			this.bt4.Size = new System.Drawing.Size(17, 23);
+			this.bt4.Size = new System.Drawing.Size(16, 23);
 			this.bt4.TabIndex = 23;
 			this.bt4.Text = "4";
 			this.bt4.UseVisualStyleBackColor = true;
@@ -368,10 +370,10 @@ namespace MultiZonePlayer
 			// 
 			// bt5
 			// 
-			this.bt5.Location = new System.Drawing.Point(26, 31);
+			this.bt5.Location = new System.Drawing.Point(25, 31);
 			this.bt5.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt5.Name = "bt5";
-			this.bt5.Size = new System.Drawing.Size(19, 23);
+			this.bt5.Size = new System.Drawing.Size(18, 23);
 			this.bt5.TabIndex = 23;
 			this.bt5.Text = "5";
 			this.bt5.UseVisualStyleBackColor = true;
@@ -379,7 +381,7 @@ namespace MultiZonePlayer
 			// 
 			// bt6
 			// 
-			this.bt6.Location = new System.Drawing.Point(51, 31);
+			this.bt6.Location = new System.Drawing.Point(49, 31);
 			this.bt6.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt6.Name = "bt6";
 			this.bt6.Size = new System.Drawing.Size(15, 23);
@@ -393,7 +395,7 @@ namespace MultiZonePlayer
 			this.bt7.Location = new System.Drawing.Point(3, 60);
 			this.bt7.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt7.Name = "bt7";
-			this.bt7.Size = new System.Drawing.Size(17, 23);
+			this.bt7.Size = new System.Drawing.Size(16, 23);
 			this.bt7.TabIndex = 23;
 			this.bt7.Text = "7";
 			this.bt7.UseVisualStyleBackColor = true;
@@ -401,10 +403,10 @@ namespace MultiZonePlayer
 			// 
 			// bt8
 			// 
-			this.bt8.Location = new System.Drawing.Point(26, 60);
+			this.bt8.Location = new System.Drawing.Point(25, 60);
 			this.bt8.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt8.Name = "bt8";
-			this.bt8.Size = new System.Drawing.Size(19, 23);
+			this.bt8.Size = new System.Drawing.Size(18, 23);
 			this.bt8.TabIndex = 23;
 			this.bt8.Text = "8";
 			this.bt8.UseVisualStyleBackColor = true;
@@ -412,7 +414,7 @@ namespace MultiZonePlayer
 			// 
 			// bt9
 			// 
-			this.bt9.Location = new System.Drawing.Point(51, 60);
+			this.bt9.Location = new System.Drawing.Point(49, 60);
 			this.bt9.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt9.Name = "bt9";
 			this.bt9.Size = new System.Drawing.Size(15, 23);
@@ -426,7 +428,7 @@ namespace MultiZonePlayer
 			this.bt0.Location = new System.Drawing.Point(3, 91);
 			this.bt0.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.bt0.Name = "bt0";
-			this.bt0.Size = new System.Drawing.Size(17, 23);
+			this.bt0.Size = new System.Drawing.Size(16, 23);
 			this.bt0.TabIndex = 23;
 			this.bt0.Text = "0";
 			this.bt0.UseVisualStyleBackColor = true;
@@ -437,7 +439,7 @@ namespace MultiZonePlayer
 			this.btMusic.Location = new System.Drawing.Point(3, 121);
 			this.btMusic.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.btMusic.Name = "btMusic";
-			this.btMusic.Size = new System.Drawing.Size(17, 23);
+			this.btMusic.Size = new System.Drawing.Size(16, 23);
 			this.btMusic.TabIndex = 24;
 			this.btMusic.Tag = "music";
 			this.btMusic.Text = "M";
@@ -446,10 +448,10 @@ namespace MultiZonePlayer
 			// 
 			// btRadio
 			// 
-			this.btRadio.Location = new System.Drawing.Point(26, 121);
+			this.btRadio.Location = new System.Drawing.Point(25, 121);
 			this.btRadio.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.btRadio.Name = "btRadio";
-			this.btRadio.Size = new System.Drawing.Size(19, 23);
+			this.btRadio.Size = new System.Drawing.Size(18, 23);
 			this.btRadio.TabIndex = 24;
 			this.btRadio.Tag = "radio";
 			this.btRadio.Text = "R";
@@ -458,7 +460,7 @@ namespace MultiZonePlayer
 			// 
 			// btVideo
 			// 
-			this.btVideo.Location = new System.Drawing.Point(51, 121);
+			this.btVideo.Location = new System.Drawing.Point(49, 121);
 			this.btVideo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.btVideo.Name = "btVideo";
 			this.btVideo.Size = new System.Drawing.Size(15, 23);
@@ -470,7 +472,7 @@ namespace MultiZonePlayer
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(72, 121);
+			this.button1.Location = new System.Drawing.Point(70, 121);
 			this.button1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(15, 23);
@@ -527,7 +529,7 @@ namespace MultiZonePlayer
 			// txSocketsStatus
 			// 
 			this.txSocketsStatus.Location = new System.Drawing.Point(140, 122);
-			this.txSocketsStatus.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.txSocketsStatus.Margin = new System.Windows.Forms.Padding(4);
 			this.txSocketsStatus.Name = "txSocketsStatus";
 			this.txSocketsStatus.Size = new System.Drawing.Size(112, 22);
 			this.txSocketsStatus.TabIndex = 26;
@@ -537,7 +539,7 @@ namespace MultiZonePlayer
 			this.lstCommands.FormattingEnabled = true;
 			this.lstCommands.ItemHeight = 16;
 			this.lstCommands.Location = new System.Drawing.Point(695, 218);
-			this.lstCommands.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.lstCommands.Margin = new System.Windows.Forms.Padding(4);
 			this.lstCommands.Name = "lstCommands";
 			this.lstCommands.Size = new System.Drawing.Size(217, 180);
 			this.lstCommands.TabIndex = 27;
@@ -642,6 +644,26 @@ namespace MultiZonePlayer
 			this.label14.TabIndex = 16;
 			this.label14.Text = "Picture Count";
 			// 
+			// label15
+			// 
+			this.label15.AutoSize = true;
+			this.label15.Location = new System.Drawing.Point(12, 150);
+			this.label15.Name = "label15";
+			this.label15.Size = new System.Drawing.Size(42, 17);
+			this.label15.TabIndex = 16;
+			this.label15.Text = "GPIO";
+			// 
+			// txtGPIO
+			// 
+			this.txtGPIO.AcceptsReturn = true;
+			this.txtGPIO.AcceptsTab = true;
+			this.txtGPIO.Location = new System.Drawing.Point(140, 150);
+			this.txtGPIO.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+			this.txtGPIO.Name = "txtGPIO";
+			this.txtGPIO.Size = new System.Drawing.Size(329, 22);
+			this.txtGPIO.TabIndex = 0;
+			this.txtGPIO.Leave += new System.EventHandler(this.txtCommand_Leave);
+			// 
 			// ControlCenter
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -654,6 +676,7 @@ namespace MultiZonePlayer
 			this.Controls.Add(this.label6);
 			this.Controls.Add(this.label9);
 			this.Controls.Add(this.label1);
+			this.Controls.Add(this.label15);
 			this.Controls.Add(this.label7);
 			this.Controls.Add(this.label14);
 			this.Controls.Add(this.label11);
@@ -669,6 +692,7 @@ namespace MultiZonePlayer
 			this.Controls.Add(this.txPictureCount);
 			this.Controls.Add(this.txVideoCount);
 			this.Controls.Add(this.txAlarm);
+			this.Controls.Add(this.txtGPIO);
 			this.Controls.Add(this.txtZoneCount);
 			this.Controls.Add(this.txAudioSave);
 			this.Controls.Add(this.txAudioCount);
@@ -751,5 +775,7 @@ namespace MultiZonePlayer
         private System.Windows.Forms.Button btTV;
 		private System.Windows.Forms.Label label14;
 		private System.Windows.Forms.TextBox txPictureCount;
+		private System.Windows.Forms.Label label15;
+		private System.Windows.Forms.TextBox txtGPIO;
     }
 }

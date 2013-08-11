@@ -42,8 +42,8 @@ namespace MultiZonePlayer
 					&& zoneDetails.ClosureIdList==kd.Key)
 				{
 					val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
-					val.Add(Metadata.GlobalParams.key, kd.Key);
-					val.Add(Metadata.GlobalParams.iskeydown, kd.IsKeyDown.ToString());
+					val.Add(Metadata.GlobalParams.id, kd.Key);
+					val.Add(Metadata.GlobalParams.iscontactmade, kd.IsKeyDown.ToString());
 					//ZoneClosures.ProcessAction(zoneDetails, kd.Key, kd.IsKeyDown);
 					//return;
 					Thread th = new Thread(() => DoCommand(val));

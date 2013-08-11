@@ -186,7 +186,7 @@ namespace MultiZonePlayer
             {
                 txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
                 txAlarm.Text = MZPState.Instance.SystemAlarm.IsMonitoringActive + ":" + MZPState.Instance.SystemAlarm.AreaState.ToString();
-
+				txtGPIO.Text = MZPState.Instance.Gpio.State;
                 foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
                 {
                     if (zone.IsActive)

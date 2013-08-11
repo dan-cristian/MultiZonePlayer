@@ -136,7 +136,8 @@ namespace MultiZonePlayer
 							Math.DivRem(m_responseTimeoutsCount, 400, out decim);
 							if (m_responseTimeoutsCount < 5 || decim == 0)
 								MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp=" + m_lastMessageResponse + " number of timeouts=" + m_responseTimeoutsCount);
-							m_lastMessageResponse += STR_TIMEOUT;
+							if (!m_lastMessageResponse.Contains(STR_TIMEOUT))
+								m_lastMessageResponse += STR_TIMEOUT;
 						}
 						else
 						{
@@ -144,6 +145,7 @@ namespace MultiZonePlayer
 							responseCount++;
 							if (responseCount < responseLinesCountExpected)
 								m_waitForResponse = true;
+							m_lastMessageResponse = m_lastMessageResponse.Replace(STR_TIMEOUT, "");
 							responseMessage = m_lastMessageResponse;
 						}
 						m_autoEventReceive.Set();
@@ -151,8 +153,8 @@ namespace MultiZonePlayer
 						if (MZPState.Instance == null)
 							break;
 					}
-					while ((responseCount < responseLinesCountExpected && signalReceived && expectedResponse==null) 
-						|| (expectedResponse!= null && !m_lastMessageResponse.Contains(expectedResponse)));
+					while ((responseCount < responseLinesCountExpected && signalReceived && expectedResponse==null)
+						|| (responseCount < 10 && m_responseTimeoutsCount <10 && expectedResponse != null && !m_lastMessageResponse.Contains(expectedResponse)));
 				}
 			}
 			catch (Exception ex)
@@ -226,6 +228,7 @@ namespace MultiZonePlayer
         //global manager variables
         private SerialPort comPort = new SerialPort();
         private System.Object m_lockThisReceive = new System.Object();
+		public Boolean VerboseDebug = true;
         #endregion
 
         #region Manager Properties
@@ -343,7 +346,8 @@ namespace MultiZonePlayer
 				}
             }
             
-            MLog.LogModem(String.Format("{0} {1} WRITE [{2}] \r\n", DateTime.Now.ToString(), comPort.PortName, msg));
+			if (VerboseDebug)
+				MLog.LogModem(String.Format("{0} {1} WRITE [{2}] \r\n", DateTime.Now.ToString(), comPort.PortName, msg));
 
             switch (CurrentTransmissionType)
             {
@@ -518,7 +522,8 @@ namespace MultiZonePlayer
                                     msg = comPort.ReadExisting();
                                 }
 								msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
-								MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
+								if (VerboseDebug)
+									MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
 								/*if (msg.Length == 1)
                                 {
                                     MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
@@ -545,7 +550,8 @@ namespace MultiZonePlayer
 									msg = comPort.ReadExisting();
 								}
 								msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
-								MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
+								if (VerboseDebug)
+									MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
 								/*if (msg.Length == 1)
                                 {
                                     MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
@@ -572,7 +578,8 @@ namespace MultiZonePlayer
 								msgDisplay += Utilities.ByteToHex(comBuffer);
 								Thread.Sleep(100);
 							}
-							MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msgDisplay.Length));
+							if (VerboseDebug)
+								MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msgDisplay.Length));
                             //display the data to the user
                             //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
 							_callback(msgDisplay);

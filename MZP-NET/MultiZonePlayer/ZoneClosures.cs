@@ -9,6 +9,8 @@ namespace MultiZonePlayer
 	{
 		public static void ProcessAction(Metadata.ZoneDetails zone, string key, Boolean isKeyDown)// KeyDetail kd)
 		{
+			//if (zone.ZoneId == 15)
+			//	MLog.Log(null, "debug");
 			Metadata.ClosureOpenCloseRelay lastState = zone.ClosureOpenCloseRelay;
 			if (lastState == null)
 			{
@@ -24,7 +26,7 @@ namespace MultiZonePlayer
 			zone.ClosureCounts++;
 			zone.MovementAlert = true;
 			zone.LastClosureEventDateTime = DateTime.Now;
-			string message = "Closure state " + key + " is " + lastState.RelayState;
+			string message = "Closure state " + key + " is " + lastState.RelayState + " on zone " + zone.ZoneName;
 			MLog.Log(null, message);
 			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString());
 			if (lastState.RelayState == Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed)
