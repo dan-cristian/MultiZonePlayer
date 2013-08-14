@@ -391,7 +391,7 @@ namespace MultiZonePlayer
 
 		public override bool TestConnection()
 		{
-			if (base.TestConnection() == false) return false;
+			//if (base.TestConnection() == false) return false;
 
 			try
 			{
@@ -636,10 +636,8 @@ namespace MultiZonePlayer
 			MLog.Log(this, "RFX comm does not implement sendmessage");
 		}
 
-		public bool TestConnection()
+		public override bool TestConnection()
 		{
-			if (!comm.IsPortOpen())
-				return false;
 			if (GetStatus() != "")
 				return true;
 			else
@@ -741,60 +739,84 @@ namespace MultiZonePlayer
 		public void LoopForEvents()
 		{
 			String pinstate, cmd;
-			int zoneid;
+			int zoneid,j;
 			String cmdprefix = "gpio read ";
 			//int start;
+			
 			do
 			{
 				m_state = "";
-				for (int i = 0; i < GPIO_PIN_COUNT; i++)
+				try
 				{
-					cmd = cmdprefix + i;
-					pinstate = WriteCommand(cmd, 1, 300, STR_ENDLINE);
-					pinstate = pinstate.Replace(STR_TIMEOUT, STR_TIMEOUT_CHAR.ToString()).Replace(STR_EXCEPTION, STR_EXCEPTION_CHAR.ToString());
-					/*start = pinstate.IndexOf(cmdprefix);
-					if (start != -1)
+					//MLog.Log(this, "Read GPIO " + m_state);
+					if (!IsFaulty())
 					{
-						pin = pinstate.Substring(start+cmdprefix.Length, 2).Replace("\n", "").Replace("\r", "");
-						pinstate = pinstate.Replace(cmdprefix + pin, "").Replace("\n", "").Replace("\r", "").Replace(">", "");
-						m_state += pinstate;
-						//Thread.Sleep(10);
-					}
-					 */
-					
-					//else						MLog.Log(this, "GPIO response unexpected " + pinstate);
-					pinstate = pinstate.Replace(cmd, "").Replace("\n", "").Replace("\r", "").Replace(">", "");
-					m_state += pinstate;
-				}
-				if (m_state != m_lastState)
-				{
-					for (int i=0;i<Math.Min(m_state.Length, m_lastState.Length);i++)
-					{
-						if (m_state[i]!=m_lastState[i])
+						for (int i = 0; i < GPIO_PIN_COUNT; i++)
 						{
-							MLog.Log(this, "Pin " + i + " changed to " + m_state[i]);
-							if (m_state[i] != STR_TIMEOUT_CHAR && m_state[i] != STR_EXCEPTION_CHAR)//ignore timeouts on pin reads
+							cmd = cmdprefix + i;
+							pinstate = WriteCommand(cmd, 1, 300, STR_ENDLINE);
+							pinstate = pinstate.Replace(STR_TIMEOUT, STR_TIMEOUT_CHAR.ToString()).Replace(STR_EXCEPTION, STR_EXCEPTION_CHAR.ToString());
+							/*start = pinstate.IndexOf(cmdprefix);
+							if (start != -1)
 							{
-								zoneid = m_zoneIdMap[i];
-								if (zoneid != -1)
+								pin = pinstate.Substring(start+cmdprefix.Length, 2).Replace("\n", "").Replace("\r", "");
+								pinstate = pinstate.Replace(cmdprefix + pin, "").Replace("\n", "").Replace("\r", "").Replace(">", "");
+								m_state += pinstate;
+								//Thread.Sleep(10);
+							}
+							 */
+
+							//else						MLog.Log(this, "GPIO response unexpected " + pinstate);
+							pinstate = pinstate.Replace(cmd, "").Replace("\n", "").Replace("\r", "").Replace(">", "");
+							m_state += pinstate;
+						}
+
+						if (m_state != m_lastState)
+						{
+							for (int i = 0; i < Math.Min(m_state.Length, m_lastState.Length); i++)
+							{
+								if (m_state[i] != m_lastState[i])
 								{
-									Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid,
-										zoneid.ToString(), Metadata.CommandSources.rawinput);
-									val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
-									val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
-									val.Add(Metadata.GlobalParams.id, GPIO_ATTRIB_INI_NAME + i);
-									val.Add(Metadata.GlobalParams.iscontactmade, (m_state[i] == STATE_CONTACT_MADE).ToString());
-									API.DoCommand(val);
+									MLog.Log(this, "Pin " + i + " changed to " + m_state[i]);
+									if (m_state[i] != STR_TIMEOUT_CHAR && m_state[i] != STR_EXCEPTION_CHAR)//ignore timeouts on pin reads
+									{
+										zoneid = m_zoneIdMap[i];
+										if (zoneid != -1)
+										{
+											Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid,
+												zoneid.ToString(), Metadata.CommandSources.rawinput);
+											val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
+											val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
+											val.Add(Metadata.GlobalParams.id, GPIO_ATTRIB_INI_NAME + i);
+											val.Add(Metadata.GlobalParams.iscontactmade, (m_state[i] == STATE_CONTACT_MADE).ToString());
+											API.DoCommand(val);
+										}
+									}
 								}
 							}
 						}
+
+						m_lastState = m_state;
 					}
 				}
-
-				m_lastState = m_state;
-				//MLog.Log(this, "Read GPIO " + m_state);
+				catch (Exception ex)
+				{
+					MLog.Log(ex, this, "Error in loopforevents");
+				}
+				
+				if (IsFaulty())
+				{
+					j = 0;
+					MLog.Log(this, "Serial connection faulty, sleeping for a while");
+					do
+					{
+						j++;
+						Thread.Sleep(1000);
+					} while (MZPState.Instance != null && j < 60*15);
+				}
 			}
 			while (MZPState.Instance != null);
+
 		}
 
 		

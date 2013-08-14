@@ -36,8 +36,7 @@ namespace MultiZonePlayer
 {
     public abstract class SerialBase
     {
-		protected DateTime m_lastReinitTryDate = DateTime.MinValue;
-		protected int m_reinitTries = 0;
+		
         public String Connection;
         protected CommunicationManager comm;
         protected Boolean m_waitForResponse = false;
@@ -64,11 +63,8 @@ namespace MultiZonePlayer
 
         public void Initialise(String baud, String parity, String stopbits, String databits, String port, CommunicationManager.TransmissionType type)
         {
-			m_reinitTries++;
-			m_lastReinitTryDate = DateTime.Now;
             comm = new CommunicationManager(baud, parity, stopbits, databits, port, type, this.handler);
-            if (comm.OpenPort())
-				m_reinitTries = 0;
+			comm.OpenPort();
             m_waitForResponse = false;
             m_lastOperationWasOK = true;
             Connection = port;
@@ -76,7 +72,7 @@ namespace MultiZonePlayer
 
 		public Boolean IsFaulty()
 		{
-			return m_reinitTries > 5 && DateTime.Now.Subtract(m_lastReinitTryDate).TotalMinutes<30;
+			return comm.IsFaulty();
 		}
 
 		public virtual Boolean TestConnection()
@@ -116,6 +112,7 @@ namespace MultiZonePlayer
 					m_autoEventSend.Reset();
 					m_lastMessageResponse = "";
 					m_waitForResponse = true;
+
 					comm.WriteData(cmd);
 
 					//WAIT FOR RESPONSE - ----------------------
@@ -229,7 +226,9 @@ namespace MultiZonePlayer
         private SerialPort comPort = new SerialPort();
         private System.Object m_lockThisReceive = new System.Object();
 		public Boolean VerboseDebug = true;
-        #endregion
+		protected DateTime m_lastReinitTryDate = DateTime.MinValue;
+		protected int m_reinitTries = 0;
+		#endregion
 
         #region Manager Properties
         /// <summary>
@@ -332,16 +331,16 @@ namespace MultiZonePlayer
         #region WriteData
         public void WriteData(string msg)
         {
-            if (!(comPort.IsOpen == true))
+            if (!comPort.IsOpen)
             {
                 MLog.Log(this, "Error, COM port " + comPort.PortName+ " was not open at WriteData, opening, cmd="+msg);
 				try
 				{
-					comPort.Open();
+					OpenPort();
 				}
 				catch (Exception ex)
 				{
-					MLog.Log(ex, "Error, COM port " + comPort.PortName + " cannot be opened at WriteData, cmd=" + msg);
+					MLog.Log(ex, this, "Error, COM port " + comPort.PortName + " cannot be opened at WriteData, cmd=" + msg);
 					return;
 				}
             }
@@ -395,9 +394,12 @@ namespace MultiZonePlayer
         {
             try
             {
+				Boolean result;
                 //first check if the port is already open
                 //if its open then close it
                 if (comPort.IsOpen == true) comPort.Close();
+				m_reinitTries++;
+				m_lastReinitTryDate = DateTime.Now;
 
                 //set the properties of our SerialPort Object
                 comPort.BaudRate = int.Parse(_baudRate);    //BaudRate
@@ -412,12 +414,14 @@ namespace MultiZonePlayer
                 comPort.ReadTimeout = 500;
                 //now open the port
                 comPort.Open();
+				result = comPort.IsOpen;
+				if (result)
+					m_reinitTries = 0;
                 //display message
                 MLog.Log(this,"Port "+comPort.PortName +" opened with baud=" + comPort.BaudRate);
                 MLog.LogModem(comPort.PortName + " Opened with baud=" + comPort.BaudRate +"\r\n");
 				
-                //return true
-                return true;
+                return result;
             }
             catch (Exception ex)
             {
@@ -426,6 +430,11 @@ namespace MultiZonePlayer
             }
         }
         #endregion
+
+		public Boolean IsFaulty()
+		{
+			return m_reinitTries > 5 && DateTime.Now.Subtract(m_lastReinitTryDate).TotalMinutes < 30;
+		}
 
         #region ClosePort
         public bool ClosePort()
