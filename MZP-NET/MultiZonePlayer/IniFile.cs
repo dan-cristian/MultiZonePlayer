@@ -189,6 +189,10 @@ namespace MultiZonePlayer
 			public static String[] PARAM_GPIO_CDC_MANUFACTURER_NAME = new String[] { "PARAM_GPIO_CDC_MANUFACTURER_NAME", "Microchip Technology, Inc.", "GPIO manufacturer name used to auto identify COM port name" };
 			public static String[] PARAM_GPIO_CDC_COMPORT = new String[] { "PARAM_GPIO_CDC_COMPORT", "COM7" };
 
+			public static String[] PARAM_WDIO_MANUFACTURER_NAME = new String[] { "PARAM_WDIO_MANUFACTURER_NAME", "Prolific", "WDIO manufacturer name used to auto identify COM port name" };
+			public static String[] PARAM_WDIO_COMPORT = new String[] { "PARAM_WDIO_COMPORT", "COM20" };
+			public static String[] PARAM_WDIO_CHANNEL = new String[] { "PARAM_WDIO_CHANNEL", "A" };
+			
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
 			public static String DATETIME_FULL_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -265,7 +269,9 @@ namespace MultiZonePlayer
 				//PARAM_RFXCOM_PORT,
 				PARAM_RFX_DEVICE_NAME,
 				PARAM_RELAY_DEVICE_NAME,
-				PARAM_GPIO_CDC_MANUFACTURER_NAME
+				PARAM_GPIO_CDC_MANUFACTURER_NAME,
+				PARAM_WDIO_MANUFACTURER_NAME,
+				PARAM_WDIO_CHANNEL
 
              };
             private static string m_iniFinalPath =  null;

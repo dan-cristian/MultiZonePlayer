@@ -535,7 +535,8 @@ namespace MultiZonePlayer
 			{
 				Undefined,
 				NormalOpen,
-				NormalClosed
+				NormalClosed,
+				Button
 			}
 
 			//public string Key;
@@ -582,14 +583,15 @@ namespace MultiZonePlayer
 				switch (RelayType)
 				{
 					case EnumRelayType.NormalOpen:
+					case EnumRelayType.Button:
 						return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactClosed : ClosureOpenCloseRelay.EnumState.ContactOpen;
 					case EnumRelayType.NormalClosed:
 						return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactOpen: ClosureOpenCloseRelay.EnumState.ContactClosed;
 					default:
+						//MLog.Log(this, "Error, undefined relay type");
 						return EnumState.Undefined;
 				}
 			}
-			
 
 			public void ResetState()
 			{
@@ -637,6 +639,7 @@ namespace MultiZonePlayer
 			//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
 			public ClosureOpenCloseRelay ClosureOpenCloseRelay;
 			public ulong ClosureCounts = 0;
+			public String TemperatureDeviceId;
 
             public int VolumeLevel;
             public long Position = 0;
@@ -662,9 +665,9 @@ namespace MultiZonePlayer
 			public DateTime LastClosureEventDateTime = DateTime.MinValue;
 			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 			public DateTime LastNotifyZoneEventTriggered;
-
-			protected string m_temperature="-0", m_humidity="-0";
-			protected string m_temperatureLast = "-0", m_humidityLast = "-0";
+			public const String DEFAULT_TEMP_HUM = "-0";
+			protected string m_temperature=DEFAULT_TEMP_HUM, m_humidity=DEFAULT_TEMP_HUM;
+			protected string m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 			protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 
 			// not serializable, hidden from json
@@ -720,11 +723,13 @@ namespace MultiZonePlayer
                 get {
                     String val = "#"+ ZoneId +" "+ ZoneName + (IsActive?" Active":"") 
                         + (ActivityType.Equals(GlobalCommands.nul)?"":" "+ActivityType.ToString()) 
-                        + (IsArmed?" Armed ":" ") 
-                        + (HasImmediateMove? " ImmediateMove ":" ")
-                        + (HasRecentMove? " RecentMove ":" ")
-                        + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState:"")
-						+ Title;
+                        + (IsArmed?" Armed ":"") 
+                        + (HasImmediateMove? " ImmediateMove ":"")
+                        + (HasRecentMove? " RecentMove ":"")
+                        + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState +"@ "+LastClosureEventDateTime :"")
+						+ Title
+						+ (Temperature!=DEFAULT_TEMP_HUM?" " + Temperature + "C":"")
+						+ (Humidity != DEFAULT_TEMP_HUM?" " + Humidity+"%":"");
                     return val;
                 }
             }
@@ -896,6 +901,7 @@ namespace MultiZonePlayer
 
 					if (m_temperature != m_temperatureLast)
 					{
+						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature);
 						Rules.ExecuteRule(this);
 						m_temperatureLast = m_temperature;
 					}
@@ -918,6 +924,7 @@ namespace MultiZonePlayer
 
 					if (m_humidity != m_humidityLast)
 					{
+						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity);
 						Rules.ExecuteRule(this);
 						m_humidityLast = m_humidity;
 					}
@@ -1012,7 +1019,8 @@ namespace MultiZonePlayer
 					NearbyZonesIdList = zonestorage.NearbyZonesIdList;
 					if (NearbyZonesIdList.Length>0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
 						NearbyZonesIdList += ";";
-                    //Temperature = "1";
+					TemperatureDeviceId = zonestorage.TemperatureDeviceId;
+					//Temperature = "1";
                 }
 
             }

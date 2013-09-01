@@ -30,34 +30,39 @@ namespace MultiZonePlayer
 
 		public void AddFiles(String directory, String ext, SearchOption search)
 		{
-			try
+			if (Directory.Exists(directory))
 			{
-				DirectoryInfo di = new DirectoryInfo(directory);
-				FileInfo[] rgFiles = di.GetFiles(ext, search);
-
-				MLog.Log(this, "Adding files ext="+ext+" count=" + rgFiles.Length);
-
-				//m_playlistFiles.Capacity = rgFiles.Length;
-				//m_playlistItems.Capacity = rgFiles.Length;
-				//m_artistMetaList.Capacity = rgFiles.Length / 10;
-
-				foreach (FileInfo fi in rgFiles)
+				try
 				{
-					ProcessFile(fi);
-					m_playlistFiles.Add(fi.FullName);
-					//Application.DoEvents();
-					if (MZPState.Instance == null)
+					DirectoryInfo di = new DirectoryInfo(directory);
+					FileInfo[] rgFiles = di.GetFiles(ext, search);
+
+					MLog.Log(this, "Adding files ext=" + ext + " count=" + rgFiles.Length);
+
+					//m_playlistFiles.Capacity = rgFiles.Length;
+					//m_playlistItems.Capacity = rgFiles.Length;
+					//m_artistMetaList.Capacity = rgFiles.Length / 10;
+
+					foreach (FileInfo fi in rgFiles)
 					{
-						MLog.Log(this, "Aborting loading files, program is exiting");
-						break;
+						ProcessFile(fi);
+						m_playlistFiles.Add(fi.FullName);
+						//Application.DoEvents();
+						if (MZPState.Instance == null)
+						{
+							MLog.Log(this, "Aborting loading files, program is exiting");
+							break;
+						}
 					}
+					MLog.Log(this, "Adding files completed ext=" + ext);
 				}
-				MLog.Log(this, "Adding files completed ext="+ext);
+				catch (Exception ex)
+				{
+					MLog.Log(ex, this, "Error adding files from " + directory + " err=" + ex.Message);
+				}
 			}
-			catch (Exception ex)
-			{
-				MLog.Log(ex, null, "Unable to add files from " + directory + " err=" + ex.Message);
-			}
+			else
+				MLog.Log(this, "Error, directory " + directory + " does not exist");
 		}
 	}
 

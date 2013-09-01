@@ -74,7 +74,13 @@ namespace MultiZonePlayer
 			private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 			private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
 
-			private GPIO m_gpio;
+			private WDIO m_wdio;
+			private OneWire m_oneWire;
+
+			public OneWire OneWire
+			{
+				get { return m_oneWire; }
+			}
 
 			/*internal USB_RC2.ELROUsbRC2 RemoteControl
 			{
@@ -110,9 +116,9 @@ namespace MultiZonePlayer
                 set { m_isPowerFailure = value; }
             }
 
-			public GPIO Gpio
+			public WDIO Gpio
 			{
-				get { return m_gpio; }
+				get { return m_wdio; }
 			}
 
             public MZPState()
@@ -177,16 +183,18 @@ namespace MultiZonePlayer
                 m_winEventLogReader.AddSource("APC UPS Service");
 
 				RFXDeviceDefinition.LoadFromIni();
-				m_gpio = new GPIO();
+				m_wdio = new WDIO();//new GPIO();
+				m_oneWire = new OneWire();
                 m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERPASS[1]));
                 m_messengerList.Add(new SMS());
 				m_messengerList.Add(new Modem());
 				m_messengerList.Add(new RFXCom());
-				m_messengerList.Add(m_gpio);
+				m_messengerList.Add(m_wdio);
+				m_messengerList.Add(m_oneWire);
 
-				Thread th = new Thread(() => m_gpio.LoopForEvents());
-				th.Name = "GPIO Event Loop";
-				th.Start();
+				//Thread th = new Thread(() => m_wdio.LoopForEvents());
+				//th.Name = "WDIO Event Loop";
+				//th.Start();
 
 				LoadMacrosandRules();
 
@@ -653,13 +661,26 @@ namespace MultiZonePlayer
                 return result;
             }
 
+			public string GetZonesStatus()
+			{
+				String result = "Status at " + DateTime.Now.ToLongDateString() 
+					+ " "+DateTime.Now.ToLongTimeString();
+				result +=  "\r\n" + MZPState.Instance.SystemAlarm.AreaState;
+				result += "\r\nPower Failed=" + MZPState.Instance.IsPowerFailure;
+				foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+				{
+					result += "\r\n" + zone.SummaryStatus;
+				}
+				return result;
+			}
+
 			private void HealthCheckiSpy()
 			{
 				if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
 				{
 					if (!Utilities.IsProcAlive(IniFile.PARAM_ISPY_PROCNAME[1]))
 					{
-						MLog.Log(this, "iSpy proc not running, restarting");
+						MLog.Log(this, "iSpy proc not running, restarting. Searched for proc:" + IniFile.PARAM_ISPY_PROCNAME[1]);
 						Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
 						RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
 					}
@@ -750,6 +771,7 @@ namespace MultiZonePlayer
 
             public bool SendMessengerMessageToOne(String message)
             {
+				EmailNotifier.SendEmail(message);
                 foreach (IMessenger m in m_messengerList)
                 {
                     //if (m.IsTargetAvailable())
@@ -764,6 +786,7 @@ namespace MultiZonePlayer
 
             public void SendMessengerMessageToAll(String message)
             {
+				EmailNotifier.SendEmail(message);
                 foreach (IMessenger m in m_messengerList)
                 {
                     m.SendMessageToTarget(message);
@@ -1068,7 +1091,8 @@ namespace MultiZonePlayer
                 CheckForExternalZoneEvents();
 				CheckForScheduleMacroEvents();
                 PowerControl.timerPowerSaving_Tick();
-				
+				m_oneWire.Tick();
+
 				if (MediaLibrary.AllAudioFiles != null)
 					MediaLibrary.AllAudioFiles.SaveUpdatedItems();
             }

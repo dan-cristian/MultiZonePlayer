@@ -188,11 +188,7 @@ namespace MultiZonePlayer
                             //result = JsonResult(res, err, null);
                             break;
                         case Metadata.GlobalCommands.status:
-							detailedStatus += "\r\n" + MZPState.Instance.SystemAlarm.AreaState;
-							foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
-                            {
-                                detailedStatus += "\r\n" + zone.SummaryStatus;
-                            }
+							detailedStatus += MZPState.Instance.GetZonesStatus();
 							cmdresult.OutputMessage = detailedStatus;
                             //result = JsonResult(Metadata.ResultEnum.OK, detailedStatus, null);
                             break;

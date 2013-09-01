@@ -204,7 +204,7 @@ namespace MultiZonePlayer
         /// <summary>
         /// enumeration to hold our transmission types
         /// </summary>
-        public enum TransmissionType { Text, Hex, TextCR }
+        public enum TransmissionType { Text, Hex, TextCR, TextR }
 
         /// <summary>
         /// enumeration to hold our message types
@@ -337,6 +337,8 @@ namespace MultiZonePlayer
 				try
 				{
 					OpenPort();
+					if (!comPort.IsOpen)
+						return;
 				}
 				catch (Exception ex)
 				{
@@ -357,6 +359,7 @@ namespace MultiZonePlayer
                     //DisplayData(MessageType.Outgoing, msg + "\n");
                     break;
 				case TransmissionType.TextCR:
+				case TransmissionType.TextR:
 					//send the message to the port
 					comPort.Write(msg + "\r");
 					//display the message
@@ -443,11 +446,14 @@ namespace MultiZonePlayer
             {
                 //first check if the port is already open
                 //if its open then close it
-                if (comPort.IsOpen == true) comPort.Close();
-                //display message
-                MLog.Log(this, "Port closed");
-                MLog.LogModem(comPort.PortName + " Closed\r\n");
-                //return true if port is closed
+				if (comPort.IsOpen == true)
+				{
+					comPort.Close();
+					//display message
+					MLog.Log(this, "Port closed");
+					MLog.LogModem(comPort.PortName + " Closed\r\n");
+				}
+				//return true if port is closed
                 if (comPort.IsOpen == false) 
                     return true;
                 MLog.Log(this, "Issue closing port");
@@ -555,23 +561,42 @@ namespace MultiZonePlayer
 								}
 								catch (TimeoutException)
 								{
-									//MLog.Log(this, "Timeout comport " + comPort.PortName);
 									msg = comPort.ReadExisting();
 								}
 								msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
 								if (VerboseDebug)
 									MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
-								/*if (msg.Length == 1)
-                                {
-                                    MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
-                                    //comPort.Close();
-                                }*/
+								
 								_callback(msg);
 							}
-							//string msg = comPort.ReadLine();
-
-							//display the data to the user
-							//DisplayData(MessageType.Incoming, msg + "\n");
+							break;
+						case TransmissionType.TextR:
+							string[] msgarray;
+							while (comPort != null && comPort.BytesToRead > 0)
+							{
+								//read data waiting in the buffer
+								try
+								{
+									msg = comPort.ReadTo("\r");
+									msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
+									if (VerboseDebug)
+										MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(),
+											comPort.PortName, msgDisplay, msg.Length));
+									msgarray = msg.Split(new char[]{'\r'}, StringSplitOptions.RemoveEmptyEntries);
+									foreach (string atom in msgarray)
+									{
+										msgDisplay = atom.Replace("\r", "{R}").Replace("\n", "{N}");
+										if (VerboseDebug)
+											MLog.LogModem(String.Format("{0} {1}   READ SPLIT [{2}] len={3}\r\n", DateTime.Now.ToString(), 
+												comPort.PortName, msgDisplay, atom.Length));
+										_callback(atom);
+									}
+								}
+								catch (TimeoutException)
+								{
+									//msg = comPort.ReadExisting();
+								}
+							}
 							break;
                         //user chose binary
                         case TransmissionType.Hex:

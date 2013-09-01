@@ -334,8 +334,10 @@ namespace MultiZonePlayer
                 String result = PostURLMessage(GET_URL, "Player.GetActivePlayers");
                 try
                 {
-					if (!m_bringToForegroundOnce)
+					if (Utilities.GetForegroundWindow() != GetXBMCHandle())//(!m_bringToForegroundOnce)
 					{
+						MLog.Log(this, "Sending XMBC to foreground, previous foregradoun win="
+							+Utilities.GetForegroundWindow()+" xmbc="+GetXBMCHandle());
 						int i = 0;//wait for xbmc to launch
 						do { System.Threading.Thread.Sleep(100); i++; } 
 						while (GetXBMCHandle() == IntPtr.Zero && i < 50);

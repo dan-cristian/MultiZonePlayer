@@ -126,6 +126,9 @@
       <HintPath>ThirdParty\HE853.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.JScript" />
+    <Reference Include="OneWireAPI.NET">
+      <HintPath>ThirdParty\1wire\OneWireAPI.NET.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -149,6 +152,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\taglib-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="vjslib">
+      <HintPath>ThirdParty\1wire\x64\vjslib.dll</HintPath>
+    </Reference>
+    <Reference Include="vjslib.x64">
+      <HintPath>ThirdParty\1wire\vjslib.x64.dll</HintPath>
+    </Reference>
     <Reference Include="Vlc.DotNet.Core, Version=1.2.0.0, Culture=neutral, PublicKeyToken=84529da31f4eb963, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\Vlc.DotNet.Core.dll</HintPath>
@@ -171,8 +180,8 @@
     <Compile Include="AudioManagement.Designer.cs">
       <DependentUpon>AudioManagement.cs</DependentUpon>
     </Compile>
+    <Compile Include="IoDevices.cs" />
     <Compile Include="ThirdParty\FTD2XX_NET.cs" />
-    <Compile Include="ZoneClosures.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Messengers.cs" />
     <Compile Include="MzpState.cs" />

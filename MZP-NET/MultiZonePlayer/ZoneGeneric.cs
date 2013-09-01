@@ -311,7 +311,7 @@ namespace MultiZonePlayer
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
                     break;
 				case Metadata.GlobalCommands.closure:
-					ZoneClosures.ProcessAction(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.id),
+					IoEvent(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.id),
 						vals.GetValue(Metadata.GlobalParams.iscontactmade).ToLower()=="true");
 					break;
 				case Metadata.GlobalCommands.closurearm:
@@ -721,6 +721,37 @@ namespace MultiZonePlayer
 				p_zoneDetails.NotifyZoneEventTriggered = Metadata.ZoneNotifyState.Closed;
 				p_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}
+		}
+
+		public void IoEvent(Metadata.ZoneDetails zone, string key, Boolean isKeyDown)// KeyDetail kd)
+		{
+			//if (zone.ZoneId == 15)
+			//	MLog.Log(null, "debug");
+			Metadata.ClosureOpenCloseRelay lastState = zone.ClosureOpenCloseRelay;
+			if (lastState == null)
+			{
+				lastState = new Metadata.ClosureOpenCloseRelay(isKeyDown);
+				zone.ClosureOpenCloseRelay = lastState;
+			}
+			else
+			{
+				if (zone.ClosureOpenCloseRelay.RelayType != Metadata.ClosureOpenCloseRelay.EnumRelayType.Button)
+					if (lastState.RelayState == zone.ClosureOpenCloseRelay.GetRelayState(isKeyDown))
+						return;//return if state does not change, for closures, not buttons
+				lastState.RelayContactMade = isKeyDown;
+			}
+			zone.ClosureCounts++;
+			zone.MovementAlert = true;
+			zone.LastClosureEventDateTime = DateTime.Now;
+			string message = "Closure state " + key + " is " + lastState.RelayState + " on zone " + zone.ZoneName;
+			MLog.Log(null, message);
+			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString());
+			if (lastState.RelayState == Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed)
+			{
+				MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message, MZPEvent.EventType.Security,
+					MZPEvent.EventImportance.Informative, zone);
+			}
+			zone.MovementAlert = false;
 		}
 
         public void Tick()
