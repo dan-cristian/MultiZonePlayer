@@ -625,7 +625,12 @@ namespace MultiZonePlayer
 			else
 			{
 				result = span.ToString(IniFile.PARAM_TIMESPAN_FORMAT[1]);
-				result = result.Replace("0d", "").Replace("0h", "").Replace("0m", "");
+				if (result.Substring(0, 2) == "0d")
+					result = result.Replace("0d", "");
+				if (result.Substring(0,2)=="0h")
+					result = result.Replace("0h", "");
+				if (result.Substring(0, 2) == "0m")
+					result = result.Replace("0m", "");
 			}
 			return result;
 		}
