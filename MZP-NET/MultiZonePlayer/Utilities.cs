@@ -617,7 +617,19 @@ namespace MultiZonePlayer
             return Url.Split(':')[0];
         }
 
-        
+		public static String DurationAsTimeSpan(TimeSpan span)
+		{
+			String result;
+			if (DateTime.Now.Subtract(DateTime.MinValue).Days == span.Days)
+				result = "N/A";
+			else
+			{
+				result = span.ToString(IniFile.PARAM_TIMESPAN_FORMAT[1]);
+				result = result.Replace("0d", "").Replace("0h", "").Replace("0m", "");
+			}
+			return result;
+		}
+
 
         public static string GetEnumDescription(Enum value)
         {
@@ -852,6 +864,9 @@ namespace MultiZonePlayer
 					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", MZPEvent.EventSource.System);
 				}
+				else
+					Utilities.AppendToGenericLogFile("DROPPED: "+System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
+						+ Thread.CurrentThread.Name + "]:" + text + "\n", MZPEvent.EventSource.System);
             }
             catch (Exception)
             { }

@@ -405,7 +405,7 @@ namespace MultiZonePlayer
 						m_zoneIdMap[pinindex] = zone.ZoneId;
 						Thread.Sleep(100);
 						MLog.Log(this, "Set IO pin " + pinindex + " zone=" + zone.ZoneName
-							+ " result=" + WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 100));
+							+ " result=" + WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000));
 					}
 					else
 						MLog.Log(this, "Error pin index in zone " + zone.ZoneName + " is out of range: " + pinindex);
@@ -440,6 +440,8 @@ namespace MultiZonePlayer
 						state = STATE_UNDEFINED;
 				if (state != STATE_UNDEFINED)
 				{
+					if (state == STATE_CONTACT_MADE)
+						MLog.Log(this, "CONTACT MADE on pin=" + pin);
 					pinindex = Convert.ToInt16(pin) - Convert.ToInt16('A');
 					zoneid = m_zoneIdMap[pinindex];
 					//if (m_lastState[pinindex] != state)

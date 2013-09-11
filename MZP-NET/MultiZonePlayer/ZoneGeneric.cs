@@ -232,13 +232,13 @@ namespace MultiZonePlayer
             {
                 #region commands without activity
                 case Metadata.GlobalCommands.cameraevent://video camera event
-                    MZPState.Instance.ZoneEvents.AddCamAlert(vals);
+					RecordMoveEvent(Metadata.MoveTypeEnum.Camera);
+					
+					MZPState.Instance.ZoneEvents.AddCamAlert(vals);
                     String camId = vals.GetValue(Metadata.GlobalParams.oid);
                     string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
-                    m_zoneDetails.MovementAlert = true;
                     MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, 
 						MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
-					ZoneOpenActions();
 					
 					m_zoneDetails.MovementAlert = false;
                    
@@ -255,7 +255,8 @@ namespace MultiZonePlayer
                     MZPState.Instance.ZoneEvents.ToggleAlertStatus(vals);
                     break;
                 case Metadata.GlobalCommands.alarmevent://alarm sensor event
-                    String zonestate = vals.GetValue(Metadata.GlobalParams.status);
+					RecordMoveEvent(Metadata.MoveTypeEnum.Alarm);
+					String zonestate = vals.GetValue(Metadata.GlobalParams.status);
                     m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());
                     DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(Metadata.GlobalParams.datetime));
                     m_zoneDetails.LastAlarmMovementDateTime = eventDateTime;
@@ -263,7 +264,6 @@ namespace MultiZonePlayer
                     MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
                             vals.GetValue(Metadata.GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(Metadata.GlobalParams.status),
                             MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
-					ZoneOpenActions();
 					
                     
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
@@ -283,13 +283,7 @@ namespace MultiZonePlayer
                         m_zoneDetails.SleepHourMin = "";
                     else
                         m_zoneDetails.SleepHourMin = Convert.ToDateTime(date).ToString(IniFile.DATETIME_DAYHR_FORMAT);
-                    /*if (minutes == -1)
-                        m_zoneDetails.SleepHourMin = "";
-                    else
-                    {
-                        DateTime dt = DateTime.Now.AddMinutes(minutes);
-                        m_zoneDetails.SleepHourMin = dt.Hour + ":" + dt.Minute;
-                    }*/
+                    
                     break;
                 case Metadata.GlobalCommands.micrecord:
                     m_recIndex++;
@@ -311,7 +305,7 @@ namespace MultiZonePlayer
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
                     break;
 				case Metadata.GlobalCommands.closure:
-					IoEvent(m_zoneDetails, vals.GetValue(Metadata.GlobalParams.id),
+					IoEvent(vals.GetValue(Metadata.GlobalParams.id),
 						vals.GetValue(Metadata.GlobalParams.iscontactmade).ToLower()=="true");
 					break;
 				case Metadata.GlobalCommands.closurearm:
@@ -723,35 +717,54 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public void IoEvent(Metadata.ZoneDetails zone, string key, Boolean isKeyDown)// KeyDetail kd)
+		public void IoEvent(string key, Boolean isContactMade)// KeyDetail kd)
 		{
-			//if (zone.ZoneId == 15)
-			//	MLog.Log(null, "debug");
-			Metadata.ClosureOpenCloseRelay lastState = zone.ClosureOpenCloseRelay;
+			//if (isContactMade)
+			MLog.Log(this, "IoEvent zone="+m_zoneDetails.ZoneName+" key="+key + " contactmade="+isContactMade);
+			Metadata.ClosureOpenCloseRelay lastState = m_zoneDetails.ClosureOpenCloseRelay;
 			if (lastState == null)
 			{
-				lastState = new Metadata.ClosureOpenCloseRelay(isKeyDown);
-				zone.ClosureOpenCloseRelay = lastState;
+				lastState = new Metadata.ClosureOpenCloseRelay(isContactMade);
+				m_zoneDetails.ClosureOpenCloseRelay = lastState;
 			}
 			else
 			{
-				if (zone.ClosureOpenCloseRelay.RelayType != Metadata.ClosureOpenCloseRelay.EnumRelayType.Button)
-					if (lastState.RelayState == zone.ClosureOpenCloseRelay.GetRelayState(isKeyDown))
+				if (m_zoneDetails.ClosureOpenCloseRelay.RelayType != Metadata.ClosureOpenCloseRelay.EnumRelayType.Button)
+					if (lastState.RelayState == m_zoneDetails.ClosureOpenCloseRelay.GetRelayState(isContactMade))
 						return;//return if state does not change, for closures, not buttons
-				lastState.RelayContactMade = isKeyDown;
+				lastState.RelayContactMade = isContactMade;
 			}
-			zone.ClosureCounts++;
-			zone.MovementAlert = true;
-			zone.LastClosureEventDateTime = DateTime.Now;
-			string message = "Closure state " + key + " is " + lastState.RelayState + " on zone " + zone.ZoneName;
-			MLog.Log(null, message);
-			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString());
+			
+			RecordMoveEvent(Metadata.MoveTypeEnum.Closure);
+
+			string message = "Closure state " + key + " is " + lastState.RelayState + " on zone " + m_zoneDetails.ZoneName;
+			MLog.Log(this, message);
+			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString());
 			if (lastState.RelayState == Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed)
 			{
 				MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message, MZPEvent.EventType.Security,
-					MZPEvent.EventImportance.Informative, zone);
+					MZPEvent.EventImportance.Informative, m_zoneDetails);
 			}
-			zone.MovementAlert = false;
+			m_zoneDetails.MovementAlert = false;
+		}
+
+		private void RecordMoveEvent(Metadata.MoveTypeEnum moveType)
+		{
+			ZoneOpenActions();
+
+			switch (moveType)
+			{
+				case Metadata.MoveTypeEnum.Closure:
+					m_zoneDetails.ClosureCounts++;
+					m_zoneDetails.LastClosureEventDateTime = DateTime.Now;
+					break;
+				case Metadata.MoveTypeEnum.Camera:
+					break;
+				case Metadata.MoveTypeEnum.Alarm:
+					break;
+			}
+
+			m_zoneDetails.MovementAlert = true;
 		}
 
         public void Tick()

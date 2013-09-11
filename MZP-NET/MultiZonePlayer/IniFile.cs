@@ -192,10 +192,13 @@ namespace MultiZonePlayer
 			public static String[] PARAM_WDIO_MANUFACTURER_NAME = new String[] { "PARAM_WDIO_MANUFACTURER_NAME", "Prolific", "WDIO manufacturer name used to auto identify COM port name" };
 			public static String[] PARAM_WDIO_COMPORT = new String[] { "PARAM_WDIO_COMPORT", "COM20" };
 			public static String[] PARAM_WDIO_CHANNEL = new String[] { "PARAM_WDIO_CHANNEL", "A" };
-			
+
+			public static String[] PARAM_TIMESPAN_FORMAT = new String[] { "PARAM_TIMESPAN_LONG_FORMAT", @"d\dh\hm\ms\s", "Long Format to display time intervals" };
+
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
 			public static String DATETIME_FULL_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
 
             public static Object[] PARAMS = new Object[]
             {
@@ -271,7 +274,8 @@ namespace MultiZonePlayer
 				PARAM_RELAY_DEVICE_NAME,
 				PARAM_GPIO_CDC_MANUFACTURER_NAME,
 				PARAM_WDIO_MANUFACTURER_NAME,
-				PARAM_WDIO_CHANNEL
+				PARAM_WDIO_CHANNEL,
+				PARAM_TIMESPAN_FORMAT
 
              };
             private static string m_iniFinalPath =  null;

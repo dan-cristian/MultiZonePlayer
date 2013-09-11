@@ -355,9 +355,9 @@ namespace MultiZonePlayer
 			String color = "Transparent";
 			if (zone != null)
 			{
-				if (zone.HasImmediateMove) color = "Orange";
-				else if (zone.HasRecentMove) color = "Pink";
-				else if (zone.HasPastMove) color = "Yellow";
+				if (zone.HasImmediateMove) color = "Pink";
+				else if (zone.HasRecentMove) color = "Yellow";
+				else if (zone.HasPastMove) color = "Cyan";
 			}
 			else
 			{

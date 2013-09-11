@@ -385,6 +385,36 @@ namespace MultiZonePlayer
 				}
 			}
 
+			public ZoneGeneric GetZoneIfActive(int zoneId)
+			{
+				ZoneGeneric zp = ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
+				if (zp != null && IsZoneActive(zoneId))
+					return zp;
+				else
+					return null;
+			}
+
+			public ZoneGeneric GetZone(int zoneId)
+			{
+				ZoneGeneric zp = ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
+				return zp;
+			}
+
+			public void OpenZone(int zoneId)
+			{
+				if (!IsZoneActive(zoneId))
+				{
+					ActiveZones.Add(new ZoneGeneric(zoneId));
+				}
+			}
+			public bool IsZoneActive(int zoneId)
+			{
+				Metadata.ZoneDetails zone = ZoneDetails.Find(item => item.ZoneId == zoneId);
+				if (zone != null)
+					return zone.IsActive;
+				else return false; ;
+			}
+
             public Hashtable GetAPlayList(int zoneId)
             {
                 Hashtable table;

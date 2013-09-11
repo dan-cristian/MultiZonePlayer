@@ -600,7 +600,13 @@ namespace MultiZonePlayer
 			}
 		}
 
-		
+		public enum MoveTypeEnum
+		{
+			Camera,
+			Closure,
+			Command,
+			Alarm
+		}
 		
         public class ZoneDetails
         {
@@ -724,6 +730,7 @@ namespace MultiZonePlayer
                     String val = "#"+ ZoneId +" "+ ZoneName + (IsActive?" Active":"") 
                         + (ActivityType.Equals(GlobalCommands.nul)?"":" "+ActivityType.ToString()) 
                         + (IsArmed?" Armed ":"") 
+						+ Utilities.DurationAsTimeSpan(LastMovementAge)
                         + (HasImmediateMove? " ImmediateMove ":"")
                         + (HasRecentMove? " RecentMove ":"")
                         + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState +"@ "+LastClosureEventDateTime :"")
@@ -746,10 +753,16 @@ namespace MultiZonePlayer
                 }
             }
 
-			public double LastMovementAgeInMinutes
+			public TimeSpan LastMovementAge
 			{
-				get { return Math.Round(DateTime.Now.Subtract(LastMovementDate).TotalMinutes); }
+				get { return DateTime.Now.Subtract(LastMovementDate); }
 			}
+
+			public string LastMovementAgeAsTimeSpan
+			{
+				get { return Utilities.DurationAsTimeSpan(LastMovementAge); }
+			}
+
 			public double LastLocalCommandAgeInSeconds
 			{
 				get { return Math.Round(DateTime.Now.Subtract(LastLocalCommandDateTime).TotalSeconds); }
@@ -892,8 +905,14 @@ namespace MultiZonePlayer
 
 			public String Temperature
 			{
-				get 
-				{	return m_temperature;}
+				get
+				{
+					double temp;
+					if (Double.TryParse(m_temperature, out temp))
+						return Math.Round(temp, 2).ToString();
+					else
+						return m_temperature;
+				}
 				set
 				{
 					m_temperature = value;
@@ -908,9 +927,14 @@ namespace MultiZonePlayer
 				}
 			}
 
-			public String TemperatureAgeInMinutes
+			public TimeSpan TemperatureAge
 			{
-				get { return Math.Round(DateTime.Now.Subtract(m_lastTempSet).TotalMinutes).ToString(); }
+				get { return DateTime.Now.Subtract(m_lastTempSet); }
+			}
+
+			public String TemperatureAgeAsTimeSpan
+			{
+				get { return Utilities.DurationAsTimeSpan(TemperatureAge); }
 			}
 
 			public String Humidity

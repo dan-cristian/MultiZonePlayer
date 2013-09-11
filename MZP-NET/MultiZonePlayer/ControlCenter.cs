@@ -251,17 +251,11 @@ namespace MultiZonePlayer
             }
         }
         
-        public void OpenZone(int zoneId)
-        {
-            if (!ControlCenter.Instance.IsZoneActive(zoneId))
-            {
-                MZPState.Instance.ActiveZones.Add(new ZoneGeneric(zoneId));
-            }
-        }
+        
 
         private void OpenZoneForm(int zoneId)
         {
-            if (ControlCenter.Instance.IsZoneActive(zoneId))
+            if (MZPState.Instance.IsZoneActive(zoneId))
             {
                 ZoneGeneric zone = MZPState.Instance.ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
 
@@ -286,28 +280,11 @@ namespace MultiZonePlayer
             return m_zoneFormsList.Count;
         }
 
-        public ZoneGeneric GetZoneIfActive(int zoneId)
-        {
-            ZoneGeneric zp = MZPState.Instance.ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
-            if (zp != null && IsZoneActive(zoneId))
-                return zp;
-            else
-                return null;
-        }
+        
 
-        public ZoneGeneric GetZone(int zoneId)
-        {
-            ZoneGeneric zp = MZPState.Instance.ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
-            return zp;
-        }
+       
 
-        public  bool IsZoneActive(int zoneId)
-        {
-            Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(item => item.ZoneId==zoneId);
-            if (zone != null) 
-                return zone.IsActive;
-            else return false;;
-        }
+        
 
         
 

@@ -382,9 +382,9 @@ namespace MultiZonePlayer
 
                 ZoneGeneric zone;
                 //zone for cmd received is not active
-                if (ControlCenter.Instance != null)
+                if (MZPState.Instance != null)
                 {
-                    if (ControlCenter.Instance.GetZoneIfActive(zoneId) == null)
+                    if (MZPState.Instance.GetZoneIfActive(zoneId) == null)
                     {
                         if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
                         {
@@ -393,12 +393,12 @@ namespace MultiZonePlayer
                         }
                         else
                         {
-                            if (ControlCenter.Instance.GetZone(zoneId) == null)
-                                ControlCenter.Instance.OpenZone(zoneId);
+                            if (MZPState.Instance.GetZone(zoneId) == null)
+                                MZPState.Instance.OpenZone(zoneId);
                         }
                     }
 
-                    zone = ControlCenter.Instance.GetZone(zoneId);
+                    zone = MZPState.Instance.GetZone(zoneId);
                     if (zone == null)
                     {
                         MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
@@ -419,6 +419,7 @@ namespace MultiZonePlayer
                 {
                     result.ErrorMessage = "ControlCenter instance is null";
 					result.Result = Metadata.ResultEnum.ERR;
+					MLog.Log(null, result.ErrorMessage);
 					return;
                 }
             }

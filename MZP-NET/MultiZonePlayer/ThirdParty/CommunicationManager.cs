@@ -587,7 +587,7 @@ namespace MultiZonePlayer
 									{
 										msgDisplay = atom.Replace("\r", "{R}").Replace("\n", "{N}");
 										if (VerboseDebug)
-											MLog.LogModem(String.Format("{0} {1}   READ SPLIT [{2}] len={3}\r\n", DateTime.Now.ToString(), 
+											MLog.LogModem(String.Format("{0} {1}        read split [{2}] len={3}\r\n", DateTime.Now.ToString(), 
 												comPort.PortName, msgDisplay, atom.Length));
 										_callback(atom);
 									}
