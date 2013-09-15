@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using System.Threading;
+using System.Net;
 
 using com.dalsemi.onewire;
 using com.dalsemi.onewire.adapter;
@@ -778,7 +779,7 @@ namespace MultiZonePlayer
 				OneWireContainer element;
 				sbyte[] state;
 				Metadata.ZoneDetails zone;
-				while (containers.hasMoreElements())
+				while (MZPState.Instance != null && containers.hasMoreElements())
 				{
 					element = (OneWireContainer)containers.nextElement();
 					//MLog.Log(this, "OneWire device:" + element.getAddressAsString() + element.getName() + element.getDescription());
@@ -830,6 +831,119 @@ namespace MultiZonePlayer
 		public bool IsFaulty()
 		{
 			return (adapter==null);
+		}
+	}
+
+	public abstract class GenericUPS
+	{
+		public class UPSState
+		{
+			public Boolean LastPowerFailDateTime;
+			public string IPVoltage, IPFaultVoltage, OPVoltage, OPCurrent, IPFrequency, BatteryVoltage, Temperature, UPSStatus;
+			public Boolean PowerFail, BatteryLow, AVR, UPSFailed, StandbyUPS, TestInProgress, ShutdownActive, BeeperOn;
+		}
+		protected UPSState m_lastStatus;
+		public abstract void Initialise();
+		public abstract void GetStatus();
+	}
+
+	public class APCUPS : GenericUPS
+	{
+		private WinEventLogReader m_winEventLogReader;
+		private String m_eventLog, m_eventSource;
+		
+
+		public APCUPS(String eventLog, String eventSource)
+		{
+			m_eventLog = eventLog;
+			m_eventSource = eventSource;
+			Initialise();
+		}
+
+		public override void Initialise()
+		{
+			m_winEventLogReader = new WinEventLogReader(m_eventLog);
+			m_winEventLogReader.AddSource(m_eventSource);
+		}
+
+		public override void GetStatus()
+		{ }
+	}
+
+	public class MustekUPS : GenericUPS
+	{
+		string m_statusurl;
+		WebClient m_client;
+
+		public MustekUPS(String statusurl)
+		{
+			m_statusurl = statusurl;
+			Initialise();
+		}
+
+		public override void Initialise()
+		{
+			m_lastStatus = new UPSState();
+			m_client = new WebClient();
+			GetStatus();
+		}
+
+		public override void GetStatus()
+		{
+			string html = m_client.DownloadString(m_statusurl);
+			string[] atoms, pairs;
+			
+			atoms = html.Split(new string[]{"</br>\r\n"}, StringSplitOptions.RemoveEmptyEntries);
+			foreach (string atom in atoms)
+			{
+				pairs = atom.Replace(" ", "").Split('=');
+				if (pairs.Length > 1)
+				{
+					switch (pairs[0])
+					{
+						case "I/PVoltage":
+							m_lastStatus.IPVoltage = pairs[1];
+							break;
+						case "I/PFaultVoltage":
+							m_lastStatus.IPFaultVoltage = pairs[1];
+							break;
+						case "O/PVoltage":
+							m_lastStatus.OPVoltage = pairs[1];
+							break;
+						case "O/PCurrent":
+							m_lastStatus.OPCurrent = pairs[1];
+							break;
+						case "I/PFrequency":
+							m_lastStatus.IPFrequency = pairs[1];
+							break;
+						case "BatteryVoltage":
+							m_lastStatus.BatteryVoltage = pairs[1];
+							break;
+						case "Temperature ":
+							m_lastStatus.Temperature = pairs[1];
+							break;
+						case "UPSStatus":
+							m_lastStatus.UPSStatus = pairs[1];
+							if (m_lastStatus.UPSStatus.Length>=8)
+							{
+								m_lastStatus.PowerFail = m_lastStatus.UPSStatus[0]=='1';
+								m_lastStatus.BatteryLow = m_lastStatus.UPSStatus[1]=='1';
+								m_lastStatus.AVR = m_lastStatus.UPSStatus[2]=='1';
+								m_lastStatus.UPSFailed = m_lastStatus.UPSStatus[3]=='1';
+								m_lastStatus.StandbyUPS = m_lastStatus.UPSStatus[4]=='1';
+								m_lastStatus.TestInProgress = m_lastStatus.UPSStatus[5]=='1';
+								m_lastStatus.ShutdownActive= m_lastStatus.UPSStatus[6]=='1';
+								m_lastStatus.BeeperOn = m_lastStatus.UPSStatus[7]=='1';
+							}
+							break;
+					}
+				}
+			}
+
+			if (m_lastStatus.PowerFail != MZPState.Instance.IsPowerFailure)
+			{
+				MLog.Log(this, "MUSTEK power event failure="+m_lastStatus.PowerFail);
+			}
 		}
 	}
 }

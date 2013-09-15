@@ -187,7 +187,7 @@ namespace MultiZonePlayer
 			//Final_Adresses = (string[])address.ToArray(typeof(string));
 			//}
 			//}
-			//catch (Exception err) { MessageBox.Show(err.Message); }
+			//catch (Exception err) { MultiZonePlayer.MLog.Log(this, err.Message); }
 		}
 
 		public Hashtable GetAllFileList_()

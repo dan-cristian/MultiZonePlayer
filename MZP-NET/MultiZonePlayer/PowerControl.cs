@@ -314,8 +314,9 @@ namespace MultiZonePlayer
         {
             FTD2XX_NET.FTDI.FT_STATUS status;
             uint uvalue = 0;
-            //MLog.Log(null,"Reading bytes avail");
+            MLog.Log(this,"Reading bytes avail");
             status = m_usb8Relay.GetRxBytesAvailable(ref uvalue);
+			MLog.Log(this, "Reading bytes avail="+uvalue);
             if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
             {
                 if ((uvalue > 0))
@@ -323,6 +324,7 @@ namespace MultiZonePlayer
                     //MLog.Log(null,"RX buffer has data, bytecount=" + uvalue);
                     byte[] dataBuffer = new byte[uvalue];
                     uint numRead = 0;
+					Thread.Sleep(100);
                     status = m_usb8Relay.Read(dataBuffer, uvalue, ref numRead);
                     if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
                         MLog.Log(this,"Read data numread=" + numRead + " status=" + status);

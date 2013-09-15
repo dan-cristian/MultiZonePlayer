@@ -61,15 +61,13 @@ namespace MultiZonePlayer
             private DateTime m_initMZPStateDateTime = DateTime.Now;
             private DateTime m_lastBuzzDateTime = DateTime.Now;
 
-            private WinEventLogReader m_winEventLogReader;
-
             private List<Display> m_displayList = new List<Display>();
             private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
 
 			//private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
 			private List<Metadata.MacroEntry> m_macroList;
-
+			private List<GenericUPS> m_upsList;
 
 			private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 			private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
@@ -179,8 +177,7 @@ namespace MultiZonePlayer
                 m_Tail = new MultiZonePlayer.Tail(IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[1]);
                 m_Tail.MoreData += new MultiZonePlayer.Tail.MoreDataHandler(m_zoneEvents.Tail_MoreData_PARADOX);
 
-                m_winEventLogReader = new WinEventLogReader("Application");
-                m_winEventLogReader.AddSource("APC UPS Service");
+                
 
 				RFXDeviceDefinition.LoadFromIni();
 				m_wdio = new WDIO();//new GPIO();
@@ -198,6 +195,9 @@ namespace MultiZonePlayer
 
 				LoadMacrosandRules();
 
+				m_upsList = new List<GenericUPS>();
+				m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
+				m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
                 LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
 
@@ -222,7 +222,7 @@ namespace MultiZonePlayer
 				fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.RULES_FILE);
 				if (fileModified != m_lastRulesFileModifiedDate)
 				{
-					Metadata.Rules.LoadFromIni();
+					Rules.LoadFromIni();
 					m_lastRulesFileModifiedDate = fileModified;
 				}
 			}
@@ -967,6 +967,14 @@ namespace MultiZonePlayer
 				}
 			}
 
+			public void CheckForUpsStatus()
+			{
+				foreach (GenericUPS ups in m_upsList)
+				{
+					ups.GetStatus();
+				}
+			}
+
 			public int GetMacroIdByShortcut(string shortcut, string deviceName)
 			{
 				if (shortcut != null)
@@ -1120,6 +1128,7 @@ namespace MultiZonePlayer
                 CheckForAlarm();
                 CheckForExternalZoneEvents();
 				CheckForScheduleMacroEvents();
+				CheckForUpsStatus();
                 PowerControl.timerPowerSaving_Tick();
 				m_oneWire.Tick();
 

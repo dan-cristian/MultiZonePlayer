@@ -192,7 +192,7 @@ namespace USB_RC2
 			}
 			catch (Exception exception)
 			{
-				MessageBox.Show(exception.Message, "Info", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				MultiZonePlayer.MLog.Log(this, exception.Message + "Info");
 			}
 		}
 

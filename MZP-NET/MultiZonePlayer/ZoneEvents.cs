@@ -324,18 +324,18 @@ namespace MultiZonePlayer
 
         public void WinEventLogEntryMatch(String sourceString, String message, DateTime datetime)
         {
-            if (sourceString.ToLower().Equals(IniFile.PARAM_UPS_LOG_SOURCE[1].ToLower()))
+            if (sourceString.ToLower().Equals(IniFile.PARAM_UPS_APC_LOG_SOURCE[1].ToLower()))
             {
                 Boolean failure = MZPState.Instance.IsPowerFailure;
 
-                if (message.ToLower().Contains(IniFile.PARAM_UPS_LOG_POWERFAILURE_ACTIVE[1].ToLower()))
+                if (message.ToLower().Contains(IniFile.PARAM_UPS_APC_LOG_POWERFAILURE_ACTIVE[1].ToLower()))
                 {
                     //power failure
                     failure = true;
                 }
                 else
                 {
-                    if (message.ToLower().Contains(IniFile.PARAM_UPS_LOG_POWERFAILURE_INACTIVE[1].ToLower()))
+                    if (message.ToLower().Contains(IniFile.PARAM_UPS_APC_LOG_POWERFAILURE_INACTIVE[1].ToLower()))
                     {
                         //power resumed
                         failure = false;

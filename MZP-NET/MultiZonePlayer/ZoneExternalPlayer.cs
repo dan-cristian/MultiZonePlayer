@@ -198,7 +198,7 @@ namespace MultiZonePlayer
 				}
 				msg = msg.Replace(",<P>", "");
 				post.Add(msg, "");
-				//MessageBox.Show(msg);
+				//MultiZonePlayer.MLog.Log(this, msg);
 				
 				try
 				{

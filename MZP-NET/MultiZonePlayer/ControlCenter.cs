@@ -282,12 +282,6 @@ namespace MultiZonePlayer
 
         
 
-       
-
-        
-
-        
-
         #region USBEvents
         private void RegisterDriveDetector()
         {
@@ -334,11 +328,12 @@ namespace MultiZonePlayer
             // Should we allow the drive to be unplugged?
             //if (checkBoxAskMe.Checked)
             {
-                if (MessageBox.Show("Allow remove?", "Query remove",
+                /*if (MultiZonePlayer.MLog.Log(this, "Allow remove?", "Query remove",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     e.Cancel = false;       // Allow removal
                 else
                     e.Cancel = true;        // Cancel the removal of the device  
+				 */
             }
         }
         #endregion

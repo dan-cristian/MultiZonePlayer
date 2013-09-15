@@ -97,7 +97,7 @@
             {
                 string text = "Exception: " + e.Message + Environment.NewLine + "Module: " + moduleName + Environment.NewLine + "Method: " + e.TargetSite.Name;
                 string caption = "Unexpected Exception";
-                MessageBox.Show(text, caption, MessageBoxButtons.OK);
+                MultiZonePlayer.MLog.Log(null, text + caption);
                 Debug.Write(text);
             }
             finally
@@ -209,7 +209,7 @@
                 }
                 catch (Exception exception)
                 {
-                    MessageBox.Show(exception.Message, "出错提示");
+                    MultiZonePlayer.MLog.Log(this, exception.Message);
                 }
                 return flag;
             }

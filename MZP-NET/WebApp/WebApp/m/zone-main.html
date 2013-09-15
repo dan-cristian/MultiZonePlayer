@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head id="Head1">
+<meta http-equiv="content-type" content="text/html;charset=unicode;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>#Zones.ZoneName,%_zoneid# actions</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body onload="refresh(20000)" onerror="refresh(20000)">
+<table>
+<tr>
+	<td>
+	<button class="#Zones.HasSpeakers,%_zoneid#">Music</button>
+	<button class="#Zones.HasSpeakers,%_zoneid#">Radio</button>
+	<button class="#Zones.HasDisplay,%_zoneid#">Video</button>
+	<button class="#Zones.HasCamera,%_zoneid#" onclick="window.open('zone-camera.html?zoneid=%_zoneid','_self')">Camera</button>
+	<button class="#Zones.ContainsDisplay,%_zoneid#">Video</button>
+	<button class="#Zones.HasMotionSensor,%_zoneid#">Motion</button>
+	<button class="#Zones.HasClosures,%_zoneid#">Closures</button>
+	<button class="#Zones.HasTemperatureSensor,%_zoneid# Caption">#Zones.Temperature,%_zoneid#°</button>
+	<button onclick="window.open('start.html', '_self')">Back</button>
+	</td>
+</tr>
+</table>
+</body>
+</html>

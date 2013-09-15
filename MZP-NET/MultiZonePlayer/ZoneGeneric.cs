@@ -304,6 +304,16 @@ namespace MultiZonePlayer
                     Thread.Sleep(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.interval)));
                     MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
                     break;
+				case Metadata.GlobalCommands.poweron:
+					MLog.Log(this, "Permanent power ON zone="+m_zoneDetails.ZoneName);
+					m_zoneDetails.RequirePower = true;
+					MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+					break;
+				case Metadata.GlobalCommands.poweroff:
+					MLog.Log(this, "Permanent power OFF zone=" + m_zoneDetails.ZoneName);
+					MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
+					m_zoneDetails.RequirePower = false;
+					break;
 				case Metadata.GlobalCommands.closure:
 					IoEvent(vals.GetValue(Metadata.GlobalParams.id),
 						vals.GetValue(Metadata.GlobalParams.iscontactmade).ToLower()=="true");

@@ -172,9 +172,9 @@ namespace MultiZonePlayer
             public static String[] PARAM_VLC_AUDIOOUT = new String[] { "PARAM_VLC_AUDIOOUT", "directx", "DIRECTX or WAVEOUT" };
             public static String[] PARAM_GENERIC_INTERVAL_SPLIT = new String[] { "PARAM_GENERIC_INTERVAL_SPLIT", "10-60-240", "3 numbers, in minutes, separated by -" };
 
-            public static String[] PARAM_UPS_LOG_SOURCE = new String[] { "PARAM_UPS_LOG_SOURCE", "apc ups service", "should be lowercase" };
-            public static String[] PARAM_UPS_LOG_POWERFAILURE_ACTIVE = new String[] { "PARAM_UPS_LOG_POWERFAILURE_ACTIVE", "blackout" };
-            public static String[] PARAM_UPS_LOG_POWERFAILURE_INACTIVE = new String[] { "PARAM_UPS_LOG_POWERFAILURE_INACTIVE", "ac utility power" };
+			public static String[] PARAM_UPS_APC_LOG_SOURCE = new String[] { "PARAM_UPS_APC_LOG_SOURCE", "apc ups service", "should be lowercase" };
+			public static String[] PARAM_UPS_APC_LOG_POWERFAILURE_ACTIVE = new String[] { "PARAM_UPS_APC_LOG_POWERFAILURE_ACTIVE", "blackout" };
+			public static String[] PARAM_UPS_APC_LOG_POWERFAILURE_INACTIVE = new String[] {"PARAM_UPS_APC_LOG_POWERFAILURE_INACTIVE", "ac utility power" };
 
             public static String[] PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS = new String[] { "PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS", "BlackBerry 9360","list of values separated by |" };
 
@@ -192,6 +192,8 @@ namespace MultiZonePlayer
 			public static String[] PARAM_WDIO_MANUFACTURER_NAME = new String[] { "PARAM_WDIO_MANUFACTURER_NAME", "Prolific", "WDIO manufacturer name used to auto identify COM port name" };
 			public static String[] PARAM_WDIO_COMPORT = new String[] { "PARAM_WDIO_COMPORT", "COM20" };
 			public static String[] PARAM_WDIO_CHANNEL = new String[] { "PARAM_WDIO_CHANNEL", "A" };
+
+			public static String[] PARAM_UPS_MUSTEK_STATUS_URL = new String[] { "PARAM_UPS_MUSTEK_STATUS_URL", "http://localhost:12349", "Web port for UPS Assistant app - mustek UPS" };
 
 			public static String[] PARAM_TIMESPAN_FORMAT = new String[] { "PARAM_TIMESPAN_LONG_FORMAT", @"d\dh\hm\ms\s", "Long Format to display time intervals" };
 
@@ -259,9 +261,10 @@ namespace MultiZonePlayer
 				PARAM_MODEM_DEVICE_NAME,
                 PARAM_VLC_AUDIOOUT,
                 PARAM_GENERIC_INTERVAL_SPLIT,
-                PARAM_UPS_LOG_SOURCE,
-                PARAM_UPS_LOG_POWERFAILURE_ACTIVE,
-                PARAM_UPS_LOG_POWERFAILURE_INACTIVE,
+                PARAM_UPS_APC_LOG_SOURCE,
+                PARAM_UPS_APC_LOG_POWERFAILURE_ACTIVE,
+                PARAM_UPS_APC_LOG_POWERFAILURE_INACTIVE,
+				PARAM_UPS_MUSTEK_STATUS_URL,
                 PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS,
                 PARAM_XBMC_PROCESS_NAME,
                 PARAM_XBMC_APP_PATH,

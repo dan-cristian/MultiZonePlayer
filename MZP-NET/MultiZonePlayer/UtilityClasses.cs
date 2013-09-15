@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
+
 using System.Linq;
 using System.Reflection;
 
@@ -127,7 +127,9 @@ namespace MultiZonePlayer
 			closure,
 			closurearm,
 			closuredisarm,
-			runscript
+			runscript,
+			poweron,
+			poweroff
         }
         public enum GlobalParams
         {
@@ -258,8 +260,9 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.powercycle,		GlobalParams.interval),
 			new CommandSyntax(GlobalCommands.notifyuser,		GlobalParams.sourcezoneid),
 			new CommandSyntax(GlobalCommands.runscript,			GlobalParams.name),
-			new CommandSyntax(GlobalCommands.closure,			GlobalParams.id, GlobalParams.iscontactmade)
-
+			new CommandSyntax(GlobalCommands.closure,			GlobalParams.id, GlobalParams.iscontactmade),
+			new CommandSyntax(GlobalCommands.poweron,			GlobalParams.zonename),
+			new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename)
             /*
             genrelist,
             setgenrelist,
@@ -572,7 +575,7 @@ namespace MultiZonePlayer
 
 					if (m_relayState != m_relayStateLast)
 					{
-						Rules.ExecuteRule(this);
+						Rules.ExecuteRule(this, "contactmade="+m_relayState);
 						m_relayStateLast= m_relayState;
 					}
 				}
@@ -707,7 +710,7 @@ namespace MultiZonePlayer
 				set { m_zoneState = value;
 				if (m_zoneState != m_zoneStateLast)
 				{
-					Rules.ExecuteRule(this);
+					Rules.ExecuteRule(this,"zonestate="+m_zoneState);
 					m_zoneStateLast = m_zoneState;
 				}
 				}
@@ -719,7 +722,7 @@ namespace MultiZonePlayer
 				set { m_movementAlert = value;
 					if (m_movementAlert != m_movementAlertLast)
 					{
-						Rules.ExecuteRule(this);
+						Rules.ExecuteRule(this,"movement="+m_movementAlert);
 						m_movementAlertLast = m_movementAlert;
 					}
 				}
@@ -729,14 +732,15 @@ namespace MultiZonePlayer
                 get {
                     String val = "#"+ ZoneId +" "+ ZoneName + (IsActive?" Active":"") 
                         + (ActivityType.Equals(GlobalCommands.nul)?"":" "+ActivityType.ToString()) 
-                        + (IsArmed?" Armed ":"") 
+                        + (IsArmed?" Armed ":" ") 
 						+ Utilities.DurationAsTimeSpan(LastMovementAge)
                         + (HasImmediateMove? " ImmediateMove ":"")
                         + (HasRecentMove? " RecentMove ":"")
-                        + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState +"@ "+LastClosureEventDateTime :"")
+                        + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState +"@ "+LastClosureEventDateTime :" ")
 						+ Title
 						+ (Temperature!=DEFAULT_TEMP_HUM?" " + Temperature + "C":"")
-						+ (Humidity != DEFAULT_TEMP_HUM?" " + Humidity+"%":"");
+						+ (Humidity != DEFAULT_TEMP_HUM?" " + Humidity+"%":"")
+						+ (IsPowerOn?" PowerIsOn":"");
                     return val;
                 }
             }
@@ -809,6 +813,24 @@ namespace MultiZonePlayer
                     return (HasPastMove || (span > m_intervalRecent && span <= m_intervalPast));
                 }
             }
+
+			public Boolean IsPowerOn
+			{
+				get { return MZPState.Instance.PowerControl.IsPowerOn(ZoneId); }
+			}
+			public Boolean HasClosures
+			{
+				get { return ClosureIdList != "";}
+			}
+			public Boolean HasTemperatureSensor
+			{
+				get { return TemperatureDeviceId != ""; }
+			}
+			public Boolean ContainsDisplay
+			{
+				get { return MZPState.Instance.ZoneDetails.Find(x=>x.ParentZoneId==ZoneId && x.HasDisplay)!=null
+					|| HasDisplay; }
+			}
 
 			public String ClosureState
 			{
@@ -921,7 +943,7 @@ namespace MultiZonePlayer
 					if (m_temperature != m_temperatureLast)
 					{
 						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature);
-						Rules.ExecuteRule(this);
+						Rules.ExecuteRule(this, "temp="+m_temperature);
 						m_temperatureLast = m_temperature;
 					}
 				}
@@ -949,7 +971,7 @@ namespace MultiZonePlayer
 					if (m_humidity != m_humidityLast)
 					{
 						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity);
-						Rules.ExecuteRule(this);
+						Rules.ExecuteRule(this,"humid="+m_humidity);
 						m_humidityLast = m_humidity;
 					}
 				}
@@ -1301,137 +1323,7 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public static class Rules
-		{
-			private static List<RuleEntry> m_ruleList;
-			public class RuleEntry
-			{
-				public string Name;
-				public string Trigger;
-				public string FilterFieldName = null;
-				public string FilterFieldValue = null;
-				public List<String> VariableList = null;
-				public string JSCode;
-			}
-
-			public static void LoadFromIni()
-			{
-				m_ruleList = new List<RuleEntry>();
-				string fileContent = Utilities.ReadFile(IniFile.CurrentPath()+ IniFile.RULES_FILE);
-				string[] rules = fileContent.Split(new String[]{"};"}, StringSplitOptions.RemoveEmptyEntries);
-				string[] atoms;
-				RuleEntry entry;
-				foreach (string rule in rules)
-				{
-					entry = new RuleEntry();
-					
-					atoms = rule.Split(new String[]{"={"}, StringSplitOptions.RemoveEmptyEntries);
-					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "").ToLower();
-
-					atoms = atoms[1].Split(',');
-					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
-					string[] vars = entry.Trigger.Split(';');
-					if (vars.Length > 1)
-					{
-						entry.Trigger = vars[0];
-						string[] fields = vars[1].Split('=');
-						if (fields.Length > 1)
-						{
-							entry.FilterFieldName = fields[0];
-							entry.FilterFieldValue = fields[1];
-						}
-					}
-					entry.JSCode = atoms[1];
-					//find variables
-					MatchCollection matchList;
-					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");
-					if (matchList.Count > 0) entry.VariableList = new List<string>();
-					foreach (Match m in matchList)
-					{
-						entry.VariableList.Add(m.Groups[1].Value);
-					}
-					m_ruleList.Add(entry);
-				}
-				MLog.Log(null, "Loaded " + m_ruleList.Count + " rules");
-			}
-			[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-			public static void ExecuteRule(object callingInstance)
-			{
-				if (m_ruleList == null) LoadFromIni();
-				//string parameters = triggerField.Length>0?triggerField[0].ToString():"";
-				string triggerName;
-				var currentMethod = System.Reflection.MethodInfo.GetCurrentMethod();
-				var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
-				
-				int i = callingMethod.Name.IndexOf("set_");
-				if (i >= 0)
-				{
-					triggerName = callingMethod.Name.Substring("set_".Length);
-					triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
-				}
-				else
-				{
-					MLog.Log(null, "Error no triggername found calling method=" + callingMethod.Name);
-					return;
-				}
-
-
-				List<RuleEntry> ruleList, filteredList;
-				ruleList = m_ruleList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName == null);
-				filteredList = m_ruleList.FindAll(x=> x.Trigger == triggerName && x.FilterFieldName!=null).ToList();
-				
-				if (filteredList!=null)
-				{
-					object val;
-					foreach (RuleEntry r in filteredList)
-					{
-						val = Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
-						if (val != null && r.FilterFieldValue == val.ToString())
-							ruleList.Add(r);
-					}
-				}
-
-				foreach (RuleEntry rule in ruleList)
-				{
-					string parsedCode = rule.JSCode;
-					if (rule.VariableList != null)
-					{
-						string value;
-						foreach (string variable in rule.VariableList)
-						{
-							value = Reflect.GetPropertyField(callingInstance, variable);
-							if (value != null)
-								parsedCode = parsedCode.Replace("[" + variable + "]", value);
-							else
-								MLog.Log(null, "No instance variable found for jscode, var="+variable);
-						}
-					}
-					
-					try
-					{
-						Reflect.GenericReflect(ref  parsedCode);
-						String JSResult = ExpressionEvaluator.EvaluateToString(parsedCode);
-
-						string[] pairs = JSResult.Split(';');
-						string[] entry;
-						Metadata.ValueList vals = new Metadata.ValueList();
-
-						foreach (string pair in pairs)
-						{
-							entry = pair.Split('=');
-							vals.Add(entry[0].ToLower().Trim(), entry[1].ToLower());
-						}
-						MLog.Log(null, "Execute RuleEngine command=" + rule.Name + " trigger=" + triggerName);
-						API.DoCommand(vals);
-						 
-					}
-					catch (Exception ex)
-					{
-						MLog.Log(ex, "Error reflect / JS / execute");
-					}
-				}
-			}
-		}
+		
         public class CamAlert
         {
             private static int startIndex = 0;
@@ -2002,7 +1894,7 @@ namespace MultiZonePlayer
 			get { return m_areaState; }
 			set { m_areaState = value;
 				if (m_areaState != m_areaStateLast)
-					Metadata.Rules.ExecuteRule(this);
+					Rules.ExecuteRule(this, "areastate="+m_areaState);
 				m_areaStateLast = m_areaState;
 			}
 		}

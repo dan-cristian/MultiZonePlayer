@@ -33,7 +33,7 @@ namespace MultiZonePlayer
 					}
 					else
 					{
-						MLog.Log(null, "ANother MZP instance already running");
+						MessageBox.Show("ANother MZP instance already running");
 						spi.RaiseOtherProcess();
 					}
 				}
@@ -41,9 +41,10 @@ namespace MultiZonePlayer
             catch (Exception ex)
             {
                 MLog.Log(ex, "Fatal Exception");
+				MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
                 if (MZPState.Instance != null)
                     MZPState.Instance.Shutdown();
-                MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+                
             }
             finally
             {

@@ -98,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="m\auth.html" />
+    <Content Include="m\basic.js" />
     <Content Include="m\default.html" />
     <Content Include="m\alarm.html" />
     <Content Include="m\buttons.png" />
@@ -120,6 +121,7 @@
     <Content Include="m\snip-picturedetails.html" />
     <Content Include="m\snip-time.html" />
     <Content Include="m\snip-video.html" />
+    <Content Include="m\start.html" />
     <Content Include="m\status.html" />
     <Content Include="m\streammp3.html" />
     <Content Include="m\tv.html" />
@@ -146,6 +148,7 @@
     <Content Include="m\galleria\themes\classic\galleria.classic.css" />
     <Content Include="m\galleria\themes\classic\galleria.classic.js" />
     <Content Include="m\galleria\themes\classic\galleria.classic.min.js" />
+    <Content Include="m\zone-main.html" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
