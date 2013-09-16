@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head id="Head1">
+<meta http-equiv="content-type" content="text/html;charset=unicode;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>#Zones.ZoneName,%_zoneid# other commands</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body onload="refresh(20000)" onerror="refresh(20000)">
+<table>
+<tr>
+	<td>
+	<button class="Pressed#Zones.IsPowerOn,%_zoneid# Caption">PowerOn #Zones.IsPowerOn,%_zoneid#</button>
+	<button onclick="window.open('zone-cmd.html?command=poweron&zoneid=%_zoneid', '_self')">Power On</button>
+	<button onclick="window.open('zone-cmd.html?command=poweroff&zoneid=%_zoneid', '_self')">Power Off</button>
+	<br />
+	<button onclick="window.open('start.html', '_self')">Back</button>
+	</td>
+</tr>
+</table>
+</body>
+</html>

@@ -892,6 +892,7 @@ namespace MultiZonePlayer
 		{
 			string html = m_client.DownloadString(m_statusurl);
 			string[] atoms, pairs;
+			Boolean failure = m_lastStatus.PowerFail;
 			
 			atoms = html.Split(new string[]{"</br>\r\n"}, StringSplitOptions.RemoveEmptyEntries);
 			foreach (string atom in atoms)
@@ -924,6 +925,7 @@ namespace MultiZonePlayer
 							break;
 						case "UPSStatus":
 							m_lastStatus.UPSStatus = pairs[1];
+							
 							if (m_lastStatus.UPSStatus.Length>=8)
 							{
 								m_lastStatus.PowerFail = m_lastStatus.UPSStatus[0]=='1';
@@ -934,15 +936,23 @@ namespace MultiZonePlayer
 								m_lastStatus.TestInProgress = m_lastStatus.UPSStatus[5]=='1';
 								m_lastStatus.ShutdownActive= m_lastStatus.UPSStatus[6]=='1';
 								m_lastStatus.BeeperOn = m_lastStatus.UPSStatus[7]=='1';
+
+								failure = m_lastStatus.PowerFail;
 							}
 							break;
 					}
 				}
 			}
 
-			if (m_lastStatus.PowerFail != MZPState.Instance.IsPowerFailure)
+			if (failure != MZPState.Instance.IsPowerFailure)
 			{
-				MLog.Log(this, "MUSTEK power event failure="+m_lastStatus.PowerFail);
+				MLog.Log(this, "MUSTEK power event failure=" + m_lastStatus.PowerFail);
+				Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.powerevent.ToString(), Metadata.CommandSources.system);
+				val.Add(Metadata.GlobalParams.action, failure.ToString());
+				val.Add(Metadata.GlobalParams.datetime, DateTime.Now.ToString());
+				Metadata.ValueList retval;
+				String json = API.DoCommandFromWeb(val, out retval);
+				Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
 			}
 		}
 	}

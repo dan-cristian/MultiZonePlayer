@@ -169,7 +169,7 @@ namespace MultiZonePlayer
 
                 LoadIniInput();
                 LoadPlaylist();
-                InitMediaLibrary();
+                
 
                 m_zoneEvents = new ZoneEvents();
                
@@ -198,6 +198,7 @@ namespace MultiZonePlayer
 				m_upsList = new List<GenericUPS>();
 				m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
 				m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
+				InitMediaLibrary();
                 LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
             }
 

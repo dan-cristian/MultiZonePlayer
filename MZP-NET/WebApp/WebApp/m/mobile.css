@@ -26,13 +26,16 @@ color:#f3f3f3;
 font-size:1.1em;
 }
 /***NOW STYLE THE BUTTON'S HOVER AND FOCUS STATES***/
-button:hover, button:focus{
+button:hover, button:focus, button.PressedTrue{
 background-color :#399630; /*make the background a little darker*/
 /*reduce the drop shadow size to give a pushed button effect*/
 -webkit-box-shadow: 0 0 1px rgba(0,0,0, .75);
 -moz-box-shadow: 0 0 1px rgba(0,0,0, .75);
 box-shadow: 0 0 1px rgba(0,0,0, .75);
 }
-button.True {display:inline-block;}
-button.False {display:none;}
+button.PressedTrue{
+background-color: Red;
+}
+button.VisibleTrue {display:inline-block;}
+button.VisibleFalse {display:none;}
 button.Caption {background-color:transparent;color:Black}

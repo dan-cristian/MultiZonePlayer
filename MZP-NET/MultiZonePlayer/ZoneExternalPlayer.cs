@@ -111,7 +111,7 @@ namespace MultiZonePlayer
                     MLog.Log(this, "Display is set to HDMI already for XBMC");
             }
             else
-                MLog.Log(this, "No display found for XBMC, CHECK!");
+                MLog.Log(this, "No display found for XBMC, CHECK!, zonename="+zoneDetails.ZoneName);
         }
 
 		public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)

@@ -10,14 +10,18 @@
 <table>
 <tr>
 	<td>
-	<button class="#Zones.HasSpeakers,%_zoneid#">Music</button>
-	<button class="#Zones.HasSpeakers,%_zoneid#">Radio</button>
-	<button class="#Zones.HasDisplay,%_zoneid#">Video</button>
-	<button class="#Zones.HasCamera,%_zoneid#" onclick="window.open('zone-camera.html?zoneid=%_zoneid','_self')">Camera</button>
-	<button class="#Zones.ContainsDisplay,%_zoneid#">Video</button>
-	<button class="#Zones.HasMotionSensor,%_zoneid#">Motion</button>
-	<button class="#Zones.HasClosures,%_zoneid#">Closures</button>
-	<button class="#Zones.HasTemperatureSensor,%_zoneid# Caption">#Zones.Temperature,%_zoneid#°</button>
+	<button class="Visible#Zones.HasSpeakers,%_zoneid#" onclick="window.open('music.html?zoneid=%_zoneid','_self')">Music</button>
+	<button class="Visible#Zones.HasSpeakers,%_zoneid#" onclick="window.open('streammp3.html?zoneid=%_zoneid','_self')">Radio</button>
+	<button class="Visible#Zones.HasDisplay,%_zoneid#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
+	<button class="Visible#Zones.HasCamera,%_zoneid#" onclick="window.open('zone-camera.html?zoneid=%_zoneid','_self')">Camera</button>
+	<button class="Visible#Zones.ContainsDisplay,%_zoneid#">Video</button>
+	<button class="Visible#Zones.HasMotionSensor,%_zoneid#">Motion</button>
+	<button class="Visible#Zones.HasClosures,%_zoneid# Pressed#Zones.ClosureState,%_zoneid#">Closure #Zones.ClosureState,%_zoneid#</button>
+	<button class="Visible#Zones.HasTemperatureSensor,%_zoneid# Caption">#Zones.Temperature,%_zoneid#°</button>
+	<button class="Pressed#Zones.IsPowerOn,%_zoneid#">PowerOn #Zones.IsPowerOn,%_zoneid#</button>
+	<br />
+	<button onclick="window.open('zone-cmd.html?zoneid=%_zoneid', '_self')">Other Commands</button>
+	<br />
 	<button onclick="window.open('start.html', '_self')">Back</button>
 	</td>
 </tr>
