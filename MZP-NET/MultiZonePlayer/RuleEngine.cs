@@ -312,8 +312,17 @@ namespace MultiZonePlayer
 			}
 			else
 			{
-				MLog.Log(null, "Error no triggername found calling method=" + callingMethod.Name);
-				return;
+				i = callingMethod.Name.IndexOf("Set");
+				if (i >= 0)
+				{
+					triggerName = callingMethod.Name.Substring("Set".Length);
+					triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
+				}
+				else
+				{
+					MLog.Log(null, "Error no triggername found calling method=" + callingMethod.Name);
+					return;
+				}
 			}
 
 

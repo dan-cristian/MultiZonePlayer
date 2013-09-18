@@ -262,8 +262,8 @@ namespace MultiZonePlayer
 
 								lasttemp = lasttemp == 0 ? 0.1m : lasttemp;
 								lasthum = lasthum == 0 ? 0.1m : lasthum;
-								zone.Temperature = temp.ToString();
-								zone.Humidity = hum.ToString();
+								zone.Temperature = (double)temp;
+								zone.Humidity = (double)hum;
 								break;
 							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
 
@@ -790,7 +790,7 @@ namespace MultiZonePlayer
 						temp = (TemperatureContainer)element;
 						state = temp.readDevice();
 						temp.doTemperatureConvert(state);
-						zone.Temperature = temp.getTemperature(state).ToString();
+						zone.Temperature = temp.getTemperature(state);
 					}
 					else
 					{

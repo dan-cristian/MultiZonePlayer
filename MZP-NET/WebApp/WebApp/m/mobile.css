@@ -38,4 +38,7 @@ background-color: Red;
 }
 button.VisibleTrue {display:inline-block;}
 button.VisibleFalse {display:none;}
+button.ActionTrue {background-image:url('wheel-icon.png');background-repeat:no-repeat;background-position:left}
+button.MoveTrue {background-image:url('walk-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
+button.ActiveFalse {background-image:url('mic.png');background-repeat:no-repeat;background-position:right}
 button.Caption {background-color:transparent;color:Black}

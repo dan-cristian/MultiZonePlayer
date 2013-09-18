@@ -6,7 +6,7 @@
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
-<body onload="refresh(20000)" onerror="refresh(20000)">
+<body onload="refresh(30000)" onerror="refresh(30000)">
   <table>
     <tr>
         <td><a class="med" href="alarm.html">Alarm</a> #SystemAlarm.AreaState#</td>
@@ -14,30 +14,39 @@
 	    <td>#SystemAlarm.LastAlarmEventDateTime#</td>
     </tr>
 </table>
-<table>
-	<tr>
-		<td>
-			<button onclick="window.open('zone-main.html?zoneid=1','_self')">#Zones.ZoneName,1#</button>
-			<button onclick="window.open('zone-main.html?zoneid=2','_self')">#Zones.ZoneName,2#</button>
-			<button onclick="window.open('zone-main.html?zoneid=3','_self')">#Zones.ZoneName,3#</button>
-			<button onclick="window.open('zone-main.html?zoneid=4','_self')">#Zones.ZoneName,4#</button>
-			<button onclick="window.open('zone-main.html?zoneid=5','_self')">#Zones.ZoneName,5#</button>
-			<button onclick="window.open('zone-main.html?zoneid=6','_self')">#Zones.ZoneName,6#</button>
-			<button onclick="window.open('zone-main.html?zoneid=7','_self')">#Zones.ZoneName,7#</button>
-			<button onclick="window.open('zone-main.html?zoneid=8','_self')">#Zones.ZoneName,8#</button>
-			<button onclick="window.open('zone-main.html?zoneid=9','_self')">#Zones.ZoneName,9#</button>
-			<button onclick="window.open('zone-main.html?zoneid=10','_self')">#Zones.ZoneName,10#</button>
-			<button onclick="window.open('zone-main.html?zoneid=11','_self')">#Zones.ZoneName,11#</button>
-			<button onclick="window.open('zone-main.html?zoneid=12','_self')">#Zones.ZoneName,12#</button>
-			<button onclick="window.open('zone-main.html?zoneid=13','_self')">#Zones.ZoneName,13#</button>
-			<button onclick="window.open('zone-main.html?zoneid=14','_self')">#Zones.ZoneName,14#</button>
-			<button onclick="window.open('zone-main.html?zoneid=15','_self')">#Zones.ZoneName,15#</button>
-			<button onclick="window.open('zone-main.html?zoneid=16','_self')">#Zones.ZoneName,16#</button>
-			<button onclick="window.open('zone-main.html?zoneid=17','_self')">#Zones.ZoneName,17#</button>
-			<button onclick="window.open('zone-main.html?zoneid=18','_self')">#Zones.ZoneName,18#</button>
-			<button onclick="window.open('zone-main.html?zoneid=19','_self')">#Zones.ZoneName,19#</button>
-		</td>
-	</tr>          
-</table>
+<!--table><tr><td-->
+			<button class="Action#Zones.HasAction,1#" 
+				onclick="window.open('zone-main.html?zoneid=1','_self')">#Zones.ZoneName,1#</button>
+			<button class="Action#Zones.HasAction,2#" 
+				onclick="window.open('zone-main.html?zoneid=2','_self')">#Zones.ZoneName,2#</button>
+			<button class="Action#Zones.HasAction,3#"
+				onclick="window.open('zone-main.html?zoneid=3','_self')">#Zones.ZoneName,3#</button>
+			<button class="Action#Zones.HasAction,4#"
+				onclick="window.open('zone-main.html?zoneid=4','_self')">#Zones.ZoneName,4#</button>
+			<button class="Action#Zones.HasAction,5#"
+				onclick="window.open('zone-main.html?zoneid=5','_self')">#Zones.ZoneName,5#</button>
+			<button class="Action#Zones.HasAction,6#"
+				onclick="window.open('zone-main.html?zoneid=6','_self')">#Zones.ZoneName,6#</button>
+			<button class="Action#Zones.HasAction,7#" 
+				onclick="window.open('zone-main.html?zoneid=7','_self')">#Zones.ZoneName,7#</button>
+			<button class="Action#Zones.HasAction,8#"
+				onclick="window.open('zone-main.html?zoneid=8','_self')">#Zones.ZoneName,8#</button>
+			<button class="Action#Zones.HasAction,9#" 
+				onclick="window.open('zone-main.html?zoneid=9','_self')">#Zones.ZoneName,9#</button>
+			<button class="Action#Zones.HasAction,10#" 
+				onclick="window.open('zone-main.html?zoneid=10','_self')">#Zones.ZoneName,10#</button>
+			<button class="Action#Zones.HasAction,11#" 
+				onclick="window.open('zone-main.html?zoneid=11','_self')">#Zones.ZoneName,11#</button>
+			<button class="Action#Zones.HasAction,12#" 
+				onclick="window.open('zone-main.html?zoneid=12','_self')">#Zones.ZoneName,12#</button>
+			<button class="Action#Zones.HasAction,13#" onclick="window.open('zone-main.html?zoneid=13','_self')">#Zones.ZoneName,13#</button>
+			<button class="Action#Zones.HasAction,14#" onclick="window.open('zone-main.html?zoneid=14','_self')">#Zones.ZoneName,14#</button>
+			<button class="Action#Zones.HasAction,15#" onclick="window.open('zone-main.html?zoneid=15','_self')">#Zones.ZoneName,15#</button>
+			<button class="Action#Zones.HasAction,16#" onclick="window.open('zone-main.html?zoneid=16','_self')">#Zones.ZoneName,16#</button>
+			<button class="Action#Zones.HasAction,17#" onclick="window.open('zone-main.html?zoneid=17','_self')">#Zones.ZoneName,17#</button>
+			<button class="Action#Zones.HasAction,18#"onclick="window.open('zone-main.html?zoneid=18','_self')">#Zones.ZoneName,18#</button>
+			<button class="Action#Zones.HasAction,19#" 
+				onclick="window.open('zone-main.html?zoneid=19','_self')">#Zones.ZoneName,19#</button>
+<!--/td></tr></table-->
 </body>
 </html>

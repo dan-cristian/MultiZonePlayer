@@ -474,8 +474,10 @@ namespace MultiZonePlayer
                                 m_mainZoneActivity = null;
                             }
 
-                            if (m_mainZoneActivity == null || !m_mainZoneActivity.ZoneDetails.IsActive)
-                                InitZonePlayerXBMC();
+							if ((m_mainZoneActivity == null || !m_mainZoneActivity.ZoneDetails.IsActive) && m_mainZoneActivity.ZoneDetails.HasVideoPlayer)
+								InitZonePlayerXBMC();
+							else
+								MLog.Log(this, "Not initialising the video due to missing video player on zone=" + m_mainZoneActivity.ZoneDetails.ZoneName);
 
                             if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))
                                 m_mainZoneActivity.Play();
@@ -771,6 +773,9 @@ namespace MultiZonePlayer
 				case Metadata.MoveTypeEnum.Camera:
 					break;
 				case Metadata.MoveTypeEnum.Alarm:
+					break;
+				default:
+					MLog.Log(this, "Warning unknown move event");
 					break;
 			}
 

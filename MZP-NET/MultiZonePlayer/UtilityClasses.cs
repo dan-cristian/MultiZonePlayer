@@ -639,6 +639,7 @@ namespace MultiZonePlayer
             public Boolean HasMotionSensor = false;
             public Boolean HasMicrophone = false;
             public Boolean HasDisplay = false;
+			public Boolean HasVideoPlayer = false;
             public String DisplayConnection = "";
             public String DisplayType = "";
             public Boolean RequirePower = false;
@@ -649,6 +650,8 @@ namespace MultiZonePlayer
 			public ClosureOpenCloseRelay ClosureOpenCloseRelay;
 			public ulong ClosureCounts = 0;
 			public String TemperatureDeviceId;
+			public double TemperatureMaxAlarm=1000;
+			public double TemperatureMinAlarm=-1000;
 
             public int VolumeLevel;
             public long Position = 0;
@@ -674,9 +677,9 @@ namespace MultiZonePlayer
 			public DateTime LastClosureEventDateTime = DateTime.MinValue;
 			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 			public DateTime LastNotifyZoneEventTriggered;
-			public const String DEFAULT_TEMP_HUM = "-0";
-			protected string m_temperature=DEFAULT_TEMP_HUM, m_humidity=DEFAULT_TEMP_HUM;
-			protected string m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
+			public const double DEFAULT_TEMP_HUM = -1000;
+			protected double m_temperature=DEFAULT_TEMP_HUM, m_humidity=DEFAULT_TEMP_HUM;
+			protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 			protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 
 			// not serializable, hidden from json
@@ -780,6 +783,31 @@ namespace MultiZonePlayer
                 }
             }
 
+			public Boolean HasImmediateCamMove
+			{
+				get
+				{
+					double span = DateTime.Now.Subtract(LastCamAlertDateTime).TotalMinutes;
+					return (span <= m_intervalImmediate);
+				}
+			}
+			public Boolean HasImmediateAlarmMove
+			{
+				get
+				{
+					double span = DateTime.Now.Subtract(LastAlarmMovementDateTime).TotalMinutes;
+					return (span <= m_intervalImmediate);
+				}
+			}
+			public Boolean HasImmediateClosureMove
+			{
+				get
+				{
+					double span = DateTime.Now.Subtract(LastClosureEventDateTime).TotalMinutes;
+					return (span <= m_intervalImmediate);
+				}
+			}
+
             public Boolean HasRecentMove
             {
                 get
@@ -813,6 +841,30 @@ namespace MultiZonePlayer
                     return (HasPastMove || (span > m_intervalRecent && span <= m_intervalPast));
                 }
             }
+
+			public Boolean HasAction
+			{
+				get
+				{
+					return HasImmediateMove || IsActive || IsPowerOn || HasAlarm;
+				}
+			}
+
+			public Boolean HasAlarm
+			{
+				get
+				{
+					return IsArmed && HasImmediateMove;
+				}
+			}
+
+			public Boolean HasTemperatureAlarm
+			{
+				get
+				{
+					return (m_temperature>TemperatureMaxAlarm) || (m_temperature<TemperatureMinAlarm);
+				}
+			}
 
 			public Boolean IsPowerOn
 			{
@@ -925,16 +977,9 @@ namespace MultiZonePlayer
 				get { return HasImmediateMove || HasRecentMove ? DIV_SHOW : DIV_HIDE; }
 			}
 
-			public String Temperature
+			public double Temperature
 			{
-				get
-				{
-					double temp;
-					if (Double.TryParse(m_temperature, out temp))
-						return Math.Round(temp, 2).ToString();
-					else
-						return m_temperature;
-				}
+				get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
 				set
 				{
 					m_temperature = value;
@@ -942,13 +987,14 @@ namespace MultiZonePlayer
 
 					if (m_temperature != m_temperatureLast)
 					{
-						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature);
-						Rules.ExecuteRule(this, "temp="+m_temperature);
+						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString());
+						Rules.ExecuteRule(this, "temp=" + m_temperature);
 						m_temperatureLast = m_temperature;
 					}
 				}
 			}
 
+			
 			public TimeSpan TemperatureAge
 			{
 				get { return DateTime.Now.Subtract(m_lastTempSet); }
@@ -959,7 +1005,7 @@ namespace MultiZonePlayer
 				get { return Utilities.DurationAsTimeSpan(TemperatureAge); }
 			}
 
-			public String Humidity
+			public double Humidity
 			{
 				get
 				{	return m_humidity;}
@@ -970,7 +1016,7 @@ namespace MultiZonePlayer
 
 					if (m_humidity != m_humidityLast)
 					{
-						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity);
+						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString());
 						Rules.ExecuteRule(this,"humid="+m_humidity);
 						m_humidityLast = m_humidity;
 					}
@@ -1046,6 +1092,9 @@ namespace MultiZonePlayer
                     {
                         HasDisplay = true;
                     }
+					else
+						if (DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
+							HasVideoPlayer = true;
 
 					if (zonestorage.ClosureOpenCloseRelay != null)
 					{
