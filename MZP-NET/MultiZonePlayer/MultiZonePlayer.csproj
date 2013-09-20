@@ -113,6 +113,15 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-x32|x64'">
+    <OutputPath>bin\x64\Debug-x32\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-x32|x86'">
+    <OutputPath>bin\x86\Debug-x32\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-x32|AnyCPU'">
+    <OutputPath>bin\Debug-x32\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="agsXMPP">
       <HintPath>ThirdParty\messengers\agsXMPP.dll</HintPath>
@@ -154,9 +163,6 @@
     </Reference>
     <Reference Include="vjslib">
       <HintPath>ThirdParty\1wire\x64\vjslib.dll</HintPath>
-    </Reference>
-    <Reference Include="vjslib.x64">
-      <HintPath>ThirdParty\1wire\vjslib.x64.dll</HintPath>
     </Reference>
     <Reference Include="Vlc.DotNet.Core, Version=1.2.0.0, Culture=neutral, PublicKeyToken=84529da31f4eb963, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

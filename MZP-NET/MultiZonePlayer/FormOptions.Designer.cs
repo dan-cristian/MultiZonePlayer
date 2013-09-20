@@ -113,6 +113,7 @@
 			this.Zones_PowerOnDelay = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Zones_NearbyZoneIdList = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Zones_TempDeviceId = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Zones_PowerType = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.tabParams.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvZones)).BeginInit();
@@ -199,7 +200,8 @@
             this.Zones_ClosureIdList,
             this.Zones_PowerOnDelay,
             this.Zones_NearbyZoneIdList,
-            this.Zones_TempDeviceId});
+            this.Zones_TempDeviceId,
+            this.Zones_PowerType});
 			this.dgvZones.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.dgvZones.Location = new System.Drawing.Point(3, 2);
 			this.dgvZones.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -755,29 +757,29 @@
 			// 
 			// Zones_OutputKeywords
 			// 
-			this.Zones_OutputKeywords.HeaderText = "OutputKeywords";
+			this.Zones_OutputKeywords.HeaderText = "OutputKeys";
 			this.Zones_OutputKeywords.Name = "Zones_OutputKeywords";
-			this.Zones_OutputKeywords.Width = 137;
+			this.Zones_OutputKeywords.Width = 107;
 			// 
 			// OutputDevice
 			// 
-			this.OutputDevice.HeaderText = "OutputDevice";
+			this.OutputDevice.HeaderText = "OutputDev";
 			this.OutputDevice.Name = "OutputDevice";
 			this.OutputDevice.Resizable = System.Windows.Forms.DataGridViewTriState.True;
 			this.OutputDevice.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-			this.OutputDevice.Width = 119;
+			this.OutputDevice.Width = 101;
 			// 
 			// Zones_PowerIndexDK
 			// 
-			this.Zones_PowerIndexDK.HeaderText = "PowerIndex";
+			this.Zones_PowerIndexDK.HeaderText = "PwrIndex";
 			this.Zones_PowerIndexDK.Name = "Zones_PowerIndexDK";
-			this.Zones_PowerIndexDK.Width = 105;
+			this.Zones_PowerIndexDK.Width = 89;
 			// 
 			// Zones_DefaultVolume
 			// 
-			this.Zones_DefaultVolume.HeaderText = "DefaultVolume%";
+			this.Zones_DefaultVolume.HeaderText = "DefaultVol%";
 			this.Zones_DefaultVolume.Name = "Zones_DefaultVolume";
-			this.Zones_DefaultVolume.Width = 137;
+			this.Zones_DefaultVolume.Width = 110;
 			// 
 			// Zones_CameraId
 			// 
@@ -839,6 +841,18 @@
 			this.Zones_TempDeviceId.HeaderText = "TempId";
 			this.Zones_TempDeviceId.Name = "Zones_TempDeviceId";
 			this.Zones_TempDeviceId.Width = 80;
+			// 
+			// Zones_PowerType
+			// 
+			this.Zones_PowerType.HeaderText = "PowerType";
+			this.Zones_PowerType.Items.AddRange(new object[] {
+            "Denkovi",
+            "Numato",
+            "None"});
+			this.Zones_PowerType.Name = "Zones_PowerType";
+			this.Zones_PowerType.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.Zones_PowerType.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			this.Zones_PowerType.Width = 104;
 			// 
 			// FormOptions
 			// 
@@ -958,5 +972,7 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_PowerOnDelay;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_NearbyZoneIdList;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_TempDeviceId;
+		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_PowerIndexType;
+		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_PowerType;
     }
 }

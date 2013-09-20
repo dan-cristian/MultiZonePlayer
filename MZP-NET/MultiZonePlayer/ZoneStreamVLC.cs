@@ -170,7 +170,7 @@ namespace MultiZonePlayer
 
             if (!m_url.Equals(""))
             {
-                MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+                MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
                 var media = new PathMedia(m_url);
                 m_vlcControl.Media = media;
                 m_zoneDetails.RequirePower = true;

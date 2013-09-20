@@ -194,7 +194,7 @@ namespace MultiZonePlayer
                         //init amp power if needed
 						m_zoneDetails.RequirePower = true;
 						m_zoneDetails.IsActive = true;
-                        MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+                        MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 						int loop = 0;
 						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50)
 						{
@@ -245,7 +245,7 @@ namespace MultiZonePlayer
 				Stop();
                 int volume = m_zoneForm.GetVolumeLevel();
 				m_zoneDetails.RequirePower = true;
-                MZPState.Instance.PowerControl.PowerOn(m_zoneForm.ZoneDetails.ZoneId);
+                MZPState.Instance.PowerControlOn(m_zoneForm.ZoneDetails.ZoneId);
 				System.Threading.Thread.Sleep(4000);//ensure we can hear this
                 DCPlayer tempPlay = new DCPlayer(m_zoneForm, IniFile.CurrentPath()+ filePathName, volume);
             }
@@ -910,7 +910,7 @@ namespace MultiZonePlayer
             {
 				m_cloneSourceZone.MainZoneActivity.SetVolumeLevel(m_cloneSourceZone.ZoneDetails.GetDefaultVolume());
 				m_zoneDetails.RequirePower = true;
-                MZPState.Instance.PowerControl.PowerOn(m_parentZoneForm.ZoneDetails.ZoneId);
+                MZPState.Instance.PowerControlOn(m_parentZoneForm.ZoneDetails.ZoneId);
                 m_cloneSourceZone.AddClonedZone(this.ZoneDetails);
                 m_clonedZoneMusic = (ZoneMusic)m_cloneSourceZone.GetCurrentActivity();
                 m_clonedZoneMusic.UpdateOutputDevices();
@@ -961,7 +961,7 @@ namespace MultiZonePlayer
         {
             if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
             {
-                MZPState.Instance.PowerControl.PowerOn(m_parentZoneForm.ZoneDetails.ZoneId);
+                MZPState.Instance.PowerControlOn(m_parentZoneForm.ZoneDetails.ZoneId);
                 m_cloneSourceZone.GetCurrentActivity().Play();
                 m_zoneState = Metadata.ZoneState.Running;
             }

@@ -405,10 +405,10 @@ namespace MultiZonePlayer
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;
 
-                /*if (m_zoneDetails.IsActive && !MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ParentZoneId))
+                /*if (m_zoneDetails.IsActive && !MZPState.Instance.PowerControlIsOn(m_zoneDetails.ParentZoneId))
                 {
                     MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for XBMC child " + m_zoneDetails.ZoneName);
-                    MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ParentZoneId);
+                    MZPState.Instance.PowerControlOn(m_zoneDetails.ParentZoneId);
                 }*/
             }
         }

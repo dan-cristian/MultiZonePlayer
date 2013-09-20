@@ -19,7 +19,7 @@ namespace MultiZonePlayer
         {
             MZPState.Initialise();
             InitializeComponent();
-            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
+            //System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.High;
             
         }
 

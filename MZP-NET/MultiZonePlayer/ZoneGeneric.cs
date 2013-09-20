@@ -300,18 +300,18 @@ namespace MultiZonePlayer
 					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " armed status=" + m_zoneDetails.IsArmed;
                     break;
                 case Metadata.GlobalCommands.powercycle:
-                    MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+                    MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
                     Thread.Sleep(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.interval)));
-                    MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
+                    MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
                     break;
 				case Metadata.GlobalCommands.poweron:
 					MLog.Log(this, "Permanent power ON zone="+m_zoneDetails.ZoneName);
 					m_zoneDetails.RequirePower = true;
-					MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+					MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 					break;
 				case Metadata.GlobalCommands.poweroff:
 					MLog.Log(this, "Permanent power OFF zone=" + m_zoneDetails.ZoneName);
-					MZPState.Instance.PowerControl.PowerOff(m_zoneDetails.ZoneId);
+					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
 					m_zoneDetails.RequirePower = false;
 					break;
 				case Metadata.GlobalCommands.closure:
@@ -326,9 +326,9 @@ namespace MultiZonePlayer
                 case Metadata.GlobalCommands.notifyuser:
 					bool needsPower = m_zoneDetails.RequirePower;
 					m_zoneDetails.RequirePower = true;
-					if (!MZPState.Instance.PowerControl.IsPowerOn(m_zoneDetails.ZoneId))
+					if (!MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId))
 					{
-						MZPState.Instance.PowerControl.PowerOn(m_zoneDetails.ZoneId);
+						MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 						System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
 					}
 					string sourcezoneid = vals.GetValue(Metadata.GlobalParams.sourcezoneid);
@@ -474,10 +474,11 @@ namespace MultiZonePlayer
                                 m_mainZoneActivity = null;
                             }
 
-							if ((m_mainZoneActivity == null || !m_mainZoneActivity.ZoneDetails.IsActive) && m_mainZoneActivity.ZoneDetails.HasVideoPlayer)
+							if ((m_mainZoneActivity == null || !m_mainZoneActivity.ZoneDetails.IsActive) 
+								&& m_zoneDetails.HasVideoPlayer)
 								InitZonePlayerXBMC();
 							else
-								MLog.Log(this, "Not initialising the video due to missing video player on zone=" + m_mainZoneActivity.ZoneDetails.ZoneName);
+								MLog.Log(this, "Not initialising the video due to missing video player on zone=" + m_zoneDetails.ZoneName);
 
                             if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))
                                 m_mainZoneActivity.Play();

@@ -30,7 +30,7 @@ namespace MultiZonePlayer
             private static int maxRemotes = 10;
             private List<ControlDevice> m_systemAvailableControlDevices = new List<ControlDevice>();
 
-            private static BasePowerControl m_powerControl;
+            private static BasePowerControl m_powerControlDenkovi, m_powerControlNumato;
 
             private Hashtable m_zoneInputDeviceNames = null;
 
@@ -128,7 +128,8 @@ namespace MultiZonePlayer
 
                 m_systemAlarm = new Alarm(1);
                 InitRemotes();
-                m_powerControl = new DenkoviPowerControl("8 Relay Brd USB");
+                m_powerControlDenkovi = new DenkoviPowerControl("8 Relay Brd USB");
+				m_powerControlNumato = new NumatoLPTControl(888);
 
                 MLog.Log(this, "Retrieving system available audio output devices");
                 
@@ -244,7 +245,7 @@ namespace MultiZonePlayer
                     {
                         File.Delete(file);
                     }
-                    PowerControl.PowerOff();
+                    PowerControlOff();
                     WebServer.Shutdown();
                     m_Tail.Stop();
                     foreach (Display disp in m_displayList)
@@ -344,10 +345,46 @@ namespace MultiZonePlayer
                 get { return m_systemAvailableControlDevices; }
             }
 
-            public BasePowerControl PowerControl
+            public BasePowerControl PowerControl(int zoneid)
             {
-                get{return m_powerControl;}
+				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+					return m_powerControlDenkovi;
+				else
+					return m_powerControlNumato;
             }
+
+			public void PowerControlOn(int zoneid)
+			{
+				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+					m_powerControlDenkovi.PowerOn(zoneid);
+				else
+					if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Numato.ToString())
+						m_powerControlNumato.PowerOn(zoneid);
+			}
+
+			public void PowerControlOff(int zoneid)
+			{
+				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+					m_powerControlDenkovi.PowerOff(zoneid);
+				else
+					if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Numato.ToString())
+						m_powerControlNumato.PowerOff(zoneid);
+			}
+
+			public void PowerControlOff()
+			{
+				m_powerControlDenkovi.PowerOff();
+				m_powerControlNumato.PowerOff();
+			}
+			public bool PowerControlIsOn(int zoneid)
+			{
+				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+					return m_powerControlDenkovi.IsPowerOn(zoneid);
+				else
+					if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Numato.ToString())
+						return m_powerControlNumato.IsPowerOn(zoneid);
+					else return false;
+			}
 
             public void ToogleFollowMeMusic()
             {
@@ -568,9 +605,13 @@ namespace MultiZonePlayer
                 thmu.Name = "MediaLibrary Music";
                 thmu.Start();
 
+				Application.DoEvents();
+
 				Thread thpi = new Thread(() => MediaLibrary.InitialisePictures());
 				thpi.Name = "MediaLibrary Pictures";
 				thpi.Start();
+
+				Application.DoEvents();
 
 				Thread thmo = new Thread(() => MediaLibrary.InitialiseVideos());
 				thmo.Name = "MediaLibrary Movies";
@@ -1130,7 +1171,8 @@ namespace MultiZonePlayer
                 CheckForExternalZoneEvents();
 				CheckForScheduleMacroEvents();
 				CheckForUpsStatus();
-                PowerControl.timerPowerSaving_Tick();
+                m_powerControlDenkovi.timerPowerSaving_Tick();
+				m_powerControlNumato.timerPowerSaving_Tick();
 				m_oneWire.Tick();
 
 				if (MediaLibrary.AllAudioFiles != null)

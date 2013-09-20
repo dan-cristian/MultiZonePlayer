@@ -252,23 +252,12 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
-		  /*Goheer.EXIF.EXIFextractor er2 = new Goheer.EXIF.EXIFextractor(
-			  "p:\\Poze Proprii\\2012-12-24\\Removable storage\\DCIM\\118___12\\IMG_0630.JPG", "", "");
-		  
-		  txt.AppendText(er2["Date Time"]+"\r\n\r\n");
+		  LPT lpt = new LPT(888);
+		  txt.AppendText(lpt.PortState + "\n");
 
-		  foreach (System.Web.UI.Pair s in er2)
-		  {
-			  txt.AppendText(s.First + " : " + s.Second+"\n");
-		  }
-		  */
-		  /*
-		  USB_RC2.ELROUsbRC2  rc = new USB_RC2.ELROUsbRC2();
-		  rc.RFOn(1001);
-		  Thread.Sleep(5000);
-		  rc.RFOff(1001);
-		   */
-		  EmailNotifier.SendEmail("Truba buba");
+		  lpt.WritePort(5, true);
+		  lpt.WritePort(3, false);
+		  txt.AppendText(lpt.PortState + "\n");
       }
 
       private void button7_Click(object sender, EventArgs e)
@@ -306,6 +295,11 @@ namespace MultiZonePlayer
             // Set the volume
             Utilities.waveOutSetVolume(IntPtr.Zero, (uint)NewVolume);
         }
+
+		private void txt_TextChanged(object sender, EventArgs e)
+		{
+
+		}
 
 	}
 

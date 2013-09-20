@@ -10,12 +10,16 @@ using HE853;
 
 namespace MultiZonePlayer
 {
-    public abstract class BasePowerControl:IStorageOnIni
+    public abstract class BasePowerControl
     {
         protected static int powerSavingCycleCount = 0;
         protected static bool isPowerSavingMode = false;
         protected String m_deviceName;
         protected String m_socketsStatus="";
+
+		public BasePowerControl()
+		{
+		}
 
         public BasePowerControl(String deviceName)
         {
@@ -107,14 +111,14 @@ namespace MultiZonePlayer
         protected abstract void Open();
         protected abstract void Close();
         public abstract bool IsPowerControlOn();
-        public abstract String GetPowerControlName();
+		public virtual String GetPowerControlName()
+		{
+			return m_deviceName;
+		}
         public abstract void PowerOn(int zoneId);
         public abstract void PowerOff(int zoneId);
         public abstract void PowerOff();
         public abstract bool IsPowerOn(int zoneId);
-        //protected abstract String GetSocketStatus(String zoneId);
-        public abstract void LoadFromIni();
-        public abstract void SaveToIni();
     }
 
     class DenkoviPowerControl : BasePowerControl
@@ -552,17 +556,57 @@ namespace MultiZonePlayer
             }
             return res.ToArray();
         }
-
-        
-
-        public override void LoadFromIni()
-        {
-        }
-
-        public override void SaveToIni()
-        {
-        }
     }
+
+	public class NumatoLPTControl : BasePowerControl
+	{
+		private LPT m_lptDevice;
+
+		public NumatoLPTControl(short portAddress):base("NumatoLPT")
+		{
+			m_lptDevice = new LPT(portAddress);
+		}
+
+		~NumatoLPTControl()
+        {
+            PowerOff();
+        }
+
+		protected override void Open()
+		{
+			//throw new NotImplementedException();
+		}
+
+		protected override void Close()
+		{
+			//throw new NotImplementedException();
+		}
+
+		public override bool IsPowerControlOn()
+		{
+			return m_lptDevice != null;
+		}
+
+		public override void PowerOn(int zoneId)
+		{
+			m_lptDevice.WritePort((short)MZPState.Instance.GetZoneById(zoneId).PowerIndex, true);
+		}
+
+		public override void PowerOff(int zoneId)
+		{
+			m_lptDevice.WritePort((short)MZPState.Instance.GetZoneById(zoneId).PowerIndex, false);
+		}
+
+		public override void PowerOff()
+		{
+			m_lptDevice.WritePort(0);
+		}
+
+		public override bool IsPowerOn(int zoneId)
+		{
+			return m_lptDevice.IsPowerOn((short)MZPState.Instance.GetZoneById(zoneId).PowerIndex);
+		}
+	}
 
     class  GembirdPowerControl: BasePowerControl
     {
@@ -701,16 +745,6 @@ namespace MultiZonePlayer
         public override String GetPowerControlName()
         {
             return IniFile.PARAM_POWER_CONTROL_APP_PROCESSNAME[1];
-        }
-
-        public override void LoadFromIni()
-        {
-            //not needed
-        }
-
-        public override void SaveToIni()
-        {
-            //not needed
         }
     }
 

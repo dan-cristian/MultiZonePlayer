@@ -152,11 +152,11 @@ namespace MultiZonePlayer
 								x.RequirePower && x.PowerIndex == details.PowerIndex);
 							if (zonesWithPower.Count==0 && details.LastLocalCommandAgeInSeconds>120)
 							{
-								if (MZPState.Instance.PowerControl.IsPowerOn(details.ZoneId))
+								if (MZPState.Instance.PowerControlIsOn(details.ZoneId))
 								{
 									MLog.Log(this, "No zones require power on index " + details.PowerIndex
 										+ ", powering off zone=" + details.ZoneName);
-									MZPState.Instance.PowerControl.PowerOff(details.ZoneId);
+									MZPState.Instance.PowerControlOff(details.ZoneId);
 								}
 							}
 						}
@@ -183,7 +183,7 @@ namespace MultiZonePlayer
             
             if (MZPState.Instance != null)
             {
-                txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
+                //txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
                 txAlarm.Text = MZPState.Instance.SystemAlarm.IsMonitoringActive + ":" + MZPState.Instance.SystemAlarm.AreaState.ToString();
 				txtGPIO.Text = MZPState.Instance.Gpio.State;
                 foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
@@ -383,7 +383,7 @@ namespace MultiZonePlayer
         private void ShowPowerControlStatus()
         {
             
-            bool alive = MZPState.Instance.PowerControl.IsPowerControlOn();
+            /*bool alive = MZPState.Instance.PowerControl.IsPowerControlOn();
             txtPwrControl.Text = alive.ToString();
             txPwrName.Text = MZPState.Instance.PowerControl.GetPowerControlName();
             txtPowerSaving.Text = MZPState.Instance.PowerControl.IsPowerSavingMode().ToString();
@@ -393,6 +393,7 @@ namespace MultiZonePlayer
                     ((Button)tbButtons.Controls["bt" + i]).FlatStyle = (MZPState.Instance.PowerControl.SocketsOn(i) ? FlatStyle.Flat : FlatStyle.Standard);
             }
             txSocketsStatus.Text = MZPState.Instance.PowerControl.SocketsStatus;
+			 * */
             
         }
 

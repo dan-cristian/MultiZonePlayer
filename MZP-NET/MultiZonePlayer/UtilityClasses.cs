@@ -610,7 +610,12 @@ namespace MultiZonePlayer
 			Command,
 			Alarm
 		}
-		
+		public enum PowerType
+		{
+			Denkovi,
+			Numato,
+			None
+		}
         public class ZoneDetails
         {
             public int ZoneId = 0;
@@ -620,7 +625,8 @@ namespace MultiZonePlayer
             public String ZoneName;
 			private ZoneState m_zoneState, m_zoneStateLast=ZoneState.Undefined;
             public int ParentZoneId = -1;
-            public int PowerIndex;//miliseconds
+            public int PowerIndex = -1;
+			public String PowerType;
 			public int PowerOnDelay;
             public String WakeTime = "";
             public String WakeWeekDay = "";
@@ -868,7 +874,7 @@ namespace MultiZonePlayer
 
 			public Boolean IsPowerOn
 			{
-				get { return MZPState.Instance.PowerControl.IsPowerOn(ZoneId); }
+				get { return MZPState.Instance.PowerControlIsOn(ZoneId); }
 			}
 			public Boolean HasClosures
 			{
@@ -1115,6 +1121,7 @@ namespace MultiZonePlayer
 					if (NearbyZonesIdList.Length>0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
 						NearbyZonesIdList += ";";
 					TemperatureDeviceId = zonestorage.TemperatureDeviceId;
+					PowerType = zonestorage.PowerType;
 					//Temperature = "1";
                 }
 
@@ -2026,11 +2033,7 @@ namespace MultiZonePlayer
         }
     }
 
-    public interface IStorageOnIni
-    {
-        void LoadFromIni();
-        void SaveToIni();
-    }
+    
 
 	
 		

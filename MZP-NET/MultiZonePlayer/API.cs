@@ -137,7 +137,7 @@ namespace MultiZonePlayer
 
             try
             {
-                MZPState.Instance.PowerControl.ResumeFromPowerSaving();
+                //MZPState.Instance.PowerControl.ResumeFromPowerSaving();
                 //zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
                 cmdName = vals.GetValue(Metadata.GlobalParams.command);
 				cmdresult.Command = cmdName;

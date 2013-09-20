@@ -25,6 +25,20 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace MultiZonePlayer
 {
+	public static class MyExtensions
+	{
+		public static string ReplaceAt(this string input, int index, char newChar)
+		{
+			if (input == null)
+			{
+				throw new ArgumentNullException("input");
+			}
+			char[] chars = input.ToCharArray();
+			chars[index] = newChar;
+			return new string(chars);
+		}
+	}
+
     public class Utilities
     {
         [DllImport("user32.dll")]
@@ -439,6 +453,19 @@ namespace MultiZonePlayer
             }
         }
 
+		public static byte ReverseBitsWith4Operations(byte b)
+		{
+			return (byte)(((b * 0x80200802ul) & 0x0884422110ul) * 0x0101010101ul >> 32);
+		}
+		public static byte ReverseBitsWith3Operations(byte b)
+		{
+			return (byte)((b * 0x0202020202ul & 0x010884422010ul) % 1023);
+		}
+		public static byte ReverseBitsWith7Operations(byte b)
+		{
+			return (byte)(((b * 0x0802u & 0x22110u) | (b * 0x8020u & 0x88440u)) * 0x10101u >> 16);
+		}
+
 		public static string GetActiveWindowTitle()
 		{
 			const int nChars = 256;
@@ -837,24 +864,32 @@ namespace MultiZonePlayer
 
         public static void Log(Exception e, Object o, String text)
         {
+			var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod(); 
 			if (o == null)
 				o = "null";
             if (e!=null)
-                Log(e, e.StackTrace + "|" + text + " sender:" + o.ToString());
+                Log(e, e.StackTrace + "|" + text + "method: "+ callingMethod.Name +" sender:" + o.ToString());
             else
-                Log(e, text + " sender:" + o.ToString());
+                Log(e, text + " sender:" + o.ToString(), callingMethod);
         }
 
-        public static void Log(Object e, String text)
+        public static void Log(Object e, String text, params MethodBase[] callers)
         {
             try
             {
+				MethodBase callingMethod;
+
+				if (callers == null || callers.Length==0)
+					callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
+				else
+					callingMethod = callers[1];
+
                 if (e != null)
                 {
 					if (e.GetType().ToString().ToLower().Contains("exception"))
-						text += " err=" + ((Exception)e).Message + " \nstack=" + ((Exception)e).StackTrace;
+						text += " err=" + ((Exception)e).Message + " method: "+ callingMethod.Name+" stack=" + ((Exception)e).StackTrace;
 					else
-						text += " sender=" + e.ToString();
+						text += " method: "+callingMethod.Name+" sender=" + e.ToString();
                 }
             }
             catch (Exception)

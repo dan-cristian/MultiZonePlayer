@@ -126,7 +126,7 @@ namespace MultiZonePlayer
                     zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId,
 					zone.ClosureOpenCloseRelay==null?Metadata.ClosureOpenCloseRelay.EnumRelayType.Undefined.ToString():
 					zone.ClosureOpenCloseRelay.RelayType.ToString(), 
-					zone.ClosureIdList, zone.PowerOnDelay, zone.NearbyZonesIdList, zone.TemperatureDeviceId);
+					zone.ClosureIdList, zone.PowerOnDelay, zone.NearbyZonesIdList, zone.TemperatureDeviceId, zone.PowerType);
 
                 if (zone.DisplayType!="")
                 {
@@ -179,6 +179,7 @@ namespace MultiZonePlayer
 					zone.PowerOnDelay = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_PowerOnDelay.Name].Value ?? "0");
 					zone.NearbyZonesIdList= (dgvZones.Rows[r].Cells[Zones_NearbyZoneIdList.Name].Value ?? "").ToString();
 					zone.TemperatureDeviceId = (dgvZones.Rows[r].Cells[Zones_TempDeviceId.Name].Value ?? "").ToString();
+					zone.PowerType = (dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString();
 					zone.SaveStateToIni();
                 }
             }

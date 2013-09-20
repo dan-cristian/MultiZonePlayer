@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Threading;
 using System.Net;
+using System.Runtime.InteropServices;
 
 using com.dalsemi.onewire;
 using com.dalsemi.onewire.adapter;
@@ -956,4 +957,369 @@ namespace MultiZonePlayer
 			}
 		}
 	}
+
+	public class Monitor
+	{
+		[StructLayout(LayoutKind.Sequential)]
+        public struct DISPLAY_DEVICE
+        {
+            public int cb;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string DeviceName;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+            public string DeviceString;
+            public int StateFlags;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+            public string DeviceID;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst=128)]
+            public string DeviceKey;
+ 
+            public DISPLAY_DEVICE(int flags)
+            {
+                cb = 0;
+                StateFlags = flags;
+                DeviceName = new string((char)32, 32);
+                DeviceString = new string((char)32, 128);
+                DeviceID = new string((char)32, 128);
+                DeviceKey = new string((char)32, 128);
+                cb = Marshal.SizeOf(this);
+            }
+        }
+ 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DEVMODE
+        {
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string dmDeviceName;
+            public short dmSpecVersion;
+            public short dmDriverVersion;
+            public short dmSize;
+            public short dmDriverExtra;
+            public int dmFields;
+            public short dmOrientation;
+            public short dmPaperSize;
+            public short dmPaperLength;
+            public short dmPaperWidth;
+            public short dmScale;
+            public short dmCopies;
+            public short dmDefaultSource;
+            public short dmPrintQuality;
+            public short dmColor;
+            public short dmDuplex;
+            public short dmYResolution;
+            public short dmTTOption;
+            public short dmCollate;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+            public string dmFormName;
+            public short dmUnusedPadding;
+            public short dmBitsPerPel;
+            public int dmPelsWidth;
+            public int dmPelsHeight;
+            public int dmDisplayFlags;
+            public int dmDisplayFrequency;
+        }
+
+		private List<String> listDevices = new List<string>();
+		private List<String> listSettings = new List<string>();
+		private int listSettingsIndex,listDevicesIndex;
+		
+		public Monitor()
+		{
+			EnumDevices();
+		}
+
+        private void listDevices_SelectedIndexChanged(
+            object sender, EventArgs e)
+        {
+            int devNum = listDevicesIndex;
+            bool isMain = MainDevice(devNum);
+            //btnSet.Enabled = isMain; // enable only for the main device
+            EnumModes(devNum);
+        }
+ 
+        private void btnSet_Click(object sender, EventArgs e)
+        { //set selected display mode
+            int devNum = listDevicesIndex;
+            int modeNum = listSettingsIndex;
+            DEVMODE d = GetDevmode(devNum, modeNum);
+            if (d.dmBitsPerPel != 0 & d.dmPelsWidth != 0 
+                & d.dmPelsHeight != 0)
+            {
+                ChangeDisplaySettings(ref d, 0);
+            }
+        }
+ 
+        private void EnumModes(int devNum)
+        {
+            listSettings.Clear();
+ 
+            string devName = GetDeviceName(devNum);
+            DEVMODE devMode = new DEVMODE();
+            int modeNum = 0;
+            bool result = true;
+            do
+            {
+                result = EnumDisplaySettings(devName, 
+                    modeNum, ref devMode);
+ 
+                if (result)
+                {
+                    string item = DevmodeToString(devMode);
+                    listSettings.Add(item);
+                }
+                modeNum++;
+            } while (result);
+ 
+            if (listSettings.Count > 0)
+            {
+                DEVMODE current = GetDevmode(devNum, -1);
+                int selected = listSettings.IndexOf(DevmodeToString(current));
+                if (selected >= 0)
+					listSettingsIndex = selected;
+            }
+        }
+ 
+        private DEVMODE GetDevmode(int devNum, int modeNum)
+        { //populates DEVMODE for the specified device and mode
+            DEVMODE devMode = new DEVMODE();
+            string devName = GetDeviceName(devNum);
+            EnumDisplaySettings(devName, modeNum, ref devMode);
+            return devMode;
+        }
+ 
+        private string DevmodeToString(DEVMODE devMode)
+        {
+            return devMode.dmPelsWidth.ToString() +
+                " x " + devMode.dmPelsHeight.ToString() +
+                ", " + devMode.dmBitsPerPel.ToString() + 
+                " bits, " + 
+                devMode.dmDisplayFrequency.ToString() + " Hz";
+        }
+ 
+        private void EnumDevices()
+        { //populates Display Devices list
+            this.listDevices.Clear();
+            DISPLAY_DEVICE d = new DISPLAY_DEVICE(0);
+ 
+            int devNum = 0;
+            bool result;
+            do
+            {
+                result = EnumDisplayDevices(IntPtr.Zero, 
+                    devNum, ref d, 0);
+ 
+                if (result)
+                {
+                    string item = devNum.ToString() + 
+                        ". " + d.DeviceString.Trim();
+                    if ((d.StateFlags & 4) != 0) item += " - main";
+                    this.listDevices.Add(item);
+                }
+                devNum++;
+            } while (result);
+        }
+ 
+        private string GetDeviceName(int devNum)
+        {
+            DISPLAY_DEVICE d = new DISPLAY_DEVICE(0);
+            bool result = EnumDisplayDevices(IntPtr.Zero, 
+                devNum, ref d, 0);
+            return (result ? d.DeviceName.Trim() : "#error#");
+        }
+ 
+        private bool MainDevice(int devNum)
+        { //whether the specified device is the main device
+            DISPLAY_DEVICE d = new DISPLAY_DEVICE(0);
+            if (EnumDisplayDevices(IntPtr.Zero, devNum, ref d, 0))
+            {
+                return ((d.StateFlags & 4) != 0);
+            } return false;
+        }
+ 
+        [DllImport("User32.dll")]
+        private static extern bool EnumDisplayDevices(
+            IntPtr lpDevice, int iDevNum, 
+            ref DISPLAY_DEVICE lpDisplayDevice, int dwFlags);
+ 
+        [DllImport("User32.dll")]
+        private static extern bool EnumDisplaySettings(
+            string devName, int modeNum, ref DEVMODE devMode);
+ 
+        [DllImport("user32.dll")]
+        public static extern int ChangeDisplaySettings(
+            ref DEVMODE devMode, int flags);
+ 
+    }
+	
+
+	public class LPT
+	{
+		[DllImport("inpout32.dll")]
+        private static extern UInt32 IsInpOutDriverOpen();
+        [DllImport("inpout32.dll")]
+        private static extern void Out32(short PortAddress, short Data);
+        [DllImport("inpout32.dll")]
+        private static extern char Inp32(short PortAddress);
+
+        [DllImport("inpout32.dll")]
+        private static extern void DlPortWritePortUshort(short PortAddress, ushort Data);
+        [DllImport("inpout32.dll")]
+        private static extern ushort DlPortReadPortUshort(short PortAddress);
+
+        [DllImport("inpout32.dll")]
+        private static extern void DlPortWritePortUlong(int PortAddress, uint Data);
+        [DllImport("inpout32.dll")]
+        private static extern uint DlPortReadPortUlong(int PortAddress);
+
+        [DllImport("inpoutx64.dll")]
+        private static extern bool GetPhysLong(ref int PortAddress, ref uint Data);
+        [DllImport("inpoutx64.dll")]
+        private static extern bool SetPhysLong(ref int PortAddress, ref uint Data);
+
+
+        [DllImport("inpoutx64.dll", EntryPoint="IsInpOutDriverOpen")]
+        private static extern UInt32 IsInpOutDriverOpen_x64();
+        [DllImport("inpoutx64.dll", EntryPoint = "Out32")]
+        private static extern void Out32_x64(short PortAddress, short Data);
+        [DllImport("inpoutx64.dll", EntryPoint = "Inp32")]
+        private static extern char Inp32_x64(short PortAddress);
+
+        [DllImport("inpoutx64.dll", EntryPoint = "DlPortWritePortUshort")]
+        private static extern void DlPortWritePortUshort_x64(short PortAddress, ushort Data);
+        [DllImport("inpoutx64.dll", EntryPoint = "DlPortReadPortUshort")]
+        private static extern ushort DlPortReadPortUshort_x64(short PortAddress);
+
+        [DllImport("inpoutx64.dll", EntryPoint = "DlPortWritePortUlong")]
+        private static extern void DlPortWritePortUlong_x64(int PortAddress, uint Data);
+        [DllImport("inpoutx64.dll", EntryPoint = "DlPortReadPortUlong")]
+        private static extern uint DlPortReadPortUlong_x64(int PortAddress);
+
+        [DllImport("inpoutx64.dll", EntryPoint = "GetPhysLong")]
+        private static extern bool GetPhysLong_x64(ref int PortAddress, ref uint Data);
+        [DllImport("inpoutx64.dll", EntryPoint = "SetPhysLong")]
+        private static extern bool SetPhysLong_x64(ref int PortAddress, ref uint Data);
+		
+		bool m_bX64 = false;
+
+		private short m_dataPortValue=0;
+		private bool m_isInit;
+		private short m_portAddress;
+		private Object m_locker = new Object();
+
+		public LPT(short portAddress) 
+		{
+			m_portAddress = portAddress;
+			Initialise();
+		}
+
+		public void Initialise()
+		{
+			try
+            {
+				m_isInit = false;
+                uint nResult = 0;
+                try
+                {
+                    nResult = IsInpOutDriverOpen();
+					m_isInit = true;
+					MLog.Log(this, "LPT init on 32 bit OK");
+                }
+                catch (BadImageFormatException)
+                {
+					MLog.Log(this, "LPT init on 32 bit Failed");
+                    nResult = IsInpOutDriverOpen_x64();
+					if (nResult != 0)
+					{
+						m_bX64 = true;
+						m_isInit = true;
+						MLog.Log(this, "LPT init on 64 bit OK");
+					}
+					else
+						MLog.Log(this, "LPT init on 64 bit Failed");
+                }
+
+                if (nResult == 0)
+                {
+                    MLog.Log(this, "Unable to open InpOut32 driver");
+                }
+            }
+            catch (DllNotFoundException ex)
+            {
+                MLog.Log(ex,this, "Unable to find InpOut32.dll");
+            }
+		}
+
+		private void ReadPort()
+		{
+			lock (m_locker)
+			{
+				try
+				{
+					char c;
+					if (m_bX64)
+						c = Inp32_x64(m_portAddress);
+					else
+						c = Inp32(m_portAddress);
+
+					if (c != m_dataPortValue)
+					{//todo
+					}
+					//MLog.Log(this, "ReadLPT port int=" + (short)c+ " char="+c);
+					m_dataPortValue = (short)c;
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, this, "An error occured on ReadPort");
+				}
+			}
+		}
+
+		public void WritePort(short value)
+		{
+			lock (m_locker)
+			{
+				try
+				{
+					
+					if (m_bX64)
+						Out32_x64(m_portAddress, value);
+					else
+						Out32(m_portAddress, value);
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, this, "An error occured at write");
+				}
+			}
+		}
+
+		public void WritePort(short pinIndex, bool isOn)
+		{
+			string state = PortState;
+			if (pinIndex < state.Length)
+			{
+				state = state.ReplaceAt(state.Length - 1 - pinIndex, isOn ? '1' : '0');
+				short newValue = Convert.ToInt16(state,2);
+				WritePort(newValue);
+			}
+			else
+				MLog.Log(this, "Pin index=" + pinIndex + " out of range on state=" + state);
+		}
+
+		public string PortState
+		{
+			get
+			{
+				ReadPort();
+				return Convert.ToString(m_dataPortValue, 2).PadLeft(8, '0');
+			}
+		}
+
+		public bool IsPowerOn(short pinIndex)
+		{
+			string state = PortState;
+			return state[state.Length - 1 - pinIndex] == '1';
+		}
+	}
 }
+
