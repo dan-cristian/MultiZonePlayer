@@ -10,14 +10,28 @@
 <table>
 <tr>
 	<td>
-	<button class="Visible#Zones.HasSpeakers,%_zoneid#" onclick="window.open('music.html?zoneid=%_zoneid','_self')">Music</button>
-	<button class="Visible#Zones.HasSpeakers,%_zoneid#" onclick="window.open('streammp3.html?zoneid=%_zoneid','_self')">Radio</button>
-	<button class="Visible#Zones.HasDisplay,%_zoneid#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
-	<button class="Visible#Zones.HasCamera,%_zoneid# Move#Zones.HasImmediateCamMove,%_zoneid#" onclick="window.open('cam.html?oid=#Zones.CameraId,%_zoneid#&zoneid=%_zoneid','_self')">Camera</button>
-	<button class="Visible#Zones.HasVideoPlayer,%_zoneid#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">Video</button>
-	<button class="Visible#Zones.HasMotionSensor,%_zoneid# Move#Zones.HasImmediateAlarmMove,%_zoneid#">Motion</button>
-	<button class="Visible#Zones.HasClosures,%_zoneid# Pressed#Zones.ClosureState,%_zoneid# Move#Zones.HasImmediateClosureMove,%_zoneid#">Closure #Zones.ClosureState,%_zoneid#</button>
-	<button class="Visible#Zones.HasTemperatureSensor,%_zoneid# Caption">#Zones.Temperature,%_zoneid#°</button>
+	<%if,#Zones.HasSpeakers,%_zoneid#%>
+	<button onclick="window.open('music.html?zoneid=%_zoneid','_self')">Music</button>
+	<button onclick="window.open('streammp3.html?zoneid=%_zoneid','_self')">Radio</button>
+	<%%>
+	<%if,#Zones.HasDisplay,%_zoneid#%>
+	<button onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
+	<%%>
+	<%if,#Zones.HasCamera,%_zoneid#%>
+	<button class="Move#Zones.HasImmediateCamMove,%_zoneid#" onclick="window.open('cam.html?oid=#Zones.CameraId,%_zoneid#&zoneid=%_zoneid','_self')">Camera</button>
+	<%%>
+	<%if,#Zones.HasVideoPlayer,%_zoneid#%>
+	<button onclick="window.open('tv.html?zoneid=%_zoneid','_self')">Video</button>
+	<%%>
+	<%if,#Zones.HasMotionSensor,%_zoneid#%>
+	<button class="Move#Zones.HasImmediateAlarmMove,%_zoneid#">Motion</button>
+	<%%>
+	<%if,#Zones.HasClosures,%_zoneid#%>
+	<button class="Pressed#Zones.ClosureState,%_zoneid# Move#Zones.HasImmediateClosureMove,%_zoneid#">Closure #Zones.ClosureState,%_zoneid#</button>
+	<%%>
+	<%if,#Zones.HasTemperatureSensor,%_zoneid#%>
+	<button class="Caption">#Zones.Temperature,%_zoneid#°</button>
+	<%%>
 	<!--meter value="#Zones.Temperature,%_zoneid#" min="0" max="40" optimum="23" low="18" high="25"></meter>#Zones.Temperature,%_zoneid#°-->
 	<button class="Pressed#Zones.IsPowerOn,%_zoneid#">PowerOn #Zones.IsPowerOn,%_zoneid#</button>
 	<br />

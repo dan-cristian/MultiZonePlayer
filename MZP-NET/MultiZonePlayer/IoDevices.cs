@@ -891,69 +891,76 @@ namespace MultiZonePlayer
 
 		public override void GetStatus()
 		{
-			string html = m_client.DownloadString(m_statusurl);
-			string[] atoms, pairs;
-			Boolean failure = m_lastStatus.PowerFail;
-			
-			atoms = html.Split(new string[]{"</br>\r\n"}, StringSplitOptions.RemoveEmptyEntries);
-			foreach (string atom in atoms)
+			try
 			{
-				pairs = atom.Replace(" ", "").Split('=');
-				if (pairs.Length > 1)
-				{
-					switch (pairs[0])
-					{
-						case "I/PVoltage":
-							m_lastStatus.IPVoltage = pairs[1];
-							break;
-						case "I/PFaultVoltage":
-							m_lastStatus.IPFaultVoltage = pairs[1];
-							break;
-						case "O/PVoltage":
-							m_lastStatus.OPVoltage = pairs[1];
-							break;
-						case "O/PCurrent":
-							m_lastStatus.OPCurrent = pairs[1];
-							break;
-						case "I/PFrequency":
-							m_lastStatus.IPFrequency = pairs[1];
-							break;
-						case "BatteryVoltage":
-							m_lastStatus.BatteryVoltage = pairs[1];
-							break;
-						case "Temperature ":
-							m_lastStatus.Temperature = pairs[1];
-							break;
-						case "UPSStatus":
-							m_lastStatus.UPSStatus = pairs[1];
-							
-							if (m_lastStatus.UPSStatus.Length>=8)
-							{
-								m_lastStatus.PowerFail = m_lastStatus.UPSStatus[0]=='1';
-								m_lastStatus.BatteryLow = m_lastStatus.UPSStatus[1]=='1';
-								m_lastStatus.AVR = m_lastStatus.UPSStatus[2]=='1';
-								m_lastStatus.UPSFailed = m_lastStatus.UPSStatus[3]=='1';
-								m_lastStatus.StandbyUPS = m_lastStatus.UPSStatus[4]=='1';
-								m_lastStatus.TestInProgress = m_lastStatus.UPSStatus[5]=='1';
-								m_lastStatus.ShutdownActive= m_lastStatus.UPSStatus[6]=='1';
-								m_lastStatus.BeeperOn = m_lastStatus.UPSStatus[7]=='1';
+				string html = m_client.DownloadString(m_statusurl);
+				string[] atoms, pairs;
+				Boolean failure = m_lastStatus.PowerFail;
 
-								failure = m_lastStatus.PowerFail;
-							}
-							break;
+				atoms = html.Split(new string[] { "</br>\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+				foreach (string atom in atoms)
+				{
+					pairs = atom.Replace(" ", "").Split('=');
+					if (pairs.Length > 1)
+					{
+						switch (pairs[0])
+						{
+							case "I/PVoltage":
+								m_lastStatus.IPVoltage = pairs[1];
+								break;
+							case "I/PFaultVoltage":
+								m_lastStatus.IPFaultVoltage = pairs[1];
+								break;
+							case "O/PVoltage":
+								m_lastStatus.OPVoltage = pairs[1];
+								break;
+							case "O/PCurrent":
+								m_lastStatus.OPCurrent = pairs[1];
+								break;
+							case "I/PFrequency":
+								m_lastStatus.IPFrequency = pairs[1];
+								break;
+							case "BatteryVoltage":
+								m_lastStatus.BatteryVoltage = pairs[1];
+								break;
+							case "Temperature ":
+								m_lastStatus.Temperature = pairs[1];
+								break;
+							case "UPSStatus":
+								m_lastStatus.UPSStatus = pairs[1];
+
+								if (m_lastStatus.UPSStatus.Length >= 8)
+								{
+									m_lastStatus.PowerFail = m_lastStatus.UPSStatus[0] == '1';
+									m_lastStatus.BatteryLow = m_lastStatus.UPSStatus[1] == '1';
+									m_lastStatus.AVR = m_lastStatus.UPSStatus[2] == '1';
+									m_lastStatus.UPSFailed = m_lastStatus.UPSStatus[3] == '1';
+									m_lastStatus.StandbyUPS = m_lastStatus.UPSStatus[4] == '1';
+									m_lastStatus.TestInProgress = m_lastStatus.UPSStatus[5] == '1';
+									m_lastStatus.ShutdownActive = m_lastStatus.UPSStatus[6] == '1';
+									m_lastStatus.BeeperOn = m_lastStatus.UPSStatus[7] == '1';
+
+									failure = m_lastStatus.PowerFail;
+								}
+								break;
+						}
 					}
 				}
-			}
 
-			if (failure != MZPState.Instance.IsPowerFailure)
+				if (failure != MZPState.Instance.IsPowerFailure)
+				{
+					MLog.Log(this, "MUSTEK power event failure=" + m_lastStatus.PowerFail);
+					Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.powerevent.ToString(), Metadata.CommandSources.system);
+					val.Add(Metadata.GlobalParams.action, failure.ToString());
+					val.Add(Metadata.GlobalParams.datetime, DateTime.Now.ToString());
+					Metadata.ValueList retval;
+					String json = API.DoCommandFromWeb(val, out retval);
+					Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
+				}
+			}
+			catch (Exception ex)
 			{
-				MLog.Log(this, "MUSTEK power event failure=" + m_lastStatus.PowerFail);
-				Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.powerevent.ToString(), Metadata.CommandSources.system);
-				val.Add(Metadata.GlobalParams.action, failure.ToString());
-				val.Add(Metadata.GlobalParams.datetime, DateTime.Now.ToString());
-				Metadata.ValueList retval;
-				String json = API.DoCommandFromWeb(val, out retval);
-				Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
+				MLog.Log(ex, this, "Unable to read status");
 			}
 		}
 	}

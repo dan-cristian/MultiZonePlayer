@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Web.SessionState;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace MultiZonePlayer
 {
@@ -401,6 +402,10 @@ namespace MultiZonePlayer
 						}
 					}
 
+					//look for server side programming
+					GenerateServerSideScript(ref result);
+
+
 					//set server variables
 					if (resvalue != null)
 						result = result.Replace("#HTMLCommandResult#", resvalue.GetValue(Metadata.GlobalParams.msg));
@@ -449,6 +454,96 @@ namespace MultiZonePlayer
 				}
 			}
 			return result;
+		}
+
+		public void GenerateServerSideScript(ref String result)
+		{
+			const string delim_start = "<%", delim_end = "%>";
+			string resultCopy = result;
+			//Match scriptsMatch = Regex.Match(resultCopy, delim_start + @"(.+)" + delim_end, RegexOptions.None);
+			Match targetMatch;// = Regex.Match(resultCopy, delim_end + @"([\s\S])" + delim_start + delim_end, RegexOptions.None);
+			String script, target, scriptReflect;
+
+			foreach (Match scriptsMatch in Regex.Matches(resultCopy, delim_start + @"(.+)" + delim_end, RegexOptions.None))
+			//while (scriptsMatch.Success && targetMatch.Success)
+			{
+				//for (int i = 1; i <= scriptsMatch.Groups.Count; i++)
+				//{
+					script = scriptsMatch.Groups[1].Value;
+					//if (script == "")
+					//	break;
+					target = result.Substring(delim_end, delim_start + delim_end); 
+					//targetMatch = Regex.Match(result, delim_end + @"(.+)" + delim_start + delim_end, RegexOptions.Singleline);
+					if (target == "")
+					{
+						MLog.Log(this, "Could not find script target");
+						break;
+					}
+					int resultInsertIndex = result.IndexOf(target);// +delim_start.Length;
+					scriptReflect = script;
+					Reflect.GenericReflect(ref scriptReflect);
+					string[] atoms = scriptReflect.Split(',');
+
+					switch (atoms[0])
+					{
+						case "for":
+							if (script.Contains("for"))
+							{
+								string var, start, end, oper;
+								var = atoms[1];
+								start = atoms[2];
+								oper = atoms[3];
+								end = atoms[4];
+
+								int forstart, forend;
+								forstart = Convert.ToInt16(start);
+								forend = Convert.ToInt16(end);
+								String generated;
+
+								switch (oper)
+								{
+									case "++":
+										for (int j = forstart; j < forend; j++)
+										{
+											generated = target.Replace("%" + var, j.ToString());
+											result = result.Insert(resultInsertIndex, generated);
+											resultInsertIndex += generated.Length;
+										}
+										break;
+									case "--":
+										for (int j = forstart; j < forend; j--)
+										{
+											generated = target.Replace("%" + var, j.ToString());
+											result = result.Insert(resultInsertIndex, generated);
+											resultInsertIndex += generated.Length;
+										}
+										break;
+								}
+							}
+							result = result.Replace(delim_start+ script+delim_end, "").Replace(target+delim_start+delim_end, "");
+							break;
+						case "if":
+							string res;
+							res = atoms[1];
+							result = result.Replace(delim_start+script+delim_end, "");
+							if (res.ToLower() == "false")
+								result = result.Replace(target, "");
+							else
+								result = result + "";
+							result = result.ReplaceFirst(delim_start + delim_end, "");
+							break;
+						default:
+
+							break;
+					}
+
+				//}
+				//result = result.Replace(delim_start, "").Replace(delim_end, "");
+
+				//scriptsMatch = scriptsMatch.NextMatch();
+				//targetMatch = targetMatch.NextMatch();
+			}
+
 		}
 
 	}

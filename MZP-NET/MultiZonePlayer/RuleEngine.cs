@@ -263,34 +263,41 @@ namespace MultiZonePlayer
 			RuleEntry entry;
 			foreach (string rule in rules)
 			{
-				entry = new RuleEntry();
-
-				atoms = rule.Split(new String[] { "={" }, StringSplitOptions.RemoveEmptyEntries);
-				entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");//.ToLower();
-
-				atoms = atoms[1].Split('|');
-				entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
-				string[] vars = entry.Trigger.Split(';');
-				if (vars.Length > 1)
+				try
 				{
-					entry.Trigger = vars[0];
-					string[] fields = vars[1].Split('=');
-					if (fields.Length > 1)
+					entry = new RuleEntry();
+
+					atoms = rule.Split(new String[] { "={" }, StringSplitOptions.RemoveEmptyEntries);
+					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");//.ToLower();
+
+					atoms = atoms[1].Split('|');
+					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
+					string[] vars = entry.Trigger.Split(';');
+					if (vars.Length > 1)
 					{
-						entry.FilterFieldName = fields[0];
-						entry.FilterFieldValue = fields[1];
+						entry.Trigger = vars[0];
+						string[] fields = vars[1].Split('=');
+						if (fields.Length > 1)
+						{
+							entry.FilterFieldName = fields[0];
+							entry.FilterFieldValue = fields[1];
+						}
 					}
+					entry.JSCode = atoms[1];
+					//find variables
+					MatchCollection matchList;
+					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");
+					if (matchList.Count > 0) entry.VariableList = new List<string>();
+					foreach (Match m in matchList)
+					{
+						entry.VariableList.Add(m.Groups[1].Value);
+					}
+					m_ruleList.Add(entry);
 				}
-				entry.JSCode = atoms[1];
-				//find variables
-				MatchCollection matchList;
-				matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");
-				if (matchList.Count > 0) entry.VariableList = new List<string>();
-				foreach (Match m in matchList)
+				catch (Exception ex)
 				{
-					entry.VariableList.Add(m.Groups[1].Value);
+					MLog.Log(ex, "Error, rule was not loaded, rule=" + rule);
 				}
-				m_ruleList.Add(entry);
 			}
 			MLog.Log(null, "Loaded " + m_ruleList.Count + " rules");
 		}

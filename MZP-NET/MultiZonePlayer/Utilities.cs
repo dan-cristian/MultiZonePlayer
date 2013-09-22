@@ -37,6 +37,28 @@ namespace MultiZonePlayer
 			chars[index] = newChar;
 			return new string(chars);
 		}
+
+		public static string ReplaceFirst(this string text, string search, string replace)
+		{
+			int pos = text.IndexOf(search);
+			if (pos < 0)
+			{
+				return text;
+			}
+			return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+		}
+
+		public static string Substring(this string text, string startDelimiter, string endDelimiter)
+		{
+			int startPos = text.IndexOf(startDelimiter);
+			int endPos = text.IndexOf(endDelimiter);
+
+			if (startPos >= 0 && endPos >= 0)
+				return text.Substring(startPos + startDelimiter.Length, 
+					endPos - (startPos + startDelimiter.Length));
+			else
+				return "";
+		}
 	}
 
     public class Utilities

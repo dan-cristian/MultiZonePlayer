@@ -304,6 +304,11 @@ namespace MultiZonePlayer
                 get{return m_zoneList;}
             }
 
+			public int ZonesCount
+			{
+				get { return ZoneDetails.Count; }
+			}
+
             public ZoneEvents ZoneEvents
             {
                 get { return m_zoneEvents; }
