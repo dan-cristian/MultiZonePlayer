@@ -16,7 +16,7 @@
 </table>
 <!--table><tr><td-->
 	<%for,i,0,++,#S.ZonesCount#%>
-	<button class="Action#Zones.HasAction,%i#" onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones.ZoneName,%i#</button>
+	<button class="Action#Zones.HasAction,%i# Activity#Zones.ActivityType,%i#" onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones.ZoneName,%i#</button>
 	<%%>	
 <!--/td></tr></table-->
 </body>

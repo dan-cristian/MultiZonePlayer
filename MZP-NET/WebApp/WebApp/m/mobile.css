@@ -42,3 +42,6 @@ button.ActionTrue {background-image:url('wheel-icon.png');background-repeat:no-r
 button.MoveTrue {background-image:url('walk-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.ActiveFalse {background-image:url('mic.png');background-repeat:no-repeat;background-position:right}
 button.Caption {background-color:transparent;color:Black}
+button.Activityxbmc {background-image:url('Bande-video-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
+button.Activitymusic {background-image:url('Music-Library-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
+button.Activityradio {background-image:url('radio-metal-2-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
