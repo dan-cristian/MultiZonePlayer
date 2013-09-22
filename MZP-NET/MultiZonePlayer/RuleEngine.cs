@@ -177,9 +177,7 @@ namespace MultiZonePlayer
 										}
 									}
 									//break;
-								
 							//}
-						
 					}
 				}
 			}
@@ -284,9 +282,9 @@ namespace MultiZonePlayer
 						}
 					}
 					entry.JSCode = atoms[1];
-					//find variables
+					//find variables in js code
 					MatchCollection matchList;
-					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");
+					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");//Not clear what?
 					if (matchList.Count > 0) entry.VariableList = new List<string>();
 					foreach (Match m in matchList)
 					{
@@ -486,9 +484,13 @@ namespace MultiZonePlayer
 			return MZPState.Instance;
 		}
 
-		public Metadata.ZoneDetails Zones(String methodname, String zoneid)
+		public Metadata.ZoneDetails Zones(String methodname, String zoneIdentifier)//zoneid or zonename
 		{
-			return MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
+			int zoneId;
+			if (Int32.TryParse(zoneIdentifier, out zoneId))
+				return MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneId)));
+			else
+				return MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.Equals(zoneIdentifier));
 		}
 
 		public Metadata.ZoneDetails FirstActiveZone(String methodname)

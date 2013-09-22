@@ -474,8 +474,8 @@ namespace MultiZonePlayer
                                 m_mainZoneActivity = null;
                             }
 
-							if ((m_mainZoneActivity == null || !m_mainZoneActivity.ZoneDetails.IsActive) 
-								&& m_zoneDetails.HasVideoPlayer)
+							if (//(m_mainZoneActivity == null || !m_mainZoneActivity.ZoneDetails.IsActive) &&
+								 m_zoneDetails.HasVideoPlayer)
 								InitZonePlayerXBMC();
 							else
 								MLog.Log(this, "Not initialising the video due to missing video player on zone=" + m_zoneDetails.ZoneName);

@@ -5,8 +5,8 @@ td {text-align:left;table-layout:auto;padding:0px;border-width:thin;border-style
 a {text-decoration: none;font-size:50px;}
 a.big {font-size:96px;}
 a.med {font-size:16px;}
-div.True {display: block;}
-div.False {display: none;}
+div.VisibleTrue {display: block;}
+div.VisibleFalse {display: none;}
 /***FIRST STYLE THE BUTTON***/
 button{
 cursor:pointer; /*forces the cursor to change to a hand when the button is hovered*/

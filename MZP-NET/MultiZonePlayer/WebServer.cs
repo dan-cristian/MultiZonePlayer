@@ -459,27 +459,20 @@ namespace MultiZonePlayer
 		public void GenerateServerSideScript(ref String result)
 		{
 			const string delim_start = "<%", delim_end = "%>";
-			string resultCopy = result;
-			//Match scriptsMatch = Regex.Match(resultCopy, delim_start + @"(.+)" + delim_end, RegexOptions.None);
-			Match targetMatch;// = Regex.Match(resultCopy, delim_end + @"([\s\S])" + delim_start + delim_end, RegexOptions.None);
 			String script, target, scriptReflect;
 
-			foreach (Match scriptsMatch in Regex.Matches(resultCopy, delim_start + @"(.+)" + delim_end, RegexOptions.None))
-			//while (scriptsMatch.Success && targetMatch.Success)
+			do
 			{
-				//for (int i = 1; i <= scriptsMatch.Groups.Count; i++)
-				//{
-					script = scriptsMatch.Groups[1].Value;
-					//if (script == "")
-					//	break;
-					target = result.Substring(delim_end, delim_start + delim_end); 
-					//targetMatch = Regex.Match(result, delim_end + @"(.+)" + delim_start + delim_end, RegexOptions.Singleline);
+				script = result.Substring(delim_start, delim_end);
+				if (script != "")
+				{
+					target = result.Substring(delim_end, delim_start + delim_end);
 					if (target == "")
 					{
 						MLog.Log(this, "Could not find script target");
 						break;
 					}
-					int resultInsertIndex = result.IndexOf(target);// +delim_start.Length;
+					int resultInsertIndex = result.IndexOf(target);
 					scriptReflect = script;
 					Reflect.GenericReflect(ref scriptReflect);
 					string[] atoms = scriptReflect.Split(',');
@@ -520,12 +513,12 @@ namespace MultiZonePlayer
 										break;
 								}
 							}
-							result = result.Replace(delim_start+ script+delim_end, "").Replace(target+delim_start+delim_end, "");
+							result = result.Replace(delim_start + script + delim_end, "").Replace(target + delim_start + delim_end, "");
 							break;
 						case "if":
 							string res;
 							res = atoms[1];
-							result = result.Replace(delim_start+script+delim_end, "");
+							result = result.Replace(delim_start + script + delim_end, "");
 							if (res.ToLower() == "false")
 								result = result.Replace(target, "");
 							else
@@ -533,20 +526,11 @@ namespace MultiZonePlayer
 							result = result.ReplaceFirst(delim_start + delim_end, "");
 							break;
 						default:
-
 							break;
 					}
-
-				//}
-				//result = result.Replace(delim_start, "").Replace(delim_end, "");
-
-				//scriptsMatch = scriptsMatch.NextMatch();
-				//targetMatch = targetMatch.NextMatch();
+				}
 			}
-
+			while (script != "");
 		}
-
 	}
-	
-
 }

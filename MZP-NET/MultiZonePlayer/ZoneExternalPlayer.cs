@@ -112,6 +112,7 @@ namespace MultiZonePlayer
             }
             else
                 MLog.Log(this, "No display found for XBMC, CHECK!, zonename="+zoneDetails.ZoneName);
+			Monitor.RefreshFrequencySecondary();
         }
 
 		public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
@@ -343,6 +344,7 @@ namespace MultiZonePlayer
 						while (GetXBMCHandle() == IntPtr.Zero && i < 50);
 						MoveToSecondScreen();
 						Utilities.SetForegroundWindow(GetXBMCHandle());
+						Monitor.RefreshFrequencySecondary();
 						m_bringToForegroundOnce = true;
 					}
 

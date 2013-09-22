@@ -227,9 +227,6 @@ namespace MultiZonePlayer
 			comm.Flush();
 			GetStatus();
 			WriteCommand(CMD_SETMODE, 1, 1000);
-
-			//m_waitForResponse = false;
-			//m_lastOperationWasOK = true;
 		}
 
 		private string GetStatus()
@@ -1026,13 +1023,21 @@ namespace MultiZonePlayer
             public int dmDisplayFrequency;
         }
 
-		private List<String> listDevices = new List<string>();
-		private List<String> listSettings = new List<string>();
-		private int listSettingsIndex,listDevicesIndex;
+		private static List<String> listDevices = new List<string>();
+		private static List<String> listSettings = new List<string>();
+		private static int listSettingsIndex,listDevicesIndex;
 		
-		public Monitor()
+		public static void RefreshFrequencySecondary()
 		{
 			EnumDevices();
+			for (int i = 0; i < System.Windows.Forms.Screen.AllScreens.Length;i++ )
+			{
+				if (!MainDevice(i))
+				{
+					DEVMODE current = EnumModes(i);
+					ChangeDisplaySettings(ref current, 0);
+				}
+			}
 		}
 
         private void listDevices_SelectedIndexChanged(
@@ -1056,7 +1061,7 @@ namespace MultiZonePlayer
             }
         }
  
-        private void EnumModes(int devNum)
+        private static DEVMODE EnumModes(int devNum)
         {
             listSettings.Clear();
  
@@ -1076,17 +1081,19 @@ namespace MultiZonePlayer
                 }
                 modeNum++;
             } while (result);
- 
-            if (listSettings.Count > 0)
-            {
-                DEVMODE current = GetDevmode(devNum, -1);
-                int selected = listSettings.IndexOf(DevmodeToString(current));
-                if (selected >= 0)
+
+			if (listSettings.Count > 0)
+			{
+				DEVMODE current = GetDevmode(devNum, -1);
+				int selected = listSettings.IndexOf(DevmodeToString(current));
+				if (selected >= 0)
 					listSettingsIndex = selected;
-            }
+				return current;
+			}
+			else return new DEVMODE();
         }
  
-        private DEVMODE GetDevmode(int devNum, int modeNum)
+        private static DEVMODE GetDevmode(int devNum, int modeNum)
         { //populates DEVMODE for the specified device and mode
             DEVMODE devMode = new DEVMODE();
             string devName = GetDeviceName(devNum);
@@ -1094,7 +1101,7 @@ namespace MultiZonePlayer
             return devMode;
         }
  
-        private string DevmodeToString(DEVMODE devMode)
+        private static string DevmodeToString(DEVMODE devMode)
         {
             return devMode.dmPelsWidth.ToString() +
                 " x " + devMode.dmPelsHeight.ToString() +
@@ -1103,9 +1110,9 @@ namespace MultiZonePlayer
                 devMode.dmDisplayFrequency.ToString() + " Hz";
         }
  
-        private void EnumDevices()
+        private static void EnumDevices()
         { //populates Display Devices list
-            this.listDevices.Clear();
+            listDevices.Clear();
             DISPLAY_DEVICE d = new DISPLAY_DEVICE(0);
  
             int devNum = 0;
@@ -1120,13 +1127,13 @@ namespace MultiZonePlayer
                     string item = devNum.ToString() + 
                         ". " + d.DeviceString.Trim();
                     if ((d.StateFlags & 4) != 0) item += " - main";
-                    this.listDevices.Add(item);
+                    listDevices.Add(item);
                 }
                 devNum++;
             } while (result);
         }
  
-        private string GetDeviceName(int devNum)
+        private static string GetDeviceName(int devNum)
         {
             DISPLAY_DEVICE d = new DISPLAY_DEVICE(0);
             bool result = EnumDisplayDevices(IntPtr.Zero, 
@@ -1134,7 +1141,7 @@ namespace MultiZonePlayer
             return (result ? d.DeviceName.Trim() : "#error#");
         }
  
-        private bool MainDevice(int devNum)
+        private static bool MainDevice(int devNum)
         { //whether the specified device is the main device
             DISPLAY_DEVICE d = new DISPLAY_DEVICE(0);
             if (EnumDisplayDevices(IntPtr.Zero, devNum, ref d, 0))

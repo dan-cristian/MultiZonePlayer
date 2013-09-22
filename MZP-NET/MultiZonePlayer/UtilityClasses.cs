@@ -882,7 +882,11 @@ namespace MultiZonePlayer
 			}
 			public Boolean HasTemperatureSensor
 			{
-				get { return TemperatureDeviceId != ""; }
+				get { 
+					RFXDeviceDefinition.RFXDevice device = RFXDeviceDefinition.GetDevice(ZoneId);
+					return (TemperatureDeviceId != "" || 
+						(device!=null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum));
+				}
 			}
 			public Boolean ContainsDisplay
 			{
@@ -1809,6 +1813,18 @@ namespace MultiZonePlayer
 			else
 			{
 				MLog.Log(null, "Cannot find rfxdev " + deviceName);
+				return null;
+			}
+		}
+
+		public static RFXDevice GetDevice(int zoneId)
+		{
+			RFXDevice result = DeviceList.Find(x => x.ZoneId==(zoneId));
+			if (result != null)
+				return result;
+			else
+			{
+				//MLog.Log(null, "Cannot find rfxdev for zoneid= " + zoneId);
 				return null;
 			}
 		}

@@ -28,11 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.btnSave = new System.Windows.Forms.Button();
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
 			this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
@@ -56,7 +56,6 @@
 			this.Zones_TempDeviceId = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Zones_PowerType = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.tabControl = new System.Windows.Forms.TabPage();
-			this.label1 = new System.Windows.Forms.Label();
 			this.txtLastControlDevice = new System.Windows.Forms.TextBox();
 			this.dgvControl = new System.Windows.Forms.DataGridView();
 			this.Control_ZoneId = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -109,11 +108,12 @@
 			this.UserName = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.UserCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabPage2 = new System.Windows.Forms.TabPage();
-			this.button1 = new System.Windows.Forms.Button();
 			this.dgvParams = new System.Windows.Forms.DataGridView();
 			this.ParamName = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ParamValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Param_Description = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+			this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
 			this.tabParams.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvZones)).BeginInit();
@@ -133,11 +133,13 @@
 			((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).BeginInit();
 			this.tabPage2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvParams)).BeginInit();
+			this.tableLayoutPanel2.SuspendLayout();
+			this.tableLayoutPanel3.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btnSave
 			// 
-			this.btnSave.Location = new System.Drawing.Point(3, 437);
+			this.btnSave.Location = new System.Drawing.Point(3, 388);
 			this.btnSave.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.btnSave.Name = "btnSave";
 			this.btnSave.Size = new System.Drawing.Size(83, 34);
@@ -152,8 +154,6 @@
 			// 
 			// tabParams
 			// 
-			this.tabParams.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.tabParams.Controls.Add(this.tabPage1);
 			this.tabParams.Controls.Add(this.tabControl);
 			this.tabParams.Controls.Add(this.tabMusic);
@@ -161,11 +161,12 @@
 			this.tabParams.Controls.Add(this.tabInput);
 			this.tabParams.Controls.Add(this.tabUsers);
 			this.tabParams.Controls.Add(this.tabPage2);
-			this.tabParams.Location = new System.Drawing.Point(3, 14);
+			this.tabParams.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tabParams.Location = new System.Drawing.Point(3, 2);
 			this.tabParams.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.tabParams.Name = "tabParams";
 			this.tabParams.SelectedIndex = 0;
-			this.tabParams.Size = new System.Drawing.Size(1427, 418);
+			this.tabParams.Size = new System.Drawing.Size(955, 382);
 			this.tabParams.TabIndex = 1;
 			// 
 			// tabPage1
@@ -175,7 +176,7 @@
 			this.tabPage1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.tabPage1.Name = "tabPage1";
 			this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabPage1.Size = new System.Drawing.Size(1419, 389);
+			this.tabPage1.Size = new System.Drawing.Size(947, 353);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Zones";
 			this.tabPage1.UseVisualStyleBackColor = true;
@@ -208,16 +209,16 @@
 			this.dgvZones.Name = "dgvZones";
 			this.dgvZones.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
 			this.dgvZones.RowTemplate.Height = 24;
-			this.dgvZones.Size = new System.Drawing.Size(1413, 385);
+			this.dgvZones.Size = new System.Drawing.Size(941, 349);
 			this.dgvZones.TabIndex = 6;
 			this.dgvZones.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvZones_CellContentClick);
 			this.dgvZones.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvZones_DataError);
 			// 
 			// ZoneId
 			// 
-			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-			dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.ZoneId.DefaultCellStyle = dataGridViewCellStyle1;
+			dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+			dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.ZoneId.DefaultCellStyle = dataGridViewCellStyle14;
 			this.ZoneId.HeaderText = "ZoneId";
 			this.ZoneId.Name = "ZoneId";
 			this.ZoneId.Width = 21;
@@ -329,33 +330,22 @@
 			// 
 			// tabControl
 			// 
-			this.tabControl.Controls.Add(this.label1);
-			this.tabControl.Controls.Add(this.txtLastControlDevice);
-			this.tabControl.Controls.Add(this.dgvControl);
+			this.tabControl.Controls.Add(this.tableLayoutPanel3);
 			this.tabControl.Location = new System.Drawing.Point(4, 25);
 			this.tabControl.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.tabControl.Name = "tabControl";
 			this.tabControl.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabControl.Size = new System.Drawing.Size(1419, 389);
+			this.tabControl.Size = new System.Drawing.Size(947, 353);
 			this.tabControl.TabIndex = 5;
 			this.tabControl.Text = "Control";
 			this.tabControl.UseVisualStyleBackColor = true;
 			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(5, 283);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(100, 17);
-			this.label1.TabIndex = 2;
-			this.label1.Text = "Control Device";
-			// 
 			// txtLastControlDevice
 			// 
-			this.txtLastControlDevice.Location = new System.Drawing.Point(128, 281);
+			this.txtLastControlDevice.Location = new System.Drawing.Point(3, 316);
 			this.txtLastControlDevice.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.txtLastControlDevice.Name = "txtLastControlDevice";
-			this.txtLastControlDevice.Size = new System.Drawing.Size(857, 22);
+			this.txtLastControlDevice.Size = new System.Drawing.Size(935, 22);
 			this.txtLastControlDevice.TabIndex = 1;
 			this.txtLastControlDevice.TextChanged += new System.EventHandler(this.txtLastControlDevice_TextChanged);
 			// 
@@ -368,12 +358,13 @@
             this.Control_DeviceName,
             this.Control_Description,
             this.Control_Identify});
-			this.dgvControl.Location = new System.Drawing.Point(5, 6);
+			this.dgvControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.dgvControl.Location = new System.Drawing.Point(3, 2);
 			this.dgvControl.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.dgvControl.Name = "dgvControl";
 			this.dgvControl.RowTemplate.Height = 24;
 			this.dgvControl.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-			this.dgvControl.Size = new System.Drawing.Size(1389, 268);
+			this.dgvControl.Size = new System.Drawing.Size(935, 310);
 			this.dgvControl.TabIndex = 0;
 			this.dgvControl.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvControl_CellContentClick);
 			this.dgvControl.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgvControl_DataError);
@@ -400,8 +391,8 @@
 			// 
 			// Control_Identify
 			// 
-			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.ButtonFace;
-			this.Control_Identify.DefaultCellStyle = dataGridViewCellStyle2;
+			dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.ButtonFace;
+			this.Control_Identify.DefaultCellStyle = dataGridViewCellStyle11;
 			this.Control_Identify.HeaderText = "Identify";
 			this.Control_Identify.Items.AddRange(new object[] {
             "Manual",
@@ -417,7 +408,7 @@
 			this.tabMusic.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.tabMusic.Name = "tabMusic";
 			this.tabMusic.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabMusic.Size = new System.Drawing.Size(1419, 389);
+			this.tabMusic.Size = new System.Drawing.Size(947, 353);
 			this.tabMusic.TabIndex = 1;
 			this.tabMusic.Text = "Music";
 			this.tabMusic.UseVisualStyleBackColor = true;
@@ -437,7 +428,7 @@
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(1413, 385);
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(941, 349);
 			this.tableLayoutPanel1.TabIndex = 1;
 			// 
 			// dgvMusic
@@ -454,7 +445,7 @@
 			this.dgvMusic.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.dgvMusic.Name = "dgvMusic";
 			this.dgvMusic.RowTemplate.Height = 24;
-			this.dgvMusic.Size = new System.Drawing.Size(1407, 73);
+			this.dgvMusic.Size = new System.Drawing.Size(935, 65);
 			this.dgvMusic.TabIndex = 0;
 			this.dgvMusic.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvMusic_CellContentClick);
 			// 
@@ -487,19 +478,19 @@
 			// 
 			// Playlist_OpenPlaylist
 			// 
-			dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.ButtonFace;
-			dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-			this.Playlist_OpenPlaylist.DefaultCellStyle = dataGridViewCellStyle3;
+			dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle12.BackColor = System.Drawing.SystemColors.ButtonFace;
+			dataGridViewCellStyle12.ForeColor = System.Drawing.SystemColors.ControlText;
+			this.Playlist_OpenPlaylist.DefaultCellStyle = dataGridViewCellStyle12;
 			this.Playlist_OpenPlaylist.HeaderText = "Add Playlist";
 			this.Playlist_OpenPlaylist.Name = "Playlist_OpenPlaylist";
 			this.Playlist_OpenPlaylist.Text = "Open";
 			// 
 			// Playlist_OpenFolder
 			// 
-			dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.ButtonFace;
-			this.Playlist_OpenFolder.DefaultCellStyle = dataGridViewCellStyle4;
+			dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle13.BackColor = System.Drawing.SystemColors.ButtonFace;
+			this.Playlist_OpenFolder.DefaultCellStyle = dataGridViewCellStyle13;
 			this.Playlist_OpenFolder.HeaderText = "Add Directory";
 			this.Playlist_OpenFolder.Name = "Playlist_OpenFolder";
 			// 
@@ -518,10 +509,10 @@
             this.MusicMood_Random,
             this.MusicMood_NumericCode});
 			this.dgvMusicMood.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.dgvMusicMood.Location = new System.Drawing.Point(4, 81);
+			this.dgvMusicMood.Location = new System.Drawing.Point(4, 73);
 			this.dgvMusicMood.Margin = new System.Windows.Forms.Padding(4);
 			this.dgvMusicMood.Name = "dgvMusicMood";
-			this.dgvMusicMood.Size = new System.Drawing.Size(1405, 146);
+			this.dgvMusicMood.Size = new System.Drawing.Size(933, 131);
 			this.dgvMusicMood.TabIndex = 1;
 			this.dgvMusicMood.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvMusicMood_CellContentClick);
 			// 
@@ -589,10 +580,10 @@
             this.Music_ScheduleWeekDay,
             this.Music_ScheduleMood});
 			this.dgvMusicSchedule.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.dgvMusicSchedule.Location = new System.Drawing.Point(4, 235);
+			this.dgvMusicSchedule.Location = new System.Drawing.Point(4, 212);
 			this.dgvMusicSchedule.Margin = new System.Windows.Forms.Padding(4);
 			this.dgvMusicSchedule.Name = "dgvMusicSchedule";
-			this.dgvMusicSchedule.Size = new System.Drawing.Size(1405, 146);
+			this.dgvMusicSchedule.Size = new System.Drawing.Size(933, 133);
 			this.dgvMusicSchedule.TabIndex = 2;
 			// 
 			// Music_ScheduleZoneId
@@ -742,8 +733,8 @@
 			// 
 			// InZoneId
 			// 
-			dataGridViewCellStyle5.NullValue = "N/A";
-			this.InZoneId.DefaultCellStyle = dataGridViewCellStyle5;
+			dataGridViewCellStyle15.NullValue = "N/A";
+			this.InZoneId.DefaultCellStyle = dataGridViewCellStyle15;
 			this.InZoneId.HeaderText = "InZoneId";
 			this.InZoneId.Name = "InZoneId";
 			this.InZoneId.Width = 75;
@@ -800,26 +791,15 @@
 			// 
 			// tabPage2
 			// 
-			this.tabPage2.Controls.Add(this.button1);
 			this.tabPage2.Controls.Add(this.dgvParams);
 			this.tabPage2.Location = new System.Drawing.Point(4, 25);
 			this.tabPage2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.tabPage2.Name = "tabPage2";
 			this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabPage2.Size = new System.Drawing.Size(1419, 389);
+			this.tabPage2.Size = new System.Drawing.Size(947, 353);
 			this.tabPage2.TabIndex = 4;
 			this.tabPage2.Text = "Parameters";
 			this.tabPage2.UseVisualStyleBackColor = true;
-			// 
-			// button1
-			// 
-			this.button1.Location = new System.Drawing.Point(17, 355);
-			this.button1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(93, 30);
-			this.button1.TabIndex = 3;
-			this.button1.Text = "LocateApp";
-			this.button1.UseVisualStyleBackColor = true;
 			// 
 			// dgvParams
 			// 
@@ -829,11 +809,12 @@
             this.ParamName,
             this.ParamValue,
             this.Param_Description});
-			this.dgvParams.Location = new System.Drawing.Point(17, 17);
+			this.dgvParams.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.dgvParams.Location = new System.Drawing.Point(3, 2);
 			this.dgvParams.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.dgvParams.Name = "dgvParams";
 			this.dgvParams.RowTemplate.Height = 24;
-			this.dgvParams.Size = new System.Drawing.Size(1256, 334);
+			this.dgvParams.Size = new System.Drawing.Size(941, 349);
 			this.dgvParams.TabIndex = 2;
 			// 
 			// ParamName
@@ -855,13 +836,45 @@
 			this.Param_Description.Name = "Param_Description";
 			this.Param_Description.Width = 104;
 			// 
+			// tableLayoutPanel2
+			// 
+			this.tableLayoutPanel2.AutoSize = true;
+			this.tableLayoutPanel2.ColumnCount = 1;
+			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel2.Controls.Add(this.tabParams, 0, 0);
+			this.tableLayoutPanel2.Controls.Add(this.btnSave, 0, 1);
+			this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
+			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
+			this.tableLayoutPanel2.RowCount = 2;
+			this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 90F));
+			this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 10F));
+			this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			this.tableLayoutPanel2.Size = new System.Drawing.Size(961, 429);
+			this.tableLayoutPanel2.TabIndex = 8;
+			// 
+			// tableLayoutPanel3
+			// 
+			this.tableLayoutPanel3.ColumnCount = 1;
+			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			this.tableLayoutPanel3.Controls.Add(this.txtLastControlDevice, 0, 1);
+			this.tableLayoutPanel3.Controls.Add(this.dgvControl, 0, 0);
+			this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 2);
+			this.tableLayoutPanel3.Name = "tableLayoutPanel3";
+			this.tableLayoutPanel3.RowCount = 2;
+			this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 90F));
+			this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 10F));
+			this.tableLayoutPanel3.Size = new System.Drawing.Size(941, 349);
+			this.tableLayoutPanel3.TabIndex = 3;
+			// 
 			// FormOptions
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(1370, 485);
-			this.Controls.Add(this.tabParams);
-			this.Controls.Add(this.btnSave);
+			this.ClientSize = new System.Drawing.Size(961, 429);
+			this.Controls.Add(this.tableLayoutPanel2);
 			this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.Name = "FormOptions";
 			this.Text = "FormOptions";
@@ -871,7 +884,6 @@
 			this.tabPage1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.dgvZones)).EndInit();
 			this.tabControl.ResumeLayout(false);
-			this.tabControl.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvControl)).EndInit();
 			this.tabMusic.ResumeLayout(false);
 			this.tableLayoutPanel1.ResumeLayout(false);
@@ -887,7 +899,11 @@
 			((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).EndInit();
 			this.tabPage2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.dgvParams)).EndInit();
+			this.tableLayoutPanel2.ResumeLayout(false);
+			this.tableLayoutPanel3.ResumeLayout(false);
+			this.tableLayoutPanel3.PerformLayout();
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
         }
 
@@ -899,8 +915,7 @@
         private System.Windows.Forms.TabControl tabParams;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.DataGridView dgvZones;
-        private System.Windows.Forms.TabPage tabControl;
-        private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.TabPage tabControl;
         private System.Windows.Forms.TextBox txtLastControlDevice;
         private System.Windows.Forms.DataGridView dgvControl;
         private System.Windows.Forms.TabPage tabMusic;
@@ -926,8 +941,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn UserId;
         private System.Windows.Forms.DataGridViewTextBoxColumn UserName;
         private System.Windows.Forms.DataGridViewTextBoxColumn UserCode;
-        private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.TabPage tabPage2;
 		private System.Windows.Forms.DataGridView dgvParams;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.DataGridView dgvMusicMood;
@@ -975,5 +989,7 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_TempDeviceId;
 		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_PowerIndexType;
 		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_PowerType;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
     }
 }

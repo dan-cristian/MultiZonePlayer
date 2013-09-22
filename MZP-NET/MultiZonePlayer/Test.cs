@@ -252,12 +252,8 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
-		  LPT lpt = new LPT(888);
-		  txt.AppendText(lpt.PortState + "\n");
-
-		  lpt.WritePort(5, true);
-		  lpt.WritePort(3, false);
-		  txt.AppendText(lpt.PortState + "\n");
+		  //Monitor mon = new Monitor();
+		  //mon.RefreshFrequency();
       }
 
       private void button7_Click(object sender, EventArgs e)
