@@ -900,6 +900,24 @@ namespace MultiZonePlayer
 						return ClosureOpenCloseRelay.RelayState.ToString();
 				}
 			}
+
+			public int MacroCount
+			{
+				get { 
+					List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
+					return macros != null ? macros.Count : 0;
+				}
+			}
+			public String MacroName(int macroIndex)
+			{
+				
+				List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
+				if (macros != null && macroIndex < macros.Count)
+					return "Macro "+macros[macroIndex].Id;
+				else
+					return "error index="+macroIndex;
+				
+			}
             public String OutputDeviceDirectXName
             {
                 get

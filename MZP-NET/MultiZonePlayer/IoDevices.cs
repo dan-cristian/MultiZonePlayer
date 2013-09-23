@@ -1029,13 +1029,17 @@ namespace MultiZonePlayer
 		
 		public static void RefreshFrequencySecondary()
 		{
+			MLog.Log(null, "Refreshing screen");
 			EnumDevices();
 			for (int i = 0; i < System.Windows.Forms.Screen.AllScreens.Length;i++ )
 			{
-				if (!MainDevice(i))
+				//if (!MainDevice(i))
 				{
 					DEVMODE current = EnumModes(i);
 					ChangeDisplaySettings(ref current, 0);
+					MLog.Log(null, "Screen refreshed, device=" + current.dmDeviceName 
+						+ " freq=" + current.dmDisplayFrequency
+						+" width=" + current.dmPelsWidth + " height="+current.dmPelsHeight);
 				}
 			}
 		}

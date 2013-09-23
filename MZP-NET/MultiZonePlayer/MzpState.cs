@@ -229,6 +229,19 @@ namespace MultiZonePlayer
 				}
 			}
 
+			public List<Metadata.MacroEntry> GetZoneMacros(int zoneId)
+			{
+				List<Metadata.MacroEntry> macros = null;
+				String zoneName = GetZoneById(zoneId).ZoneName;
+				if (m_macroList != null)
+				{
+					macros = m_macroList.FindAll(x =>
+						x.CommandList != null && x.CommandList.Find(y => y.ZoneName == zoneName) != null ||
+						x.CommandList != null && x.CommandList.Find(z => z.ParameterValueList !=null && z.ParameterValueList.Contains("zoneid=" + zoneId)) != null);
+				}
+				return macros;
+			}
+
 			public static void RestartGenericProc(string procName, string procPath, System.Diagnostics.ProcessWindowStyle startState)
 			{
 				MLog.Log(null, "Restarting " + procName);

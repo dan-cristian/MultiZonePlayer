@@ -26,22 +26,24 @@ color:#f3f3f3;
 font-size:1.1em;
 }
 /***NOW STYLE THE BUTTON'S HOVER AND FOCUS STATES***/
-button:hover, button:focus, button.PressedTrue{
-background-color :#399630; /*make the background a little darker*/
+/*button:hover, button:focus, button.PressedTrue{*/
+/*make the background a little darker*/
+/*background-color :#399630;*/ 
 /*reduce the drop shadow size to give a pushed button effect*/
--webkit-box-shadow: 0 0 1px rgba(0,0,0, .75);
+/*-webkit-box-shadow: 0 0 1px rgba(0,0,0, .75);
 -moz-box-shadow: 0 0 1px rgba(0,0,0, .75);
 box-shadow: 0 0 1px rgba(0,0,0, .75);
-}
+}*/
 button.PressedTrue{
 background-color: Red;
 }
 button.VisibleTrue {display:inline-block;}
 button.VisibleFalse {display:none;}
-button.ActionTrue {background-image:url('wheel-icon.png');background-repeat:no-repeat;background-position:left}
+button.ActionTrue {background-image:url('wheel-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.MoveTrue {background-image:url('walk-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.ActiveFalse {background-image:url('mic.png');background-repeat:no-repeat;background-position:right}
 button.Caption {background-color:transparent;color:Black}
-button.Activityxbmc {background-image:url('Bande-video-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.Activitymusic {background-image:url('Music-Library-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.Activityradio {background-image:url('radio-metal-2-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
+button.Videoxbmc {background-image:url('Bande-video-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
+button.Musicmusic {background-image:url('Music-Library-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
+button.Radioradio {background-image:url('radio-metal-2-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
+button.TVtv {background-image:url('television-04-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}

@@ -11,17 +11,17 @@
 <tr>
 	<td>
 	<%if,#Zones.HasSpeakers,%_zoneid#%>
-	<button onclick="window.open('music.html?zoneid=%_zoneid','_self')">Music</button>
-	<button onclick="window.open('streammp3.html?zoneid=%_zoneid','_self')">Radio</button>
+	<button class="Music#Zones.ActivityType,%_zoneid#" onclick="window.open('music.html?command=music&zoneid=%_zoneid','_self')">Music</button>
+	<button class="Radio#Zones.ActivityType,%_zoneid#" onclick="window.open('streammp3.html?command=radio&zoneid=%_zoneid','_self')">Radio</button>
 	<%%>
 	<%if,#Zones.HasDisplay,%_zoneid#%>
-	<button onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
+	<button class="TV#Zones.ActivityType,%_zoneid#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
 	<%%>
 	<%if,#Zones.HasCamera,%_zoneid#%>
 	<button class="Move#Zones.HasImmediateCamMove,%_zoneid#" onclick="window.open('cam.html?oid=#Zones.CameraId,%_zoneid#&zoneid=%_zoneid','_self')">Camera</button>
 	<%%>
 	<%if,#Zones.HasVideoPlayer,%_zoneid#%>
-	<button onclick="window.open('tv.html?zoneid=%_zoneid','_self')">Video</button>
+	<button class="Video#Zones.ActivityType,%_zoneid#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">Video</button>
 	<%%>
 	<%if,#Zones.HasMotionSensor,%_zoneid#%>
 	<button class="Move#Zones.HasImmediateAlarmMove,%_zoneid#">Motion</button>
@@ -35,6 +35,9 @@
 	<!--meter value="#Zones.Temperature,%_zoneid#" min="0" max="40" optimum="23" low="18" high="25"></meter>#Zones.Temperature,%_zoneid#°-->
 	<button class="Pressed#Zones.IsPowerOn,%_zoneid#">PowerOn #Zones.IsPowerOn,%_zoneid#</button>
 	<br />
+	<%for,i,0,++,#Zones.MacroCount,%_zoneid#%>
+	<button>#~Zones.MacroName,%_zoneid,%i#</button>
+	<%%>
 	<button onclick="window.open('zone-cmd.html?zoneid=%_zoneid', '_self')">Other Commands</button>
 	<br />
 	<button onclick="window.open('start.html', '_self')">Back</button>

@@ -107,77 +107,76 @@ namespace MultiZonePlayer
 						result = result.Replace("#" + atom + "#", value.ToString());
 					else
 					{
-							/*switch (atom[0])
-							{
-								case '!': //property read
-									property = atom.Replace("!", "");
-									value = GetProperty(instance, property);
-									result = result.Replace("#" + atom + "#", value.ToString());
-									break;
-								case '~'://method invoke
-							 */ 
-									methodparam = atom.Replace("~", "");
-									parameters = methodparam.Split(',');
-									method = parameters[0].ToString();
+							
+						methodparam = atom.Replace("~", "");
+						parameters = methodparam.Split(',');
+						method = parameters[0].ToString();
 
-									methods = method.Split('.');
-									if (methods.Length > 1)//have fields
+						methods = method.Split('.');
+						if (methods.Length > 1)//have fields
+						{
+							method = methods[0];
+							property = methods[1];
+						}
+						else
+							property = null;
+
+						methodparams = new object[parameters.Length];// + 1];
+						//methodparams[0] = context;
+						parameters.CopyTo(methodparams, 0);//1);
+						methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
+
+						if (methInfo != null)
+						{
+							try
+							{
+								if (methodparams.Length > methInfo.GetParameters().Length)
+								{
+									methodparams = new object[parameters.Length-1];
+									for (int i = 0; i < parameters.Length-1; i++)
+										methodparams[i] = parameters[i+1];
+									MLog.Log(null, "Adjusting method param count");
+								}
+								value = methInfo.Invoke(instance, methodparams);
+							}
+							catch (Exception ex)
+							{
+								//result = ex.Message;
+								value = ex.Message;
+								result = result.Replace("#" + atom + "#", value.ToString());
+								break;
+							}
+
+							if (value != null)
+							{
+								//nested properties, check for the type and read value
+								if (property != null)
+								{
+									objinfo = Type.GetType(value.GetType().FullName).GetField(property);
+
+									if (objinfo == null)
 									{
-										method = methods[0];
-										property = methods[1];
+										objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
+										if (objinfo == null)
+										{
+											objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
+											if (objinfo == null)
+												MLog.Log(instance, "Unknown call for atom=" + property);
+											else
+											{
+												value = ((PropertyInfo)objinfo).GetValue(value, null);
+											}
+										}
+										else
+											value = ((PropertyInfo)objinfo).GetValue(value, null);
 									}
 									else
-										property = null;
-
-									methodparams = new object[parameters.Length];// + 1];
-									//methodparams[0] = context;
-									parameters.CopyTo(methodparams, 0);//1);
-									methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
-
-									if (methInfo != null)
-									{
-										try
-										{
-											value = methInfo.Invoke(instance, methodparams);
-										}
-										catch (Exception ex)
-										{
-											result = ex.Message;
-											value = null;
-										}
-
-										if (value != null)
-										{
-											//nested properties, check for the type and read value
-											if (property != null)
-											{
-												objinfo = Type.GetType(value.GetType().FullName).GetField(property);
-
-												if (objinfo == null)
-												{
-													objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
-													if (objinfo == null)
-													{
-														objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
-														if (objinfo == null)
-															MLog.Log(instance, "Unknown call for atom=" + property);
-														else
-														{
-															value = ((PropertyInfo)objinfo).GetValue(value, null);
-														}
-													}
-													else
-														value = ((PropertyInfo)objinfo).GetValue(value, null);
-												}
-												else
-													value = ((FieldInfo)objinfo).GetValue(value);
-											}
-											if (value != null)
-												result = result.Replace("#" + atom + "#", value.ToString());
-										}
-									}
-									//break;
-							//}
+										value = ((FieldInfo)objinfo).GetValue(value);
+								}
+								if (value != null)
+									result = result.Replace("#" + atom + "#", value.ToString());
+							}
+						}
 					}
 				}
 			}
