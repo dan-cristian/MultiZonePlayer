@@ -236,8 +236,14 @@ namespace MultiZonePlayer
 				if (m_macroList != null)
 				{
 					macros = m_macroList.FindAll(x =>
-						x.CommandList != null && x.CommandList.Find(y => y.ZoneName == zoneName) != null ||
-						x.CommandList != null && x.CommandList.Find(z => z.ParameterValueList !=null && z.ParameterValueList.Contains("zoneid=" + zoneId)) != null);
+						x.CommandList != null && x.CommandList.Find(y => y.ZoneName == zoneName) != null
+						||
+						x.CommandList != null &&
+						x.CommandList.Find(z => z.ParameterValueList != null 
+							&& (z.ParameterValueList.ToLower().Contains("zoneid=" + zoneId+";")
+								|| z.ParameterValueList.ToLower().Contains("zoneid=" + zoneId + "\"") 
+								|| z.ParameterValueList.ToLower().Contains("zonename=" + zoneName))) != null
+						);
 				}
 				return macros;
 			}
@@ -946,7 +952,7 @@ namespace MultiZonePlayer
 					cmdresult.ErrorMessage = "macro found but empty command list";
 					foreach (Metadata.MacroEntryCommand cmd in entry.CommandList)
 					{
-						MLog.Log(this, "Executing scheduled event " + cmd.Command + " in zone=" + cmd.ZoneName);
+						MLog.Log(this, "Executing macro event " + cmd.Command + " in zone=" + cmd.ZoneName);
 						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
 								cmd.Command.ToString(), Metadata.CommandSources.system);
 						Metadata.ZoneDetails zone = GetZoneIdByContainsName(cmd.ZoneName);

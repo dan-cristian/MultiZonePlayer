@@ -141,6 +141,7 @@ namespace MultiZonePlayer
 
         private void MainScreen_FormClosing(object sender, FormClosingEventArgs e)
         {
+			MLog.Log(this, "Form closing");
             m_controlForm.Close();
         }
 

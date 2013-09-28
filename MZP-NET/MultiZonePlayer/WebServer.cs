@@ -165,11 +165,11 @@ namespace MultiZonePlayer
 				ReflectionInterface.LastContext = context;
 				HttpListenerRequest request = context.Request;
 				HttpListenerResponse response = context.Response;
-				String cmdResult = "";
+				String cmdResultText = "";
 				byte[] binaryBuffer = null;
-				Metadata.ValueList resvalue = null;
+				//Metadata.ValueList resvalue = null;
 				Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.web);
-
+				Metadata.CommandResult cmdResult = null;
 				String requestServer;
 
 				//MLog.LogWeb(context.Request);
@@ -263,7 +263,7 @@ namespace MultiZonePlayer
 				{
 					if (request.HttpMethod.Equals("GET"))
 					{
-						cmdResult = API.DoCommandFromWeb(vals, out resvalue);
+						cmdResult = API.DoCommandFromWeb(vals);//, out resvalue);
 					}
 
 					if (request.HttpMethod.Equals("POST"))
@@ -284,7 +284,7 @@ namespace MultiZonePlayer
 							String json = post.Substring(firstindex, lastindex - firstindex + 1);
 
 							Metadata.ValueList val = fastJSON.JSON.Instance.ToObject<Metadata.ValueList>(json);
-							cmdResult = API.DoCommandFromWeb(val, out resvalue);
+							cmdResult = API.DoCommandFromWeb(val);//, out resvalue);
 						}
 						else
 						{
@@ -293,24 +293,30 @@ namespace MultiZonePlayer
 					}
 					String contentType;
 					byte[] binaryData = null;
-					if (resvalue !=null) binaryData = resvalue.BinaryData;
+					if (cmdResult !=null ) binaryData = cmdResult.ValueList.BinaryData;
 					if (binaryData != null)
 					{
-						contentType = resvalue.GetValue(Metadata.GlobalParams.contenttype);
+						contentType = cmdResult.ValueList.GetValue(Metadata.GlobalParams.contenttype);
 					}
 					else
 						contentType = "text/html";
-					WriteResponse(contentType, cmdResult, response, binaryData);
+
+					if (cmdResult != null)
+						cmdResultText = "Out=" + cmdResult.OutputMessage;
+					else
+						cmdResultText = "Null output";
+					WriteResponse(contentType, cmdResultText, response, binaryData);
 				}
 				else
 				{//any other html request
-					String contentType, json;
+					String contentType;//, json;
 					byte[] binaryData;
 
 					if (vals.ContainsKey(Metadata.GlobalParams.command))
-						json = API.DoCommandFromWeb(vals, out resvalue);
+						//json = API.DoCommandFromWeb(vals, out resvalue);
+						cmdResult = API.DoCommandFromWeb(vals);
 
-					String html = ServeDirectHtml(context, requestServer, resvalue, out contentType, out binaryData);
+					String html = ServeDirectHtml(context, requestServer, out contentType, out binaryData, cmdResult);
 					WriteResponse(contentType, html, response, binaryData);
 				}
 				MLog.LogWeb(context.Request);
@@ -344,7 +350,7 @@ namespace MultiZonePlayer
 			}
 		}
 
-		private String ServeDirectHtml(HttpListenerContext context, String requestServer, Metadata.ValueList resvalue, out String contentType, out byte[] binaryData)
+		private String ServeDirectHtml(HttpListenerContext context, String requestServer, out String contentType, out byte[] binaryData, Metadata.CommandResult cmdResult)
 		{
 			binaryData = null;
 			contentType = "text/html";
@@ -407,8 +413,8 @@ namespace MultiZonePlayer
 
 
 					//set server variables
-					if (resvalue != null)
-						result = result.Replace("#HTMLCommandResult#", resvalue.GetValue(Metadata.GlobalParams.msg));
+					if (cmdResult!=null)
+						result = result.Replace("#HTMLCommandResult#", cmdResult.ToString());
 
 					Reflect.GenericReflect(ref result);
 				}

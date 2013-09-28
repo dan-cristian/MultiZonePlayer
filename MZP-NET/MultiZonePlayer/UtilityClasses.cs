@@ -350,6 +350,14 @@ namespace MultiZonePlayer
 				
 				return result;
 			}
+
+			public override String ToString()
+			{
+				string result = "Out=" + OutputMessage;
+				if (ErrorMessage != "") result += " Err=" + ErrorMessage;
+				if (ValueList != null) result += ValuesToString();
+				return result;
+			}
         }
 
         public class ValueList
@@ -913,10 +921,18 @@ namespace MultiZonePlayer
 				
 				List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
 				if (macros != null && macroIndex < macros.Count)
-					return "Macro "+macros[macroIndex].Id;
+					return "Macro "+macros[macroIndex].Id;// + macros[macroIndex].;
 				else
-					return "error index="+macroIndex;
+					return "err indx="+macroIndex;
 				
+			}
+			public int MacroId(int macroIndex)
+			{
+				List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
+				if (macros != null && macroIndex < macros.Count)
+					return macros[macroIndex].Id;
+				else
+					return -1;
 			}
             public String OutputDeviceDirectXName
             {

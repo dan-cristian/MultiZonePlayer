@@ -36,11 +36,12 @@
 	<button class="Pressed#Zones.IsPowerOn,%_zoneid#">PowerOn #Zones.IsPowerOn,%_zoneid#</button>
 	<br />
 	<%for,i,0,++,#Zones.MacroCount,%_zoneid#%>
-	<button>#~Zones.MacroName,%_zoneid,%i#</button>
+	<button onclick="ajaxCall('cmdResult','cmd.html?command=macro&zoneid=%_zoneid&id=#~Zones.MacroId,%_zoneid,%i#', '_self')">#~Zones.MacroName,%_zoneid,%i#</button>
 	<%%>
 	<button onclick="window.open('zone-cmd.html?zoneid=%_zoneid', '_self')">Other Commands</button>
 	<br />
 	<button onclick="window.open('start.html', '_self')">Back</button>
+	<div id="cmdResult">Command Results</div>
 	</td>
 </tr>
 </table>

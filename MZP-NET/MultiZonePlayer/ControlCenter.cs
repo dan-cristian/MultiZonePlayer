@@ -437,8 +437,9 @@ namespace MultiZonePlayer
                 }
                 MZPState.Instance.Shutdown();
             }
-            catch (Exception )
+            catch (Exception ex)
             {
+				MLog.Log(ex, "Err closing zones");
             }
         }
     }

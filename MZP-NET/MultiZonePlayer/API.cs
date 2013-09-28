@@ -102,10 +102,10 @@ namespace MultiZonePlayer
             return DoCommand(vals);
         }
 
-        public static String DoCommandFromWeb(Metadata.ValueList vals)
+        /*public static String DoCommandFromWeb(Metadata.ValueList vals)
         {
             return JsonResult(DoCommand(vals));
-        }
+        }*/
 
 		public static String DoCommandDirect(Metadata.GlobalCommands cmd, params string[] paramNameValuePair)
 		{
@@ -120,11 +120,12 @@ namespace MultiZonePlayer
 			return JsonResult(DoCommand(vals));
 		}
 
-		public static String DoCommandFromWeb(Metadata.ValueList vals, out Metadata.ValueList retvalues)
+		public static Metadata.CommandResult DoCommandFromWeb(Metadata.ValueList vals)//, out Metadata.ValueList retvalues)
 		{
 			Metadata.CommandResult cmdres = DoCommand(vals);
-			retvalues = cmdres.ValueList;
-			return JsonResult(cmdres);
+			//retvalues = cmdres.ValueList;
+			//return JsonResult(cmdres);
+			return cmdres;
 		}
         
         public static Metadata.CommandResult DoCommand(Metadata.ValueList vals)
@@ -314,6 +315,11 @@ namespace MultiZonePlayer
 						case Metadata.GlobalCommands.macro:
 							string shortcut = vals.GetValue(Metadata.GlobalParams.singleparamvalue);
 							macroid = MZPState.Instance.GetMacroIdByShortcut(shortcut, "");
+							if (macroid == -1)
+							{
+								string id = vals.GetValue(Metadata.GlobalParams.id);
+								macroid = Convert.ToInt16(id);
+							}
 							if (macroid != -1)
 							{
 								cmdresult = MZPState.Instance.ExecuteMacro(macroid);

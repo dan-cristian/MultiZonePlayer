@@ -134,7 +134,7 @@ namespace MultiZonePlayer
 								{
 									methodparams = new object[parameters.Length-1];
 									for (int i = 0; i < parameters.Length-1; i++)
-										methodparams[i] = parameters[i+1];
+										methodparams[i] = parameters[i];
 									MLog.Log(null, "Adjusting method param count");
 								}
 								value = methInfo.Invoke(instance, methodparams);
@@ -164,7 +164,25 @@ namespace MultiZonePlayer
 												MLog.Log(instance, "Unknown call for atom=" + property);
 											else
 											{
-												value = ((PropertyInfo)objinfo).GetValue(value, null);
+												MethodInfo meth = (MethodInfo)objinfo;
+												if (meth.GetParameters().Length > 0)
+												{
+													methodparams = new object[meth.GetParameters().Length];
+													for (int i = 0; i < meth.GetParameters().Length; i++)
+													{
+														//String t = meth.GetParameters()[i].GetType().ToString();
+														if (meth.GetParameters()[i].ParameterType == typeof(Int32))
+														{
+															methodparams[i] = Convert.ToInt32(parameters[i + 2]);
+														}
+														else
+															methodparams[i] = parameters[i + 2];
+													}
+													
+													value = meth.Invoke(value, methodparams);
+												}
+												else
+													value = ((PropertyInfo)objinfo).GetValue(value, null);
 											}
 										}
 										else
@@ -447,30 +465,31 @@ namespace MultiZonePlayer
 		public String GetCmdValues(String methodname, String zoneid, String command, String htmldelimiter)
 		{
 			Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.web);
-			Metadata.ValueList resvalue;
+			//Metadata.ValueList resvalue;
+			Metadata.CommandResult resCmd=null;
 			String result = "";
 
 			vals.Add(Metadata.GlobalParams.zoneid, zoneid);
 			vals.Add(Metadata.GlobalParams.command, command);
 
 
-			API.DoCommandFromWeb(vals, out resvalue);
+			resCmd = API.DoCommandFromWeb(vals);//, out resvalue);
 
-			if (resvalue != null)
+			if (resCmd.ValueList != null)
 			{
-				if (resvalue.IndexList != null)
+				if (resCmd.ValueList.IndexList != null)
 				{
-					for (int i = 0; i < resvalue.IndexList.Count; i++)
+					for (int i = 0; i < resCmd.ValueList.IndexList.Count; i++)
 					{
-						result += "<" + htmldelimiter + " value=" + resvalue.IndexList[i] + ">" + resvalue.IndexValueList[i] + "</" + htmldelimiter + ">\r\n";
+						result += "<" + htmldelimiter + " value=" + resCmd.ValueList.IndexList[i] + ">" + resCmd.ValueList.IndexValueList[i] + "</" + htmldelimiter + ">\r\n";
 					}
 				}
 				else
-					if (resvalue.IndexValueList != null)
+					if (resCmd.ValueList.IndexValueList != null)
 					{
-						for (int i = 0; i < resvalue.IndexValueList.Count; i++)
+						for (int i = 0; i < resCmd.ValueList.IndexValueList.Count; i++)
 						{
-							result += "<" + htmldelimiter + ">" + resvalue.IndexValueList[i] + "</" + htmldelimiter + ">\r\n";
+							result += "<" + htmldelimiter + ">" + resCmd.ValueList.IndexValueList[i] + "</" + htmldelimiter + ">\r\n";
 						}
 					}
 			}
