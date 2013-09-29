@@ -16,8 +16,6 @@ namespace MultiZonePlayer
 {
     public static class API
     {
-		
-
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
 			int zoneId = -1;

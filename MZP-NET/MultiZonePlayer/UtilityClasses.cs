@@ -103,7 +103,9 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.runscript,			GlobalParams.name),
 			new CommandSyntax(GlobalCommands.closure,			GlobalParams.id, GlobalParams.iscontactmade),
 			new CommandSyntax(GlobalCommands.poweron,			GlobalParams.zonename),
-			new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename)
+			new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename),
+			new CommandSyntax(GlobalCommands.powertoggle,		GlobalParams.zoneid),
+
 			/*
             genrelist,
             setgenrelist,
@@ -492,7 +494,9 @@ namespace MultiZonePlayer
 	{
 		Space,
 		Component,
-		Undefined
+		Undefined,
+		Heat,
+		Light
 	}
 
 	public class MacroEntryCommand
@@ -750,7 +754,8 @@ namespace MultiZonePlayer
 		closuredisarm,
 		runscript,
 		poweron,
-		poweroff
+		poweroff,
+		powertoggle
 	}
 
 	public enum ResultEnum
@@ -832,7 +837,7 @@ namespace MultiZonePlayer
 		private Boolean m_movementAlert = false, m_movementAlertLast = false;
 			
 		public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
-		public DateTime LastCamAlertDateTime = DateTime.MinValue;
+		public DateTime LastCamAlertDateTime = DateTime.Now;
 		public DateTime LastLocalCommandDateTime = DateTime.MinValue;
 		public DateTime LastClosureEventDateTime = DateTime.MinValue;
 		public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;

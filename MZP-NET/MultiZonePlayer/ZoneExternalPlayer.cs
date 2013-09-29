@@ -222,7 +222,8 @@ namespace MultiZonePlayer
 		public override void Close()
 		{
 			base.Close();
-			//PostURLCmdMessage("Application.Quit");
+			if (m_zoneDetails.ZoneState!=ZoneState.Running)
+				PostURLCmdMessage("Application.Quit");
 		}
 
         public override void Play()

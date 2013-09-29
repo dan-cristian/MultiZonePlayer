@@ -474,7 +474,7 @@ namespace MultiZonePlayer
 
 		public void GenerateServerSideScript(ref String result)
 		{
-			MLog.Log(this, "Generating SS script");
+			//MLog.Log(this, "Generating SS script");
 			const string delim_start = "<%", delim_end = "%>";
 			String script, target, scriptReflect;
 			int cycles = 0;
@@ -543,6 +543,19 @@ namespace MultiZonePlayer
 								}
 							}
 							result = result.Replace(delim_start + script + delim_end, "").Replace(target + delim_start + delim_end, "");
+							break;
+						case "iif":
+							string eval,casetrue,casefalse;
+							eval= atoms[1];
+							casetrue = atoms[2];
+							casefalse = atoms[3];
+
+							result = result.Replace(delim_start + script + delim_end, "");
+							if (eval.ToLower() == "true")
+								result = result.Replace(target, casetrue);
+							else
+								result = result.Replace(target, casefalse);
+							result = result.ReplaceFirst(delim_start + delim_end, "");
 							break;
 						case "if":
 							string res;

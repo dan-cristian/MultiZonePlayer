@@ -34,13 +34,13 @@
 		<%%>
 		<!--meter value="#Zones.Temperature,%_zoneid#" min="0" max="40" optimum="23" low="18" high="25"></meter>#Zones.Temperature,%_zoneid#°-->
 		<%if;#Zones.HasPowerCapabilities,%_zoneid#%>
-		<br />
-		<button class="Pressed#Zones.IsPowerOn,%_zoneid#">PowerOn #Zones.IsPowerOn,%_zoneid#</button>
-		<button onclick="ajaxCall('result','cmd.html?command=poweron&zoneid=%_zoneid')">Power On</button>
-		<button onclick="ajaxCall('result','cmd.html?command=poweroff&zoneid=%_zoneid')">Power Off</button>
-		<br />
+		<hr/>
+		<button class="Pressed#Zones.IsPowerOn,%_zoneid#" 
+			onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid')">Power #Zones.IsPowerOn,%_zoneid#</button>
 		<%%>
-		<br />
+		<%if;"#Zones.ChildZonesCount,%_zoneid#"=="0"%>
+		<hr/>
+		<%%>
 		<%for;i;0;++;#Zones.ChildZonesCount,%_zoneid#;%>
 		<button class="Action#Zones.ChildZone,%_zoneid,%i.HasAction# Activity#Zones.ChildZone,%_zoneid,%i.ActivityType#" 
 		        onclick="window.open('zone-main.html?zoneid=#Zones.ChildZone,%_zoneid,%i.ZoneId#','_self')">#Zones.ChildZone,%_zoneid,%i.ZoneName#</button>

@@ -316,6 +316,21 @@ namespace MultiZonePlayer
 					m_zoneDetails.RequirePower = false;
 					cmdresult.OutputMessage += "power off ok";
 					break;
+				case GlobalCommands.powertoggle:
+					MLog.Log(this, "Power toggle zone=" + m_zoneDetails.ZoneName);
+					if (m_zoneDetails.IsPowerOn)
+					{
+						MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
+						m_zoneDetails.RequirePower = false;
+						cmdresult.OutputMessage += "power toggled OFF";
+					}
+					else
+					{
+						MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+						m_zoneDetails.RequirePower = true;
+						cmdresult.OutputMessage += "power toggled ON";
+					}
+					break;
 				case GlobalCommands.closure:
 					IoEvent(vals.GetValue(GlobalParams.id),
 						vals.GetValue(GlobalParams.iscontactmade).ToLower()=="true");

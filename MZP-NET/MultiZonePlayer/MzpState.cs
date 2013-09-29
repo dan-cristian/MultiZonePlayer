@@ -397,8 +397,15 @@ namespace MultiZonePlayer
 
 			public void PowerControlOff()
 			{
-				m_powerControlDenkovi.PowerOff();
-				m_powerControlNumato.PowerOff();
+				//m_powerControlDenkovi.PowerOff();
+				//m_powerControlNumato.PowerOff();
+				foreach (ZoneDetails zone in this.ZoneDetails)
+				{
+					if ((zone.ActivityType != GlobalCommands.xbmc) || (!zone.IsActive))
+					{
+						this.PowerControlOff(zone.ZoneId);
+					}
+				}
 			}
 			public bool PowerControlIsOn(int zoneid)
 			{

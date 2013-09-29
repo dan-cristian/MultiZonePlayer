@@ -120,7 +120,7 @@ namespace MultiZonePlayer
 					if (recurrent.Length > 1)
 					{
 						atom = recurrent[0] + "." + recurrent[1];
-						if (atom.StartsWith("Zones.ChildZone"))
+						if (atom.StartsWith("DVR"))
 						{
 							atom += "";
 						}
@@ -530,6 +530,11 @@ namespace MultiZonePlayer
 		public MZPState S(String methodname)
 		{
 			return MZPState.Instance;
+		}
+
+		public ReflectionInterface R(String methodname)
+		{
+			return this;
 		}
 
 		public ZoneDetails Zones(String methodname, String zoneIdentifier)//zoneid or zonename
