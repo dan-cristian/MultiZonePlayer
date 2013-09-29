@@ -492,11 +492,13 @@ namespace MultiZonePlayer
 
 	public enum ZoneType
 	{
+		Undefined,
 		Space,
 		Component,
-		Undefined,
 		Heat,
-		Light
+		Light,
+		Alarm,
+		Closure
 	}
 
 	public class MacroEntryCommand
@@ -1064,6 +1066,14 @@ namespace MultiZonePlayer
 				        (device!=null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum));
 			}
 		}
+		public Boolean HasHumiditySensor
+		{
+			get
+			{
+				RFXDeviceDefinition.RFXDevice device = RFXDeviceDefinition.GetDevice(ZoneId);
+				return (device != null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum);
+			}
+		}
 		public Boolean ContainsDisplay
 		{
 			get { return MZPState.Instance.ZoneDetails.Find(x=>x.ParentZoneId==ZoneId && x.HasDisplay)!=null
@@ -1084,24 +1094,7 @@ namespace MultiZonePlayer
 				return macros != null ? macros.Count : 0;
 			}
 		}
-		public String MacroName(int macroIndex)
-		{
-				
-			List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
-			if (macros != null && macroIndex < macros.Count)
-				return "Macro "+macros[macroIndex].Id;// + macros[macroIndex].;
-			else
-				return "err indx="+macroIndex;
-				
-		}
-		public int MacroId(int macroIndex)
-		{
-			List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
-			if (macros != null && macroIndex < macros.Count)
-				return macros[macroIndex].Id;
-			else
-				return -1;
-		}
+		
 		public MacroEntry Macro(int macroIndex)
 		{
 			List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
@@ -1140,11 +1133,13 @@ namespace MultiZonePlayer
 					return "";
 			}
 		}
+		/*
 		private const String DIV_SHOW = "block";
 		private const String DIV_HIDE = "none";
 		private const String IMG_TAG = "img";
 		private const String VIDEO_TAG = "video";
-
+		*/
+		/*
 		public String HTMLDIVStateMusicOrRadio
 		{
 			get
@@ -1158,8 +1153,14 @@ namespace MultiZonePlayer
 					res = DIV_HIDE;
 				return res;
 			}
+		}*/
+		public Boolean IsClosureActivated
+		{
+			get {
+				return ClosureOpenCloseRelay.RelayContactMade;
+			}
 		}
-
+		/*
 		public String HasClosureNotifyAsDiv
 		{
 			get { return ClosureOpenCloseRelay.RelayState==ClosureOpenCloseRelay.EnumState.ContactClosed ? DIV_SHOW : DIV_HIDE; }
@@ -1212,6 +1213,11 @@ namespace MultiZonePlayer
 		public String HasNotifyMoveAsDiv
 		{
 			get { return HasImmediateMove || HasRecentMove ? DIV_SHOW : DIV_HIDE; }
+		}
+		*/
+		public Boolean HasNotifyMove
+		{
+			get { return HasImmediateMove || HasRecentMove; }
 		}
 
 		public double Temperature

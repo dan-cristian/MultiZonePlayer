@@ -2,56 +2,51 @@
 <html lang="en"><head id="Head1">
 <meta http-equiv="content-type" content="text/html;charset=unicode;" />
 <meta name="robots" content="index, follow, noodp" />
-<title>#Zones.ZoneName,%_zoneid# actions</title>
+<title>#Zones,%_zoneid.ZoneName# actions</title>
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
-<body onload="refresh(30000)" onerror="refresh(30000)">
+<body onload="refresh(60000)" onerror="refresh(60000)">
 <table>
 <tr>
 	<td>
-		<%if;#Zones.HasSpeakers,%_zoneid#%>
-		<button class="Music#Zones.ActivityType,%_zoneid#" onclick="window.open('music.html?command=music&zoneid=%_zoneid','_self')">Music</button>
-		<button class="Radio#Zones.ActivityType,%_zoneid#" onclick="window.open('streammp3.html?command=radio&zoneid=%_zoneid','_self')">Radio</button>
+		<%if;#Zones,%_zoneid.HasSpeakers#%>
+		<button class="Music#Zones,%_zoneid.ActivityType#" onclick="window.open('music.html?command=music&zoneid=%_zoneid','_self')">Music</button>
+		<button class="Radio#Zones,%_zoneid.ActivityType#" onclick="window.open('streammp3.html?command=radio&zoneid=%_zoneid','_self')">Radio</button>
 		<%%>
-		<%if;#Zones.HasDisplay,%_zoneid#%>
-		<button class="TV#Zones.ActivityType,%_zoneid#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
+		<%if;#Zones,%_zoneid.HasDisplay#%>
+		<button class="TV#Zones,%_zoneid.ActivityType#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
 		<%%>
-		<%if;#Zones.HasCamera,%_zoneid#%>
-		<button class="Move#Zones.HasImmediateCamMove,%_zoneid#" onclick="window.open('cam.html?oid=#Zones.CameraId,%_zoneid#&zoneid=%_zoneid','_self')">Camera</button>
+		<%if;#Zones,%_zoneid.HasCamera#%>
+		<button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid', false)">Camera</button>
 		<%%>
-		<%if;#Zones.HasVideoPlayer,%_zoneid#%>
-		<button class="Video#Zones.ActivityType,%_zoneid#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">Video</button>
+		<%if;#Zones,%_zoneid.HasVideoPlayer#%>
+		<button class="Video#Zones,%_zoneid.ActivityType#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">Video</button>
 		<%%>
-		<%if;#Zones.HasMotionSensor,%_zoneid#%>
-		<button class="Move#Zones.HasImmediateAlarmMove,%_zoneid#">Motion</button>
+		<%if;#Zones,%_zoneid.HasMotionSensor#%>
+		<button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#">Motion</button>
 		<%%>
-		<%if;#Zones.HasClosures,%_zoneid#%>
-		<button class="Pressed#Zones.ClosureState,%_zoneid# Move#Zones.HasImmediateClosureMove,%_zoneid#">Closure #Zones.ClosureState,%_zoneid#</button>
+		<%if;#Zones,%_zoneid.HasClosures#%>
+		<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#">Closure #Zones,%_zoneid.ClosureState#</button>
 		<%%>
-		<%if;#Zones.HasTemperatureSensor,%_zoneid#%>
-		<button class="Caption">#Zones.Temperature,%_zoneid#°</button>
+		<%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption">#Zones,%_zoneid.Temperature#°</button><%%>
+		<%if;#Zones,%_zoneid.HasHumiditySensor#%><button class="Caption">#Zones,%_zoneid.Humidity#%</button><%%>
+		
+		<div id="camera"></div>
+		<%if;#Zones,%_zoneid.HasPowerCapabilities#%>
+		<button class="Pressed#Zones,%_zoneid.IsPowerOn#" 
+			onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid', true)">Power #Zones,%_zoneid.IsPowerOn#</button>
 		<%%>
-		<!--meter value="#Zones.Temperature,%_zoneid#" min="0" max="40" optimum="23" low="18" high="25"></meter>#Zones.Temperature,%_zoneid#°-->
-		<%if;#Zones.HasPowerCapabilities,%_zoneid#%>
-		<hr/>
-		<button class="Pressed#Zones.IsPowerOn,%_zoneid#" 
-			onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid')">Power #Zones.IsPowerOn,%_zoneid#</button>
+		<%if;"#Zones,%_zoneid.ChildZonesCount#"=="0"%><hr/><%%>
+		<%for;i;0;++;#Zones,%_zoneid.ChildZonesCount#;%>
+		<button class="Action#Zones,%_zoneid.ChildZone,%i.HasAction# Activity#Zones,%_zoneid.ChildZone,%i.ActivityType#" 
+		        onclick="window.open('zone-main.html?zoneid=#Zones,%_zoneid.ChildZone,%i.ZoneId#','_self')">#Zones,%_zoneid.ChildZone,%i.ZoneName#</button>
 		<%%>
-		<%if;"#Zones.ChildZonesCount,%_zoneid#"=="0"%>
-		<hr/>
+		<%for;i;0;++;#Zones,%_zoneid.MacroCount#;%>
+		<button onclick="ajaxCall('result','cmd.html?command=macro&zoneid=%_zoneid&id=#Zones,%_zoneid.Macro,%i.Id#', true)">[#Zones,%_zoneid.Macro,%i.Description#]</button>
 		<%%>
-		<%for;i;0;++;#Zones.ChildZonesCount,%_zoneid#;%>
-		<button class="Action#Zones.ChildZone,%_zoneid,%i.HasAction# Activity#Zones.ChildZone,%_zoneid,%i.ActivityType#" 
-		        onclick="window.open('zone-main.html?zoneid=#Zones.ChildZone,%_zoneid,%i.ZoneId#','_self')">#Zones.ChildZone,%_zoneid,%i.ZoneName#</button>
-		<%%>
-		<br />
-		<%for;i;0;++;#Zones.MacroCount,%_zoneid#;%>
-		<button onclick="ajaxCall('result','cmd.html?command=macro&zoneid=%_zoneid&id=#~Zones.MacroId,%_zoneid,%i#', '_self')">#~Zones.Macro,%_zoneid,%i.Description#</button>
-		<%%>
-		<br /><br />
-		<button onclick="window.open('start.html', '_self')">Back</button>
 		<div id="result"></div>
+		<button onclick="window.open('start.html', '_self')">Back</button>
 	</td>
 </tr>
 </table>

@@ -6,17 +6,13 @@
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
-<body onload="refresh(30000)" onerror="refresh(30000)">
-	<%for;i;0;++;#S.ZonesCount#;"#Zones.Type,i#"=="Space"%>
-	<button class="Action#Zones.HasAction,%i# Activity#Zones.ActivityType,%i#" 
-		onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones.ZoneName,%i#</button>
+<body onload="refresh(60000)" onerror="refresh(60000)">
+	<%for;i;0;++;#S.ZonesCount#;"#Zones,%i.Type#"=="Space"%>
+	<button class="Action#Zones,%i.HasAction# Activity#Zones,%i.ActivityType#" 
+		onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones,%i.ZoneName#</button>
 	<%%>	
+	<a class="med" href="alarm.html">Alarm</a> #SystemAlarm.AreaState#
 <!--/td></tr></table-->
-<table>
-    <tr>
-        <td><a class="med" href="alarm.html">Alarm</a> #SystemAlarm.AreaState#
-	    #SystemAlarm.LastAlarmEventDateTime#</td>
-    </tr>
-</table>
+
 </body>
 </html>

@@ -4,7 +4,7 @@ function refresh(interval) {
 function reload() {
 	window.location.reload();
 }
-function ajaxCall(targetDiv,url) {
+function ajaxCall(targetDiv,url,forceReload) {
 	var xmlhttp;
 	if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
 		xmlhttp = new XMLHttpRequest();
@@ -16,7 +16,7 @@ function ajaxCall(targetDiv,url) {
 	xmlhttp.onreadystatechange = function () {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 			document.getElementById(targetDiv).innerHTML = xmlhttp.responseText;
-			reload();
+			if (forceReload) reload();
 		}
 	}
 	xmlhttp.open("GET", url, true);

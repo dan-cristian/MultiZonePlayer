@@ -97,7 +97,7 @@ namespace MultiZonePlayer
 	}
 	public static class Reflect
 	{
-		public static String GenericReflect(/*Object instance, */ref String result)
+		public static String GenericReflect_old(/*Object instance, */ref String result)
 		{
 			object instance;
 			String[] recurrent, parameters, methods;
@@ -236,30 +236,138 @@ namespace MultiZonePlayer
 			return result;
 		}
 
-		public static string GetPropertyField(object instance, string propName)
+		private static String Clean(string propName)
+		{
+			return propName.Substring(0, Math.Min(50, propName.Length)).Replace('\n', ' ').Replace('\r', ' ');
+		}
+		public static void GenericReflect(ref String result)
+		{
+			object instance = ReflectionInterface.Instance;
+			String[] lineAtoms;
+			object value;
+
+			lineAtoms = result.Split(new String[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+			foreach (String line in lineAtoms)
+			{
+				value = ReflectLine(instance, line);
+				if (value == null)
+				{
+					//MLog.Log(null, "Failure reflecting line=" + Clean(line));
+				}
+				else
+					result = result.Replace("#" + line + "#", value.ToString());
+			}
+		}
+
+
+		private static String ReflectLine(Object instance, String atom)
+		{
+			object value;
+			String[] methodAtoms, paramAtoms;
+			object[] parameters;
+			string runMethod;
+			methodAtoms = atom.Split(new String[] { "." }, StringSplitOptions.RemoveEmptyEntries);
+			value = instance;
+			foreach (String method in methodAtoms)
+			{
+				paramAtoms = method.Split(new String[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+				if (paramAtoms.Length > 1)
+				{
+					parameters = new object[paramAtoms.Length - 1];
+					for (int i = 0; i < parameters.Length; i++)
+						parameters[i] = paramAtoms[i + 1];
+					runMethod = paramAtoms[0];
+				}
+				else
+				{
+					parameters = null;
+					runMethod = method;
+				}
+				value = GetPropertyField(value, runMethod, parameters);
+				if (value == null)
+					break;
+			}
+			if (value != null)
+				return value.ToString();
+			else
+				return null;
+		}
+
+		public static Object GetPropertyField(object instance, string propName, params object[] parameters)
 		{
 			PropertyInfo propInfo;
 			FieldInfo fieldInfo;
+			MethodInfo methInfo;
 			object value;
-			string result = null;
+			Boolean varFound = false;
 
-			propInfo = Type.GetType(instance.GetType().FullName).GetProperty(propName);
-			if (propInfo != null)
-				value = propInfo.GetValue(instance, null);
-			else
+			try
 			{
-				fieldInfo = instance.GetType().GetField(propName);
-				if (fieldInfo != null)
-					value = fieldInfo.GetValue(instance);
+				propInfo = Type.GetType(instance.GetType().FullName).GetProperty(propName);
+				if (propInfo != null)
+					value = propInfo.GetValue(instance, null);
 				else
 				{
-					//method
-					value = null;
+					fieldInfo = instance.GetType().GetField(propName);
+					if (fieldInfo != null)
+						value = fieldInfo.GetValue(instance);
+					else
+					{
+						methInfo = instance.GetType().GetMethod(propName);
+						if (methInfo != null)
+						{
+							int parsLen = parameters != null ? parameters.Length : 0;
+
+							if (methInfo.GetParameters().Length == parsLen)
+							{
+								for (int p = 0; p < parsLen; p++)//setting param types
+								{
+									try
+									{
+										Type paramType = methInfo.GetParameters()[p].ParameterType;
+										if (parameters[p].ToString().StartsWith("%"))
+											varFound = true;
+										if (paramType.IsEnum)
+										{
+											parameters[p] = Enum.Parse(paramType.UnderlyingSystemType, parameters[p].ToString());
+										}
+										else
+											parameters[p] = Convert.ChangeType(parameters[p], paramType);
+									}
+									catch (Exception e)
+									{
+										MLog.Log(e, "Unable to cast prop=" + Clean(propName));
+									}
+								}
+								value = methInfo.Invoke(instance, parameters);
+								if (value == null && !varFound)
+								{
+									MLog.Log(null, "Warning, null result returned on prop=" + Clean(propName));
+								}
+							}
+							else
+							{
+								value = null;
+								MLog.Log(null, "wrong numbers of method params, meth=" + Clean(propName) 
+									+ " expected=" + methInfo.GetParameters().Length + " given=" + parsLen);
+							}
+						}
+						else
+						{
+							//??
+							value = null;
+							//MLog.Log(null, "unknown prop type for prop=" + Clean(propName));
+						}
+					}
 				}
 			}
-			if (value != null)
-				result = value.ToString();
-			return result;
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Error reflecting on prop="+Clean(propName));
+				value = null;
+			}
+
+			return value;
 		}
 
 		private static string GetMethodNoFields(object instance, string methodName)
@@ -398,12 +506,12 @@ namespace MultiZonePlayer
 				string parsedCode = rule.JSCode;
 				if (rule.VariableList != null)
 				{
-					string value;
+					object value;
 					foreach (string variable in rule.VariableList)
 					{
 						value = Reflect.GetPropertyField(callingInstance, variable);
 						if (value != null)
-							parsedCode = parsedCode.Replace("[" + variable + "]", value);
+							parsedCode = parsedCode.Replace("[" + variable + "]", value.ToString());
 						else
 							MLog.Log(null, "No instance variable found for jscode, var=" + variable);
 					}
@@ -457,9 +565,9 @@ namespace MultiZonePlayer
 		public static System.Net.HttpListenerContext LastContext;
 		public static ReflectionInterface Instance = new ReflectionInterface();
 
-		public Alarm SystemAlarm(String methodname)
+		public Alarm SystemAlarm
 		{
-			return MZPState.Instance.SystemAlarm;
+			get { return MZPState.Instance.SystemAlarm; }
 		}
 
 		public String ZonesOpened
@@ -492,7 +600,7 @@ namespace MultiZonePlayer
 			get { return DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT); }
 		}
 
-		public String GetCmdValues(String methodname, String zoneid, String command, String htmldelimiter)
+		public String GetCmdValues(String zoneid, String command, String htmldelimiter)
 		{
 			ValueList vals = new ValueList(CommandSources.web);
 			//Metadata.ValueList resvalue;
@@ -527,17 +635,17 @@ namespace MultiZonePlayer
 			return result;
 		}
 
-		public MZPState S(String methodname)
+		public MZPState S
 		{
-			return MZPState.Instance;
+			get { return MZPState.Instance; }
 		}
 
-		public ReflectionInterface R(String methodname)
+		public ReflectionInterface R
 		{
-			return this;
+			get { return this; }
 		}
 
-		public ZoneDetails Zones(String methodname, String zoneIdentifier)//zoneid or zonename
+		public ZoneDetails Zones(String zoneIdentifier)//zoneid or zonename
 		{
 			int zoneId;
 			if (Int32.TryParse(zoneIdentifier, out zoneId))
@@ -546,30 +654,36 @@ namespace MultiZonePlayer
 				return MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.Equals(zoneIdentifier));
 		}
 
-		public ZoneDetails FirstActiveZone(String methodname)
+		public ZoneDetails FirstActiveZone
 		{
-			List<ZoneDetails> zones;
-			ZoneDetails zone;
+			get
+			{
+				List<ZoneDetails> zones;
+				ZoneDetails zone;
 
-			zones = MZPState.Instance.ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList();
-			zone = zones.Find(x => x.IsActive == true && (x.ActivityType.Equals(GlobalCommands.music) || x.ActivityType.Equals(GlobalCommands.streammp3)));
-			return zone;
-			/*String zonetype = zone!=null?zone.ActivityType.ToString():"status";//return status page if no active zone
-			return zonetype;
-			 */
+				zones = MZPState.Instance.ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList();
+				zone = zones.Find(x => x.IsActive == true && (x.ActivityType.Equals(GlobalCommands.music) || x.ActivityType.Equals(GlobalCommands.streammp3)));
+				return zone;
+				/*String zonetype = zone!=null?zone.ActivityType.ToString():"status";//return status page if no active zone
+				return zonetype;
+				 */
+			}
 		}
 
-		public String DVRServerPort(String methodname)
+		public String DVRServerPort
 		{
-			return Utilities.ExtractServerNameFromURL(LastContext.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_ISPY_PORT[1];
+			get { return Utilities.ExtractServerNameFromURL(LastContext.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_ISPY_PORT[1]; }
 		}
 
-		public String WebServerPort(String methodname)
+		public String WebServerPort
 		{
-			return Utilities.ExtractServerNameFromURL(LastContext.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_WEBSERVER_PORT_EXT[1];
+			get
+			{
+				return Utilities.ExtractServerNameFromURL(LastContext.Request.Url.AbsoluteUri) + ":" + IniFile.PARAM_WEBSERVER_PORT_EXT[1];
+			}
 		}
 
-		public String ZoneMoveStatusAsColor(String methodname, String zoneid)
+		public String ZoneMoveStatusAsColor(String zoneid)
 		{
 			ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
 			String color = "Transparent";
@@ -577,7 +691,7 @@ namespace MultiZonePlayer
 			{
 				if (zone.HasImmediateMove) color = "Pink";
 				else if (zone.HasRecentMove) color = "Yellow";
-				else if (zone.HasPastMove) color = "Cyan";
+				else if (zone.HasPastMove) color = "Aqua";
 			}
 			else
 			{
@@ -587,7 +701,7 @@ namespace MultiZonePlayer
 			return color;
 		}
 
-		public String GetZoneStatusAsColor(String methodname, String zoneid, String activity)
+		public String GetZoneStatusAsColor(String zoneid, String activity)
 		{
 			ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
 			String color = "inherit";
@@ -599,9 +713,9 @@ namespace MultiZonePlayer
 			return color;
 		}
 
-		public MediaImageItem CurrentPicture(string methodname)
+		public MediaImageItem CurrentPicture
 		{
-			return MediaLibrary.AllPictureFiles.CurrentIteratePicture;
+			get {return MediaLibrary.AllPictureFiles.CurrentIteratePicture;}
 		}
 
 		#endregion

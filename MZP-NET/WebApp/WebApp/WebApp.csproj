@@ -157,6 +157,8 @@
     <Content Include="m\galleria\themes\classic\galleria.classic.css" />
     <Content Include="m\galleria\themes\classic\galleria.classic.js" />
     <Content Include="m\galleria\themes\classic\galleria.classic.min.js" />
+    <Content Include="m\zone-cam-pict.html" />
+    <Content Include="m\zone-closure.html" />
     <Content Include="m\zone-cmd.html" />
     <Content Include="m\zone-main.html" />
     <Content Include="Web.config" />

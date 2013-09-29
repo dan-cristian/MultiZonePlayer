@@ -1,27 +1,13 @@
 ﻿#ServerTime#
-<br /><br />
-Liv #Zones.Temperature,2#° #Zones.TemperatureAgeAsTimeSpan,2#<br />
-Dor #Zones.Temperature,4#° #Zones.TemperatureAgeAsTimeSpan,4#<br />
-Out #Zones.Temperature,7#° #Zones.TemperatureAgeAsTimeSpan,7#<br />
-Buc #Zones.Temperature,1#° #Zones.TemperatureAgeAsTimeSpan,1#<br />
-Fri #Zones.Temperature,23#° #Zones.TemperatureAgeAsTimeSpan,23#<br />
-Bir #Zones.Temperature,0#° #Zones.TemperatureAgeAsTimeSpan,0#<br />
-<%if;#Zones.IsPowerOn,19#%><span style="color:Red;">#Zones.ZoneName,19# #Zones.IsPowerOn,19#</span><%%>
-<%if;#Zones.IsPowerOn,20#%><span style="color:Red;">#Zones.ZoneName,20# #Zones.IsPowerOn,20#</span><%%>
-<%if;#Zones.IsPowerOn,21#%><span style="color:Red;">#Zones.ZoneName,21# #Zones.IsPowerOn,21#</span><%%>
-<%if;#Zones.IsPowerOn,22#%><span style="color:Red;">#Zones.ZoneName,22# #Zones.IsPowerOn,22#</span><%%>
-<div style="display:#~Zones.HasClosureNotifyAsDiv,14#;">
-<p style="background-color:Red;color:White">#Zones.ZoneName,14# #Zones.LastMovementAgeAsTimeSpan,14#</p>
-</div>
-<div style="display:#~Zones.HasClosureNotifyAsDiv,15#;">
-<p style="background-color:Red;color:White">#Zones.ZoneName,15# #Zones.LastMovementAgeAsTimeSpan,15#</p>
-</div>
-<div style="display:#~Zones.HasClosureNotifyAsDiv,16#;">
-<p style="background-color:Red;color:White">#Zones.ZoneName,16# #Zones.LastMovementAgeAsTimeSpan,16#</p>
-</div>
-<div style="display:#~Zones.HasClosureNotifyAsDiv,17#;">
-<p style="background-color:Red;color:White">#Zones.ZoneName,17# #Zones.LastMovementAgeAsTimeSpan,17#</p>
-</div>
-<div style="display:#~Zones.HasClosureNotifyAsDiv,18#;">
-<p style="background-color:Red;color:White">#Zones.ZoneName,18# #Zones.LastMovementAgeAsTimeSpan,18#</p>
-</div>
+<br />
+<%for;i;0;++;#S.ZonesCount#;"#Zones,%i.HasTemperatureSensor#"=="True"%>
+<span>#Zones,%i.ZoneName# #Zones,%i.Temperature#° #Zones,%i.TemperatureAgeAsTimeSpan#</span>
+<%%>
+<%for;i;0;++;#S.ZonesWithType,Heat.Count#;%>
+<div class="Visible#S.ZoneWithType,Heat,%i.IsPowerOn#">
+<span style="background-color:Yellow;color:Red">#S.ZoneWithType,Heat,%i.ZoneName#</span></div>
+<%%>
+<%for;i;0;++;#S.ZonesWithType,Closure.Count#;%>
+<div class="Visible#S.ZoneWithType,Closure,%i.IsClosureActivated#">
+<span style="background-color:Red;color:White">#S.ZoneWithType,Closure,%i.ZoneName# #S.ZoneWithType,Closure,%i.LastMovementAgeAsTimeSpan#</span></div>
+<%%>

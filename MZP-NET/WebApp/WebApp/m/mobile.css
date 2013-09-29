@@ -25,7 +25,7 @@ border-radius: 10px;
 box-shadow: 0 0 4px rgba(0,0,0, .75);
 /*style the text*/
 color:#f3f3f3;
-font-size:1.1em;
+font-size:1em;
 }
 /***NOW STYLE THE BUTTON'S HOVER AND FOCUS STATES***/
 /*button:hover, button:focus, button.PressedTrue{*/
@@ -42,7 +42,7 @@ button.VisibleFalse {display:none;}
 button.ActionTrue {background-image:url('wheel-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.MoveTrue {background-image:url('walk-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.ActiveFalse {background-image:url('mic.png');background-repeat:no-repeat;background-position:right;}
-button.Caption {background-color:transparent;color:Black}
+button.Caption {background-color:transparent;color:Black;min-width:50px;}
 button.Videoxbmc {background-image:url('Bande-video-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.Musicmusic {background-image:url('Music-Library-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.Radioradio {background-image:url('radio-metal-2-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}

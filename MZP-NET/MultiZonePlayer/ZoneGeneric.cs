@@ -187,6 +187,7 @@ namespace MultiZonePlayer
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             //m_mainZoneActivity = new ZoneVideoVlc(this);
             m_mainZoneActivity = new ZoneDisplayLG(this.ZoneDetails);
+			m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
             m_zoneDetails.ActivityType = GlobalCommands.tv;
             m_zoneDetails.IsActive = true;
         }

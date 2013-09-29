@@ -30,7 +30,17 @@ namespace MultiZonePlayer
 {
     public partial class Test : Form
     {
+		public static void RunTest()
+		{
+			string r = "#R.Random#";
+			Reflect.GenericReflect(ref r);
 
+			r = "#Zones,1.Temperature#";
+			Reflect.GenericReflect(ref r);
+
+			r = "#Zones,2.ChildZone,0.HasAction#";
+			Reflect.GenericReflect(ref r);
+		}
 
         VlcControl vlcControl1;
 
@@ -252,8 +262,7 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
-		  //Monitor mon = new Monitor();
-		  //mon.RefreshFrequency();
+		  
       }
 
       private void button7_Click(object sender, EventArgs e)

@@ -23,6 +23,7 @@ namespace MultiZonePlayer
         private String CMD_URL = "/jsonrpc?SendRemoteKey";
 		private String GET_URL = "/jsonrpc?";
 		private bool m_bringToForegroundOnce = false;
+		private bool m_isXBMCProcessOn, m_isXBMCPlayerRunning;
 
         public class XBMCLimits
         {
@@ -222,7 +223,7 @@ namespace MultiZonePlayer
 		public override void Close()
 		{
 			base.Close();
-			if (m_zoneDetails.ZoneState!=ZoneState.Running)
+			if (!m_isXBMCProcessOn || !m_isXBMCPlayerRunning)
 				PostURLCmdMessage("Application.Quit");
 		}
 
@@ -329,6 +330,7 @@ namespace MultiZonePlayer
 
             if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
             {
+				m_isXBMCProcessOn = false;
                 Close();
             }
             else
@@ -378,22 +380,26 @@ namespace MultiZonePlayer
 							m_zoneDetails.ActivityType = GlobalCommands.xbmc;
 							if (!MZPState.Instance.IsWinloadLoading)
 								Utilities.SetForegroundWindow(GetXBMCHandle());
+							m_isXBMCPlayerRunning = true;
 						}
 						else
 						{
 							if (m_zoneDetails.IsActive)
 								m_zoneDetails.ZoneStop();
+							m_isXBMCPlayerRunning = false;
 						}
 					}
 					else
 					{
 						if (m_zoneDetails.IsActive)
 							m_zoneDetails.ZoneStop();
+						m_isXBMCPlayerRunning = false;
 					}
                 }
                 catch (Exception ex)
                 {
                     MLog.Log(this, "Unable to json parse XBMC response " + result + " err="+ex.Message);
+					m_isXBMCPlayerRunning = false;
                     //Close();
                 }
             }

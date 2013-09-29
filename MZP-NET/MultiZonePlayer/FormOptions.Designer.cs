@@ -875,9 +875,13 @@
 			// 
 			this.Zones_Type.HeaderText = "Type";
 			this.Zones_Type.Items.AddRange(new object[] {
+            "Undefined",
             "Space",
             "Component",
-            "Undefined"});
+            "Heat",
+            "Light",
+            "Alarm",
+            "Closure"});
 			this.Zones_Type.Name = "Zones_Type";
 			this.Zones_Type.Width = 42;
 			// 

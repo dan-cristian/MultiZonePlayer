@@ -1,5 +1,7 @@
-﻿<div style="display:#~Zones.HasNotifyMoveAsDiv,%_zoneid#;">
-<#~Zones.HasNotifyMoveAsImg,%_zoneid# src="http://#R.DVRServerPort#/livefeed?oid=#Zones.CameraId,%_zoneid#&amp;r=#R.HTMLRandom#;" id="Img%_zoneid"
- title="#Zones.ZoneName,%_zoneid#" alt="#Zones.ZoneName,%_zoneid#" style="width:50%;"/>
-#Zones.LastMovementAgeAsTimeSpan,%_zoneid#
+﻿<%if;#Zones,%_zoneid.HasNotifyMove#%>
+<div class="Visible#Zones,%_zoneid.HasNotifyMove#">
+<img  src="http://#R.DVRServerPort#/livefeed?oid=#Zones,%_zoneid.CameraId#&amp;r=#R.HTMLRandom#;" id="Img%_zoneid"
+ title="#Zones,%_zoneid.ZoneName#" alt="#Zones,%_zoneid.ZoneName#" style="width:50%;"/>
+#Zones,%_zoneid.LastMovementAgeAsTimeSpan#
 </div>
+<%%>

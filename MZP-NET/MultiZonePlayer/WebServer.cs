@@ -520,7 +520,7 @@ namespace MultiZonePlayer
 										{
 											if (cond != "")
 											{
-												filter = cond.Replace(var, j.ToString());
+												filter = cond.Replace("%"+var, j.ToString());
 												Reflect.GenericReflect(ref filter);
 												reseval = ExpressionEvaluator.EvaluateBoolToString(filter);
 											}

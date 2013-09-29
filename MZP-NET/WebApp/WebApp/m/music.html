@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Music #Zones.ZoneName,%_zoneid#</title>
+    <title>Music #Zones,%_zoneid.ZoneName#</title>
     <script type="text/JavaScript" src="utilities.js"></script> 
     <link href="mobile.css" rel="stylesheet" type="text/css" />
     <meta http-equiv="refresh" content="30; URL=music.html?zoneid=%_zoneid"/>
@@ -20,15 +20,15 @@
         </table>
 		<table>
         <tr valign="top">
-            <td>#Zones.Title,%_zoneid#</td>
-            <td>#Zones.Author,%_zoneid#</td>
-			<td>#Zones.Album,%_zoneid#</td>
-            <td>#Zones.Genre,%_zoneid#</td>
+            <td>#Zones,%_zoneid.Title#</td>
+            <td>#Zones,%_zoneid.Author#</td>
+			<td>#Zones,%_zoneid.Album#</td>
+            <td>#Zones,%_zoneid.Genre#</td>
         </tr>
 		<tr>
-			<td><a href="status.html">◄</a></td>
-			<td><a class="med" href="music.html?zoneid=%_zoneid">#Zones.ZoneState,%_zoneid#</a></td>
-            <td>#Zones.PositionPercent,%_zoneid#% &nbsp; #Zones.VolumeLevel,%_zoneid#</td>
+			<td><a href="zone-main.html?zoneid=%_zoneid">◄</a></td>
+			<td><a class="med" href="music.html?zoneid=%_zoneid">#Zones,%_zoneid.ZoneState#</a></td>
+            <td>#Zones,%_zoneid.PositionPercent#% &nbsp; #Zones,%_zoneid.VolumeLevel#</td>
 		</tr>
 		</table>
 		<div id="headerDiv">
@@ -55,9 +55,9 @@
     
     <table>
         <tr>
-            <td>Year #Zones.Year,%_zoneid#</td>
-            <td>Playcount #Zones.Playcount,%_zoneid#
-                Rating #Zones.Rating,%_zoneid# 
+            <td>Year #Zones,%_zoneid.Year#</td>
+            <td>Playcount #Zones,%_zoneid.Playcount#
+                Rating #Zones,%_zoneid.Rating# 
                 <a href="music.html?command=up&zoneid=%_zoneid">^</a>
                 <a href="music.html?command=down&zoneid=%_zoneid">v</a></td>
             
@@ -66,14 +66,14 @@
             <td>
                 <a href="musicselect.html?zoneid=%_zoneid">♯</a>&nbsp;
                 <a href="musicplaylist.html?zoneid=%_zoneid">≡</a></td>
-            <td>Playlist #Zones.Playlist,%_zoneid#</td>
-            <td>PlaylistCount #Zones.PlaylistCount,%_zoneid#</td>
+            <td>Playlist #Zones,%_zoneid.Playlist#</td>
+            <td>PlaylistCount #Zones,%_zoneid.PlaylistCount#</td>
         </tr>
     </table>
     
     <table>
         <tr>
-            <td>Folder: #Zones.SourceURL,%_zoneid#</td>
+            <td>Folder: #Zones,%_zoneid.SourceURL#</td>
         </tr>
     </table>
     
@@ -82,7 +82,7 @@
             <td>
                 <form id="wake" action="music.html?zoneid=%_zoneid" method="post">
                 <input name="command" type="hidden" value="setwaketimer"/>
-                Wake Time (#Zones.WakeTime,%_zoneid# #Zones.WakeWeekDay,%_zoneid#)
+                Wake Time (#Zones,%_zoneid.WakeTime# #Zones,%_zoneid.WakeWeekDay#)
                 <input name="datetime" type="text" value="hh:mm"/>
                 
                 <input name="weekday" type="radio" value="MoTuWeThFr"/>Week
@@ -95,7 +95,7 @@
             <td>
                 <form id="Form2" action="music.html?zoneid=%_zoneid" method="post">
                 <input name="command" type="hidden" value="sleeptimer"/>
-                Sleep Time (#Zones.SleepHourMin,%_zoneid#)
+                Sleep Time (#Zones,%_zoneid.SleepHourMin#)
                 <input name="datetime" type="text" value="hh:mm"/>
                 <input id="Submit2" type="submit" value="Set Sleep Time" />
                 </form>
