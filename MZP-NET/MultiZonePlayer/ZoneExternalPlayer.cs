@@ -79,11 +79,11 @@ namespace MultiZonePlayer
         }
         
 
-        public ZonePlayerXBMC(Metadata.ZoneDetails zoneDetails)
+        public ZonePlayerXBMC(ZoneDetails zoneDetails)
         {
             m_zoneDetails = zoneDetails;
 			m_zoneDetails.ZoneClose();
-			m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
+			m_zoneDetails.ZoneState = ZoneState.NotStarted;
 			m_zoneDetails.Genre = "video";
 
 			if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
@@ -115,35 +115,35 @@ namespace MultiZonePlayer
 			Monitor.RefreshFrequencySecondary();
         }
 
-		public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
+		public ValueList ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
         {
-            Metadata.ValueList result = new Metadata.ValueList();
-            String action = action = vals.GetValue(Metadata.GlobalParams.action);
-			String source = vals.GetValue(Metadata.GlobalParams.cmdsource) ?? "";
+            ValueList result = new ValueList();
+            String action = action = vals.GetValue(GlobalParams.action);
+			String source = vals.GetValue(GlobalParams.cmdsource) ?? "";
             switch (cmdRemote)
             {
 					
-                case Metadata.GlobalCommands.right:
-                    if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+                case GlobalCommands.right:
+                    if (!source.Equals(CommandSources.rawinput.ToString()))//avoid duplicate actions
 						DirectionRight();
                     break;
-                case Metadata.GlobalCommands.left:
-					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+                case GlobalCommands.left:
+					if (!source.Equals(CommandSources.rawinput.ToString()))//avoid duplicate actions
 						DirectionLeft();
                     break;
-                case Metadata.GlobalCommands.up:
-					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+                case GlobalCommands.up:
+					if (!source.Equals(CommandSources.rawinput.ToString()))//avoid duplicate actions
 						DirectionUp();
                     break;
-                case Metadata.GlobalCommands.down:
-					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+                case GlobalCommands.down:
+					if (!source.Equals(CommandSources.rawinput.ToString()))//avoid duplicate actions
 						DirectionDown();
                     break;
-                case Metadata.GlobalCommands.enter:
-					if (!source.Equals(Metadata.CommandSources.rawinput.ToString()))//avoid duplicate actions
+                case GlobalCommands.enter:
+					if (!source.Equals(CommandSources.rawinput.ToString()))//avoid duplicate actions
 						Select();
                     break;
-                case Metadata.GlobalCommands.back:
+                case GlobalCommands.back:
                     DirectionBack();
                     break;
                 default:
@@ -247,7 +247,7 @@ namespace MultiZonePlayer
 
         public override void Stop()
         {
-			if (m_zoneDetails.ZoneState == Metadata.ZoneState.NotStarted)
+			if (m_zoneDetails.ZoneState == ZoneState.NotStarted)
 			{
 				Close();
 			}
@@ -351,7 +351,7 @@ namespace MultiZonePlayer
                     sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
 					if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1)
 					{
-						if (m_zoneDetails.ZoneState.Equals(Metadata.ZoneState.NotStarted))
+						if (m_zoneDetails.ZoneState.Equals(ZoneState.NotStarted))
 						{
 							MLog.Log(this, "XBMC has active player");
 							base.Play();
@@ -374,7 +374,7 @@ namespace MultiZonePlayer
 							m_zoneDetails.RequirePower = true;
 							m_zoneDetails.IsActive = true;
 							m_zoneDetails.Genre = resp.result.type;
-							m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
+							m_zoneDetails.ActivityType = GlobalCommands.xbmc;
 							if (!MZPState.Instance.IsWinloadLoading)
 								Utilities.SetForegroundWindow(GetXBMCHandle());
 						}

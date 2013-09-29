@@ -22,7 +22,7 @@ namespace MultiZonePlayer
         private int m_playlistIndex = 0;
         private int m_tickCount = 0;
 
-        public ZoneStreamVLC(Metadata.ZoneDetails p_zoneDetails)
+        public ZoneStreamVLC(ZoneDetails p_zoneDetails)
         {
             m_zoneDetails = p_zoneDetails;
 
@@ -206,21 +206,21 @@ namespace MultiZonePlayer
         {
             //
         }
-		public override Metadata.ZoneState GetState()
+		public override ZoneState GetState()
         {
             switch (m_vlcControl.State)
             {
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Stopped:
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Buffering:
-                    return Metadata.ZoneState.NotStarted;
+                    return ZoneState.NotStarted;
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Paused:
-                    return Metadata.ZoneState.Paused;
+                    return ZoneState.Paused;
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Playing:
-                    return Metadata.ZoneState.Running;
+                    return ZoneState.Running;
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Error:
-                    return Metadata.ZoneState.Error;
+                    return ZoneState.Error;
                 default:
-                    return Metadata.ZoneState.NotInitialised;
+                    return ZoneState.NotInitialised;
             }
         }
 
@@ -228,19 +228,19 @@ namespace MultiZonePlayer
         public override bool IsActive()
         {
             //
-            return GetState().Equals(Metadata.ZoneState.Running);
+            return GetState().Equals(ZoneState.Running);
         }
 
 		public override void SetVolumeLevel(int volume)
         {
-            int calcvol = (VOLUME_NATIVE_MAX - VOLUME_NATIVE_MIN) * (Metadata.VolumeLevels.VolumeSilence - volume) / Metadata.VolumeLevels.VolumeSilence;
+            int calcvol = (VOLUME_NATIVE_MAX - VOLUME_NATIVE_MIN) * (VolumeLevels.VolumeSilence - volume) / VolumeLevels.VolumeSilence;
             MLog.Log(this, "set volume val="+volume);
             SetVolumeLevelNative(calcvol);
         }
 
 		public override int GetVolumeLevel()
         {
-            return (VOLUME_NATIVE_MAX - m_vlcControl.AudioProperties.Volume) * Metadata.VolumeLevels.VolumeSilence / (VOLUME_NATIVE_MAX - VOLUME_NATIVE_MIN);
+            return (VOLUME_NATIVE_MAX - m_vlcControl.AudioProperties.Volume) * VolumeLevels.VolumeSilence / (VOLUME_NATIVE_MAX - VOLUME_NATIVE_MIN);
         }
 
         public float GetVolumeLevelNative()

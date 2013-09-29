@@ -6,10 +6,10 @@ Out #Zones.Temperature,7#° #Zones.TemperatureAgeAsTimeSpan,7#<br />
 Buc #Zones.Temperature,1#° #Zones.TemperatureAgeAsTimeSpan,1#<br />
 Fri #Zones.Temperature,23#° #Zones.TemperatureAgeAsTimeSpan,23#<br />
 Bir #Zones.Temperature,0#° #Zones.TemperatureAgeAsTimeSpan,0#<br />
-<%if,#Zones.IsPowerOn,19#%><span style="color:Red;">#Zones.ZoneName,19# #Zones.IsPowerOn,19#</span><%%>
-<%if,#Zones.IsPowerOn,20#%><span style="color:Red;">#Zones.ZoneName,20# #Zones.IsPowerOn,20#</span><%%>
-<%if,#Zones.IsPowerOn,21#%><span style="color:Red;">#Zones.ZoneName,21# #Zones.IsPowerOn,21#</span><%%>
-<%if,#Zones.IsPowerOn,22#%><span style="color:Red;">#Zones.ZoneName,22# #Zones.IsPowerOn,22#</span><%%>
+<%if;#Zones.IsPowerOn,19#%><span style="color:Red;">#Zones.ZoneName,19# #Zones.IsPowerOn,19#</span><%%>
+<%if;#Zones.IsPowerOn,20#%><span style="color:Red;">#Zones.ZoneName,20# #Zones.IsPowerOn,20#</span><%%>
+<%if;#Zones.IsPowerOn,21#%><span style="color:Red;">#Zones.ZoneName,21# #Zones.IsPowerOn,21#</span><%%>
+<%if;#Zones.IsPowerOn,22#%><span style="color:Red;">#Zones.ZoneName,22# #Zones.IsPowerOn,22#</span><%%>
 <div style="display:#~Zones.HasClosureNotifyAsDiv,14#;">
 <p style="background-color:Red;color:White">#Zones.ZoneName,14# #Zones.LastMovementAgeAsTimeSpan,14#</p>
 </div>

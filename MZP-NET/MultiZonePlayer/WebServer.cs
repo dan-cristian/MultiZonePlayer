@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Web.SessionState;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using File = TagLib.Flac.File;
 
 namespace MultiZonePlayer
 {
@@ -26,6 +27,9 @@ namespace MultiZonePlayer
 		{
 			get { return WebServer.m_instance; }
 		}
+
+		public static int WebThreadCount = 0;
+		private  const string CONTENT_HTML = "text/html";
 		private static List<String> CONTENT_TYPES = new List<string>(new String[] {
                 "ico,image/ico,true",
                 "png,image/png,true",
@@ -162,29 +166,30 @@ namespace MultiZonePlayer
 		{
 			try
 			{
+				WebThreadCount++;
 				ReflectionInterface.LastContext = context;
 				HttpListenerRequest request = context.Request;
 				HttpListenerResponse response = context.Response;
 				String cmdResultText = "";
 				byte[] binaryBuffer = null;
 				//Metadata.ValueList resvalue = null;
-				Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.web);
-				Metadata.CommandResult cmdResult = null;
+				ValueList vals = new ValueList(CommandSources.web);
+				CommandResult cmdResult = null;
 				String requestServer;
 
 				//MLog.LogWeb(context.Request);
 				requestServer = Utilities.ExtractServerNameFromURL(request.Url.AbsoluteUri);
-				String localPath = request.Url.LocalPath.Replace("..", "");//.Replace("/", "");
+				String localPath = request.Url.LocalPath.Replace("..", ""); //.Replace("/", "");
 
 				//read command from get url
-				Metadata.GlobalParams param;
+				GlobalParams param;
 				foreach (string key in request.QueryString.Keys)
 				{
 					if (key != null && key.Trim().Length != 0)
 					{
-						if (Enum.IsDefined(typeof(Metadata.GlobalParams), key))
+						if (Enum.IsDefined(typeof (GlobalParams), key))
 						{
-							param = (Metadata.GlobalParams)Enum.Parse(typeof(Metadata.GlobalParams), key);
+							param = (GlobalParams) Enum.Parse(typeof (GlobalParams), key);
 							vals.Add(param, request.QueryString[key]);
 						}
 						else
@@ -212,7 +217,7 @@ namespace MultiZonePlayer
 								break;
 							case "application/x-www-form-urlencoded":
 							default:
-								System.Text.Encoding encoding = System.Text.Encoding.UTF8;//request.ContentEncoding;
+								System.Text.Encoding encoding = System.Text.Encoding.UTF8; //request.ContentEncoding;
 								System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
 								post = reader.ReadToEnd();
 								post = System.Uri.UnescapeDataString(post);
@@ -222,17 +227,17 @@ namespace MultiZonePlayer
 								reader.Close();
 								break;
 						}
-						String[] atoms = post.Split(new String[] { "&" }, StringSplitOptions.RemoveEmptyEntries);
+						String[] atoms = post.Split(new String[] {"&"}, StringSplitOptions.RemoveEmptyEntries);
 						String[] vars;
 						String item;
 						foreach (String atom in atoms)
 						{
-							item = atom;//.Replace("^", "&");
-							vars = item.Split(new String[] { "=" }, StringSplitOptions.RemoveEmptyEntries);
-							if (Enum.IsDefined(typeof(Metadata.GlobalParams), vars[0]))
+							item = atom; //.Replace("^", "&");
+							vars = item.Split(new String[] {"="}, StringSplitOptions.RemoveEmptyEntries);
+							if (Enum.IsDefined(typeof (GlobalParams), vars[0]))
 							{
-								param = (Metadata.GlobalParams)Enum.Parse(typeof(Metadata.GlobalParams), vars[0]);
-								if (param.Equals(Metadata.GlobalParams.selectedindex))
+								param = (GlobalParams) Enum.Parse(typeof (GlobalParams), vars[0]);
+								if (param.Equals(GlobalParams.selectedindex))
 									vals.AddIndexValue(vars[1].Replace('+', ' '));
 								else
 								{
@@ -248,22 +253,22 @@ namespace MultiZonePlayer
 					}
 				}
 
-				String cmdSource = vals.GetValue(Metadata.GlobalParams.cmdsource);
-				Metadata.CommandSources cmdSourceEnum;
+				String cmdSource = vals.GetValue(GlobalParams.cmdsource);
+				CommandSources cmdSourceEnum;
 				if (cmdSource == null)
 				{
 					cmdSourceEnum = vals.CommandSource;
 				}
 				else
 				{
-					cmdSourceEnum = (Metadata.CommandSources)Enum.Parse(typeof(Metadata.CommandSources), cmdSource);
+					cmdSourceEnum = (CommandSources) Enum.Parse(typeof (CommandSources), cmdSource);
 				}
 
-				if (localPath.Equals("/cmd"))//command from MZP clients
+				if (localPath.Equals("/cmd")) //command from MZP clients
 				{
 					if (request.HttpMethod.Equals("GET"))
 					{
-						cmdResult = API.DoCommandFromWeb(vals);//, out resvalue);
+						cmdResult = API.DoCommandFromWeb(vals); //, out resvalue);
 					}
 
 					if (request.HttpMethod.Equals("POST"))
@@ -271,7 +276,7 @@ namespace MultiZonePlayer
 						if (request.HasEntityBody)
 						{
 							System.IO.Stream body = request.InputStream;
-							System.Text.Encoding encoding = System.Text.Encoding.UTF8;//request.ContentEncoding;
+							System.Text.Encoding encoding = System.Text.Encoding.UTF8; //request.ContentEncoding;
 							System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
 							String post = reader.ReadToEnd();
 							post = System.Uri.UnescapeDataString(post);
@@ -283,8 +288,8 @@ namespace MultiZonePlayer
 							lastindex = post.LastIndexOf('}');
 							String json = post.Substring(firstindex, lastindex - firstindex + 1);
 
-							Metadata.ValueList val = fastJSON.JSON.Instance.ToObject<Metadata.ValueList>(json);
-							cmdResult = API.DoCommandFromWeb(val);//, out resvalue);
+							ValueList val = fastJSON.JSON.Instance.ToObject<ValueList>(json);
+							cmdResult = API.DoCommandFromWeb(val); //, out resvalue);
 						}
 						else
 						{
@@ -293,13 +298,13 @@ namespace MultiZonePlayer
 					}
 					String contentType;
 					byte[] binaryData = null;
-					if (cmdResult !=null ) binaryData = cmdResult.ValueList.BinaryData;
+					if (cmdResult != null) binaryData = cmdResult.ValueList.BinaryData;
 					if (binaryData != null)
 					{
-						contentType = cmdResult.ValueList.GetValue(Metadata.GlobalParams.contenttype);
+						contentType = cmdResult.ValueList.GetValue(GlobalParams.contenttype);
 					}
 					else
-						contentType = "text/html";
+						contentType = CONTENT_HTML;
 
 					if (cmdResult != null)
 						cmdResultText = "Out=" + cmdResult.OutputMessage;
@@ -308,11 +313,12 @@ namespace MultiZonePlayer
 					WriteResponse(contentType, cmdResultText, response, binaryData);
 				}
 				else
-				{//any other html request
-					String contentType;//, json;
+				{
+//any other html request
+					String contentType; //, json;
 					byte[] binaryData;
 
-					if (vals.ContainsKey(Metadata.GlobalParams.command))
+					if (vals.ContainsKey(GlobalParams.command))
 						//json = API.DoCommandFromWeb(vals, out resvalue);
 						cmdResult = API.DoCommandFromWeb(vals);
 
@@ -325,7 +331,10 @@ namespace MultiZonePlayer
 			{
 				MLog.Log(ex, this, "Error process request " + context.Request.Url.AbsoluteUri);
 			}
-
+			finally
+			{
+				WebThreadCount--;
+			}
 			//MLog.Log(null, "Web req done " + context.Request.Url.AbsoluteUri);
 		}
 
@@ -350,10 +359,10 @@ namespace MultiZonePlayer
 			}
 		}
 
-		private String ServeDirectHtml(HttpListenerContext context, String requestServer, out String contentType, out byte[] binaryData, Metadata.CommandResult cmdResult)
+		private String ServeDirectHtml(HttpListenerContext context, String requestServer, out String contentType, out byte[] binaryData, CommandResult cmdResult)
 		{
 			binaryData = null;
-			contentType = "text/html";
+			contentType = CONTENT_HTML;
 			Boolean isBinary = false;
 
 			String pass = context.Request.QueryString["PASS"];
@@ -408,9 +417,10 @@ namespace MultiZonePlayer
 						}
 					}
 
-					//look for server side programming
-					GenerateServerSideScript(ref result);
 
+					//look for server side programming
+					if (contentType == CONTENT_HTML)
+						GenerateServerSideScript(ref result);
 
 					//set server variables
 					if (cmdResult!=null)
@@ -464,9 +474,10 @@ namespace MultiZonePlayer
 
 		public void GenerateServerSideScript(ref String result)
 		{
+			MLog.Log(this, "Generating SS script");
 			const string delim_start = "<%", delim_end = "%>";
 			String script, target, scriptReflect;
-
+			int cycles = 0;
 			do
 			{
 				script = result.Substring(delim_start, delim_end);
@@ -481,20 +492,22 @@ namespace MultiZonePlayer
 					int resultInsertIndex = result.IndexOf(target);
 					scriptReflect = script;
 					Reflect.GenericReflect(ref scriptReflect);
-					string[] atoms = scriptReflect.Split(',');
+					string[] atoms = scriptReflect.Split(';');
 
 					switch (atoms[0])
 					{
 						case "for":
 							if (script.Contains("for"))
 							{
-								string var, start, end, oper;
+								string var, start, end, oper, cond;
 								var = atoms[1];
 								start = atoms[2];
 								oper = atoms[3];
 								end = atoms[4];
+								cond = atoms[5];
 
 								int forstart, forend;
+								string filter;
 								forstart = Convert.ToInt16(start);
 								forend = Convert.ToInt16(end);
 								String generated;
@@ -502,11 +515,21 @@ namespace MultiZonePlayer
 								switch (oper)
 								{
 									case "++":
+										String reseval="";
 										for (int j = forstart; j < forend; j++)
 										{
-											generated = target.Replace("%" + var, j.ToString());
-											result = result.Insert(resultInsertIndex, generated);
-											resultInsertIndex += generated.Length;
+											if (cond != "")
+											{
+												filter = cond.Replace(var, j.ToString());
+												Reflect.GenericReflect(ref filter);
+												reseval = ExpressionEvaluator.EvaluateBoolToString(filter);
+											}
+											if (cond == "" || Convert.ToBoolean(reseval))
+											{
+												generated = target.Replace("%" + var, j.ToString());
+												result = result.Insert(resultInsertIndex, generated);
+												resultInsertIndex += generated.Length;
+											}
 										}
 										break;
 									case "--":
@@ -535,8 +558,11 @@ namespace MultiZonePlayer
 							break;
 					}
 				}
+				cycles++;
 			}
-			while (script != "");
+			while (script != "" && cycles<=100);
+			if (cycles>100)
+				MLog.Log(this, "Error, infinite cycles reached");
 		}
 	}
 }

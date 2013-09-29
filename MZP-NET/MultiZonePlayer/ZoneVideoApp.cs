@@ -369,15 +369,15 @@ namespace MultiZonePlayer
         {
         }
 
-        public virtual Metadata.ZoneState GetState()
+        public virtual ZoneState GetState()
         {
             if (m_wrapper != null)
                 return m_wrapper.State;
             else
-                return Metadata.ZoneState.NotInitialised;
+                return ZoneState.NotInitialised;
         }
 
-        public Metadata.ZoneDetails ZoneDetails
+        public ZoneDetails ZoneDetails
         {
             get
             {
@@ -387,7 +387,7 @@ namespace MultiZonePlayer
 
         public virtual bool IsActive()
         {
-            return GetState().Equals(Metadata.ZoneState.Running);
+            return GetState().Equals(ZoneState.Running);
         }
 
         
@@ -543,12 +543,12 @@ namespace MultiZonePlayer
         {
         }
 
-        public override Metadata.ZoneState GetState()
+        public override ZoneState GetState()
         {
             if (m_wrapper == null)
-                return Metadata.ZoneState.NotInitialised;
+                return ZoneState.NotInitialised;
             else
-                return Metadata.ZoneState.Undefined;
+                return ZoneState.Undefined;
         }
 
         public override bool IsActive()
@@ -643,7 +643,7 @@ namespace MultiZonePlayer
         protected long m_position;
         protected long m_totalposition;
         protected int m_volume;
-        protected Metadata.ZoneState m_zoneState;
+        protected ZoneState m_zoneState;
 
         public abstract bool Initialize();
         public abstract bool RetrieveStatus();
@@ -654,7 +654,7 @@ namespace MultiZonePlayer
             {
                 Quit();
                 TCPDisconnect();
-                m_zoneState = Metadata.ZoneState.Closing;
+                m_zoneState = ZoneState.Closing;
                 m_videoAppProcess.CloseMainWindow();
                 m_videoAppProcess.Kill();
             }
@@ -739,7 +739,7 @@ namespace MultiZonePlayer
         {
             for (int i = 0; i < 20; i++)
             {
-                if (m_zoneState != Metadata.ZoneState.Closing)
+                if (m_zoneState != ZoneState.Closing)
                 {
                     try
                     {
@@ -850,7 +850,7 @@ namespace MultiZonePlayer
             }
         }
 
-        public Metadata.ZoneState State
+        public ZoneState State
         {
             get
             {
@@ -1252,10 +1252,10 @@ namespace MultiZonePlayer
                 switch (atoms[1])
                 {
                     case "Playing":
-                        m_zoneState = Metadata.ZoneState.Running;
+                        m_zoneState = ZoneState.Running;
                         break;
                     default:
-                        m_zoneState = Metadata.ZoneState.Undefined;
+                        m_zoneState = ZoneState.Undefined;
                         break;
                 }
                 return true;

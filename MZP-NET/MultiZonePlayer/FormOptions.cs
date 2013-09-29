@@ -120,13 +120,14 @@ namespace MultiZonePlayer
 
         private void DisplayZones()
         {
-            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+            foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
             {
                 dgvZones.Rows.Add(zone.ZoneId, zone.ZoneName, zone.OutputKeywords, zone.OutputDeviceUserSelected, 
                     zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId,
-					zone.ClosureOpenCloseRelay==null?Metadata.ClosureOpenCloseRelay.EnumRelayType.Undefined.ToString():
+					zone.ClosureOpenCloseRelay==null?ClosureOpenCloseRelay.EnumRelayType.Undefined.ToString():
 					zone.ClosureOpenCloseRelay.RelayType.ToString(), 
-					zone.ClosureIdList, zone.PowerOnDelay, zone.NearbyZonesIdList, zone.TemperatureDeviceId, zone.PowerType);
+					zone.ClosureIdList, zone.PowerOnDelay, zone.NearbyZonesIdList, zone.TemperatureDeviceId, zone.PowerType,
+					zone.Type.ToString());
 
                 if (zone.DisplayType!="")
                 {
@@ -152,16 +153,16 @@ namespace MultiZonePlayer
                
                 if (zoneId != null && zoneName != null)
                 {
-                    Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(Convert.ToInt16(zoneId));
+                    ZoneDetails zone = MZPState.Instance.GetZoneById(Convert.ToInt16(zoneId));
                     
                     IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONES, zoneId.ToString(), "");
                     if (zone == null)
                     {
-                        zone = new Metadata.ZoneDetails();
+                        zone = new ZoneDetails();
                         MZPState.Instance.ZoneDetails.Add(zone);
                     }
 					if (zone.ClosureOpenCloseRelay == null) 
-						zone.ClosureOpenCloseRelay = new Metadata.ClosureOpenCloseRelay(false);
+						zone.ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
 
                     zone.ZoneId = Convert.ToInt16(dgvZones.Rows[r].Cells[ZoneId.Name].Value.ToString());
                     zone.ParentZoneId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_ParentZoneId.Name].Value ?? "-1");
@@ -173,13 +174,14 @@ namespace MultiZonePlayer
                     zone.CameraId = (dgvZones.Rows[r].Cells[Zones_CameraId.Name].Value ?? "").ToString();
                     zone.AlarmZoneId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmZoneId.Name].Value ?? "-1");
                     zone.AlarmAreaId = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_AlarmAreadId.Name].Value ?? "-1");
-					zone.ClosureOpenCloseRelay.RelayType = (Metadata.ClosureOpenCloseRelay.EnumRelayType)Enum.Parse(typeof(Metadata.ClosureOpenCloseRelay.EnumRelayType), 
+					zone.ClosureOpenCloseRelay.RelayType = (ClosureOpenCloseRelay.EnumRelayType)Enum.Parse(typeof(ClosureOpenCloseRelay.EnumRelayType), 
 						(dgvZones.Rows[r].Cells[Zones_ClosureRelayType.Name].Value ?? "Undefined").ToString());
 					zone.ClosureIdList = (dgvZones.Rows[r].Cells[Zones_ClosureIdList.Name].Value ?? "").ToString();
 					zone.PowerOnDelay = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_PowerOnDelay.Name].Value ?? "0");
 					zone.NearbyZonesIdList= (dgvZones.Rows[r].Cells[Zones_NearbyZoneIdList.Name].Value ?? "").ToString();
 					zone.TemperatureDeviceId = (dgvZones.Rows[r].Cells[Zones_TempDeviceId.Name].Value ?? "").ToString();
 					zone.PowerType = (dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString();
+					zone.Type = (ZoneType)Enum.Parse(typeof(ZoneType),(dgvZones.Rows[r].Cells[Zones_Type.Name].Value ?? "Undefined").ToString());
 					zone.SaveStateToIni();
                 }
             }
@@ -189,7 +191,7 @@ namespace MultiZonePlayer
                 zoneId = dgvDisplay.Rows[r].Cells[Display_ZoneID.Name].Value;
                 if (zoneId != null)
                 {
-                    Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(Convert.ToInt16(zoneId));
+                    ZoneDetails zone = MZPState.Instance.GetZoneById(Convert.ToInt16(zoneId));
                     zone.DisplayConnection = dgvDisplay.Rows[r].Cells[Display_ConnectionName.Name].Value.ToString();
                     zone.DisplayType = dgvDisplay.Rows[r].Cells[Display_Type.Name].Value.ToString();
                     zone.SaveStateToIni();
@@ -504,7 +506,7 @@ namespace MultiZonePlayer
 
         private void TestOutputDevice(String outDevice, String keywords, int defaultVolume)
         {
-            outDevice = Metadata.ZoneDetails.GetOutputDeviceNameAutocompleted(outDevice, keywords);
+            outDevice = ZoneDetails.GetOutputDeviceNameAutocompleted(outDevice, keywords);
             //DCPlayer dcPlay = new DCPlayer(this, outDevice, IniFile.CurrentPath() + IniFile.TEST_FILE_NAME, Metadata.ZoneDetails.GetDefaultVolume(defaultVolume));
         }
 

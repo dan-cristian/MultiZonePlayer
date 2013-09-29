@@ -19,7 +19,7 @@ namespace MultiZonePlayer
         private ControlCenter controlCenter;
 
         private ZoneGeneric m_zone;
-        private Metadata.ZoneDetails m_zoneDetails;
+        private ZoneDetails m_zoneDetails;
 
         public ZonesForm(ZoneGeneric zone, ControlCenter controlCenter)
         {
@@ -47,7 +47,7 @@ namespace MultiZonePlayer
             return m_zoneDetails.ZoneId;
         }
 
-        public Metadata.ZoneDetails ZoneDetails
+        public ZoneDetails ZoneDetails
         {
             get
             {
@@ -280,9 +280,9 @@ namespace MultiZonePlayer
 
         private void txWakeTime_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.setwaketimer.ToString(), Metadata.CommandSources.gui);
-            vals.Add(Metadata.GlobalParams.datetime, txWakeTime.Text);
-            vals.Add(Metadata.GlobalParams.weekday, "WK");
+            ValueList vals = new ValueList(GlobalParams.command, GlobalCommands.setwaketimer.ToString(), CommandSources.gui);
+            vals.Add(GlobalParams.datetime, txWakeTime.Text);
+            vals.Add(GlobalParams.weekday, "WK");
             //m_zone.ProcessAction(Metadata.GlobalCommands.setwaketimer, vals);
         }
 
@@ -293,9 +293,9 @@ namespace MultiZonePlayer
 
         private void cmbMoods_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, m_zoneDetails.ZoneId.ToString(), Metadata.CommandSources.gui);
-            vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.setmoodmusic.ToString());
-            vals.Add(Metadata.GlobalParams.selectedindex, MZPState.Instance.MoodMusicList.Find(x=>x.Name.Equals(cmbMoods.Text)).Index.ToString());
+            ValueList vals = new ValueList(GlobalParams.zoneid, m_zoneDetails.ZoneId.ToString(), CommandSources.gui);
+            vals.Add(GlobalParams.command, GlobalCommands.setmoodmusic.ToString());
+            vals.Add(GlobalParams.selectedindex, MZPState.Instance.MoodMusicList.Find(x=>x.Name.Equals(cmbMoods.Text)).Index.ToString());
             //API.DoCommandFromGUIInput(vals);
         }
 

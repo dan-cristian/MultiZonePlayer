@@ -10,13 +10,14 @@
   <table>
     <tr>
         <td><a class="med" href="alarm.html">Alarm</a> #SystemAlarm.AreaState#</td>
-        <td>#ServerTime#</td>
+        <td>#DateTime.Now#</td>
 	    <td>#SystemAlarm.LastAlarmEventDateTime#</td>
     </tr>
 </table>
 <!--table><tr><td-->
-	<%for,i,0,++,#S.ZonesCount#%>
-	<button class="Action#Zones.HasAction,%i# Activity#Zones.ActivityType,%i#" onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones.ZoneName,%i#</button>
+	<%for;i;0;++;#S.ZonesCount#;"#Zones.Type,i#"=="Space"%>
+	<button class="Action#Zones.HasAction,%i# Activity#Zones.ActivityType,%i#" 
+		onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones.ZoneName,%i#</button>
 	<%%>	
 <!--/td></tr></table-->
 </body>

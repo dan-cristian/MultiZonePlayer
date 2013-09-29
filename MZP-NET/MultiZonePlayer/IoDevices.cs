@@ -248,7 +248,7 @@ namespace MultiZonePlayer
 					MLog.Log(this, "RFX result for response:[" + origResponse + "] is " + dev.DisplayValues());
 					if (dev.ZoneId != -1)
 					{
-						Metadata.ZoneDetails zone = MZPState.Instance.GetZoneById(dev.ZoneId);
+						ZoneDetails zone = MZPState.Instance.GetZoneById(dev.ZoneId);
 						switch (dev.DeviceType)
 						{
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
@@ -372,7 +372,7 @@ namespace MultiZonePlayer
 			}
 			string pin; char iocmd = '?';
 			int startindex, end, pinindex, attriblength = 0;
-			foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
 			{
 				startindex = zone.ClosureIdList.IndexOf(WDIO_ATTRIB_SWITCH);
 				if (startindex != -1)
@@ -445,12 +445,12 @@ namespace MultiZonePlayer
 					zoneid = m_zoneIdMap[pinindex];
 					//if (m_lastState[pinindex] != state)
 					{
-						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid,
-							zoneid.ToString(), Metadata.CommandSources.rawinput);
-						val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
-						val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
-						val.Add(Metadata.GlobalParams.id, pinindex.ToString());
-						val.Add(Metadata.GlobalParams.iscontactmade, (state == STATE_CONTACT_MADE).ToString());
+						ValueList val = new ValueList(GlobalParams.zoneid,
+							zoneid.ToString(), CommandSources.rawinput);
+						val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+						val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+						val.Add(GlobalParams.id, pinindex.ToString());
+						val.Add(GlobalParams.iscontactmade, (state == STATE_CONTACT_MADE).ToString());
 						API.DoCommand(val);
 					}
 					//else
@@ -512,7 +512,7 @@ namespace MultiZonePlayer
 			}
 			string pin;
 			int startindex, end, pinindex;
-			foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
 			{
 				startindex = zone.ClosureIdList.IndexOf(GPIO_ATTRIB_INI_NAME);
 				if (startindex != -1)
@@ -605,12 +605,12 @@ namespace MultiZonePlayer
 										zoneid = m_zoneIdMap[i];
 										if (zoneid != -1)
 										{
-											Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid,
-												zoneid.ToString(), Metadata.CommandSources.rawinput);
-											val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
-											val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
-											val.Add(Metadata.GlobalParams.id, GPIO_ATTRIB_INI_NAME + i);
-											val.Add(Metadata.GlobalParams.iscontactmade, (m_state[i] == STATE_CONTACT_MADE).ToString());
+											ValueList val = new ValueList(GlobalParams.zoneid,
+												zoneid.ToString(), CommandSources.rawinput);
+											val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+											val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+											val.Add(GlobalParams.id, GPIO_ATTRIB_INI_NAME + i);
+											val.Add(GlobalParams.iscontactmade, (m_state[i] == STATE_CONTACT_MADE).ToString());
 											API.DoCommand(val);
 										}
 									}
@@ -776,7 +776,7 @@ namespace MultiZonePlayer
 				java.util.Enumeration containers = adapter.getAllDeviceContainers();
 				OneWireContainer element;
 				sbyte[] state;
-				Metadata.ZoneDetails zone;
+				ZoneDetails zone;
 				while (MZPState.Instance != null && containers.hasMoreElements())
 				{
 					element = (OneWireContainer)containers.nextElement();
@@ -947,11 +947,11 @@ namespace MultiZonePlayer
 				if (failure != MZPState.Instance.IsPowerFailure)
 				{
 					MLog.Log(this, "MUSTEK power event failure=" + m_lastStatus.PowerFail);
-					Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.powerevent.ToString(), Metadata.CommandSources.system);
-					val.Add(Metadata.GlobalParams.action, failure.ToString());
-					val.Add(Metadata.GlobalParams.datetime, DateTime.Now.ToString());
-					Metadata.ValueList retval;
-					Metadata.CommandResult retcmd = API.DoCommandFromWeb(val);//, out retval);
+					ValueList val = new ValueList(GlobalParams.command, GlobalCommands.powerevent.ToString(), CommandSources.system);
+					val.Add(GlobalParams.action, failure.ToString());
+					val.Add(GlobalParams.datetime, DateTime.Now.ToString());
+					ValueList retval;
+					CommandResult retcmd = API.DoCommandFromWeb(val);//, out retval);
 					//Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
 				}
 			}

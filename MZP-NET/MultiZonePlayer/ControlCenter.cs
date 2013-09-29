@@ -144,11 +144,11 @@ namespace MultiZonePlayer
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
                         MZPState.Instance.Tick();
-						foreach (Metadata.ZoneDetails details in MZPState.Instance.ZoneDetails)
+						foreach (ZoneDetails details in MZPState.Instance.ZoneDetails)
 						{
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
 
-							List<Metadata.ZoneDetails> zonesWithPower = MZPState.Instance.ZoneDetails.FindAll(x =>
+							List<ZoneDetails> zonesWithPower = MZPState.Instance.ZoneDetails.FindAll(x =>
 								x.RequirePower && x.PowerIndex == details.PowerIndex);
 							if (zonesWithPower.Count==0 && details.LastLocalCommandAgeInSeconds>120)
 							{
@@ -186,7 +186,7 @@ namespace MultiZonePlayer
                 //txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
                 txAlarm.Text = MZPState.Instance.SystemAlarm.IsMonitoringActive + ":" + MZPState.Instance.SystemAlarm.AreaState.ToString();
 				txtGPIO.Text = MZPState.Instance.Gpio.State;
-                foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+                foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
                 {
                     if (zone.IsActive)
                     {
@@ -198,6 +198,7 @@ namespace MultiZonePlayer
                         }
                     }
                 }
+	            txtThreadCount.Text = WebServer.WebThreadCount.ToString();
                 ShowPowerControlStatus();
             }
             txtZoneCount.Text = m_zoneFormsList.Count.ToString();
@@ -219,6 +220,8 @@ namespace MultiZonePlayer
 				if (MediaLibrary.AllVideoFiles != null && MediaLibrary.AllVideoFiles.PlaylistFiles != null)
 					txVideoCount.Text = "loading " + MediaLibrary.AllVideoFiles.PlaylistFiles.Count;
 			}
+
+			
         }
 
         public void CloseAllZones()
@@ -411,7 +414,7 @@ namespace MultiZonePlayer
 
         private void bt1_Click(object sender, EventArgs e)
         {
-            API.DoCommandFromGUIInput(Metadata.GlobalCommands.selectzone.ToString(), ((Button)sender).Text);
+            API.DoCommandFromGUIInput(GlobalCommands.selectzone.ToString(), ((Button)sender).Text);
         }
 
         private void btCommand_Click(object sender, EventArgs e)
@@ -442,5 +445,25 @@ namespace MultiZonePlayer
 				MLog.Log(ex, "Err closing zones");
             }
         }
+
+		private void txtError_TextChanged(object sender, EventArgs e)
+		{
+
+		}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
+			txtError.Clear();
+			txtError.AppendText(Process.GetCurrentProcess().TotalProcessorTime.TotalMilliseconds / 100 + "");
+			foreach (ProcessThreadCollection th in Process.GetCurrentProcess().Threads)
+			{
+				
+				foreach (ProcessThread t in th)
+				{
+					txtError.AppendText(t.Id + "  state=" + t.ThreadState + "  start=" + t.StartTime + "\n");
+				}
+				
+			}
+		}
     }
 }

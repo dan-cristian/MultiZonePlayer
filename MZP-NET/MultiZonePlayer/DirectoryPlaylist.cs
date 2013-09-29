@@ -1372,7 +1372,7 @@ namespace MultiZonePlayer
 		{
 			get { return m_pictureFiles; }
 		}
-		public static List<AudioItem> AudioFilesByGenre(Metadata.ValueList vals)
+		public static List<AudioItem> AudioFilesByGenre(ValueList vals)
 		{
 			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
 			{
@@ -1392,7 +1392,7 @@ namespace MultiZonePlayer
 			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
-		public static List<AudioItem> AudioFilesByArtist(Metadata.ValueList vals)
+		public static List<AudioItem> AudioFilesByArtist(ValueList vals)
 		{
 
 			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
@@ -1441,20 +1441,20 @@ namespace MultiZonePlayer
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static Metadata.ValueList MusicGenres
+		public static ValueList MusicGenres
 		{
 			get
 			{
 				//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 				var unique = m_musicFiles.PlaylistItems.Select(i => i.Genre).Distinct().ToList();
-				Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
+				ValueList val = new ValueList(CommandSources.system);
 				unique.Sort();
 				val.SetIndexValues(unique.ToList());
 				return val;
 			}
 		}
 
-		public static Metadata.ValueList MusicArtists
+		public static ValueList MusicArtists
 		{
 			get
 			{
@@ -1462,7 +1462,7 @@ namespace MultiZonePlayer
 				var unique = m_musicFiles.PlaylistItems.Select(i => i.Author).Distinct().ToList();
 				unique.Sort();
 
-				Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
+				ValueList val = new ValueList(CommandSources.system);
 				val.SetIndexValues(unique.ToList());
 				return val;
 			}

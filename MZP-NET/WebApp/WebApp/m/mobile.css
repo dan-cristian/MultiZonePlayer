@@ -10,9 +10,10 @@ div.VisibleFalse {display: none;}
 /***FIRST STYLE THE BUTTON***/
 button{
 cursor:pointer; /*forces the cursor to change to a hand when the button is hovered*/
-padding:5px 25px; /*add some padding to the inside of the button*/
+padding:5px 15px; /*add some padding to the inside of the button*/
 background:#35b128; /*the colour of the button*/
 border:1px solid #33842a; /*required or the default border for the browser will appear*/
+min-width:120px;
 /*give the button curved corners, alter the size as required*/
 -moz-border-radius: 10px;
 -webkit-border-radius: 10px;
@@ -34,14 +35,12 @@ font-size:1.1em;
 -moz-box-shadow: 0 0 1px rgba(0,0,0, .75);
 box-shadow: 0 0 1px rgba(0,0,0, .75);
 }*/
-button.PressedTrue{
-background-color: Red;
-}
+button.PressedTrue{background-color: Red;}
 button.VisibleTrue {display:inline-block;}
 button.VisibleFalse {display:none;}
 button.ActionTrue {background-image:url('wheel-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.MoveTrue {background-image:url('walk-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.ActiveFalse {background-image:url('mic.png');background-repeat:no-repeat;background-position:right}
+button.ActiveFalse {background-image:url('mic.png');background-repeat:no-repeat;background-position:right;}
 button.Caption {background-color:transparent;color:Black}
 button.Videoxbmc {background-image:url('Bande-video-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.Musicmusic {background-image:url('Music-Library-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}

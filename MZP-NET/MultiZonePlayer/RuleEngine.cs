@@ -25,6 +25,13 @@ namespace MultiZonePlayer
 					 eval(expr);
                      return result; 
                   }
+				
+				public function EvalBool(expr : String) : String 
+                  { 
+					 var result;
+					 eval('result ='  + expr);
+                     return result; 
+                  }
                }
             }";
 		
@@ -54,6 +61,11 @@ namespace MultiZonePlayer
 		public static string EvaluateToString(string statement)
 		{
 			object o = EvaluateToObject(statement, "Eval");
+			return o.ToString();
+		}
+		public static string EvaluateBoolToString(string statement)
+		{
+			object o = EvaluateToObject(statement, "EvalBool");
 			return o.ToString();
 		}
 
@@ -87,112 +99,130 @@ namespace MultiZonePlayer
 	{
 		public static String GenericReflect(/*Object instance, */ref String result)
 		{
-			object instance = ReflectionInterface.Instance;
-
-			String[] parameters, methods;
+			object instance;
+			String[] recurrent, parameters, methods;
 			object[] methodparams;
 			String property, methodparam, method;
 			object value, objinfo;
 			
 			MethodInfo methInfo;
 			String[] varatoms;
-
-			varatoms = result.Split(new String[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+			
+			varatoms = result.Split(new String[] {"#"}, StringSplitOptions.RemoveEmptyEntries);
 			try
 			{
-				foreach (String atom in varatoms)
+				foreach (String atomPart in varatoms)
 				{
-					value = GetPropertyField(instance, atom);
-					if (value != null)
-						result = result.Replace("#" + atom + "#", value.ToString());
-					else
+					value = null;
+					instance = ReflectionInterface.Instance;
+					recurrent = atomPart.Split(new String[] {"."}, StringSplitOptions.RemoveEmptyEntries);
+					string atom;
+					if (recurrent.Length > 1)
 					{
-							
-						methodparam = atom.Replace("~", "");
-						parameters = methodparam.Split(',');
-						method = parameters[0].ToString();
-
-						methods = method.Split('.');
-						if (methods.Length > 1)//have fields
+						atom = recurrent[0] + "." + recurrent[1];
+						if (atom.StartsWith("Zones.ChildZone"))
 						{
-							method = methods[0];
-							property = methods[1];
+							atom += "";
 						}
-						else
-							property = null;
-
-						methodparams = new object[parameters.Length];// + 1];
-						//methodparams[0] = context;
-						parameters.CopyTo(methodparams, 0);//1);
-						methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
-
-						if (methInfo != null)
+						for (int recIndex = 1; recIndex < recurrent.Length; recIndex++)
 						{
-							try
-							{
-								if (methodparams.Length > methInfo.GetParameters().Length)
-								{
-									methodparams = new object[parameters.Length-1];
-									for (int i = 0; i < parameters.Length-1; i++)
-										methodparams[i] = parameters[i];
-									MLog.Log(null, "Adjusting method param count");
-								}
-								value = methInfo.Invoke(instance, methodparams);
-							}
-							catch (Exception ex)
-							{
-								//result = ex.Message;
-								value = ex.Message;
-								result = result.Replace("#" + atom + "#", value.ToString());
-								break;
-							}
-
 							if (value != null)
 							{
-								//nested properties, check for the type and read value
-								if (property != null)
-								{
-									objinfo = Type.GetType(value.GetType().FullName).GetField(property);
+								instance = value;
+								atom = recurrent[recIndex];
+							}
+							value = GetPropertyField(instance, atom);
+							if (value != null)
+								result = result.Replace("#" + atomPart + "#", value.ToString());
+							else
+							{
+								methodparam = atom.Replace("~", "");
+								parameters = methodparam.Split(',');
+								method = parameters[0].ToString();
 
-									if (objinfo == null)
+								methods = method.Split('.');
+								if (methods.Length > 1) //have fields
+								{
+									method = methods[0];
+									property = methods[1];
+								}
+								else
+									property = null;
+
+								methodparams = new object[parameters.Length]; // + 1];
+								//methodparams[0] = context;
+								parameters.CopyTo(methodparams, 0); //1);
+								methInfo = Type.GetType(instance.GetType().FullName).GetMethod(method);
+
+								if (methInfo != null)
+								{
+									try
 									{
-										objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
-										if (objinfo == null)
+										if (methodparams.Length > methInfo.GetParameters().Length)
 										{
-											objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
+											methodparams = new object[parameters.Length - 1];
+											for (int i = 0; i < parameters.Length - 1; i++)
+												methodparams[i] = parameters[i];
+											MLog.Log(null, "Adjusting method param count");
+										}
+										value = methInfo.Invoke(instance, methodparams);
+									}
+									catch (Exception ex)
+									{
+										//result = ex.Message;
+										value = ex.Message;
+										result = result.Replace("#" + atom + "#", value.ToString());
+										break;
+									}
+
+									if (value != null)
+									{
+										//nested properties, check for the type and read value
+										if (property != null)
+										{
+											objinfo = Type.GetType(value.GetType().FullName).GetField(property);
+
 											if (objinfo == null)
-												MLog.Log(instance, "Unknown call for atom=" + property);
-											else
 											{
-												MethodInfo meth = (MethodInfo)objinfo;
-												if (meth.GetParameters().Length > 0)
+												objinfo = Type.GetType(value.GetType().FullName).GetProperty(property);
+												if (objinfo == null)
 												{
-													methodparams = new object[meth.GetParameters().Length];
-													for (int i = 0; i < meth.GetParameters().Length; i++)
+													objinfo = Type.GetType(value.GetType().FullName).GetMethod(property);
+													if (objinfo == null)
+														MLog.Log(instance, "Unknown call for atom=" + property);
+													else
 													{
-														//String t = meth.GetParameters()[i].GetType().ToString();
-														if (meth.GetParameters()[i].ParameterType == typeof(Int32))
+														MethodInfo meth = (MethodInfo) objinfo;
+														if (meth.GetParameters().Length > 0)
 														{
-															methodparams[i] = Convert.ToInt32(parameters[i + 2]);
+															methodparams = new object[meth.GetParameters().Length];
+															for (int i = 0; i < meth.GetParameters().Length; i++)
+															{
+																//String t = meth.GetParameters()[i].GetType().ToString();
+																if (meth.GetParameters()[i].ParameterType == typeof (Int32))
+																{
+																	methodparams[i] = Convert.ToInt32(parameters[i + 2]);
+																}
+																else
+																	methodparams[i] = parameters[i + 2];
+															}
+
+															value = meth.Invoke(value, methodparams);
 														}
 														else
-															methodparams[i] = parameters[i + 2];
+															value = ((PropertyInfo) objinfo).GetValue(value, null);
 													}
-													
-													value = meth.Invoke(value, methodparams);
 												}
 												else
-													value = ((PropertyInfo)objinfo).GetValue(value, null);
+													value = ((PropertyInfo) objinfo).GetValue(value, null);
 											}
+											else
+												value = ((FieldInfo) objinfo).GetValue(value);
 										}
-										else
-											value = ((PropertyInfo)objinfo).GetValue(value, null);
+										if (value != null)
+											result = result.Replace("#" + atom + "#", value.ToString());
 									}
-									else
-										value = ((FieldInfo)objinfo).GetValue(value);
 								}
-								if (value != null)
-									result = result.Replace("#" + atom + "#", value.ToString());
 							}
 						}
 					}
@@ -394,7 +424,7 @@ namespace MultiZonePlayer
 					MLog.Log(null, "Script "+rule.Name+" values="+displayValues+" returned result=["+JSResult+"]");
 					string[] pairs = JSResult.Split(';');
 					string[] entry;
-					Metadata.ValueList vals = new Metadata.ValueList();
+					ValueList vals = new ValueList();
 
 					foreach (string pair in pairs)
 					{
@@ -444,7 +474,7 @@ namespace MultiZonePlayer
 				String res = "";
 				var zones = MZPState.Instance.ZoneDetails.OrderByDescending(x => x.LastMovementDate).ToList();
 
-				foreach (Metadata.ZoneDetails zone in zones)
+				foreach (ZoneDetails zone in zones)
 				{
 					res += zone.ZoneName + "-" + zone.ZoneId + ", Alarm=" + zone.LastAlarmMovementDateTime + ", Cam=" + zone.LastCamAlertDateTime + "<BR>";
 				}
@@ -464,13 +494,13 @@ namespace MultiZonePlayer
 
 		public String GetCmdValues(String methodname, String zoneid, String command, String htmldelimiter)
 		{
-			Metadata.ValueList vals = new Metadata.ValueList(Metadata.CommandSources.web);
+			ValueList vals = new ValueList(CommandSources.web);
 			//Metadata.ValueList resvalue;
-			Metadata.CommandResult resCmd=null;
+			CommandResult resCmd=null;
 			String result = "";
 
-			vals.Add(Metadata.GlobalParams.zoneid, zoneid);
-			vals.Add(Metadata.GlobalParams.command, command);
+			vals.Add(GlobalParams.zoneid, zoneid);
+			vals.Add(GlobalParams.command, command);
 
 
 			resCmd = API.DoCommandFromWeb(vals);//, out resvalue);
@@ -502,7 +532,7 @@ namespace MultiZonePlayer
 			return MZPState.Instance;
 		}
 
-		public Metadata.ZoneDetails Zones(String methodname, String zoneIdentifier)//zoneid or zonename
+		public ZoneDetails Zones(String methodname, String zoneIdentifier)//zoneid or zonename
 		{
 			int zoneId;
 			if (Int32.TryParse(zoneIdentifier, out zoneId))
@@ -511,13 +541,13 @@ namespace MultiZonePlayer
 				return MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.Equals(zoneIdentifier));
 		}
 
-		public Metadata.ZoneDetails FirstActiveZone(String methodname)
+		public ZoneDetails FirstActiveZone(String methodname)
 		{
-			List<Metadata.ZoneDetails> zones;
-			Metadata.ZoneDetails zone;
+			List<ZoneDetails> zones;
+			ZoneDetails zone;
 
 			zones = MZPState.Instance.ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList();
-			zone = zones.Find(x => x.IsActive == true && (x.ActivityType.Equals(Metadata.GlobalCommands.music) || x.ActivityType.Equals(Metadata.GlobalCommands.streammp3)));
+			zone = zones.Find(x => x.IsActive == true && (x.ActivityType.Equals(GlobalCommands.music) || x.ActivityType.Equals(GlobalCommands.streammp3)));
 			return zone;
 			/*String zonetype = zone!=null?zone.ActivityType.ToString():"status";//return status page if no active zone
 			return zonetype;
@@ -536,7 +566,7 @@ namespace MultiZonePlayer
 
 		public String ZoneMoveStatusAsColor(String methodname, String zoneid)
 		{
-			Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
+			ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
 			String color = "Transparent";
 			if (zone != null)
 			{
@@ -554,7 +584,7 @@ namespace MultiZonePlayer
 
 		public String GetZoneStatusAsColor(String methodname, String zoneid, String activity)
 		{
-			Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
+			ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
 			String color = "inherit";
 			if ((zone != null) && (zone.ActivityType.ToString().Equals(activity.ToLower())))
 			{

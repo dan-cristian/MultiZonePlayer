@@ -46,12 +46,12 @@ namespace MultiZonePlayer
             get { return m_controlDevice; }
             set { m_controlDevice = value; }
         }
-        private Metadata.ZoneDetails m_zoneDetails;
-        private List<Metadata.ZoneDetails> m_clonedZones;
+        private ZoneDetails m_zoneDetails;
+        private List<ZoneDetails> m_clonedZones;
         private static int m_recIndex = 0;
         private ZonesForm m_zoneForm;
 
-        public Metadata.ZoneDetails ZoneDetails
+        public ZoneDetails ZoneDetails
         {
             get { return m_zoneDetails; }
         }
@@ -67,7 +67,7 @@ namespace MultiZonePlayer
             m_zoneDetails = MZPState.Instance.GetZoneById(zoneId);
             this.m_sourceZoneId = zoneId;
 
-			m_clonedZones = new List<Metadata.ZoneDetails>();
+			m_clonedZones = new List<ZoneDetails>();
 
             //default user - all
             m_zoneUser = new Users("0","all","000");//SystemState.iniUserList["000"] as Users;
@@ -95,7 +95,7 @@ namespace MultiZonePlayer
         private void StopRemoveClonedZones()
         {
 			ZoneGeneric zone;
-            foreach (Metadata.ZoneDetails izone in m_clonedZones)
+            foreach (ZoneDetails izone in m_clonedZones)
             {
 				zone = MZPState.Instance.ActiveZones.Find(x => x.ZoneDetails.ZoneId == izone.ZoneId);
 				if (zone!=null && zone.MainZoneActivity != null) 
@@ -113,7 +113,7 @@ namespace MultiZonePlayer
                 StopRemoveClonedZones();
 
                 m_mainZoneActivity = new ZoneMusic(this);
-                m_zoneDetails.ActivityType = Metadata.GlobalCommands.music;
+                m_zoneDetails.ActivityType = GlobalCommands.music;
                 m_zoneDetails.IsActive = true;
                 
                 AddClonedZone(m_mainZoneActivity.ZoneDetails);
@@ -130,12 +130,12 @@ namespace MultiZonePlayer
             StopRemoveClonedZones();
 
 			ZoneGeneric clonesource = MZPState.Instance.ActiveZones.Find
-				(x => x.ZoneDetails.ActivityType == Metadata.GlobalCommands.musicclone);
+				(x => x.ZoneDetails.ActivityType == GlobalCommands.musicclone);
             if (clonesource != null)
 				m_mainZoneActivity = new ZoneMusicClone(this, ((ZoneMusicClone)clonesource.MainZoneActivity).CloneSourceZone);
             else
 				m_mainZoneActivity = new ZoneMusicClone(this, MZPState.Instance.GetFirstZoneMusic());
-            m_zoneDetails.ActivityType = Metadata.GlobalCommands.musicclone;
+            m_zoneDetails.ActivityType = GlobalCommands.musicclone;
             m_zoneDetails.IsActive = true;
         }
 
@@ -146,7 +146,7 @@ namespace MultiZonePlayer
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs["0"];
             m_mainZoneActivity = new ZoneRadio(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted());
-            m_zoneDetails.ActivityType = Metadata.GlobalCommands.radio;
+            m_zoneDetails.ActivityType = GlobalCommands.radio;
             m_zoneDetails.IsActive = true;
             m_mainZoneActivity.Play();
         }
@@ -156,7 +156,7 @@ namespace MultiZonePlayer
             MLog.Log(null, "Initialising mp3 VLC stream");
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             m_mainZoneActivity = new ZoneStreamVLC(m_zoneDetails);
-            m_zoneDetails.ActivityType = Metadata.GlobalCommands.streammp3;
+            m_zoneDetails.ActivityType = GlobalCommands.streammp3;
             m_zoneDetails.IsActive = true;
             //m_mainZoneActivity.Play();
         }
@@ -167,7 +167,7 @@ namespace MultiZonePlayer
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs[m_zoneDetails.ZoneId];
             m_mainZoneActivity = new ZoneMic(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted());
-            m_zoneDetails.ActivityType = Metadata.GlobalCommands.microphone;
+            m_zoneDetails.ActivityType = GlobalCommands.microphone;
             m_zoneDetails.IsActive = true;
         }
 
@@ -177,7 +177,7 @@ namespace MultiZonePlayer
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             //m_mainZoneActivity = new ZoneVideoVlc(this);
             m_mainZoneActivity = new ZoneVideoMPC(this);
-            m_zoneDetails.ActivityType = Metadata.GlobalCommands.video;
+            m_zoneDetails.ActivityType = GlobalCommands.video;
             m_zoneDetails.IsActive = true;
         }
 
@@ -187,7 +187,7 @@ namespace MultiZonePlayer
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             //m_mainZoneActivity = new ZoneVideoVlc(this);
             m_mainZoneActivity = new ZoneDisplayLG(this.ZoneDetails);
-            m_zoneDetails.ActivityType = Metadata.GlobalCommands.tv;
+            m_zoneDetails.ActivityType = GlobalCommands.tv;
             m_zoneDetails.IsActive = true;
         }
 
@@ -199,25 +199,25 @@ namespace MultiZonePlayer
 			if (m_zoneDetails.DisplayConnection != "")
 			{
 				m_mainZoneActivity = new ZonePlayerXBMC(this.ZoneDetails);
-				m_zoneDetails.ActivityType = Metadata.GlobalCommands.xbmc;
+				m_zoneDetails.ActivityType = GlobalCommands.xbmc;
 				m_zoneDetails.IsActive = true;
 			}
 			else
 				MLog.Log(this, "no display connection details, zone not initialised " + m_zoneDetails.ZoneName);
         }
         
-        public void ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
+        public void ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
         {
             //Metadata.ValueList result = new Metadata.ValueList();
-            String cmdSource = vals.GetValue(Metadata.GlobalParams.cmdsource);
-            Metadata.CommandSources cmdSourceEnum;
+            String cmdSource = vals.GetValue(GlobalParams.cmdsource);
+            CommandSources cmdSourceEnum;
             if (cmdSource == null)
             {
                 cmdSourceEnum = vals.CommandSource;
             }
             else
             {
-                cmdSourceEnum = (Metadata.CommandSources)Enum.Parse(typeof(Metadata.CommandSources), cmdSource);
+                cmdSourceEnum = (CommandSources)Enum.Parse(typeof(CommandSources), cmdSource);
             }
 
             //reset inactivity counter
@@ -231,11 +231,11 @@ namespace MultiZonePlayer
             switch (cmdRemote)
             {
                 #region commands without activity
-                case Metadata.GlobalCommands.cameraevent://video camera event
-					RecordMoveEvent(Metadata.MoveTypeEnum.Camera);
+                case GlobalCommands.cameraevent://video camera event
+					RecordMoveEvent(MoveTypeEnum.Camera);
 					
 					MZPState.Instance.ZoneEvents.AddCamAlert(vals);
-                    String camId = vals.GetValue(Metadata.GlobalParams.oid);
+                    String camId = vals.GetValue(GlobalParams.oid);
                     string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
                     MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, 
 						MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
@@ -244,86 +244,88 @@ namespace MultiZonePlayer
                    
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
-                        cmdRemote = Metadata.GlobalCommands.musicclone;
+                        cmdRemote = GlobalCommands.musicclone;
                     }
                     //TODO
                     break;
-                case Metadata.GlobalCommands.dismisscameraalert:
+                case GlobalCommands.dismisscameraalert:
                     MZPState.Instance.ZoneEvents.DismissAlert(vals);
                     break;
-                case Metadata.GlobalCommands.togglecameraalert:
+                case GlobalCommands.togglecameraalert:
                     MZPState.Instance.ZoneEvents.ToggleAlertStatus(vals);
                     break;
-                case Metadata.GlobalCommands.alarmevent://alarm sensor event
-					RecordMoveEvent(Metadata.MoveTypeEnum.Alarm);
-					String zonestate = vals.GetValue(Metadata.GlobalParams.status);
+                case GlobalCommands.alarmevent://alarm sensor event
+					RecordMoveEvent(MoveTypeEnum.Alarm);
+					String zonestate = vals.GetValue(GlobalParams.status);
                     m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());
-                    DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(Metadata.GlobalParams.datetime));
+                    DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(GlobalParams.datetime));
                     m_zoneDetails.LastAlarmMovementDateTime = eventDateTime;
 
                     MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
-                            vals.GetValue(Metadata.GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(Metadata.GlobalParams.status),
+                            vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(GlobalParams.status),
                             MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
 					
                     
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
-                        cmdRemote = Metadata.GlobalCommands.musicclone;
+                        cmdRemote = GlobalCommands.musicclone;
                     }
                     break;
-                case Metadata.GlobalCommands.setwaketimer:
-                    date = vals.GetValue(Metadata.GlobalParams.datetime);
-                    weekday = vals.GetValue(Metadata.GlobalParams.weekday);
+                case GlobalCommands.setwaketimer:
+                    date = vals.GetValue(GlobalParams.datetime);
+                    weekday = vals.GetValue(GlobalParams.weekday);
                     m_zoneDetails.WakeTime = date == null ? "" : date;
                     m_zoneDetails.WakeWeekDay = weekday == null ? "" : weekday;
                     break;
-                case Metadata.GlobalCommands.sleeptimer:
-                    date = vals.GetValue(Metadata.GlobalParams.datetime);
+                case GlobalCommands.sleeptimer:
+                    date = vals.GetValue(GlobalParams.datetime);
                     if (date.Equals(""))
                         m_zoneDetails.SleepHourMin = "";
                     else
                         m_zoneDetails.SleepHourMin = Convert.ToDateTime(date).ToString(IniFile.DATETIME_DAYHR_FORMAT);
                     
                     break;
-                case Metadata.GlobalCommands.micrecord:
+                case GlobalCommands.micrecord:
                     m_recIndex++;
                     Utilities.WriteBinaryFile("\\webroot\\direct\\zone" + m_zoneDetails.ZoneId + "_" + m_recIndex + ".wav", vals.BinaryData);
                     break;
-                case Metadata.GlobalCommands.micplay:
+                case GlobalCommands.micplay:
                     InitZoneMusic();
                     ZoneMusic music = (ZoneMusic)m_mainZoneActivity;
                     music.Play(IniFile.CurrentPath() + "\\webroot\\direct\\zone" + m_zoneDetails.ZoneId + "_" + m_recIndex + ".wav");
                     break;
-                case Metadata.GlobalCommands.zonearm:
-                case Metadata.GlobalCommands.zonedisarm:
-                    m_zoneDetails.IsArmed = (cmdRemote == Metadata.GlobalCommands.zonearm);
+                case GlobalCommands.zonearm:
+                case GlobalCommands.zonedisarm:
+                    m_zoneDetails.IsArmed = (cmdRemote == GlobalCommands.zonearm);
 					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " armed status=" + m_zoneDetails.IsArmed;
                     break;
-                case Metadata.GlobalCommands.powercycle:
+                case GlobalCommands.powercycle:
                     MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
-                    Thread.Sleep(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.interval)));
+                    Thread.Sleep(Convert.ToInt16(vals.GetValue(GlobalParams.interval)));
                     MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
                     break;
-				case Metadata.GlobalCommands.poweron:
+				case GlobalCommands.poweron:
 					MLog.Log(this, "Permanent power ON zone="+m_zoneDetails.ZoneName);
 					m_zoneDetails.RequirePower = true;
 					MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+					cmdresult.OutputMessage += "power on ok";
 					break;
-				case Metadata.GlobalCommands.poweroff:
+				case GlobalCommands.poweroff:
 					MLog.Log(this, "Permanent power OFF zone=" + m_zoneDetails.ZoneName);
 					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
 					m_zoneDetails.RequirePower = false;
+					cmdresult.OutputMessage += "power off ok";
 					break;
-				case Metadata.GlobalCommands.closure:
-					IoEvent(vals.GetValue(Metadata.GlobalParams.id),
-						vals.GetValue(Metadata.GlobalParams.iscontactmade).ToLower()=="true");
+				case GlobalCommands.closure:
+					IoEvent(vals.GetValue(GlobalParams.id),
+						vals.GetValue(GlobalParams.iscontactmade).ToLower()=="true");
 					break;
-				case Metadata.GlobalCommands.closurearm:
-				case Metadata.GlobalCommands.closuredisarm:	
-					m_zoneDetails.IsClosureArmed = (cmdRemote == Metadata.GlobalCommands.closurearm);
+				case GlobalCommands.closurearm:
+				case GlobalCommands.closuredisarm:	
+					m_zoneDetails.IsClosureArmed = (cmdRemote == GlobalCommands.closurearm);
 					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " closure armed status=" + m_zoneDetails.IsClosureArmed;
 					break;
-                case Metadata.GlobalCommands.notifyuser:
+                case GlobalCommands.notifyuser:
 					bool needsPower = m_zoneDetails.RequirePower;
 					m_zoneDetails.RequirePower = true;
 					if (!MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId))
@@ -331,7 +333,7 @@ namespace MultiZonePlayer
 						MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 						System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
 					}
-					string sourcezoneid = vals.GetValue(Metadata.GlobalParams.sourcezoneid);
+					string sourcezoneid = vals.GetValue(GlobalParams.sourcezoneid);
 					string file = IniFile.CurrentPath()+ IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1].Replace("x",sourcezoneid);
 					if (!System.IO.File.Exists(file))
 						file = IniFile.CurrentPath()+IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1];
@@ -342,13 +344,13 @@ namespace MultiZonePlayer
 				#endregion
                 default:
                     
-                    action = vals.GetValue(Metadata.GlobalParams.action);
+                    action = vals.GetValue(GlobalParams.action);
                     ZoneMusic zMusic;
                     switch (cmdRemote)
                     {
                         #region Zone init commands
-                        case Metadata.GlobalCommands.music:
-                        case Metadata.GlobalCommands.musicalarm:
+                        case GlobalCommands.music:
+                        case GlobalCommands.musicalarm:
                             //if cmd is music, if not on Music already stop current activity and init Music
                             if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneMusic)))
                             {
@@ -370,19 +372,19 @@ namespace MultiZonePlayer
                             {
                                 switch (cmdRemote)
                                 {
-                                    case Metadata.GlobalCommands.musicalarm:
+                                    case GlobalCommands.musicalarm:
                                         if (!zMusic.IsAlarm)//(!m_mainZoneActivity.GetState().Equals(Metadata.ZoneState.Running))
                                         {
                                             zMusic.IsAlarm = true;
                                             //set musicalarm mood if exists
-                                            MoodMusic mood = MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(Metadata.GlobalCommands.musicalarm.ToString()));
+                                            MoodMusic mood = MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(GlobalCommands.musicalarm.ToString()));
                                             if (mood != null) zMusic.SetMood(mood);
                                             m_mainZoneActivity.Play();
                                         }
                                         break;
-                                    case Metadata.GlobalCommands.music://play once opened unless is playing, cmd is from web or explicit play
-                                        if (zMusic.GetState() != Metadata.ZoneState.Running
-                                            && (!cmdSourceEnum.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))))
+                                    case GlobalCommands.music://play once opened unless is playing, cmd is from web or explicit play
+                                        if (zMusic.GetState() != ZoneState.Running
+                                            && (!cmdSourceEnum.Equals(CommandSources.web) || (action != null && action.Equals(GlobalCommands.play.ToString()))))
                                             zMusic.Play();
                                         break;
                                 }
@@ -390,8 +392,8 @@ namespace MultiZonePlayer
                             break;
 
 
-                        case Metadata.GlobalCommands.streammp3:
-                        case Metadata.GlobalCommands.radio:
+                        case GlobalCommands.streammp3:
+                        case GlobalCommands.radio:
                             //check if is stream cmd
                             if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneStreamVLC)))
                             {
@@ -401,7 +403,7 @@ namespace MultiZonePlayer
                             if (m_mainZoneActivity == null)
                                 InitZoneStreamVLC();
 
-                            if (!vals.CommandSource.Equals(Metadata.CommandSources.web) || (action != null && action.Equals(Metadata.GlobalCommands.play.ToString())))
+                            if (!vals.CommandSource.Equals(CommandSources.web) || (action != null && action.Equals(GlobalCommands.play.ToString())))
                                 m_mainZoneActivity.Play();
                             break;
                         /*
@@ -432,9 +434,9 @@ namespace MultiZonePlayer
                         break;
                         */
                         //check if photo (clone zone)
-                        case Metadata.GlobalCommands.photo:
-						case Metadata.GlobalCommands.back:
-                        case Metadata.GlobalCommands.musicclone:
+                        case GlobalCommands.photo:
+						case GlobalCommands.back:
+                        case GlobalCommands.musicclone:
 							if (MZPState.Instance.GetFirstZoneMusic()!=null && !this.Equals(MZPState.Instance.GetFirstZoneMusic()))//cannot clone myself
 							{
 								if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneMusicClone)))
@@ -451,7 +453,7 @@ namespace MultiZonePlayer
 
 
                         //check if TV
-                        case Metadata.GlobalCommands.tv:
+                        case GlobalCommands.tv:
                             if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneDisplayLG)))
                             {
                                 m_mainZoneActivity.Close();
@@ -461,13 +463,13 @@ namespace MultiZonePlayer
                             if (m_mainZoneActivity == null)
                                 InitZoneDisplayTV();
 
-                            if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))
+                            if (action != null && action.Equals(GlobalCommands.play.ToString()))
                                 m_mainZoneActivity.Play();
                             break;
 
                         //check if XBMC
-                        case Metadata.GlobalCommands.xbmc:
-                        case Metadata.GlobalCommands.video:
+                        case GlobalCommands.xbmc:
+                        case GlobalCommands.video:
                             if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZonePlayerXBMC)))
                             {
                                 m_mainZoneActivity.Close();
@@ -480,7 +482,7 @@ namespace MultiZonePlayer
 							else
 								MLog.Log(this, "Not initialising the video due to missing video player on zone=" + m_zoneDetails.ZoneName);
 
-                            if (action != null && action.Equals(Metadata.GlobalCommands.play.ToString()))
+                            if (action != null && action.Equals(GlobalCommands.play.ToString()))
                                 m_mainZoneActivity.Play();
                             break;
                         default:
@@ -496,46 +498,46 @@ namespace MultiZonePlayer
                         switch (cmdRemote)
                         {
                             #region Generic commands
-                            case Metadata.GlobalCommands.play:
+                            case GlobalCommands.play:
                                 m_mainZoneActivity.Play();
                                 break;
-                            case Metadata.GlobalCommands.stop:
+                            case GlobalCommands.stop:
                                 m_mainZoneActivity.Stop();
                                 //foreach (m_
                                 break;
-                            case Metadata.GlobalCommands.pause:
+                            case GlobalCommands.pause:
                                 m_mainZoneActivity.Pause();
                                 break;
-                            case Metadata.GlobalCommands.next:
+                            case GlobalCommands.next:
                                 m_mainZoneActivity.Next();
                                 break;
-                            case Metadata.GlobalCommands.previous:
+                            case GlobalCommands.previous:
                                 m_mainZoneActivity.Previous();
                                 break;
 
-                            case Metadata.GlobalCommands.mute:
+                            case GlobalCommands.mute:
                                 m_mainZoneActivity.Mute();
                                 break;
-                            case Metadata.GlobalCommands.chup:
-                            case Metadata.GlobalCommands.volumeup:
+                            case GlobalCommands.chup:
+                            case GlobalCommands.volumeup:
                                 m_mainZoneActivity.VolumeUp();
-                                if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                                if (cmdSourceEnum.Equals(CommandSources.mobileslow))
                                 {
                                     m_mainZoneActivity.VolumeUp();
                                 }
                                 break;
-                            case Metadata.GlobalCommands.chdown:
-                            case Metadata.GlobalCommands.volumedown:
+                            case GlobalCommands.chdown:
+                            case GlobalCommands.volumedown:
                                 m_mainZoneActivity.VolumeDown();
-                                if (cmdSourceEnum.Equals(Metadata.CommandSources.mobileslow))
+                                if (cmdSourceEnum.Equals(CommandSources.mobileslow))
                                 {
                                     m_mainZoneActivity.VolumeDown();
                                 }
                                 break;
-                            case Metadata.GlobalCommands.volumeset:
-                                m_mainZoneActivity.SetVolumeLevel(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.volumelevel)));
+                            case GlobalCommands.volumeset:
+                                m_mainZoneActivity.SetVolumeLevel(Convert.ToInt16(vals.GetValue(GlobalParams.volumelevel)));
                                 break;
-                            case Metadata.GlobalCommands.guide:
+                            case GlobalCommands.guide:
                                 m_mainZoneActivity.Guide();
                                 break;
                             #endregion
@@ -563,13 +565,13 @@ namespace MultiZonePlayer
 
                                     switch (cmdRemote)
                                     {
-                                        case Metadata.GlobalCommands.enter://for numpads
+                                        case GlobalCommands.enter://for numpads
                                             zStream.Next();
                                             break;
-                                        case Metadata.GlobalCommands.right:
+                                        case GlobalCommands.right:
                                             m_mainZoneActivity.NextPlaylist();
                                             break;
-                                        case Metadata.GlobalCommands.left:
+                                        case GlobalCommands.left:
                                             m_mainZoneActivity.PreviousPlaylist();
                                             break;
                                     }
@@ -593,28 +595,28 @@ namespace MultiZonePlayer
                                     ZoneVideoMPC zVideo = (ZoneVideoMPC)m_mainZoneActivity;
                                     switch (cmdRemote)
                                     {
-                                        case Metadata.GlobalCommands.fullscreen:
+                                        case GlobalCommands.fullscreen:
                                             zVideo.GoToFullScreen();
                                             break;
-                                        case Metadata.GlobalCommands.down:
+                                        case GlobalCommands.down:
                                             zVideo.VideoSelectionDown();
                                             break;
-                                        case Metadata.GlobalCommands.up:
+                                        case GlobalCommands.up:
                                             zVideo.VideoSelectionUp();
                                             break;
-                                        case Metadata.GlobalCommands.right:
+                                        case GlobalCommands.right:
                                             zVideo.NextSearchCriteria();
                                             break;
-                                        case Metadata.GlobalCommands.left:
+                                        case GlobalCommands.left:
                                             zVideo.PreviousSearchCriteria();
                                             break;
-                                        case Metadata.GlobalCommands.enter:
+                                        case GlobalCommands.enter:
                                             zVideo.ToggleSearchCriteria();
                                             break;
-                                        case Metadata.GlobalCommands.ffwd:
+                                        case GlobalCommands.ffwd:
                                             zVideo.Ffwd();
                                             break;
-                                        case Metadata.GlobalCommands.rewind:
+                                        case GlobalCommands.rewind:
                                             zVideo.Rewind();
                                             break;
                                     }
@@ -652,18 +654,18 @@ namespace MultiZonePlayer
             }
         }
 
-		public List<Metadata.ZoneDetails> GetClonedZones()
+		public List<ZoneDetails> GetClonedZones()
         {
             return m_clonedZones;
             //return m_zoneDetails.OutputDevice;
         }
 
-        public void AddClonedZone(Metadata.ZoneDetails zone)
+        public void AddClonedZone(ZoneDetails zone)
         {
             m_clonedZones.Add(zone);
         }
 
-        public void RemoveClonedZone(Metadata.ZoneDetails zone)
+        public void RemoveClonedZone(ZoneDetails zone)
         {
             m_clonedZones.Remove(zone);
         }
@@ -709,23 +711,23 @@ namespace MultiZonePlayer
 
 		private void ZoneOpenActions()
 		{
-			if ((m_zoneDetails.NotifyZoneEventTriggered == Metadata.ZoneNotifyState.Closed)
+			if ((m_zoneDetails.NotifyZoneEventTriggered == ZoneNotifyState.Closed)
 				|| (DateTime.Now.Subtract(m_zoneDetails.LastNotifyZoneEventTriggered).TotalHours>1))
 			{
 				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-open-" + m_zoneDetails.ZoneId + ".bat",
 					System.Diagnostics.ProcessWindowStyle.Hidden);
-				m_zoneDetails.NotifyZoneEventTriggered = Metadata.ZoneNotifyState.Open;
+				m_zoneDetails.NotifyZoneEventTriggered = ZoneNotifyState.Open;
 				m_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}
 		}
 
-		public static void ZoneInactiveActions(Metadata.ZoneDetails p_zoneDetails)
+		public static void ZoneInactiveActions(ZoneDetails p_zoneDetails)
 		{
-			if (p_zoneDetails.NotifyZoneEventTriggered == Metadata.ZoneNotifyState.Open)
+			if (p_zoneDetails.NotifyZoneEventTriggered == ZoneNotifyState.Open)
 			{
 				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-close-" + p_zoneDetails.ZoneId + ".bat",
 					System.Diagnostics.ProcessWindowStyle.Hidden);
-				p_zoneDetails.NotifyZoneEventTriggered = Metadata.ZoneNotifyState.Closed;
+				p_zoneDetails.NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 				p_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}
 		}
@@ -734,26 +736,26 @@ namespace MultiZonePlayer
 		{
 			//if (isContactMade)
 			MLog.Log(this, "IoEvent zone="+m_zoneDetails.ZoneName+" key="+key + " contactmade="+isContactMade);
-			Metadata.ClosureOpenCloseRelay lastState = m_zoneDetails.ClosureOpenCloseRelay;
+			ClosureOpenCloseRelay lastState = m_zoneDetails.ClosureOpenCloseRelay;
 			if (lastState == null)
 			{
-				lastState = new Metadata.ClosureOpenCloseRelay(isContactMade);
+				lastState = new ClosureOpenCloseRelay(isContactMade);
 				m_zoneDetails.ClosureOpenCloseRelay = lastState;
 			}
 			else
 			{
-				if (m_zoneDetails.ClosureOpenCloseRelay.RelayType != Metadata.ClosureOpenCloseRelay.EnumRelayType.Button)
+				if (m_zoneDetails.ClosureOpenCloseRelay.RelayType != ClosureOpenCloseRelay.EnumRelayType.Button)
 					if (lastState.RelayState == m_zoneDetails.ClosureOpenCloseRelay.GetRelayState(isContactMade))
 						return;//return if state does not change, for closures, not buttons
 				lastState.RelayContactMade = isContactMade;
 			}
 			
-			RecordMoveEvent(Metadata.MoveTypeEnum.Closure);
+			RecordMoveEvent(MoveTypeEnum.Closure);
 
 			string message = "Closure state " + key + " is " + lastState.RelayState + " on zone " + m_zoneDetails.ZoneName;
 			MLog.Log(this, message);
 			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString());
-			if (lastState.RelayState == Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed)
+			if (lastState.RelayState == ClosureOpenCloseRelay.EnumState.ContactClosed)
 			{
 				MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message, MZPEvent.EventType.Security,
 					MZPEvent.EventImportance.Informative, m_zoneDetails);
@@ -761,19 +763,19 @@ namespace MultiZonePlayer
 			m_zoneDetails.MovementAlert = false;
 		}
 
-		private void RecordMoveEvent(Metadata.MoveTypeEnum moveType)
+		private void RecordMoveEvent(MoveTypeEnum moveType)
 		{
 			ZoneOpenActions();
 
 			switch (moveType)
 			{
-				case Metadata.MoveTypeEnum.Closure:
+				case MoveTypeEnum.Closure:
 					m_zoneDetails.ClosureCounts++;
 					m_zoneDetails.LastClosureEventDateTime = DateTime.Now;
 					break;
-				case Metadata.MoveTypeEnum.Camera:
+				case MoveTypeEnum.Camera:
 					break;
-				case Metadata.MoveTypeEnum.Alarm:
+				case MoveTypeEnum.Alarm:
 					break;
 				default:
 					MLog.Log(this, "Warning unknown move event");
@@ -812,8 +814,8 @@ namespace MultiZonePlayer
 
                 //close if no recent activity detected on an active zone
                 if (m_zoneDetails.HasPastActivity && m_zoneDetails.IsActive 
-					&& !m_zoneDetails.ActivityType.Equals(Metadata.GlobalCommands.nul)
-					&& !m_zoneDetails.ActivityType.Equals(Metadata.GlobalCommands.xbmc))
+					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.nul)
+					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.xbmc))
                 {
                     MLog.Log(this, "Zone " + m_zoneDetails.ZoneName + 
 						" closed due to inactivity, activity="+m_zoneDetails.ActivityType.ToString());

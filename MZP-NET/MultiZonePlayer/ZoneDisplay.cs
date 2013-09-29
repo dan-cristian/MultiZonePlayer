@@ -24,7 +24,7 @@ namespace MultiZonePlayer
             
         }
 
-        public ZoneDisplayLG(Metadata.ZoneDetails p_zoneDetails)
+        public ZoneDisplayLG(ZoneDetails p_zoneDetails)
         {
             m_zoneDetails = p_zoneDetails;
 
@@ -98,13 +98,13 @@ namespace MultiZonePlayer
         }
 
 
-		public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
+		public ValueList ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
         {
-            Metadata.ValueList result = new Metadata.ValueList();
-            String action = action = vals.GetValue(Metadata.GlobalParams.action);
+            ValueList result = new ValueList();
+            String action = action = vals.GetValue(GlobalParams.action);
             switch (cmdRemote)
             {
-                case Metadata.GlobalCommands.tvsetinput:
+                case GlobalCommands.tvsetinput:
                     Input = action;
                     break;
                 default:
@@ -126,7 +126,7 @@ namespace MultiZonePlayer
                 
                 if (m_isOn)
                 {
-                    m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
+                    m_zoneDetails.ZoneState = ZoneState.Running;
                     m_zoneDetails.IsActive = true;
                     m_zoneDetails.RequirePower = m_inputType == DisplayLGTV.InputTypeEnum.HDMI;
 
@@ -139,7 +139,7 @@ namespace MultiZonePlayer
                 }
                 else
                 {
-                    m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
+                    m_zoneDetails.ZoneState = ZoneState.NotStarted;
                     m_zoneDetails.IsActive = false;
                     m_zoneDetails.RequirePower = false;
                     MLog.Log(this, "DisplayTV is off");

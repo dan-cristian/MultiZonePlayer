@@ -63,7 +63,7 @@ namespace MultiZonePlayer
             auxPlayer.SetVolume(volume);
         }
 
-        public override Metadata.ZoneState GetState()
+        public override ZoneState GetState()
         {
             return auxPlayer.GetState();
         }
@@ -72,7 +72,7 @@ namespace MultiZonePlayer
 
         public override bool IsActive()
         {
-            return (auxPlayer.GetState() == Metadata.ZoneState.Running);
+            return (auxPlayer.GetState() == ZoneState.Running);
         }
 
         public override void Next()

@@ -5,255 +5,96 @@ using System.Text;
 
 using System.Linq;
 using System.Reflection;
+using fastJSON;
 
 namespace MultiZonePlayer
 {
-
-
     /*
      * Interface collection of classes used for mobile client comm 
      */
-	public interface RuleEngineInterface
+	public enum GlobalCommandsUniversal
 	{
-		
+		volumedown = GlobalCommands.volumedown,
+		volumeup = GlobalCommands.volumeup,
+		mute = GlobalCommands.mute,
+		chup = GlobalCommands.chup,
+		chdown = GlobalCommands.chdown,
+		enter = GlobalCommands.enter,
+		next = GlobalCommands.next,
+		previous = GlobalCommands.previous,
+		stop = GlobalCommands.stop,
+		up = GlobalCommands.up,
+		down = GlobalCommands.down,
+		right = GlobalCommands.right,
+		left = GlobalCommands.left,
 	}
 
-    public class Metadata
-    {
-        //public static String ERR = "NotOK";
-        //public static String OK = "OK";
-        public enum ResultEnum
-        {
-            ERR,
-            OK
-        }
+	public enum CommandSources
+	{
+		web,
+		rawinput,
+		gui,
+		events,
+		mobileslow,
+		system,
+		messenger
+	}
 
-        public enum GlobalCommands
-        {
-            nul,
-            k0,
-            k1,
-            k2,
-            k3,
-            k4,
-            k5,
-            k6,
-            k7,
-            k8,
-            k9,
-            help,
-            status,
-            selectzone,
-            sleep,
-            shutdown,
-            music,
-            video,
-            tv,
-            xbmc,
-            play,
-            stop,
-            pause,
-            next,
-            previous,
-            rewind,
-            ffwd,
-            up,
-            down,
-            left,
-            right,
-            volumeset,
-            volumedown,
-            volumeup,
-            mute,
-            repeat,
-            fullscreen,
-            ratingset,
-            enter,
-            record,
-            guide,
-            chup,
-            chdown,
-            photo,
-            dvd,
-            radio,
-            streammp3,
-            back,
-            musicclone,
-            microphone,
-            genrelist,
-            setgenrelist,
-            sleeptimer,
-            artistlist,
-            setartistlist,
-            setwaketimer,
-            medialist,
-            setmediaitem,
-            cameraevent,
-            dismisscameraalert,
-            togglecameraalert,
-            setmoodmusic,
-            getmoodmusiclist,
-            searchmediaitem,
-            musicalarm,
-            alarmevent,
-            alarmarm,
-            alarmdisarm,
-            alarmkeypadbeep,
-            alarmstay,
-            alarmautoarm,
-            micrecord,
-            micplay,
-            followmemusic,
-            restartispy,
-            restartwinload,
-            holdcriteria,
-            setnotify,
-            restartsystem,
-            sendsms,
-            zonearm,
-            zonedisarm,
-            makebuzz,
-            powerevent,
-            tvsetinput,
-            powercycle,
-			remotepoweron,
-			remotepoweroff,
-			remoteadjustdim,
-			getpicture,
-			macro,
-			rfxcmd,
-			r,//repeat last command
-			notifyuser,
-			closure,
-			closurearm,
-			closuredisarm,
-			runscript,
-			poweron,
-			poweroff
-        }
-        public enum GlobalParams
-        {
-            command,
-            zoneid,
-			sourcezoneid,
-            zonename,
-            msg,
-            result,
-            selectedindex,
-            datetime,
-            volumelevel,
-            ratingvalue,
-            indexarray,
-            activity,
-            alertsource,
-            alertindex,
-            oid,//=camid
-            pass,
-            searchvalue,
-            action,
-            scope,
-            status,
-            areaid,
-            weekday,
-            cmdsource,
-			contenttype,
-			count,
-			interval,
-			face,
-			remoteid,
-			moodname,
-			moodindex,
-			dimvalue,
-			singleparamvalue,
-			id,iscontactmade,
-			name,
-			r//random no
-        }
-
-        public enum GlobalCommandsUniversal
-        {
-            volumedown = GlobalCommands.volumedown,
-            volumeup = GlobalCommands.volumeup,
-            mute = GlobalCommands.mute,
-            chup = GlobalCommands.chup,
-            chdown = GlobalCommands.chdown,
-            enter = GlobalCommands.enter,
-            next = GlobalCommands.next,
-            previous = GlobalCommands.previous,
-            stop = GlobalCommands.stop,
-            up = GlobalCommands.up,
-            down = GlobalCommands.down,
-            right = GlobalCommands.right,
-            left = GlobalCommands.left,
-        }
-
-        public enum CommandSources
-        {
-            web,
-            rawinput,
-            gui,
-            events,
-            mobileslow,
-            system,
-			messenger
-        }
-
-        public class CommandSyntax
-        {
-            GlobalCommands Command;
-            List<GlobalParams> Params;
+	public class CommandSyntax
+	{
+		GlobalCommands Command;
+		List<GlobalParams> Params;
             
-            public CommandSyntax(GlobalCommands command)
-            {
-                Command = command;
-            }
+		public CommandSyntax(GlobalCommands command)
+		{
+			Command = command;
+		}
 
-            public CommandSyntax(GlobalCommands command, params GlobalParams[] parameters)
-            {
-                Command = command;
-                Params = new List<GlobalParams>();
-                foreach (GlobalParams param in parameters)
-                {
-                    Params.Add(param);
-                }
-            }
+		public CommandSyntax(GlobalCommands command, params GlobalParams[] parameters)
+		{
+			Command = command;
+			Params = new List<GlobalParams>();
+			foreach (GlobalParams param in parameters)
+			{
+				Params.Add(param);
+			}
+		}
 
-            public static Boolean Validate(ValueList vals)
-            {
-                String cmdName = vals.GetValue(Metadata.GlobalParams.command);
-                if (Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName))
-                {
-                    Metadata.GlobalCommands apicmd = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), cmdName);
-                    CommandSyntax cmdSynt = SystemCommands.Find(x => x.Command.Equals(apicmd));
-                    if (cmdSynt != null)
-                    {
-                        foreach (GlobalParams param in cmdSynt.Params)
-                        {
-                            if (vals.GetValue(param) == null)
-                            {
-                                MLog.Log(null, "Expected parameter not found in cmd=" + cmdName + " param=" + param.ToString());
-                                return false;
-                            }
-                        }
-                        return true;
-                    }
-                    else
-                        return true;//cmd without parameters
-                }
-                else MLog.Log(null, "Invalid command=" + cmdName);
-                return false;
-            }
-        }
+		public static Boolean Validate(ValueList vals)
+		{
+			String cmdName = vals.GetValue(GlobalParams.command);
+			if (Enum.IsDefined(typeof(GlobalCommands), cmdName))
+			{
+				GlobalCommands apicmd = (GlobalCommands)Enum.Parse(typeof(GlobalCommands), cmdName);
+				CommandSyntax cmdSynt = SystemCommands.Find(x => x.Command.Equals(apicmd));
+				if (cmdSynt != null)
+				{
+					foreach (GlobalParams param in cmdSynt.Params)
+					{
+						if (vals.GetValue(param) == null)
+						{
+							MLog.Log(null, "Expected parameter not found in cmd=" + cmdName + " param=" + param.ToString());
+							return false;
+						}
+					}
+					return true;
+				}
+				else
+					return true;//cmd without parameters
+			}
+			else MLog.Log(null, "Invalid command=" + cmdName);
+			return false;
+		}
 
-        public static List<CommandSyntax> SystemCommands = new List<CommandSyntax>(){
-            new CommandSyntax(GlobalCommands.alarmarm,          GlobalParams.areaid),
-            new CommandSyntax(GlobalCommands.alarmdisarm,       GlobalParams.areaid),
-            new CommandSyntax(GlobalCommands.alarmevent,        GlobalParams.status, GlobalParams.datetime),
-            new CommandSyntax(GlobalCommands.alarmkeypadbeep,   GlobalParams.areaid),
-            new CommandSyntax(GlobalCommands.alarmstay,         GlobalParams.areaid),
-            new CommandSyntax(GlobalCommands.volumeset,         GlobalParams.volumelevel),
-            new CommandSyntax(GlobalCommands.ratingset,         GlobalParams.ratingvalue),
-            new CommandSyntax(GlobalCommands.remotepoweron,		GlobalParams.remoteid),
+		public static List<CommandSyntax> SystemCommands = new List<CommandSyntax>(){
+			new CommandSyntax(GlobalCommands.alarmarm,          GlobalParams.areaid),
+			new CommandSyntax(GlobalCommands.alarmdisarm,       GlobalParams.areaid),
+			new CommandSyntax(GlobalCommands.alarmevent,        GlobalParams.status, GlobalParams.datetime),
+			new CommandSyntax(GlobalCommands.alarmkeypadbeep,   GlobalParams.areaid),
+			new CommandSyntax(GlobalCommands.alarmstay,         GlobalParams.areaid),
+			new CommandSyntax(GlobalCommands.volumeset,         GlobalParams.volumelevel),
+			new CommandSyntax(GlobalCommands.ratingset,         GlobalParams.ratingvalue),
+			new CommandSyntax(GlobalCommands.remotepoweron,		GlobalParams.remoteid),
 			new CommandSyntax(GlobalCommands.remotepoweroff,	GlobalParams.remoteid),
 			new CommandSyntax(GlobalCommands.remoteadjustdim,	GlobalParams.remoteid, GlobalParams.dimvalue),
 			new CommandSyntax(GlobalCommands.rfxcmd,			GlobalParams.action),
@@ -263,7 +104,7 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.closure,			GlobalParams.id, GlobalParams.iscontactmade),
 			new CommandSyntax(GlobalCommands.poweron,			GlobalParams.zonename),
 			new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename)
-            /*
+			/*
             genrelist,
             setgenrelist,
             sleeptimer,
@@ -301,1167 +142,1380 @@ namespace MultiZonePlayer
             tvsetinput,
             powercycle
              */
-        };
+		};
+	}
 
-        public class CommandResult
-        {
-			public string Command;
-			public string User;
-            public ResultEnum Result;
-            public String ErrorMessage = "";
-			public String OutputMessage = "";
-            public ServerStatus ServerStatus;
-            public ValueList ValueList;
+	public enum GlobalParams
+	{
+		command,
+		zoneid,
+		sourcezoneid,
+		zonename,
+		msg,
+		result,
+		selectedindex,
+		datetime,
+		volumelevel,
+		ratingvalue,
+		indexarray,
+		activity,
+		alertsource,
+		alertindex,
+		oid,//=camid
+		pass,
+		searchvalue,
+		action,
+		scope,
+		status,
+		areaid,
+		weekday,
+		cmdsource,
+		contenttype,
+		count,
+		interval,
+		face,
+		remoteid,
+		moodname,
+		moodindex,
+		dimvalue,
+		singleparamvalue,
+		id,iscontactmade,
+		name,
+		r//random no
+	}
 
-            public CommandResult()
-            {
-            }
+	public class CommandResult
+	{
+		public string Command;
+		public string User;
+		public ResultEnum Result;
+		public String ErrorMessage = "";
+		public String OutputMessage = "";
+		public ServerStatus ServerStatus;
+		public ValueList ValueList;
 
-            public CommandResult(ResultEnum p_result, String outputMessage, String errorMessage)
-            {
-                Result = p_result;
-                ErrorMessage = errorMessage;
-				OutputMessage = outputMessage;
-            }
+		public CommandResult()
+		{
+		}
 
-			public string ValuesToString()
+		public CommandResult(ResultEnum p_result, String outputMessage, String errorMessage)
+		{
+			Result = p_result;
+			ErrorMessage = errorMessage;
+			OutputMessage = outputMessage;
+		}
+
+		public string ValuesToString()
+		{
+			String result = "";
+			if (ValueList != null)
 			{
-				String result = "";
-				if (ValueList != null)
+				if (ValueList.Keys != null)
 				{
-					if (ValueList.Keys != null)
+					result += " Keys:";
+					foreach (string key in ValueList.Keys)
 					{
-						result += " Keys:";
-						foreach (string key in ValueList.Keys)
-						{
-							result += key + "=" + ValueList.GetValue(key) + ";";
-						}
-					}
-					if (ValueList.IndexValueList != null)
-					{
-						result += " Vals:";
-						foreach (string value in ValueList.IndexValueList)
-						{
-							result += value + ",";
-						}
+						result += key + "=" + ValueList.GetValue(key) + ";";
 					}
 				}
+				if (ValueList.IndexValueList != null)
+				{
+					result += " Vals:";
+					foreach (string value in ValueList.IndexValueList)
+					{
+						result += value + ",";
+					}
+				}
+			}
 				 
 				
-				return result;
-			}
+			return result;
+		}
 
-			public override String ToString()
-			{
-				string result = "Out=" + OutputMessage;
-				if (ErrorMessage != "") result += " Err=" + ErrorMessage;
-				if (ValueList != null) result += ValuesToString();
-				return result;
-			}
-        }
+		public override String ToString()
+		{
+			string result = "Out=" + OutputMessage;
+			if (ErrorMessage != "") result += " Err=" + ErrorMessage;
+			if (ValueList != null) result += " "+ValuesToString();
+			return result;
+		}
+	}
 
-        public class ValueList
-        {
+	public class ValueList
+	{
             
-            public List<String> Values;
-            public List<String> Keys;
-            public List<String> IndexList;
-            public List<String> IndexValueList;
-            public CommandSources CommandSource;
+		public List<String> Values;
+		public List<String> Keys;
+		public List<String> IndexList;
+		public List<String> IndexValueList;
+		public CommandSources CommandSource;
             
-            public byte[] BinaryData;
+		public byte[] BinaryData;
 
-            public ValueList()
-            {
-                Values = new List<String>();
-                Keys = new List<String>();
-            }
+		public ValueList()
+		{
+			Values = new List<String>();
+			Keys = new List<String>();
+		}
 
-            public ValueList(CommandSources source)
-            {
-                Values = new List<String>();
-                Keys = new List<String>();
-                CommandSource = source;
-            }
+		public ValueList(CommandSources source)
+		{
+			Values = new List<String>();
+			Keys = new List<String>();
+			CommandSource = source;
+		}
 
-            /*public ValueList(String firstParamValue)
+		/*public ValueList(String firstParamValue)
             {
                 Values = new List<String>();
                 Values.Add(firstParamValue);
             }*/
 
-            public ValueList(GlobalParams firstParamKey, String firstParamValue, CommandSources source)
-            {
-                Values = new List<String>();
-                Keys = new List<String>();
-                Values.Add(firstParamValue);
-                Keys.Add(firstParamKey.ToString());
-                CommandSource = source;
-            }
+		public ValueList(GlobalParams firstParamKey, String firstParamValue, CommandSources source)
+		{
+			Values = new List<String>();
+			Keys = new List<String>();
+			Values.Add(firstParamValue);
+			Keys.Add(firstParamKey.ToString());
+			CommandSource = source;
+		}
 
-            /*
+		/*
             public void Add(String value)
             {
                 Values.Add(value);
             }*/
 
-            public void Add(GlobalParams key, String value)
-            {
-                if (Values.Count == Keys.Count)
-                {
-                    Values.Add(value);
-                    Keys.Add(key.ToString());
-                }
-                else
-                    throw new Exception("Number of values is not equal to number of ids, incorrect use");
-            }
+		public void Add(GlobalParams key, String value)
+		{
+			if (Values.Count == Keys.Count)
+			{
+				Values.Add(value);
+				Keys.Add(key.ToString());
+			}
+			else
+				throw new Exception("Number of values is not equal to number of ids, incorrect use");
+		}
 
-			public void Set(GlobalParams key, String value)
-            {
-				int index = Keys.FindIndex(x=>x==key.ToString());
-				if (index!=-1)
-					Values[index]=value;
-                else
-					Add(key,value);
-            }
+		public void Set(GlobalParams key, String value)
+		{
+			int index = Keys.FindIndex(x=>x==key.ToString());
+			if (index!=-1)
+				Values[index]=value;
+			else
+				Add(key,value);
+		}
 
-            public void Add(String globalparamkey, String value)
-            {
-                if (Enum.IsDefined(typeof(Metadata.GlobalParams), globalparamkey))
-                {
-                    Metadata.GlobalParams gp = (Metadata.GlobalParams)Enum.Parse(typeof(Metadata.GlobalParams), globalparamkey);
-                    if (Values.Count == Keys.Count)
-                    {
-                        Values.Add(value);
-                        Keys.Add(gp.ToString());
-                    }
-                    else
-                        throw new Exception("Number of values is not equal to number of ids, incorrect use");
-                }
-                else
-                    throw new Exception("Undefined enum value for GlobalParams = " + globalparamkey);
-                
-            }
-
-            public void AddIndexValue(String value)
-            {
-                if (IndexValueList == null) IndexValueList = new List<string>();
-                IndexValueList.Add(value);
-            }
-
-            public String GetValue(GlobalParams key)
-            {
-                int index = Keys.IndexOf(key.ToString());
-                if (index >= 0)
-                    return Values[index];
-                else
-                    return null;
-            }
-
-            public String GetValue(String key)
-            {
-                int index = Keys.IndexOf(key);
-                if (index >= 0)
-                    return Values[index];
-                else
-                    return null;
-            }
-
-            public void SetBulk(List<String> p_indexes, List<String> p_values)
-            {
-                IndexList = p_indexes;
-                IndexValueList = p_values;
-            }
-
-            public bool ContainsValue(String value)
-            {
-                return Values.Contains(value);
-            }
-
-			//
-            public bool ContainsIndexValue(String value, bool exactMatch)
-            {
-				if (exactMatch)
-					return IndexValueList.Contains(value);
+		public void Add(String globalparamkey, String value)
+		{
+			if (Enum.IsDefined(typeof(GlobalParams), globalparamkey))
+			{
+				GlobalParams gp = (GlobalParams)Enum.Parse(typeof(GlobalParams), globalparamkey);
+				if (Values.Count == Keys.Count)
+				{
+					Values.Add(value);
+					Keys.Add(gp.ToString());
+				}
 				else
+					throw new Exception("Number of values is not equal to number of ids, incorrect use");
+			}
+			else
+				throw new Exception("Undefined enum value for GlobalParams = " + globalparamkey);
+                
+		}
+
+		public void AddIndexValue(String value)
+		{
+			if (IndexValueList == null) IndexValueList = new List<string>();
+			IndexValueList.Add(value);
+		}
+
+		public String GetValue(GlobalParams key)
+		{
+			int index = Keys.IndexOf(key.ToString());
+			if (index >= 0)
+				return Values[index];
+			else
+				return null;
+		}
+
+		public String GetValue(String key)
+		{
+			int index = Keys.IndexOf(key);
+			if (index >= 0)
+				return Values[index];
+			else
+				return null;
+		}
+
+		public void SetBulk(List<String> p_indexes, List<String> p_values)
+		{
+			IndexList = p_indexes;
+			IndexValueList = p_values;
+		}
+
+		public bool ContainsValue(String value)
+		{
+			return Values.Contains(value);
+		}
+
+		//
+		public bool ContainsIndexValue(String value, bool exactMatch)
+		{
+			if (exactMatch)
+				return IndexValueList.Contains(value);
+			else
+			{
+				foreach (string s in IndexValueList)
 				{
-					foreach (string s in IndexValueList)
+					if (value.Contains(s)) return true;
+				}
+				return false;
+			}
+		}
+
+		public bool ContainsKey(GlobalParams key)
+		{
+			return Keys.Contains(key.ToString());
+		}
+
+		public List<String> KeyEnumerator()
+		{
+			return Keys;
+		}
+
+		public void SetIndexValues(List<String> list)
+		{
+			IndexValueList = list;
+		}
+	}
+
+	public class VolumeLevels
+	{
+		public static int VolumeFull = 0;
+		//public static int VolumeDefault = -4500;
+		public static int VolumeSilence = -10000;
+	}
+
+	public enum ZoneNotifyState
+	{
+		Open, 
+		Closed
+	}
+
+	public class ClosureOpenCloseRelay
+	{
+		public enum EnumState
+		{
+			Undefined=-1,
+			ContactOpen=0,
+			ContactClosed=1
+		}
+
+		public enum EnumRelayType
+		{
+			Undefined,
+			NormalOpen,
+			NormalClosed,
+			Button
+		}
+
+		//public string Key;
+		public DateTime LastChange;
+		private EnumState m_relayState = EnumState.Undefined;
+		private EnumState m_relayStateLast = EnumState.Undefined;
+		public EnumRelayType RelayType = EnumRelayType.Undefined;
+		private bool m_contactMade = false;
+
+		public ClosureOpenCloseRelay()
+		{
+		}
+		public ClosureOpenCloseRelay(bool isRelayContactMade)
+		{
+			//Key = key;
+			RelayContactMade = isRelayContactMade;
+		}
+
+		public EnumState RelayState
+		{
+			get { return m_relayState; }
+			//set { m_relayState = value; }
+		}
+
+		public bool RelayContactMade
+		{
+			get { return m_contactMade; }
+			set
+			{
+				m_contactMade = value;
+				m_relayState = GetRelayState(m_contactMade);
+				LastChange = DateTime.Now;
+
+				if (m_relayState != m_relayStateLast)
+				{
+					Rules.ExecuteRule(this, "contactmade="+m_relayState);
+					m_relayStateLast= m_relayState;
+				}
+			}
+		}
+
+		public EnumState GetRelayState(bool isRelayContactMade)
+		{
+			switch (RelayType)
+			{
+				case EnumRelayType.NormalOpen:
+				case EnumRelayType.Button:
+					return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactClosed : ClosureOpenCloseRelay.EnumState.ContactOpen;
+				case EnumRelayType.NormalClosed:
+					return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactOpen: ClosureOpenCloseRelay.EnumState.ContactClosed;
+				default:
+					//MLog.Log(this, "Error, undefined relay type");
+					return EnumState.Undefined;
+			}
+		}
+
+		public void ResetState()
+		{
+			m_relayState = EnumState.Undefined;
+			m_relayStateLast = EnumState.Undefined;
+		}
+	}
+
+	public enum PowerType
+	{
+		Denkovi,
+		Numato,
+		None
+	}
+
+	public enum ZoneType
+	{
+		Space,
+		Component,
+		Undefined
+	}
+
+	public class MacroEntryCommand
+	{
+		public GlobalCommands Command;
+		public String ZoneName;
+		public String ParameterValueList;
+		public int DelayMiliSec=0;
+
+		public MacroEntryCommand()
+		{}
+	}
+
+	public class MacroShortcut
+	{
+		public String Shortcut;
+		public String DeviceName;
+		public MacroShortcut() { }
+	}
+
+	public class MacroEntry
+	{
+		public int Id;
+		public String RepeatMonth;
+		public String RepeatWeekDay;
+		public String RepeatTime;
+		public List<MacroShortcut> ShortcutList;
+		public List<MacroEntryCommand> CommandList;
+		public List<String> AllowUserList;
+		public DateTime ExecutedDateTime;
+		public MacroEntry()
+		{}
+
+		public String Description
+		{
+			get
+			{
+				if (ShortcutList != null && ShortcutList.Count > 0)
+					return ShortcutList[0].Shortcut;
+				else
+					if (CommandList != null && CommandList.Count > 0)
+						return CommandList[0].Command.ToString();
+					else
+						return Id.ToString();
+			}
+		}
+		public static void SaveToIni(List<MacroEntry> list)
+		{
+			String json;
+			int line = 0;
+			foreach (MacroEntry entry in list)
+			{
+				json = JSON.Instance.ToJSON(entry, false);
+				Utilities.WritePrivateProfileString(IniFile.SCHEDULER_SECTION_MAIN, line.ToString(),
+					json, IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
+			}
+		}
+
+		public static List<MacroEntry> LoadFromIni()
+		{
+			String json;
+			MacroEntry entry;
+			List<MacroEntry> list = new List<MacroEntry>();
+			int line=0;
+			do
+			{
+				json = Utilities.IniReadValue(IniFile.SCHEDULER_SECTION_MAIN, 
+					line.ToString(), IniFile.CurrentPath()+IniFile.SCHEDULER_FILE);
+				if (json != "")
+				{
+					entry = JSON.Instance.ToObject<MacroEntry>(json);
+					entry.ExecutedDateTime = DateTime.MinValue;
+					entry.Id = line;
+					list.Add(entry);
+				}
+				line++;
+			}
+			while (json!="");
+			MLog.Log(null, "Loaded " + (line-1) +" scheduler events");
+			return list;
+		}
+
+		public static void AddParams(String parameters, ref ValueList vals)
+		{
+			if (parameters != null && parameters != "")
+			{
+				String[] atoms, pair;
+				atoms = parameters.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+				for (int i = 0; i < atoms.Length; i++)
+				{
+					pair = atoms[i].Split('=');
+					if (pair.Length >= 2)
 					{
-						if (value.Contains(s)) return true;
+						vals.Add(pair[0], pair[1]);
 					}
-					return false;
-				}
-            }
-
-            public bool ContainsKey(GlobalParams key)
-            {
-                return Keys.Contains(key.ToString());
-            }
-
-            public List<String> KeyEnumerator()
-            {
-                return Keys;
-            }
-
-            public void SetIndexValues(List<String> list)
-            {
-                IndexValueList = list;
-            }
-        }
-
-        public enum ZoneState
-        {
-            NotInitialised,
-            NotStarted,
-            Running,
-            Paused,
-            Closing,
-            Undefined,
-            Error
-        }
-
-        public class VolumeLevels
-        {
-            public static int VolumeFull = 0;
-            //public static int VolumeDefault = -4500;
-            public static int VolumeSilence = -10000;
-        }
-
-		public enum ZoneNotifyState
-		{
-			Open, 
-			Closed
-		}
-
-		public class ClosureOpenCloseRelay
-		{
-			public enum EnumState
-			{
-				Undefined=-1,
-				ContactOpen=0,
-				ContactClosed=1
-			}
-
-			public enum EnumRelayType
-			{
-				Undefined,
-				NormalOpen,
-				NormalClosed,
-				Button
-			}
-
-			//public string Key;
-			public DateTime LastChange;
-			private EnumState m_relayState = EnumState.Undefined;
-			private EnumState m_relayStateLast = EnumState.Undefined;
-			public EnumRelayType RelayType = EnumRelayType.Undefined;
-			private bool m_contactMade = false;
-
-			public ClosureOpenCloseRelay()
-			{
-			}
-			public ClosureOpenCloseRelay(bool isRelayContactMade)
-			{
-				//Key = key;
-				RelayContactMade = isRelayContactMade;
-			}
-
-			public EnumState RelayState
-			{
-				get { return m_relayState; }
-				//set { m_relayState = value; }
-			}
-
-			public bool RelayContactMade
-			{
-				get { return m_contactMade; }
-				set
-				{
-					m_contactMade = value;
-					m_relayState = GetRelayState(m_contactMade);
-					LastChange = DateTime.Now;
-
-					if (m_relayState != m_relayStateLast)
+					else
 					{
-						Rules.ExecuteRule(this, "contactmade="+m_relayState);
-						m_relayStateLast= m_relayState;
+						if (i == 0)
+							vals.Add(GlobalParams.singleparamvalue, atoms[i]);
+						else
+							MLog.Log(null, "At AddParams Invalid parameter in " + atoms[i]);
 					}
 				}
 			}
-
-			public EnumState GetRelayState(bool isRelayContactMade)
-			{
-				switch (RelayType)
-				{
-					case EnumRelayType.NormalOpen:
-					case EnumRelayType.Button:
-						return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactClosed : ClosureOpenCloseRelay.EnumState.ContactOpen;
-					case EnumRelayType.NormalClosed:
-						return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactOpen: ClosureOpenCloseRelay.EnumState.ContactClosed;
-					default:
-						//MLog.Log(this, "Error, undefined relay type");
-						return EnumState.Undefined;
-				}
-			}
-
-			public void ResetState()
-			{
-				m_relayState = EnumState.Undefined;
-				m_relayStateLast = EnumState.Undefined;
-			}
 		}
+	}
 
-		public enum MoveTypeEnum
+	public class ServerStatus
+	{
+		public Boolean IsServerOn = true;
+		public ZoneDetails[] ZoneDetails;
+		public List<CamAlert> CamAlertList;
+
+		public ServerStatus()
+		{}
+	}
+
+	public enum MoveTypeEnum
+	{
+		Camera,
+		Closure,
+		Command,
+		Alarm
+	}
+
+	public class CamAlert
+	{
+		private static int startIndex = 0;
+		public int Index;
+		public String CamId;
+		public DateTime AlarmTime;
+		public String AlarmSource;
+		public String CustomMessage;
+		public bool WasAcknowledged;
+		public bool WasIgnored;
+		public int ParentZoneId;
+
+		public CamAlert()
 		{
-			Camera,
-			Closure,
-			Command,
-			Alarm
 		}
-		public enum PowerType
+
+		public CamAlert(String alarmSource, String customMessage, String camId, int parentZoneId, bool isAlertActive)
 		{
-			Denkovi,
-			Numato,
-			None
+			AlarmTime = DateTime.Now;
+			AlarmSource = alarmSource;
+			CustomMessage = customMessage;
+			WasAcknowledged = false;
+			WasIgnored = !isAlertActive;
+			CamId = camId;
+			Index = startIndex;
+			ParentZoneId = parentZoneId;
+			startIndex++;
 		}
-        public class ZoneDetails
-        {
-            public int ZoneId = 0;
-            public Boolean IsActive = false;
-            //public int MinutesUntilSleep = -1;
-            public String SleepHourMin = "";//format HH:MM
-            public String ZoneName;
-			private ZoneState m_zoneState, m_zoneStateLast=ZoneState.Undefined;
-            public int ParentZoneId = -1;
-            public int PowerIndex = -1;
-			public String PowerType;
-			public int PowerOnDelay;
-            public String WakeTime = "";
-            public String WakeWeekDay = "";
-            public String CameraId = "";
-            public Boolean HasSpeakers = false;
-            public int DefaultVolumePercent;
-            public String OutputKeywords;
-            public String OutputDeviceUserSelected;
-            
-            public String OutputDeviceNameWaveVLC;
-            public int WavedeviceIndex;
-            public Boolean HasCamera = false;
-            public Boolean IsArmed = false;
-            public int AlarmZoneId = -1;
-            public int AlarmAreaId=-1;
-            public Boolean HasMotionSensor = false;
-            public Boolean HasMicrophone = false;
-            public Boolean HasDisplay = false;
-			public Boolean HasVideoPlayer = false;
-            public String DisplayConnection = "";
-            public String DisplayType = "";
-            public Boolean RequirePower = false;
-			public Boolean IsClosureArmed = false;
-			public String NearbyZonesIdList = "";//zone id list separated by ;
-			public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
-			//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
-			public ClosureOpenCloseRelay ClosureOpenCloseRelay;
-			public ulong ClosureCounts = 0;
-			public String TemperatureDeviceId;
-			public double TemperatureMaxAlarm=1000;
-			public double TemperatureMinAlarm=-1000;
+	}
 
-            public int VolumeLevel;
-            public long Position = 0;
-            public int PositionPercent = 0;
-            public GlobalCommands ActivityType = GlobalCommands.nul;
-            public String Title;
-            public int Rating = 0;
-            public int Playcount = 0;
-            public int PlaylistCount = 0;
-            public String Playlist;
-            public String Author;
-            public String Genre;
-            public String Album;
-            public String Year;
-            public String SourceURL;
+	public enum GlobalCommands
+	{
+		nul,
+		k0,
+		k1,
+		k2,
+		k3,
+		k4,
+		k5,
+		k6,
+		k7,
+		k8,
+		k9,
+		help,
+		status,
+		selectzone,
+		sleep,
+		shutdown,
+		music,
+		video,
+		tv,
+		xbmc,
+		play,
+		stop,
+		pause,
+		next,
+		previous,
+		rewind,
+		ffwd,
+		up,
+		down,
+		left,
+		right,
+		volumeset,
+		volumedown,
+		volumeup,
+		mute,
+		repeat,
+		fullscreen,
+		ratingset,
+		enter,
+		record,
+		guide,
+		chup,
+		chdown,
+		photo,
+		dvd,
+		radio,
+		streammp3,
+		back,
+		musicclone,
+		microphone,
+		genrelist,
+		setgenrelist,
+		sleeptimer,
+		artistlist,
+		setartistlist,
+		setwaketimer,
+		medialist,
+		setmediaitem,
+		cameraevent,
+		dismisscameraalert,
+		togglecameraalert,
+		setmoodmusic,
+		getmoodmusiclist,
+		searchmediaitem,
+		musicalarm,
+		alarmevent,
+		alarmarm,
+		alarmdisarm,
+		alarmkeypadbeep,
+		alarmstay,
+		alarmautoarm,
+		micrecord,
+		micplay,
+		followmemusic,
+		restartispy,
+		restartwinload,
+		holdcriteria,
+		setnotify,
+		restartsystem,
+		sendsms,
+		zonearm,
+		zonedisarm,
+		makebuzz,
+		powerevent,
+		tvsetinput,
+		powercycle,
+		remotepoweron,
+		remotepoweroff,
+		remoteadjustdim,
+		getpicture,
+		macro,
+		rfxcmd,
+		r,//repeat last command
+		notifyuser,
+		closure,
+		closurearm,
+		closuredisarm,
+		runscript,
+		poweron,
+		poweroff
+	}
 
-            public Boolean CameraAlertActive = true;
-			private Boolean m_movementAlert = false, m_movementAlertLast = false;
+	public enum ResultEnum
+	{
+		ERR,
+		OK
+	}
+
+	public enum ZoneState
+	{
+		NotInitialised,
+		NotStarted,
+		Running,
+		Paused,
+		Closing,
+		Undefined,
+		Error
+	}
+
+	public class ZoneDetails
+	{
+		public int ZoneId = 0;
+		public Boolean IsActive = false;
+		//public int MinutesUntilSleep = -1;
+		public String SleepHourMin = "";//format HH:MM
+		public String ZoneName;
+		private ZoneState m_zoneState, m_zoneStateLast=MultiZonePlayer.ZoneState.Undefined;
+		public int ParentZoneId = -1;
+		public int PowerIndex = -1;
+		public String PowerType;
+		public int PowerOnDelay;
+		public String WakeTime = "";
+		public String WakeWeekDay = "";
+		public String CameraId = "";
+		public Boolean HasSpeakers = false;
+		public int DefaultVolumePercent;
+		public String OutputKeywords;
+		public String OutputDeviceUserSelected;
+		public ZoneType Type = ZoneType.Undefined;
+		public String OutputDeviceNameWaveVLC;
+		public int WavedeviceIndex;
+		public Boolean HasCamera = false;
+		public Boolean IsArmed = false;
+		public int AlarmZoneId = -1;
+		public int AlarmAreaId=-1;
+		public Boolean HasMotionSensor = false;
+		public Boolean HasMicrophone = false;
+		public Boolean HasDisplay = false;
+		public Boolean HasVideoPlayer = false;
+		public String DisplayConnection = "";
+		public String DisplayType = "";
+		public Boolean RequirePower = false;
+		public Boolean IsClosureArmed = false;
+		public String NearbyZonesIdList = "";//zone id list separated by ;
+		public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
+		//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
+		public ClosureOpenCloseRelay ClosureOpenCloseRelay;
+		public ulong ClosureCounts = 0;
+		public String TemperatureDeviceId;
+		public double TemperatureMaxAlarm=1000;
+		public double TemperatureMinAlarm=-1000;
+
+		public int VolumeLevel;
+		public long Position = 0;
+		public int PositionPercent = 0;
+		public GlobalCommands ActivityType = GlobalCommands.nul;
+		public String Title;
+		public int Rating = 0;
+		public int Playcount = 0;
+		public int PlaylistCount = 0;
+		public String Playlist;
+		public String Author;
+		public String Genre;
+		public String Album;
+		public String Year;
+		public String SourceURL;
+
+		public Boolean CameraAlertActive = true;
+		private Boolean m_movementAlert = false, m_movementAlertLast = false;
 			
-            public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
-            public DateTime LastCamAlertDateTime = DateTime.MinValue;
-            public DateTime LastLocalCommandDateTime = DateTime.MinValue;
-			public DateTime LastClosureEventDateTime = DateTime.MinValue;
-			public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
-			public DateTime LastNotifyZoneEventTriggered;
-			public const double DEFAULT_TEMP_HUM = -1000;
-			protected double m_temperature=DEFAULT_TEMP_HUM, m_humidity=DEFAULT_TEMP_HUM;
-			protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
-			protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
+		public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
+		public DateTime LastCamAlertDateTime = DateTime.MinValue;
+		public DateTime LastLocalCommandDateTime = DateTime.MinValue;
+		public DateTime LastClosureEventDateTime = DateTime.MinValue;
+		public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
+		public DateTime LastNotifyZoneEventTriggered;
+		public const double DEFAULT_TEMP_HUM = -1000;
+		protected double m_temperature=DEFAULT_TEMP_HUM, m_humidity=DEFAULT_TEMP_HUM;
+		protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
+		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 
-			// not serializable, hidden from json
+		// not serializable, hidden from json
             
             
-            protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
+		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
 
-            public ZoneDetails()
-            {
-				ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
-            }
+		public ZoneDetails()
+		{
+			ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
+		}
 
-            public ZoneDetails(int p_zoneId, String p_zoneName)
-            {
-                ZoneId = p_zoneId;
-                ZoneName = p_zoneName;
-                ZoneState = ZoneState.NotInitialised;
-                ActivityType = GlobalCommands.nul;
-                LoadStateFromIni();
-            }
+		public ZoneDetails(int p_zoneId, String p_zoneName)
+		{
+			ZoneId = p_zoneId;
+			ZoneName = p_zoneName;
+			ZoneState = MultiZonePlayer.ZoneState.NotInitialised;
+			ActivityType = GlobalCommands.nul;
+			LoadStateFromIni();
+		}
 
-            public override string ToString()
-            {
-                return "ID="+ZoneId+";Name="+ZoneName;
-            }
-            #region getters
+		public override string ToString()
+		{
+			return "ID="+ZoneId+";Name="+ZoneName;
+		}
+		#region getters
 
-			public ZoneState ZoneState
-			{
-				get { return m_zoneState; }
-				set { m_zoneState = value;
+		public ZoneState ZoneState
+		{
+			get { return m_zoneState; }
+			set { m_zoneState = value;
 				if (m_zoneState != m_zoneStateLast)
 				{
 					Rules.ExecuteRule(this,"zonestate="+m_zoneState);
 					m_zoneStateLast = m_zoneState;
 				}
+			}
+		}
+
+		public Boolean MovementAlert
+		{
+			get { return m_movementAlert; }
+			set { m_movementAlert = value;
+				if (m_movementAlert != m_movementAlertLast)
+				{
+					Rules.ExecuteRule(this,"movement="+m_movementAlert);
+					m_movementAlertLast = m_movementAlert;
 				}
 			}
-
-			public Boolean MovementAlert
+		}
+		public String SummaryStatus
+		{
+			get {
+				String val = "#"+ ZoneId +" "+ ZoneName + (IsActive?" Active":"") 
+				             + (ActivityType.Equals(GlobalCommands.nul)?"":" "+ActivityType.ToString()) 
+				             + (IsArmed?" Armed ":" ") 
+				             + Utilities.DurationAsTimeSpan(LastMovementAge)
+				             + (HasImmediateMove? " ImmediateMove ":"")
+				             + (HasRecentMove? " RecentMove ":"")
+				             + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState +"@ "+LastClosureEventDateTime :" ")
+				             + Title
+				             + (Temperature!=DEFAULT_TEMP_HUM?" " + Temperature + "C":"")
+				             + (Humidity != DEFAULT_TEMP_HUM?" " + Humidity+"%":"")
+				             + (IsPowerOn?" PowerIsOn":"");
+				return val;
+			}
+		}
+		public DateTime LastMovementDate
+		{
+			get
 			{
-				get { return m_movementAlert; }
-				set { m_movementAlert = value;
-					if (m_movementAlert != m_movementAlertLast)
+				List<DateTime> dates = new List<DateTime>();
+				dates.Add(LastAlarmMovementDateTime);
+				dates.Add(LastCamAlertDateTime);
+				dates.Add(LastClosureEventDateTime);
+				dates = dates.OrderByDescending(x=>x.Ticks).ToList();
+				return dates[0];
+			}
+		}
+
+		public TimeSpan LastMovementAge
+		{
+			get { return DateTime.Now.Subtract(LastMovementDate); }
+		}
+
+		public string LastMovementAgeAsTimeSpan
+		{
+			get { return Utilities.DurationAsTimeSpan(LastMovementAge); }
+		}
+
+		public double LastLocalCommandAgeInSeconds
+		{
+			get { return Math.Round(DateTime.Now.Subtract(LastLocalCommandDateTime).TotalSeconds); }
+		}
+		public Boolean HasImmediateMove
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
+				return (span <= m_intervalImmediate);
+			}
+		}
+
+		public Boolean HasImmediateCamMove
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastCamAlertDateTime).TotalMinutes;
+				return (span <= m_intervalImmediate);
+			}
+		}
+		public Boolean HasImmediateAlarmMove
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastAlarmMovementDateTime).TotalMinutes;
+				return (span <= m_intervalImmediate);
+			}
+		}
+		public Boolean HasImmediateClosureMove
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastClosureEventDateTime).TotalMinutes;
+				return (span <= m_intervalImmediate);
+			}
+		}
+
+		public Boolean HasRecentMove
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
+				return (span > m_intervalImmediate && span<=m_intervalRecent);
+			}
+		}
+		public Boolean HasPastMove
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
+				return (span > m_intervalRecent && span <= m_intervalPast);
+			}
+		}
+		public Boolean HasNoMove
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
+				return (span > m_intervalPast);
+			}
+		}
+
+		public Boolean HasPastActivity
+		{
+			get
+			{
+				double span = DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes;
+				return (HasPastMove || (span > m_intervalRecent && span <= m_intervalPast));
+			}
+		}
+
+		public Boolean HasAction
+		{
+			get
+			{
+				bool action = HasImmediateMove || IsActive || IsPowerOn || HasAlarm;
+				ZoneDetails child;
+				if (!action)
+					for (int i = 0; i < ChildZonesCount; i++)
 					{
-						Rules.ExecuteRule(this,"movement="+m_movementAlert);
-						m_movementAlertLast = m_movementAlert;
+						child = ChildZone(i);
+						action = child.HasImmediateMove || child.IsActive || child.IsPowerOn || child.HasAlarm;
+						if (action)
+							break;
 					}
-				}
+				return action;
 			}
-            public String SummaryStatus
-            {
-                get {
-                    String val = "#"+ ZoneId +" "+ ZoneName + (IsActive?" Active":"") 
-                        + (ActivityType.Equals(GlobalCommands.nul)?"":" "+ActivityType.ToString()) 
-                        + (IsArmed?" Armed ":" ") 
-						+ Utilities.DurationAsTimeSpan(LastMovementAge)
-                        + (HasImmediateMove? " ImmediateMove ":"")
-                        + (HasRecentMove? " RecentMove ":"")
-                        + (ClosureOpenCloseRelay.RelayType!=ClosureOpenCloseRelay.EnumRelayType.Undefined? " " + ClosureState +"@ "+LastClosureEventDateTime :" ")
-						+ Title
-						+ (Temperature!=DEFAULT_TEMP_HUM?" " + Temperature + "C":"")
-						+ (Humidity != DEFAULT_TEMP_HUM?" " + Humidity+"%":"")
-						+ (IsPowerOn?" PowerIsOn":"");
-                    return val;
-                }
-            }
-            public DateTime LastMovementDate
-            {
-                get
-                {
-					List<DateTime> dates = new List<DateTime>();
-					dates.Add(LastAlarmMovementDateTime);
-					dates.Add(LastCamAlertDateTime);
-					dates.Add(LastClosureEventDateTime);
-					dates = dates.OrderByDescending(x=>x.Ticks).ToList();
-					return dates[0];
-                }
-            }
+		}
 
-			public TimeSpan LastMovementAge
+		public Boolean HasAlarm
+		{
+			get
 			{
-				get { return DateTime.Now.Subtract(LastMovementDate); }
+				return IsArmed && HasImmediateMove;
 			}
+		}
 
-			public string LastMovementAgeAsTimeSpan
+		public Boolean HasTemperatureAlarm
+		{
+			get
 			{
-				get { return Utilities.DurationAsTimeSpan(LastMovementAge); }
+				return (m_temperature>TemperatureMaxAlarm) || (m_temperature<TemperatureMinAlarm);
 			}
+		}
 
-			public double LastLocalCommandAgeInSeconds
+		public Boolean IsPowerOn
+		{
+			get { return MZPState.Instance.PowerControlIsOn(ZoneId); }
+		}
+		public Boolean HasPowerCapabilities
+		{
+			get
 			{
-				get { return Math.Round(DateTime.Now.Subtract(LastLocalCommandDateTime).TotalSeconds); }
+				return PowerIndex != -1 && PowerType != "";
 			}
-            public Boolean HasImmediateMove
-            {
-                get
-                {
-                    double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
-                    return (span <= m_intervalImmediate);
-                }
-            }
+		}
+		public Boolean HasClosures
+		{
+			get { return ClosureIdList != "";}
+		}
+		public Boolean HasTemperatureSensor
+		{
+			get { 
+				RFXDeviceDefinition.RFXDevice device = RFXDeviceDefinition.GetDevice(ZoneId);
+				return (TemperatureDeviceId != "" || 
+				        (device!=null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum));
+			}
+		}
+		public Boolean ContainsDisplay
+		{
+			get { return MZPState.Instance.ZoneDetails.Find(x=>x.ParentZoneId==ZoneId && x.HasDisplay)!=null
+			             || HasDisplay; }
+		}
 
-			public Boolean HasImmediateCamMove
-			{
-				get
-				{
-					double span = DateTime.Now.Subtract(LastCamAlertDateTime).TotalMinutes;
-					return (span <= m_intervalImmediate);
-				}
+		public String ClosureState
+		{
+			get {
+				return ClosureOpenCloseRelay.RelayState.ToString();
 			}
-			public Boolean HasImmediateAlarmMove
-			{
-				get
-				{
-					double span = DateTime.Now.Subtract(LastAlarmMovementDateTime).TotalMinutes;
-					return (span <= m_intervalImmediate);
-				}
-			}
-			public Boolean HasImmediateClosureMove
-			{
-				get
-				{
-					double span = DateTime.Now.Subtract(LastClosureEventDateTime).TotalMinutes;
-					return (span <= m_intervalImmediate);
-				}
-			}
+		}
 
-            public Boolean HasRecentMove
-            {
-                get
-                {
-                    double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
-                    return (span > m_intervalImmediate && span<=m_intervalRecent);
-                }
-            }
-            public Boolean HasPastMove
-            {
-                get
-                {
-                    double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
-                    return (span > m_intervalRecent && span <= m_intervalPast);
-                }
-            }
-            public Boolean HasNoMove
-            {
-                get
-                {
-                    double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
-                    return (span > m_intervalPast);
-                }
-            }
-
-            public Boolean HasPastActivity
-            {
-                get
-                {
-                    double span = DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes;
-                    return (HasPastMove || (span > m_intervalRecent && span <= m_intervalPast));
-                }
-            }
-
-			public Boolean HasAction
-			{
-				get
-				{
-					return HasImmediateMove || IsActive || IsPowerOn || HasAlarm;
-				}
-			}
-
-			public Boolean HasAlarm
-			{
-				get
-				{
-					return IsArmed && HasImmediateMove;
-				}
-			}
-
-			public Boolean HasTemperatureAlarm
-			{
-				get
-				{
-					return (m_temperature>TemperatureMaxAlarm) || (m_temperature<TemperatureMinAlarm);
-				}
-			}
-
-			public Boolean IsPowerOn
-			{
-				get { return MZPState.Instance.PowerControlIsOn(ZoneId); }
-			}
-			public Boolean HasClosures
-			{
-				get { return ClosureIdList != "";}
-			}
-			public Boolean HasTemperatureSensor
-			{
-				get { 
-					RFXDeviceDefinition.RFXDevice device = RFXDeviceDefinition.GetDevice(ZoneId);
-					return (TemperatureDeviceId != "" || 
-						(device!=null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum));
-				}
-			}
-			public Boolean ContainsDisplay
-			{
-				get { return MZPState.Instance.ZoneDetails.Find(x=>x.ParentZoneId==ZoneId && x.HasDisplay)!=null
-					|| HasDisplay; }
-			}
-
-			public String ClosureState
-			{
-				get {
-						return ClosureOpenCloseRelay.RelayState.ToString();
-				}
-			}
-
-			public int MacroCount
-			{
-				get { 
-					List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
-					return macros != null ? macros.Count : 0;
-				}
-			}
-			public String MacroName(int macroIndex)
-			{
-				
+		public int MacroCount
+		{
+			get { 
 				List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
-				if (macros != null && macroIndex < macros.Count)
-					return "Macro "+macros[macroIndex].Id;// + macros[macroIndex].;
-				else
-					return "err indx="+macroIndex;
+				return macros != null ? macros.Count : 0;
+			}
+		}
+		public String MacroName(int macroIndex)
+		{
 				
-			}
-			public int MacroId(int macroIndex)
+			List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
+			if (macros != null && macroIndex < macros.Count)
+				return "Macro "+macros[macroIndex].Id;// + macros[macroIndex].;
+			else
+				return "err indx="+macroIndex;
+				
+		}
+		public int MacroId(int macroIndex)
+		{
+			List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
+			if (macros != null && macroIndex < macros.Count)
+				return macros[macroIndex].Id;
+			else
+				return -1;
+		}
+		public MacroEntry Macro(int macroIndex)
+		{
+			List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
+			if (macros != null && macroIndex < macros.Count)
+				return macros[macroIndex];
+			else
+				return null;
+		}
+
+		public int ChildZonesCount
+		{
+			get
 			{
-				List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);
-				if (macros != null && macroIndex < macros.Count)
-					return macros[macroIndex].Id;
+				List<ZoneDetails> childs = MZPState.Instance.ZoneDetails.FindAll(x => x.ParentZoneId == ZoneId);
+				return childs != null ? childs.Count : 0;
+			}
+		}
+
+		public ZoneDetails ChildZone(int index)
+		{
+			List<ZoneDetails> childs = MZPState.Instance.ZoneDetails.FindAll(x => x.ParentZoneId == ZoneId);
+			return childs != null && index < childs.Count ? childs[index] : null;
+		}
+		
+
+		public String OutputDeviceDirectXName
+		{
+			get
+			{
+				String[] split;
+				split = OutputDeviceAutoCompleted().Split(new String[]{"\\DirectSound: "}, 
+					StringSplitOptions.RemoveEmptyEntries);
+				if (split.Length >= 2)
+					return split[1];
 				else
-					return -1;
+					return "";
 			}
-            public String OutputDeviceDirectXName
-            {
-                get
-                {
-                    String[] split;
-                    split = OutputDeviceAutoCompleted().Split(new String[]{"\\DirectSound: "}, 
-						StringSplitOptions.RemoveEmptyEntries);
-                    if (split.Length >= 2)
-                        return split[1];
-                    else
-                        return "";
-                }
-            }
-            private const String DIV_SHOW = "block";
-            private const String DIV_HIDE = "none";
-			private const String IMG_TAG = "img";
-			private const String VIDEO_TAG = "video";
+		}
+		private const String DIV_SHOW = "block";
+		private const String DIV_HIDE = "none";
+		private const String IMG_TAG = "img";
+		private const String VIDEO_TAG = "video";
 
-            public String HTMLDIVStateMusicOrRadio
-            {
-                get
-                {
-                    String res;
-                    if (IsActive && (ActivityType.Equals(GlobalCommands.music) 
-						|| ActivityType.Equals(GlobalCommands.streammp3)
-						|| ActivityType.Equals(GlobalCommands.xbmc)))
-                        res = DIV_SHOW;
-                    else
-                        res = DIV_HIDE;
-                    return res;
-                }
-            }
-
-			public String HasClosureNotifyAsDiv
+		public String HTMLDIVStateMusicOrRadio
+		{
+			get
 			{
-				get { return ClosureOpenCloseRelay.RelayState==Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed ? DIV_SHOW : DIV_HIDE; }
+				String res;
+				if (IsActive && (ActivityType.Equals(GlobalCommands.music) 
+				                 || ActivityType.Equals(GlobalCommands.streammp3)
+				                 || ActivityType.Equals(GlobalCommands.xbmc)))
+					res = DIV_SHOW;
+				else
+					res = DIV_HIDE;
+				return res;
 			}
-			public String HasMediaActiveAsDiv
+		}
+
+		public String HasClosureNotifyAsDiv
+		{
+			get { return ClosureOpenCloseRelay.RelayState==ClosureOpenCloseRelay.EnumState.ContactClosed ? DIV_SHOW : DIV_HIDE; }
+		}
+		public String HasMediaActiveAsDiv
+		{
+			get
 			{
-				get
+				String res;
+				if (IsActive && (ActivityType.Equals(GlobalCommands.music)
+				                 || ActivityType.Equals(GlobalCommands.streammp3)
+				                 || ActivityType.Equals(GlobalCommands.xbmc)))
+					res = DIV_SHOW;
+				else
+					res = DIV_HIDE;
+				return res;
+			}
+		}
+
+		public String HasNotifyMoveAsImg
+		{
+			get { return HasImmediateMove || HasRecentMove ? IMG_TAG : "inactive_"+IMG_TAG; }
+		}
+
+		public String HasNotifyMoveAsVideo
+		{
+			get { return HasImmediateMove || HasRecentMove ? VIDEO_TAG : "inactive_" + VIDEO_TAG; }
+		}
+
+		public String IsActiveAsDiv
+		{
+			get {return IsActive ? DIV_SHOW : DIV_HIDE;}
+		}
+
+		public String HasImmediateMoveAsDiv
+		{
+			get { return HasImmediateMove ? DIV_SHOW : DIV_HIDE; }
+		}
+
+		public String HasRecentMoveAsDiv
+		{
+			get { return HasRecentMove ? DIV_SHOW : DIV_HIDE; }
+		}
+
+		public String HasPastMoveAsDiv
+		{
+			get { return HasPastMove ? DIV_SHOW : DIV_HIDE; }
+		}
+
+		public String HasNotifyMoveAsDiv
+		{
+			get { return HasImmediateMove || HasRecentMove ? DIV_SHOW : DIV_HIDE; }
+		}
+
+		public double Temperature
+		{
+			get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
+			set
+			{
+				m_temperature = value;
+				m_lastTempSet = DateTime.Now;
+
+				if (m_temperature != m_temperatureLast)
 				{
-					String res;
-					if (IsActive && (ActivityType.Equals(GlobalCommands.music)
-						|| ActivityType.Equals(GlobalCommands.streammp3)
-						|| ActivityType.Equals(GlobalCommands.xbmc)))
-						res = DIV_SHOW;
-					else
-						res = DIV_HIDE;
-					return res;
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString());
+					Rules.ExecuteRule(this, "temp=" + m_temperature);
+					m_temperatureLast = m_temperature;
 				}
 			}
-
-			public String HasNotifyMoveAsImg
-			{
-				get { return HasImmediateMove || HasRecentMove ? IMG_TAG : "inactive_"+IMG_TAG; }
-			}
-
-			public String HasNotifyMoveAsVideo
-			{
-				get { return HasImmediateMove || HasRecentMove ? VIDEO_TAG : "inactive_" + VIDEO_TAG; }
-			}
-
-			public String IsActiveAsDiv
-			{
-				get {return IsActive ? DIV_SHOW : DIV_HIDE;}
-			}
-
-			public String HasImmediateMoveAsDiv
-			{
-				get { return HasImmediateMove ? DIV_SHOW : DIV_HIDE; }
-			}
-
-			public String HasRecentMoveAsDiv
-			{
-				get { return HasRecentMove ? DIV_SHOW : DIV_HIDE; }
-			}
-
-			public String HasPastMoveAsDiv
-			{
-				get { return HasPastMove ? DIV_SHOW : DIV_HIDE; }
-			}
-
-			public String HasNotifyMoveAsDiv
-			{
-				get { return HasImmediateMove || HasRecentMove ? DIV_SHOW : DIV_HIDE; }
-			}
-
-			public double Temperature
-			{
-				get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
-				set
-				{
-					m_temperature = value;
-					m_lastTempSet = DateTime.Now;
-
-					if (m_temperature != m_temperatureLast)
-					{
-						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString());
-						Rules.ExecuteRule(this, "temp=" + m_temperature);
-						m_temperatureLast = m_temperature;
-					}
-				}
-			}
+		}
 
 			
-			public TimeSpan TemperatureAge
-			{
-				get { return DateTime.Now.Subtract(m_lastTempSet); }
-			}
+		public TimeSpan TemperatureAge
+		{
+			get { return DateTime.Now.Subtract(m_lastTempSet); }
+		}
 
-			public String TemperatureAgeAsTimeSpan
-			{
-				get { return Utilities.DurationAsTimeSpan(TemperatureAge); }
-			}
+		public String TemperatureAgeAsTimeSpan
+		{
+			get { return Utilities.DurationAsTimeSpan(TemperatureAge); }
+		}
 
-			public double Humidity
+		public double Humidity
+		{
+			get
+			{	return m_humidity;}
+			set
 			{
-				get
-				{	return m_humidity;}
-				set
+				m_humidity = value;
+				m_lastHumSet = DateTime.Now;
+
+				if (m_humidity != m_humidityLast)
 				{
-					m_humidity = value;
-					m_lastHumSet = DateTime.Now;
-
-					if (m_humidity != m_humidityLast)
-					{
-						Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString());
-						Rules.ExecuteRule(this,"humid="+m_humidity);
-						m_humidityLast = m_humidity;
-					}
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString());
+					Rules.ExecuteRule(this,"humid="+m_humidity);
+					m_humidityLast = m_humidity;
 				}
 			}
+		}
 
-			public String HumidityAgeInMinutes
-			{
-				get { return Math.Round(DateTime.Now.Subtract(m_lastHumSet).TotalMinutes).ToString(); }
-			}
-            #endregion
-            public static void LoadFromIni(ref List<ZoneDetails> zones)
-            {
-                Hashtable zoneValues = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONES);
+		public String HumidityAgeInMinutes
+		{
+			get { return Math.Round(DateTime.Now.Subtract(m_lastHumSet).TotalMinutes).ToString(); }
+		}
+		#endregion
+		public static void LoadFromIni(ref List<ZoneDetails> zones)
+		{
+			Hashtable zoneValues = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONES);
                
-                ZoneDetails zone;
+			ZoneDetails zone;
 
-                m_intervalImmediate = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[0]);
-                m_intervalRecent = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[1]);
-                m_intervalPast = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[2]);
+			m_intervalImmediate = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[0]);
+			m_intervalRecent = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[1]);
+			m_intervalPast = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[2]);
 
-                foreach (int id in zoneValues.Keys)
-                {
-                    zone = new ZoneDetails(id, zoneValues[id].ToString());
+			foreach (int id in zoneValues.Keys)
+			{
+				zone = new ZoneDetails(id, zoneValues[id].ToString());
                     
-                    zones.Add(zone);
-                }
+				zones.Add(zone);
+			}
 
-                zones.Sort(delegate(Metadata.ZoneDetails a1, Metadata.ZoneDetails a2)
-                {
-                    return a1.ZoneId.CompareTo(a2.ZoneId);
-                });
-            }
+			zones.Sort(delegate(ZoneDetails a1, ZoneDetails a2)
+			{
+				return a1.ZoneId.CompareTo(a2.ZoneId);
+			});
+		}
 
-            public void LoadStateFromIni()
-            {
-                String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
+		public void LoadStateFromIni()
+		{
+			String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
 
-                if (json != "")
-                {
-                    ZoneDetails zonestorage = fastJSON.JSON.Instance.ToObject<ZoneDetails>(json);
+			if (json != "")
+			{
+				ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
 
-                    ZoneName = zonestorage.ZoneName;
-                    ParentZoneId = zonestorage.ParentZoneId;
-                    PowerIndex = zonestorage.PowerIndex;
-					PowerOnDelay = zonestorage.PowerOnDelay;
-                    DefaultVolumePercent = zonestorage.DefaultVolumePercent;
+				ZoneName = zonestorage.ZoneName;
+				ParentZoneId = zonestorage.ParentZoneId;
+				PowerIndex = zonestorage.PowerIndex;
+				PowerOnDelay = zonestorage.PowerOnDelay;
+				DefaultVolumePercent = zonestorage.DefaultVolumePercent;
 
-                    CameraId = zonestorage.CameraId;
-                    if (CameraId != "") HasCamera = true;
-                    AlarmZoneId = zonestorage.AlarmZoneId;
-                    if (AlarmZoneId != -1) HasMotionSensor = true;
-                    AlarmAreaId = zonestorage.AlarmAreaId;
+				CameraId = zonestorage.CameraId;
+				if (CameraId != "") HasCamera = true;
+				AlarmZoneId = zonestorage.AlarmZoneId;
+				if (AlarmZoneId != -1) HasMotionSensor = true;
+				AlarmAreaId = zonestorage.AlarmAreaId;
 
-                    OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
-                    OutputKeywords = zonestorage.OutputKeywords;
-                    //OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
-                    if (!OutputDeviceAutoCompleted().Equals(""))
-                    {
-                        HasSpeakers = true;
-                    }
+				OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
+				OutputKeywords = zonestorage.OutputKeywords;
+				//OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
+				if (!OutputDeviceAutoCompleted().Equals(""))
+				{
+					HasSpeakers = true;
+				}
 
-                    WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);
-                    OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(WavedeviceIndex);
+				WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);
+				OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(WavedeviceIndex);
 
-                    WakeTime = zonestorage.WakeTime;
-                    WakeWeekDay = zonestorage.WakeWeekDay;
-                    SleepHourMin = zonestorage.SleepHourMin;
+				WakeTime = zonestorage.WakeTime;
+				WakeWeekDay = zonestorage.WakeWeekDay;
+				SleepHourMin = zonestorage.SleepHourMin;
 
-                    DisplayType = zonestorage.DisplayType;
-                    DisplayConnection = zonestorage.DisplayConnection;
-                    if (DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString()))
-                    {
-                        HasDisplay = true;
-                    }
-					else
-						if (DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
-							HasVideoPlayer = true;
+				DisplayType = zonestorage.DisplayType;
+				DisplayConnection = zonestorage.DisplayConnection;
+				if (DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString()))
+				{
+					HasDisplay = true;
+				}
+				else
+					if (DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
+						HasVideoPlayer = true;
 
-					if (zonestorage.ClosureOpenCloseRelay != null)
-					{
-						ClosureOpenCloseRelay = zonestorage.ClosureOpenCloseRelay;
-						ClosureOpenCloseRelay.RelayType = zonestorage.ClosureOpenCloseRelay.RelayType;
-					}
-					else
-					{
-						ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
-						ClosureOpenCloseRelay.RelayType = Metadata.ClosureOpenCloseRelay.EnumRelayType.Undefined;
-					}
+				if (zonestorage.ClosureOpenCloseRelay != null)
+				{
+					ClosureOpenCloseRelay = zonestorage.ClosureOpenCloseRelay;
+					ClosureOpenCloseRelay.RelayType = zonestorage.ClosureOpenCloseRelay.RelayType;
+				}
+				else
+				{
+					ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
+					ClosureOpenCloseRelay.RelayType = ClosureOpenCloseRelay.EnumRelayType.Undefined;
+				}
 					
-					ClosureIdList = zonestorage.ClosureIdList.Trim();
-					ClosureCounts = zonestorage.ClosureCounts;
-					if (ClosureOpenCloseRelay.RelayType == Metadata.ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
-						IsClosureArmed = true;
-					NearbyZonesIdList = zonestorage.NearbyZonesIdList;
-					if (NearbyZonesIdList.Length>0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
-						NearbyZonesIdList += ";";
-					TemperatureDeviceId = zonestorage.TemperatureDeviceId;
-					PowerType = zonestorage.PowerType;
-					//Temperature = "1";
-                }
-
-            }
-
-            public void SaveStateToIni()
-            {
-                String json = fastJSON.JSON.Instance.ToJSON(this, false);
-                IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
-            }
-
-			public bool HasOutputDeviceAvailable()
-			{
-				return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords) != "";
+				ClosureIdList = zonestorage.ClosureIdList.Trim();
+				ClosureCounts = zonestorage.ClosureCounts;
+				if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
+					IsClosureArmed = true;
+				NearbyZonesIdList = zonestorage.NearbyZonesIdList;
+				if (NearbyZonesIdList.Length>0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
+					NearbyZonesIdList += ";";
+				TemperatureDeviceId = zonestorage.TemperatureDeviceId;
+				PowerType = zonestorage.PowerType;
+				Type = zonestorage.Type;
+				//Temperature = "1";
 			}
 
-			public String OutputDeviceAutoCompleted()
-			{
-				return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
-			}
-
-            public static String GetOutputDeviceNameAutocompleted(String p_outputDevice, String p_outputKeywords)
-            {
-				List<String> systemOutputDevices = DShowUtility.SystemDeviceNameList;
-                String matchValue;
-				String result = "";//"NONE-outdev=" + p_outputDevice + "|keys=" + p_outputKeywords + "|";
-                if (p_outputKeywords != null)
-                {
-                    String[] keys = p_outputKeywords.Split(',');
-
-                    if (p_outputDevice.Equals(IniFile.DEFAULT_AUTO_DEV_NAME))
-                    {
-                        foreach (String device in systemOutputDevices)
-                        {
-                            matchValue = "";
-                            foreach (String key in keys)
-                            {
-                                if (device.ToLower().Contains(key.ToLower()))
-                                    matchValue = device;
-                                else
-                                {
-                                    matchValue = "";
-                                    break;
-                                }
-                            }
-                            if (matchValue != "")
-                            {
-                                result = matchValue;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                        result = p_outputDevice;
-                }
-
-				//MLog.Log(null, "Device user select="+p_outputDevice+" keywords="+p_outputKeywords+" res="+result);
-                return result;
-            }
-
-            private static int GetWaveOutDeviceIndex(String p_outputKeywords)
-            {
-				List<DShowUtility.WAVEOUTCAPS> systemWaveOutputDevices;
-				systemWaveOutputDevices = DShowUtility.GetDevCapsPlayback();
-                int result = -1;
-                if (p_outputKeywords != null)
-                {
-                    String[] keys = p_outputKeywords.Split(new String[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-
-                    for (int i = 0; i < systemWaveOutputDevices.Count; i++)
-                    {
-                        result = -1;
-                        foreach (String key in keys)
-                        {
-                            if (!key.Equals("directsound"))
-                            {
-                                if (systemWaveOutputDevices[i].szPname.ToLower().Contains(key.ToLower()))
-                                    result = i;
-                                else
-                                {
-                                    result = -1;
-                                    break;
-                                }
-                            }
-                        }
-                        if (result != -1)
-                            break;
-                    }
-                }
-                return result;
-            }
-
-            private static String GetVLCAudioWaveDeviceName(int wavedeviceindex)
-            {
-                String result;
-                DShowUtility.WAVEOUTCAPS wave;
-                if (wavedeviceindex != -1)
-                {
-                    wave = DShowUtility.GetDevCapsPlayback()[wavedeviceindex];
-                    result = wave.szPname + " ($" + String.Format("{0:x}", wave.wMid) + ",$" + String.Format("{0:x}", wave.wPid) + ")";
-                }
-                else
-                    result = "no wave device";
-                return result;
-            }
-
-            public void Close()
-            {
-                ZoneClose();
-                SaveStateToIni();
-            }
-
-            public int GetDefaultVolume()
-            {
-                return GetDefaultVolume(DefaultVolumePercent);
-            }
-			public int GetDefaultAlarmVolume()
-			{
-				return GetDefaultVolume(DefaultVolumePercent / 2);
-			}
-			public int GetDefaultNotifyUserVolume()
-			{
-				int defvol = GetDefaultVolume(DefaultVolumePercent);
-				defvol = defvol - defvol * Convert.ToInt16(IniFile.PARAM_NOTIFY_VOLUME_INCREASE[1]) / 100;
-				return defvol;
-			}
-
-            private static int GetDefaultVolume(int percent)
-            {
-                String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
-                String[] interval = IniFile.PARAM_SILENCE_SAFE_HOUR_INTERVAL[1].Split('-');
-                //reduce volume during silence interval - night
-                if (dt.CompareTo(interval[0]) >= 0 || dt.CompareTo(interval[1]) <= 0)
-                    percent = Convert.ToInt16(IniFile.PARAM_SILENCE_SAFE_VOLUME[1]);
-                double val = ((100 - Convert.ToDouble(percent)) / 100);
-                return Convert.ToInt16(VolumeLevels.VolumeSilence * val);
-            }
-
-			public void ZoneStop()
-			{
-				Album = null;
-				Author = null;
-				Year = null;
-				Title = null;
-				Genre = null;
-				SourceURL = null;
-				RequirePower = false;
-				ZoneState = Metadata.ZoneState.NotStarted;
-			}
-
-            public void ZoneClose()
-            {
-				ZoneStop();
-                IsActive = false;
-                ActivityType = GlobalCommands.nul;
-                ZoneState = Metadata.ZoneState.NotInitialised;
-                
-            }
-
-			public Boolean IsNearbyZone(int zoneId)
-			{
-				return NearbyZonesIdList.Contains(zoneId.ToString()+";");
-			}
-        }
-
-		public class MacroEntryCommand
-		{
-			public GlobalCommands Command;
-			public String ZoneName;
-			public String ParameterValueList;
-			public int DelayMiliSec=0;
-
-			public MacroEntryCommand()
-			{}
-		}
-		public class MacroShortcut
-		{
-			public String Shortcut;
-			public String DeviceName;
-			public MacroShortcut() { }
 		}
 
-		public class MacroEntry
+		public void SaveStateToIni()
 		{
-			public int Id;
-			public String RepeatMonth;
-			public String RepeatWeekDay;
-			public String RepeatTime;
-			public List<MacroShortcut> ShortcutList;
-			public List<MacroEntryCommand> CommandList;
-			public List<String> AllowUserList;
-			public DateTime ExecutedDateTime;
-			public MacroEntry()
-			{}
+			String json = JSON.Instance.ToJSON(this, false);
+			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
+		}
 
-			public static void SaveToIni(List<MacroEntry> list)
-			{
-				String json;
-				int line = 0;
-				foreach (MacroEntry entry in list)
-				{
-					json = fastJSON.JSON.Instance.ToJSON(entry, false);
-					Utilities.WritePrivateProfileString(IniFile.SCHEDULER_SECTION_MAIN, line.ToString(),
-						json, IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
-				}
-			}
+		public bool HasOutputDeviceAvailable()
+		{
+			return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords) != "";
+		}
 
-			public static List<MacroEntry> LoadFromIni()
+		public String OutputDeviceAutoCompleted()
+		{
+			return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
+		}
+
+		public static String GetOutputDeviceNameAutocompleted(String p_outputDevice, String p_outputKeywords)
+		{
+			List<String> systemOutputDevices = DShowUtility.SystemDeviceNameList;
+			String matchValue;
+			String result = "";//"NONE-outdev=" + p_outputDevice + "|keys=" + p_outputKeywords + "|";
+			if (p_outputKeywords != null)
 			{
-				String json;
-				MacroEntry entry;
-				List<MacroEntry> list = new List<MacroEntry>();
-				int line=0;
-				do
+				String[] keys = p_outputKeywords.Split(',');
+
+				if (p_outputDevice.Equals(IniFile.DEFAULT_AUTO_DEV_NAME))
 				{
-					json = Utilities.IniReadValue(IniFile.SCHEDULER_SECTION_MAIN, 
-						line.ToString(), IniFile.CurrentPath()+IniFile.SCHEDULER_FILE);
-					if (json != "")
+					foreach (String device in systemOutputDevices)
 					{
-						entry = fastJSON.JSON.Instance.ToObject<MacroEntry>(json);
-						entry.ExecutedDateTime = DateTime.MinValue;
-						entry.Id = line;
-						list.Add(entry);
-					}
-					line++;
-				}
-				while (json!="");
-				MLog.Log(null, "Loaded " + (line-1) +" scheduler events");
-				return list;
-			}
-
-			public static void AddParams(String parameters, ref Metadata.ValueList vals)
-			{
-				if (parameters != null && parameters != "")
-				{
-					String[] atoms, pair;
-					atoms = parameters.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-
-					for (int i = 0; i < atoms.Length; i++)
-					{
-						pair = atoms[i].Split('=');
-						if (pair.Length >= 2)
+						matchValue = "";
+						foreach (String key in keys)
 						{
-							vals.Add(pair[0], pair[1]);
-						}
-						else
-						{
-							if (i == 0)
-								vals.Add(Metadata.GlobalParams.singleparamvalue, atoms[i]);
+							if (device.ToLower().Contains(key.ToLower()))
+								matchValue = device;
 							else
-								MLog.Log(null, "At AddParams Invalid parameter in " + atoms[i]);
+							{
+								matchValue = "";
+								break;
+							}
+						}
+						if (matchValue != "")
+						{
+							result = matchValue;
+							break;
 						}
 					}
 				}
+				else
+					result = p_outputDevice;
 			}
+
+			//MLog.Log(null, "Device user select="+p_outputDevice+" keywords="+p_outputKeywords+" res="+result);
+			return result;
 		}
 
-		
-        public class CamAlert
-        {
-            private static int startIndex = 0;
-            public int Index;
-            public String CamId;
-            public DateTime AlarmTime;
-            public String AlarmSource;
-            public String CustomMessage;
-            public bool WasAcknowledged;
-            public bool WasIgnored;
-            public int ParentZoneId;
+		private static int GetWaveOutDeviceIndex(String p_outputKeywords)
+		{
+			List<DShowUtility.WAVEOUTCAPS> systemWaveOutputDevices;
+			systemWaveOutputDevices = DShowUtility.GetDevCapsPlayback();
+			int result = -1;
+			if (p_outputKeywords != null)
+			{
+				String[] keys = p_outputKeywords.Split(new String[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
-            public CamAlert()
-            {
-            }
+				for (int i = 0; i < systemWaveOutputDevices.Count; i++)
+				{
+					result = -1;
+					foreach (String key in keys)
+					{
+						if (!key.Equals("directsound"))
+						{
+							if (systemWaveOutputDevices[i].szPname.ToLower().Contains(key.ToLower()))
+								result = i;
+							else
+							{
+								result = -1;
+								break;
+							}
+						}
+					}
+					if (result != -1)
+						break;
+				}
+			}
+			return result;
+		}
 
-            public CamAlert(String alarmSource, String customMessage, String camId, int parentZoneId, bool isAlertActive)
-            {
-                AlarmTime = DateTime.Now;
-                AlarmSource = alarmSource;
-                CustomMessage = customMessage;
-                WasAcknowledged = false;
-                WasIgnored = !isAlertActive;
-                CamId = camId;
-                Index = startIndex;
-                ParentZoneId = parentZoneId;
-                startIndex++;
-            }
-        }
+		private static String GetVLCAudioWaveDeviceName(int wavedeviceindex)
+		{
+			String result;
+			DShowUtility.WAVEOUTCAPS wave;
+			if (wavedeviceindex != -1)
+			{
+				wave = DShowUtility.GetDevCapsPlayback()[wavedeviceindex];
+				result = wave.szPname + " ($" + String.Format("{0:x}", wave.wMid) + ",$" + String.Format("{0:x}", wave.wPid) + ")";
+			}
+			else
+				result = "no wave device";
+			return result;
+		}
 
-        public class ServerStatus
-        {
-            public Boolean IsServerOn = true;
-            public ZoneDetails[] ZoneDetails;
-            public List<CamAlert> CamAlertList;
+		public void Close()
+		{
+			ZoneClose();
+			SaveStateToIni();
+		}
 
-            public ServerStatus()
-            {}
-        }
-    }
+		public int GetDefaultVolume()
+		{
+			return GetDefaultVolume(DefaultVolumePercent);
+		}
+		public int GetDefaultAlarmVolume()
+		{
+			return GetDefaultVolume(DefaultVolumePercent / 2);
+		}
+		public int GetDefaultNotifyUserVolume()
+		{
+			int defvol = GetDefaultVolume(DefaultVolumePercent);
+			defvol = defvol - defvol * Convert.ToInt16(IniFile.PARAM_NOTIFY_VOLUME_INCREASE[1]) / 100;
+			return defvol;
+		}
+
+		private static int GetDefaultVolume(int percent)
+		{
+			String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
+			String[] interval = IniFile.PARAM_SILENCE_SAFE_HOUR_INTERVAL[1].Split('-');
+			//reduce volume during silence interval - night
+			if (dt.CompareTo(interval[0]) >= 0 || dt.CompareTo(interval[1]) <= 0)
+				percent = Convert.ToInt16(IniFile.PARAM_SILENCE_SAFE_VOLUME[1]);
+			double val = ((100 - Convert.ToDouble(percent)) / 100);
+			return Convert.ToInt16(VolumeLevels.VolumeSilence * val);
+		}
+
+		public void ZoneStop()
+		{
+			Album = null;
+			Author = null;
+			Year = null;
+			Title = null;
+			Genre = null;
+			SourceURL = null;
+			RequirePower = false;
+			ZoneState = ZoneState.NotStarted;
+		}
+
+		public void ZoneClose()
+		{
+			ZoneStop();
+			IsActive = false;
+			ActivityType = GlobalCommands.nul;
+			ZoneState = ZoneState.NotInitialised;
+                
+		}
+
+		public Boolean IsNearbyZone(int zoneId)
+		{
+			return NearbyZonesIdList.Contains(zoneId.ToString()+";");
+		}
+	}
 
 
-
-    public class CmdParams
+	public class CmdParams
     {
         public String Name;
         public Object Value;
@@ -1918,7 +1972,7 @@ namespace MultiZonePlayer
             String deviceName, devDisplayName;
             ControlDevice dev;
 			p_list.Clear();
-			foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
             {
                 zoneId = zone.ZoneId;//(int)enumerator.Key;
                 int r = 0;
@@ -2046,9 +2100,9 @@ namespace MultiZonePlayer
         public String Message;
         public EventType TypeEv;
         public EventImportance Importance;
-        public Metadata.ZoneDetails ZoneDetails;
+        public ZoneDetails ZoneDetails;
 
-        public MZPEvent(DateTime dateTime, EventSource source, String message, EventType type, EventImportance importance, Metadata.ZoneDetails zonedetails)
+        public MZPEvent(DateTime dateTime, EventSource source, String message, EventType type, EventImportance importance, ZoneDetails zonedetails)
         {
             DateTime = dateTime;
             Source = source;

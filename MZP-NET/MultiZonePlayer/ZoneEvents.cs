@@ -9,26 +9,26 @@ namespace MultiZonePlayer
 {
     public class ZoneEvents
     {
-        private List<Metadata.CamAlert> m_camAlarmList;
+        private List<CamAlert> m_camAlarmList;
 
         public ZoneEvents()
         {
-            m_camAlarmList = new List<Metadata.CamAlert>();
+            m_camAlarmList = new List<CamAlert>();
         }
 
         #region CamCode
 
         
-        public void AddCamAlert(Metadata.ValueList vals)
+        public void AddCamAlert(ValueList vals)
         {
-            String camId = vals.GetValue(Metadata.GlobalParams.oid);
-            Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.CameraId.Equals(camId));
+            String camId = vals.GetValue(GlobalParams.oid);
+            ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.CameraId.Equals(camId));
             
             //MLog.Log(this, message);
             if (zone != null)
             {
-                Metadata.CamAlert alarm = new Metadata.CamAlert(vals.GetValue(Metadata.GlobalParams.alertsource),
-                    vals.GetValue(Metadata.GlobalParams.msg), camId, zone.ZoneId, zone.CameraAlertActive);
+                CamAlert alarm = new CamAlert(vals.GetValue(GlobalParams.alertsource),
+                    vals.GetValue(GlobalParams.msg), camId, zone.ZoneId, zone.CameraAlertActive);
                 zone.LastCamAlertDateTime = alarm.AlarmTime;
                 m_camAlarmList.Add(alarm);
                 
@@ -37,11 +37,11 @@ namespace MultiZonePlayer
                 MLog.Log(this, "error zone not found for camalert, oid="+camId);
         }
 
-        public void DismissAlert(Metadata.ValueList vals)
+        public void DismissAlert(ValueList vals)
         {
-            if (vals.ContainsKey(Metadata.GlobalParams.alertindex))
+            if (vals.ContainsKey(GlobalParams.alertindex))
             {
-                int index = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.alertindex));
+                int index = Convert.ToInt16(vals.GetValue(GlobalParams.alertindex));
                 m_camAlarmList.Find(x => x.Index == index).WasAcknowledged = true;
             }
 
@@ -54,26 +54,26 @@ namespace MultiZonePlayer
                 }
             }
 
-            if (vals.ContainsKey(Metadata.GlobalParams.alertsource))
+            if (vals.ContainsKey(GlobalParams.alertsource))
             {
-                String source = vals.GetValue(Metadata.GlobalParams.alertsource);
+                String source = vals.GetValue(GlobalParams.alertsource);
                 var list = m_camAlarmList.FindAll(x => x.AlarmSource == source).ToList();
 
-                foreach (Metadata.CamAlert alert in list)
+                foreach (CamAlert alert in list)
                 {
                     alert.WasAcknowledged = true;
                 }
             }
         }
 
-        public void ToggleAlertStatus(Metadata.ValueList vals)
+        public void ToggleAlertStatus(ValueList vals)
         {
-            int zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
-            Metadata.ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId == zoneId);
+            int zoneId = Convert.ToInt16(vals.GetValue(GlobalParams.zoneid));
+            ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId == zoneId);
             zone.CameraAlertActive = !zone.CameraAlertActive;
         }
 
-        public List<Metadata.CamAlert> CamAlertList
+        public List<CamAlert> CamAlertList
         {
             get
             {
@@ -140,7 +140,7 @@ namespace MultiZonePlayer
                 {
 
                     Alarm.EnumScope sc = (Alarm.EnumScope)Enum.Parse(typeof(Alarm.EnumScope), scope);
-                    Metadata.ValueList vals;
+                    ValueList vals;
 
                     if (DateTime.Now.Subtract(eventDateTime).Duration().TotalMinutes < 5)
                         MZPState.Instance.SystemAlarm.LastAlarmEventDateTime = eventDateTime;
@@ -152,13 +152,13 @@ namespace MultiZonePlayer
                             int zoneId = MZPState.Instance.GetZoneIdByAlarmZoneId(Convert.ToInt16(alarmzoneid));
                             if (zoneId != -1)
                             {
-                                vals = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.alarmevent.ToString(), Metadata.CommandSources.events);
-                                vals.Add(Metadata.GlobalParams.zoneid, zoneId.ToString());
-                                vals.Add(Metadata.GlobalParams.datetime, date + " " + time);
-                                vals.Add(Metadata.GlobalParams.action, action);
-                                vals.Add(Metadata.GlobalParams.status, state);
-                                vals.Add(Metadata.GlobalParams.scope, scope);
-                                vals.Add(Metadata.GlobalParams.alertsource, IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[0]);
+                                vals = new ValueList(GlobalParams.command, GlobalCommands.alarmevent.ToString(), CommandSources.events);
+                                vals.Add(GlobalParams.zoneid, zoneId.ToString());
+                                vals.Add(GlobalParams.datetime, date + " " + time);
+                                vals.Add(GlobalParams.action, action);
+                                vals.Add(GlobalParams.status, state);
+                                vals.Add(GlobalParams.scope, scope);
+                                vals.Add(GlobalParams.alertsource, IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[0]);
                                 API.DoCommand(vals);
 
                                 //if (eventsBulkCount < 10)
@@ -207,9 +207,9 @@ namespace MultiZonePlayer
             
         }
 
-        public Metadata.CommandResult SendCommand_PARADOX(EnumParadoxCommands cmd, String areaid)
+        public CommandResult SendCommand_PARADOX(EnumParadoxCommands cmd, String areaid)
         {
-            Metadata.CommandResult res = new Metadata.CommandResult();
+            CommandResult res = new CommandResult();
             IntPtr handle = Utilities.FindWindow("TMainForm", "WinLoad");
             //find and show winload toolbar command menu
             if (handle.ToInt32() != 0)
@@ -229,26 +229,26 @@ namespace MultiZonePlayer
                         MLog.Log(null, "focus=" + Utilities.PostMessage((IntPtr)handle, Utilities.WM_SETFOCUS, IntPtr.Zero, IntPtr.Zero));
                         Thread.Sleep(50);
                         MLog.Log(null, "key down " + Utilities.PostMessage((IntPtr)handle, Utilities.WM_KEYDOWN, (IntPtr)cmd, IntPtr.Zero));
-                        res.Result = Metadata.ResultEnum.OK;
+                        res.Result = ResultEnum.OK;
                     }
                     else
                     {
                         res.ErrorMessage = "Unable to locate just opened commands toolbar";
-                        res.Result = Metadata.ResultEnum.ERR;
+                        res.Result = ResultEnum.ERR;
                         MLog.Log(this, res);
                     }
                 }
                 else
                 {
                     res.ErrorMessage = "Unable to locate show commands button";
-                    res.Result = Metadata.ResultEnum.ERR;
+                    res.Result = ResultEnum.ERR;
                     MLog.Log(this, res);
                 }
             }
             else
             {
                 res.ErrorMessage = "Unable to locate winload";
-                res.Result = Metadata.ResultEnum.ERR;
+                res.Result = ResultEnum.ERR;
                 MLog.Log(this, res);
             }
             return res;
@@ -344,11 +344,11 @@ namespace MultiZonePlayer
 
                 if (failure != MZPState.Instance.IsPowerFailure)
                 {
-                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, Metadata.GlobalCommands.powerevent.ToString(), Metadata.CommandSources.system);
-                    val.Add(Metadata.GlobalParams.action, failure.ToString());
-                    val.Add(Metadata.GlobalParams.datetime, datetime.ToString());
+                    ValueList val = new ValueList(GlobalParams.command, GlobalCommands.powerevent.ToString(), CommandSources.system);
+                    val.Add(GlobalParams.action, failure.ToString());
+                    val.Add(GlobalParams.datetime, datetime.ToString());
                     //Metadata.ValueList retval;
-					Metadata.CommandResult retcmd = API.DoCommandFromWeb(val);//, out retval);
+					CommandResult retcmd = API.DoCommandFromWeb(val);//, out retval);
                     //Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
 
                 }

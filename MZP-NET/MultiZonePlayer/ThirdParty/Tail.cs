@@ -113,7 +113,7 @@ namespace MultiZonePlayer
                 }
                 catch (Exception ex)
                 {
-                    MLog.Log(ex, this, "Unable to open tail file: " + this.filename);
+                    MLog.Log(this, "Unable to open tail file: " + this.filename);
                     return;
                 }
 

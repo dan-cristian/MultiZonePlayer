@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace MultiZonePlayer
 {
-        public class MZPState
+	public class MZPState
         {
             private static MZPState m_sysState = null;
           
@@ -36,7 +36,7 @@ namespace MultiZonePlayer
 
             private Hashtable m_playListOLD = null;//list with all songs from current playlist
 
-            private List<Metadata.ZoneDetails> m_zoneList;
+            private List<ZoneDetails> m_zoneList;
             private List<MoodMusic> m_moodMusicList;
 
             private MultiZonePlayer.Tail m_Tail;
@@ -66,7 +66,7 @@ namespace MultiZonePlayer
 
 			//private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
 
-			private List<Metadata.MacroEntry> m_macroList;
+			private List<MacroEntry> m_macroList;
 			private List<GenericUPS> m_upsList;
 
 			private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
@@ -98,7 +98,7 @@ namespace MultiZonePlayer
                 set { m_displayList = value; }
             }
 
-			public List<Metadata.MacroEntry> MacroList
+			public List<MacroEntry> MacroList
 			{
 				get { return m_macroList; }
 			}
@@ -135,8 +135,8 @@ namespace MultiZonePlayer
                 
 				String deviceName;
                 MLog.Log(this, "Loading zones from ini");
-                m_zoneList = new List<Metadata.ZoneDetails>();
-                Metadata.ZoneDetails.LoadFromIni(ref m_zoneList);
+                m_zoneList = new List<ZoneDetails>();
+                MultiZonePlayer.ZoneDetails.LoadFromIni(ref m_zoneList);
 
                 m_moodMusicList = new List<MoodMusic>();
                 MoodMusic.LoadFromIni(ref m_moodMusicList);
@@ -215,7 +215,7 @@ namespace MultiZonePlayer
 				DateTime fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 				if (fileModified != m_lastScheduleFileModifiedDate)
 				{
-					m_macroList = Metadata.MacroEntry.LoadFromIni();
+					m_macroList = MacroEntry.LoadFromIni();
 					RFXDeviceDefinition.LoadFromIni();
 					MLog.LoadFromIni();
 					m_lastScheduleFileModifiedDate = fileModified;
@@ -229,9 +229,9 @@ namespace MultiZonePlayer
 				}
 			}
 
-			public List<Metadata.MacroEntry> GetZoneMacros(int zoneId)
+			public List<MacroEntry> GetZoneMacros(int zoneId)
 			{
-				List<Metadata.MacroEntry> macros = null;
+				List<MacroEntry> macros = null;
 				String zoneName = GetZoneById(zoneId).ZoneName;
 				if (m_macroList != null)
 				{
@@ -318,7 +318,7 @@ namespace MultiZonePlayer
                 }
             }
 
-            public List<Metadata.ZoneDetails> ZoneDetails
+            public List<ZoneDetails> ZoneDetails
             {
                 get{return m_zoneList;}
             }
@@ -347,12 +347,12 @@ namespace MultiZonePlayer
             {
                 get { return m_musicScheduleList; }
             }
-            public Metadata.ZoneDetails GetZoneById(int zoneId)
+            public ZoneDetails GetZoneById(int zoneId)
             {
                 return ZoneDetails.Find(item => item.ZoneId == zoneId);
             }
 
-			public Metadata.ZoneDetails GetZoneIdByContainsName(String zoneName)
+			public ZoneDetails GetZoneIdByContainsName(String zoneName)
 			{
 				if (zoneName != null)
 					return ZoneDetails.Find(item => item.ZoneName.Contains(zoneName));
@@ -371,7 +371,7 @@ namespace MultiZonePlayer
 
             public BasePowerControl PowerControl(int zoneid)
             {
-				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+				if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 					return m_powerControlDenkovi;
 				else
 					return m_powerControlNumato;
@@ -379,19 +379,19 @@ namespace MultiZonePlayer
 
 			public void PowerControlOn(int zoneid)
 			{
-				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+				if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 					m_powerControlDenkovi.PowerOn(zoneid);
 				else
-					if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Numato.ToString())
+					if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
 						m_powerControlNumato.PowerOn(zoneid);
 			}
 
 			public void PowerControlOff(int zoneid)
 			{
-				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+				if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 					m_powerControlDenkovi.PowerOff(zoneid);
 				else
-					if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Numato.ToString())
+					if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
 						m_powerControlNumato.PowerOff(zoneid);
 			}
 
@@ -402,10 +402,10 @@ namespace MultiZonePlayer
 			}
 			public bool PowerControlIsOn(int zoneid)
 			{
-				if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Denkovi.ToString())
+				if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 					return m_powerControlDenkovi.IsPowerOn(zoneid);
 				else
-					if (GetZoneById(zoneid).PowerType == Metadata.PowerType.Numato.ToString())
+					if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
 						return m_powerControlNumato.IsPowerOn(zoneid);
 					else return false;
 			}
@@ -471,7 +471,7 @@ namespace MultiZonePlayer
 			}
 			public bool IsZoneActive(int zoneId)
 			{
-				Metadata.ZoneDetails zone = ZoneDetails.Find(item => item.ZoneId == zoneId);
+				ZoneDetails zone = ZoneDetails.Find(item => item.ZoneId == zoneId);
 				if (zone != null)
 					return zone.IsActive;
 				else return false; ;
@@ -644,7 +644,7 @@ namespace MultiZonePlayer
 
             public int GetZoneIdByAlarmZoneId(int alarmZoneId)
             {
-                Metadata.ZoneDetails zone = m_zoneList.Find(x => x.AlarmZoneId.Equals(alarmZoneId));
+                ZoneDetails zone = m_zoneList.Find(x => x.AlarmZoneId.Equals(alarmZoneId));
                 if (zone != null)
                     return zone.ZoneId;
                 else
@@ -653,7 +653,7 @@ namespace MultiZonePlayer
 
             public int GetZoneIdByCamZoneId(int camId)
             {
-                Metadata.ZoneDetails zone = m_zoneList.Find(x => x.CameraId.Equals(camId.ToString()));
+                ZoneDetails zone = m_zoneList.Find(x => x.CameraId.Equals(camId.ToString()));
                 if (zone != null)
                     return zone.ZoneId;
                 else
@@ -666,11 +666,11 @@ namespace MultiZonePlayer
             {
                 get
                 {
-                    Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
-                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) 
-						|| x.ActivityType.Equals(Metadata.GlobalCommands.streammp3)
-                        || x.ActivityType.Equals(Metadata.GlobalCommands.tv) 
-						|| x.ActivityType.Equals(Metadata.GlobalCommands.xbmc)) 
+                    ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
+                        (x.ActivityType.Equals(GlobalCommands.music) 
+						|| x.ActivityType.Equals(GlobalCommands.streammp3)
+                        || x.ActivityType.Equals(GlobalCommands.tv) 
+						|| x.ActivityType.Equals(GlobalCommands.xbmc)) 
                         && x.IsActive);
                     if (zone != null)
                     {
@@ -695,8 +695,8 @@ namespace MultiZonePlayer
 			public ZoneGeneric GetFirstZoneMusic()
 			{
 				ZoneGeneric zone = null;
-				Metadata.ZoneDetails zonedetails = ZoneDetails.OrderBy(x => x.LastLocalCommandDateTime).ToList().Find(x =>
-                        (x.ActivityType.Equals(Metadata.GlobalCommands.music) && x.IsActive));
+				ZoneDetails zonedetails = ZoneDetails.OrderBy(x => x.LastLocalCommandDateTime).ToList().Find(x =>
+                        (x.ActivityType.Equals(GlobalCommands.music) && x.IsActive));
 				if (zonedetails != null)
 					zone = ActiveZones.Find(x => x.GetZoneId() == zonedetails.ZoneId);
 				return zone;
@@ -704,7 +704,7 @@ namespace MultiZonePlayer
 
             public int GetActiveChildZone(int parentZoneId)
             {
-                Metadata.ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList()
+                ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList()
 					.Find(x => (x.ParentZoneId==parentZoneId)&&x.IsActive);
                 if (zone != null)
                 {
@@ -763,7 +763,7 @@ namespace MultiZonePlayer
 					+ " "+DateTime.Now.ToLongTimeString();
 				result +=  "\r\n" + MZPState.Instance.SystemAlarm.AreaState;
 				result += "\r\nPower Failed=" + MZPState.Instance.IsPowerFailure;
-				foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+				foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
 				{
 					result += "\r\n" + zone.SummaryStatus;
 				}
@@ -802,7 +802,7 @@ namespace MultiZonePlayer
                         }
 
                         DateTime lastCamEvent = m_initMZPStateDateTime;
-                        foreach (Metadata.ZoneDetails zone in m_zoneList)
+                        foreach (ZoneDetails zone in m_zoneList)
                         {
                             if (zone.HasMotionSensor && zone.HasCamera)
                             {
@@ -829,7 +829,7 @@ namespace MultiZonePlayer
             {
                 if (SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.ready) && (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1])))
                 {
-                    List<Metadata.ZoneDetails> openZones;
+                    List<ZoneDetails> openZones;
                     openZones = m_zoneList.FindAll(x => x.HasMotionSensor && (x.HasRecentMove || x.HasImmediateMove));
 
                     if (openZones.Count == 0)
@@ -918,7 +918,7 @@ namespace MultiZonePlayer
 
 				if (mzpevent != null)
 				{
-					List<Metadata.ZoneDetails> zonesToNotify = null;
+					List<ZoneDetails> zonesToNotify = null;
 					zonesToNotify = m_zoneList.FindAll(x => x.HasSpeakers && (x.IsActive || x.HasImmediateMove || x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
 						.OrderByDescending(x => x.IsActive).ThenByDescending(x => x.HasImmediateMove).ThenBy(x => x.LastLocalCommandAgeInSeconds).ToList();
 
@@ -927,41 +927,41 @@ namespace MultiZonePlayer
 
 					MLog.Log(this, "NotifyEvent to zones count=" + zonesToNotify.Count);
 
-					Metadata.ValueList vals = new Metadata.ValueList();
-					vals.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.notifyuser.ToString());
+					ValueList vals = new ValueList();
+					vals.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
 
-					foreach (Metadata.ZoneDetails zone in zonesToNotify)
+					foreach (ZoneDetails zone in zonesToNotify)
 					{
 						if (!mzpevent.ZoneDetails.IsNearbyZone(zone.ZoneId) && !zone.IsNearbyZone(mzpevent.ZoneDetails.ZoneId))
 						{
-							vals.Set(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
-							vals.Set(Metadata.GlobalParams.sourcezoneid, mzpevent.ZoneDetails.ZoneId.ToString());
+							vals.Set(GlobalParams.zoneid, zone.ZoneId.ToString());
+							vals.Set(GlobalParams.sourcezoneid, mzpevent.ZoneDetails.ZoneId.ToString());
 							API.DoCommand(vals);
 						}
 					}
 				}
 			}
 
-			public Metadata.CommandResult ExecuteMacro(int macroId)
+			public CommandResult ExecuteMacro(int macroId)
 			{
-				Metadata.CommandResult cmdresult = new Metadata.CommandResult();
-				cmdresult.Result = Metadata.ResultEnum.ERR;
-				Metadata.MacroEntry entry = m_macroList.Find(x => x.Id == macroId);
+				CommandResult cmdresult = new CommandResult();
+				cmdresult.Result = ResultEnum.ERR;
+				MacroEntry entry = m_macroList.Find(x => x.Id == macroId);
 				if (entry != null)
 				{
 					cmdresult.ErrorMessage = "macro found but empty command list";
-					foreach (Metadata.MacroEntryCommand cmd in entry.CommandList)
+					foreach (MacroEntryCommand cmd in entry.CommandList)
 					{
 						MLog.Log(this, "Executing macro event " + cmd.Command + " in zone=" + cmd.ZoneName);
-						Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
-								cmd.Command.ToString(), Metadata.CommandSources.system);
-						Metadata.ZoneDetails zone = GetZoneIdByContainsName(cmd.ZoneName);
+						ValueList val = new ValueList(GlobalParams.command,
+								cmd.Command.ToString(), CommandSources.system);
+						ZoneDetails zone = GetZoneIdByContainsName(cmd.ZoneName);
 						if (zone != null)
 						{
-							val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+							val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
 						}
 						//parameters
-						Metadata.MacroEntry.AddParams(cmd.ParameterValueList, ref val);
+						MacroEntry.AddParams(cmd.ParameterValueList, ref val);
 						cmdresult = API.DoCommand(val);
 						if (cmd.DelayMiliSec != 0)
 							Thread.Sleep(cmd.DelayMiliSec);
@@ -975,18 +975,18 @@ namespace MultiZonePlayer
 				return cmdresult;
 			}
 
-			public Metadata.CommandResult ExecuteRFXCmd(string cmd)
+			public CommandResult ExecuteRFXCmd(string cmd)
 			{
-				Metadata.CommandResult cmdresult = new Metadata.CommandResult();
-				cmdresult.Result = Metadata.ResultEnum.ERR;
+				CommandResult cmdresult = new CommandResult();
+				cmdresult.Result = ResultEnum.ERR;
 				if (cmd != null && cmd.Length > 0)
 				{
 					RFXCom rfx = (RFXCom)m_messengerList.Find(x => x.GetType() == typeof(RFXCom));
 					if (rfx != null)
 					{
-						cmdresult.Command = Metadata.GlobalCommands.rfxcmd.ToString() + ":"+ cmd;
+						cmdresult.Command = GlobalCommands.rfxcmd.ToString() + ":"+ cmd;
 						cmdresult.OutputMessage = rfx.SendCommand(cmd);
-						cmdresult.Result = Metadata.ResultEnum.OK;
+						cmdresult.Result = ResultEnum.OK;
 					}
 					else
 						cmdresult.ErrorMessage = "RFXcomm instance not found";
@@ -999,13 +999,13 @@ namespace MultiZonePlayer
             {
                 String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
                 String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
-                foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+                foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
                 {
                     if ((zone.WakeTime.Length > 0) && (zone.WakeTime.CompareTo(dt) == 0) && zone.WakeWeekDay.Contains(weekday))
                     {
-                        Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command, 
-                            Metadata.GlobalCommands.musicalarm.ToString(), Metadata.CommandSources.system);
-                        val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+                        ValueList val = new ValueList(GlobalParams.command, 
+                            GlobalCommands.musicalarm.ToString(), CommandSources.system);
+                        val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
                         API.DoCommand(val);
                     }
                 }
@@ -1018,7 +1018,7 @@ namespace MultiZonePlayer
 				String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
 				String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2).ToUpper();
 				string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT).ToUpper();
-				foreach (Metadata.MacroEntry entry in m_macroList)
+				foreach (MacroEntry entry in m_macroList)
 				{
 					entrymonth = entry.RepeatMonth != null ? entry.RepeatMonth.ToUpper() : "";
 					entryday = entry.RepeatWeekDay != null ? entry.RepeatWeekDay.ToUpper() : "";
@@ -1047,7 +1047,7 @@ namespace MultiZonePlayer
 				{
 					shortcut = shortcut.ToLower();
 					deviceName = deviceName.ToLower();
-					Metadata.MacroEntry entry = m_macroList.Find(x =>
+					MacroEntry entry = m_macroList.Find(x =>
 						x.ShortcutList != null
 						&& x.ShortcutList.Find(y => y.Shortcut == shortcut) != null
 						&& (x.ShortcutList.Find(y => deviceName.Contains(y.DeviceName)) != null));
@@ -1065,7 +1065,7 @@ namespace MultiZonePlayer
             public void CheckForExternalZoneEvents()
             {
                 Display display;
-                foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+                foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
                 {
                     if (!zone.IsActive)
                     {
@@ -1082,9 +1082,9 @@ namespace MultiZonePlayer
                             {
                                 if (((DisplayLGTV)display).IsOn)
                                 {
-                                    Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
-                                        Metadata.GlobalCommands.tv.ToString(), Metadata.CommandSources.system);
-                                    val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+                                    ValueList val = new ValueList(GlobalParams.command,
+                                        GlobalCommands.tv.ToString(), CommandSources.system);
+                                    val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
                                     API.DoCommand(val);
                                 }
                             }
@@ -1094,9 +1094,9 @@ namespace MultiZonePlayer
                         {
                             if (Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
                             {
-                                Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.command,
-                                        Metadata.GlobalCommands.xbmc.ToString(), Metadata.CommandSources.system);
-                                val.Add(Metadata.GlobalParams.zoneid, zone.ZoneId.ToString());
+                                ValueList val = new ValueList(GlobalParams.command,
+                                        GlobalCommands.xbmc.ToString(), CommandSources.system);
+                                val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
                                 API.DoCommand(val);
                             }
                         }
@@ -1120,7 +1120,7 @@ namespace MultiZonePlayer
 
 					if ((mzpevent.ZoneDetails.IsClosureArmed) 
 						&& (mzpevent.Source == MZPEvent.EventSource.Closure)
-						&& (mzpevent.ZoneDetails.ClosureOpenCloseRelay.RelayState==Metadata.ClosureOpenCloseRelay.EnumState.ContactClosed))
+						&& (mzpevent.ZoneDetails.ClosureOpenCloseRelay.RelayState==ClosureOpenCloseRelay.EnumState.ContactClosed))
 					{
 						cause = "Closure event detected on closure armed zone" + mzpevent.ZoneDetails.ZoneName;
 						NotifyEventToUsers(mzpevent, cause, false, false);
@@ -1174,12 +1174,12 @@ namespace MultiZonePlayer
                 }
             }
 
-            public void LogEvent(DateTime dateTime, MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, Metadata.ZoneDetails zonedetails)
+            public void LogEvent(DateTime dateTime, MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, ZoneDetails zonedetails)
             {
                 LogEvent(new MZPEvent(dateTime, source, message, type, importance, zonedetails));
             }
 
-            public void LogEvent(MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, Metadata.ZoneDetails zonedetails)
+            public void LogEvent(MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, ZoneDetails zonedetails)
             {
                 LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance, zonedetails));
             }
@@ -1203,4 +1203,4 @@ namespace MultiZonePlayer
 					MediaLibrary.AllAudioFiles.SaveUpdatedItems();
             }
         }
-    }
+}

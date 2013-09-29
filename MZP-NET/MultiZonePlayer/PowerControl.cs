@@ -549,7 +549,7 @@ namespace MultiZonePlayer
             //int[] result;
             List<int> res=new List<int>();
             
-            foreach (Metadata.ZoneDetails zone in MZPState.Instance.ZoneDetails)
+            foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
             {
                 if (zone.ZoneId == zoneId && zone.PowerIndex>0)
                     res.Add(zone.PowerIndex);

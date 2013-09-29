@@ -879,7 +879,7 @@ namespace MultiZonePlayer
 			MLog.Log(null, "Loaded " + (line - 1) + " log definition lines");
 		}
 
-        public static void Log(Object o, Metadata.CommandResult res)
+        public static void Log(Object o, CommandResult res)
         {
             Log(o, res.ErrorMessage);
         }

@@ -181,7 +181,7 @@ namespace MultiZonePlayer
             {
                 String musicFile;
 
-                if (m_dcPlay.GetState() == Metadata.ZoneState.Running)
+                if (m_dcPlay.GetState() == ZoneState.Running)
                     Stop();
                 if (CurrentItem != null)
                 {
@@ -210,9 +210,9 @@ namespace MultiZonePlayer
 						else
 						{
 							m_dcPlay.OpenClip(musicFile, this.m_zoneForm);
-							if (m_dcPlay.GetState() == Metadata.ZoneState.Running)
+							if (m_dcPlay.GetState() == ZoneState.Running)
 							{
-								m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
+								m_zoneDetails.ZoneState = ZoneState.Running;
 							}
 							m_songList[m_currentSongKey].IncreasePlayCount();
 						}
@@ -252,7 +252,7 @@ namespace MultiZonePlayer
 
             public void UpdateOutputDevices()
             {
-                if (GetState().Equals(Metadata.ZoneState.Running))
+                if (GetState().Equals(ZoneState.Running))
                     m_dcPlay.UpdateOutputDevices();
             }
 
@@ -283,7 +283,7 @@ namespace MultiZonePlayer
 
             public void DeleteCurrentFile()
             {
-                if (GetState() == Metadata.ZoneState.Paused)
+                if (GetState() == ZoneState.Paused)
                 {
                     String currentFile = CurrentItem.SourceURL;
                     Next();
@@ -492,7 +492,7 @@ namespace MultiZonePlayer
                 }
             }
 
-            public void SetGenreList(Metadata.ValueList vals, string genre)
+            public void SetGenreList(ValueList vals, string genre)
             {
                 Stop();
 				if (genre == null)
@@ -505,7 +505,7 @@ namespace MultiZonePlayer
             }
 			
 
-            public void SetArtistList(Metadata.ValueList vals, string artist)
+            public void SetArtistList(ValueList vals, string artist)
             {
                 Stop();
 				if (artist == null)
@@ -653,14 +653,14 @@ namespace MultiZonePlayer
                 return prevIndex + ":"+ m_songList[prevIndex].SourceURL;
             }
 
-			public override Metadata.ZoneState GetState()
+			public override ZoneState GetState()
             {
                 return m_dcPlay.GetState();
             }
 
 			public override bool IsActive()
             {
-                return (m_dcPlay.GetState() == Metadata.ZoneState.Running);
+                return (m_dcPlay.GetState() == ZoneState.Running);
             }
 
             private void SetPlayList(String playlist)
@@ -678,9 +678,9 @@ namespace MultiZonePlayer
                 return m_songList;
             }
 
-            public Metadata.ValueList GetSongValueList()
+            public ValueList GetSongValueList()
             {
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
+                ValueList val = new ValueList(CommandSources.system);
                 var titles = m_songList.Select(i => i.Author+" | "+i.Title).ToList();
                 //val.Values = titles.ToList();
                 var indexes = m_songList.Select(i => i.Index.ToString()).ToList();
@@ -689,9 +689,9 @@ namespace MultiZonePlayer
                 return val;
             }
 
-            public Metadata.ValueList GetMoodValueList()
+            public ValueList GetMoodValueList()
             {
-                Metadata.ValueList val = new Metadata.ValueList(Metadata.CommandSources.system);
+                ValueList val = new ValueList(CommandSources.system);
                 var names = MZPState.Instance.MoodMusicList.Select(m => m.Name);
                 var indexes = MZPState.Instance.MoodMusicList.Select(m => m.Index.ToString());
                 val.SetBulk(indexes.ToList(), names.ToList());
@@ -738,70 +738,70 @@ namespace MultiZonePlayer
             }
         }
 
-            public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
+            public ValueList ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
             {
-                Metadata.ValueList result = new Metadata.ValueList();
-                String action = action = vals.GetValue(Metadata.GlobalParams.action);
+                ValueList result = new ValueList();
+                String action = action = vals.GetValue(GlobalParams.action);
                 int rating;               
                 switch (cmdRemote)
                 {
-                    case Metadata.GlobalCommands.k0:
-                    case Metadata.GlobalCommands.k1:
-                    case Metadata.GlobalCommands.k2:
-                    case Metadata.GlobalCommands.k3:
-                    case Metadata.GlobalCommands.k4:
-                    case Metadata.GlobalCommands.k5:
-                    case Metadata.GlobalCommands.k6:
-                    case Metadata.GlobalCommands.k7:
-                    case Metadata.GlobalCommands.k8:
-                    case Metadata.GlobalCommands.k9:
+                    case GlobalCommands.k0:
+                    case GlobalCommands.k1:
+                    case GlobalCommands.k2:
+                    case GlobalCommands.k3:
+                    case GlobalCommands.k4:
+                    case GlobalCommands.k5:
+                    case GlobalCommands.k6:
+                    case GlobalCommands.k7:
+                    case GlobalCommands.k8:
+                    case GlobalCommands.k9:
                         NumericCmdReceived(cmdRemote.ToString().Substring(cmdRemote.ToString().Length - 1));
                         break;
-                    case Metadata.GlobalCommands.right:
+                    case GlobalCommands.right:
                         NextPlaylist();
                         break;
-                    case Metadata.GlobalCommands.left:
+                    case GlobalCommands.left:
                         PreviousPlaylist();
                         break;
-                    case Metadata.GlobalCommands.enter://for numpads
+                    case GlobalCommands.enter://for numpads
                         Next();
                         break;
-                    case Metadata.GlobalCommands.ffwd:
+                    case GlobalCommands.ffwd:
                         Ffwd();
                         break;
-                    case Metadata.GlobalCommands.rewind:
+                    case GlobalCommands.rewind:
                         Rewind();
                         break;
-                    case Metadata.GlobalCommands.record:
+                    case GlobalCommands.record:
                         /*if (m_zoneUser.Id != "0")
                         {
                             //ControlCenter.PlayInfoMessage("Deleting current file", this);
                             DeleteCurrentFile();
                         }*/
                         break;
-                    case Metadata.GlobalCommands.repeat:
+                    case GlobalCommands.repeat:
                         SwitchPlayMode();
                         break;
-                    case Metadata.GlobalCommands.up:
+                    case GlobalCommands.up:
                         rating = RatingUp();
                         break;
-                    case Metadata.GlobalCommands.down:
+                    case GlobalCommands.down:
                         rating = RatingDown();
                         break;
-                    case Metadata.GlobalCommands.ratingset:
-                        SetRating(Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.ratingvalue)));
+                    case GlobalCommands.ratingset:
+                        SetRating(Convert.ToInt16(vals.GetValue(GlobalParams.ratingvalue)));
                         break;
-                    case Metadata.GlobalCommands.setgenrelist:
-						SetGenreList(vals, vals.GetValue(Metadata.GlobalParams.singleparamvalue));
+                    case GlobalCommands.setgenrelist:
+						SetGenreList(vals, vals.GetValue(GlobalParams.singleparamvalue));
                         break;
-                    case Metadata.GlobalCommands.setartistlist:
-						SetArtistList(vals, vals.GetValue(Metadata.GlobalParams.singleparamvalue));
+                    case GlobalCommands.setartistlist:
+						SetArtistList(vals, vals.GetValue(GlobalParams.singleparamvalue));
                         break;
-                    case Metadata.GlobalCommands.medialist:
+                    case GlobalCommands.medialist:
                         result = GetSongValueList();
                         break;
-                    case Metadata.GlobalCommands.setmediaitem:
-						string keyword = vals.GetValue(Metadata.GlobalParams.singleparamvalue);
+                    case GlobalCommands.setmediaitem:
+						string keyword = vals.GetValue(GlobalParams.singleparamvalue);
 						if (keyword != null)
 						{
 							keyword = keyword.ToLower();
@@ -820,34 +820,34 @@ namespace MultiZonePlayer
 						else
 							Play(Convert.ToInt16(vals.IndexValueList[0]));
                         break;
-                    case Metadata.GlobalCommands.getmoodmusiclist:
+                    case GlobalCommands.getmoodmusiclist:
                         result = GetMoodValueList();
                         break;
-                    case Metadata.GlobalCommands.setmoodmusic:
-						if (vals.GetValue(Metadata.GlobalParams.moodindex) != null)
-							SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.GetValue(Metadata.GlobalParams.moodindex))));
+                    case GlobalCommands.setmoodmusic:
+						if (vals.GetValue(GlobalParams.moodindex) != null)
+							SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Index.ToString().Equals(vals.GetValue(GlobalParams.moodindex))));
 						else
 						{
-							if (vals.ContainsKey(Metadata.GlobalParams.singleparamvalue))
-								vals.Add(Metadata.GlobalParams.moodname, vals.GetValue(Metadata.GlobalParams.singleparamvalue));
-							if (vals.GetValue(Metadata.GlobalParams.moodname) != null)
-								SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(vals.GetValue(Metadata.GlobalParams.moodname))));
+							if (vals.ContainsKey(GlobalParams.singleparamvalue))
+								vals.Add(GlobalParams.moodname, vals.GetValue(GlobalParams.singleparamvalue));
+							if (vals.GetValue(GlobalParams.moodname) != null)
+								SetMood(MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(vals.GetValue(GlobalParams.moodname))));
 						}
                         Play();
                         break;
-                    case Metadata.GlobalCommands.searchmediaitem:
-						if (vals.ContainsKey(Metadata.GlobalParams.searchvalue))
-							Search(vals.GetValue(Metadata.GlobalParams.searchvalue));
+                    case GlobalCommands.searchmediaitem:
+						if (vals.ContainsKey(GlobalParams.searchvalue))
+							Search(vals.GetValue(GlobalParams.searchvalue));
 						else
-							Search(vals.GetValue(Metadata.GlobalParams.singleparamvalue));
+							Search(vals.GetValue(GlobalParams.singleparamvalue));
                         break;
-                    case Metadata.GlobalCommands.followmemusic:
+                    case GlobalCommands.followmemusic:
                         MZPState.Instance.ToogleFollowMeMusic();
                         break;
                     //case Metadata.GlobalCommands.back:
-                    case Metadata.GlobalCommands.holdcriteria:
-                        if (vals.GetValue(Metadata.GlobalParams.action) != null)
-                            SetHoldCriteria(vals.GetValue(Metadata.GlobalParams.action).ToLower());
+                    case GlobalCommands.holdcriteria:
+                        if (vals.GetValue(GlobalParams.action) != null)
+                            SetHoldCriteria(vals.GetValue(GlobalParams.action).ToLower());
                         else
                             HoldCriteriaToggle();
                         break;
@@ -897,13 +897,13 @@ namespace MultiZonePlayer
 			
 		}
         private ZoneMusic m_clonedZoneMusic;
-        private Metadata.ZoneState m_zoneState;
+        private ZoneState m_zoneState;
 
         public ZoneMusicClone(ZoneGeneric p_zoneForm, ZoneGeneric p_cloneSource)
         {
             m_cloneSourceZone = p_cloneSource;
             m_parentZoneForm = p_zoneForm;
-            m_zoneState = Metadata.ZoneState.NotInitialised;
+            m_zoneState = ZoneState.NotInitialised;
             m_zoneDetails = p_zoneForm.ZoneDetails;
 
             if (m_cloneSourceZone != null)
@@ -914,7 +914,7 @@ namespace MultiZonePlayer
                 m_cloneSourceZone.AddClonedZone(this.ZoneDetails);
                 m_clonedZoneMusic = (ZoneMusic)m_cloneSourceZone.GetCurrentActivity();
                 m_clonedZoneMusic.UpdateOutputDevices();
-                m_zoneState = Metadata.ZoneState.Running;
+                m_zoneState = ZoneState.Running;
             }
         }
 
@@ -925,7 +925,7 @@ namespace MultiZonePlayer
                 m_cloneSourceZone.RemoveClonedZone(this.ZoneDetails);
                 m_clonedZoneMusic.UpdateOutputDevices();
             }
-            m_zoneState = Metadata.ZoneState.NotStarted;
+            m_zoneState = ZoneState.NotStarted;
 			m_zoneDetails.RequirePower = false;
         }
 		public override void Close()
@@ -963,7 +963,7 @@ namespace MultiZonePlayer
             {
                 MZPState.Instance.PowerControlOn(m_parentZoneForm.ZoneDetails.ZoneId);
                 m_cloneSourceZone.GetCurrentActivity().Play();
-                m_zoneState = Metadata.ZoneState.Running;
+                m_zoneState = ZoneState.Running;
             }
         }
 		public override void Pause()
@@ -995,20 +995,20 @@ namespace MultiZonePlayer
                 m_cloneSourceZone.GetCurrentActivity().Guide();
         }
 
-		public override Metadata.ZoneState GetState()
+		public override ZoneState GetState()
         {
             if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
             {
-                if (m_zoneState == Metadata.ZoneState.Running)
+                if (m_zoneState == ZoneState.Running)
                     return m_cloneSourceZone.GetCurrentActivity().GetState();
                 else
                     return m_zoneState;
             }
             else
-                return Metadata.ZoneState.NotInitialised;
+                return ZoneState.NotInitialised;
         }
 
-		public override Metadata.ZoneDetails ZoneDetails
+		public override ZoneDetails ZoneDetails
         {
             get
             {
@@ -1020,7 +1020,7 @@ namespace MultiZonePlayer
         {
             if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
             {
-                if (m_zoneState == Metadata.ZoneState.Running)
+                if (m_zoneState == ZoneState.Running)
                     return m_cloneSourceZone.GetCurrentActivity().IsActive();
                 else
                     return false;
@@ -1041,7 +1041,7 @@ namespace MultiZonePlayer
             if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
                 return m_cloneSourceZone.GetCurrentActivity().GetVolumeLevel();
             else
-                return Metadata.VolumeLevels.VolumeSilence;
+                return VolumeLevels.VolumeSilence;
         }
 
         public int RatingUp()
@@ -1092,45 +1092,45 @@ namespace MultiZonePlayer
         {
         }
 
-		public Metadata.ValueList ProcessAction(Metadata.GlobalCommands cmdRemote, Metadata.ValueList vals, ref Metadata.CommandResult cmdresult)
+		public ValueList ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
         {
-            Metadata.ValueList result = new Metadata.ValueList();
-            String action = action = vals.GetValue(Metadata.GlobalParams.action);
+            ValueList result = new ValueList();
+            String action = action = vals.GetValue(GlobalParams.action);
             int rating;
             switch (cmdRemote)
             {
-                case Metadata.GlobalCommands.k0:
-                case Metadata.GlobalCommands.k1:
-                case Metadata.GlobalCommands.k2:
-                case Metadata.GlobalCommands.k3:
-                case Metadata.GlobalCommands.k4:
-                case Metadata.GlobalCommands.k5:
-                case Metadata.GlobalCommands.k6:
-                case Metadata.GlobalCommands.k7:
-                case Metadata.GlobalCommands.k8:
-                case Metadata.GlobalCommands.k9:
+                case GlobalCommands.k0:
+                case GlobalCommands.k1:
+                case GlobalCommands.k2:
+                case GlobalCommands.k3:
+                case GlobalCommands.k4:
+                case GlobalCommands.k5:
+                case GlobalCommands.k6:
+                case GlobalCommands.k7:
+                case GlobalCommands.k8:
+                case GlobalCommands.k9:
                     NumericCmdReceived(cmdRemote.ToString().Substring(cmdRemote.ToString().Length-1));
                     break;
-                case Metadata.GlobalCommands.enter://for numpads
+                case GlobalCommands.enter://for numpads
                     Next();
                     break;
-                case Metadata.GlobalCommands.right:
+                case GlobalCommands.right:
                     NextPlaylist();
                     break;
-                case Metadata.GlobalCommands.left:
+                case GlobalCommands.left:
                     PreviousPlaylist();
                     break;
-                case Metadata.GlobalCommands.up:
+                case GlobalCommands.up:
                     rating = RatingUp();
                     break;
-                case Metadata.GlobalCommands.down:
+                case GlobalCommands.down:
                     rating = RatingDown();
                     break;
-                case Metadata.GlobalCommands.followmemusic:
+                case GlobalCommands.followmemusic:
                     MZPState.Instance.ToogleFollowMeMusic();
                     break;
-                case Metadata.GlobalCommands.back:
-                case Metadata.GlobalCommands.holdcriteria:
+                case GlobalCommands.back:
+                case GlobalCommands.holdcriteria:
                     HoldCriteriaToggle();
                     break;
                 default:

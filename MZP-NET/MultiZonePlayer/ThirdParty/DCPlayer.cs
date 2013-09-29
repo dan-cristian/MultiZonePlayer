@@ -62,14 +62,14 @@ namespace MultiZonePlayer
     //protected IPin outputPin = null;
     //protected IPin inputPin = null;
     protected ZoneGeneric zoneForm = null;
-    protected int beforeMuteVolume = Metadata.VolumeLevels.VolumeSilence;
+    protected int beforeMuteVolume = VolumeLevels.VolumeSilence;
     protected bool autoNext = true;
   //DC additions end
     protected string filename = string.Empty;
     protected bool isAudioOnly = false;
     protected bool isFullScreen = false;
-    protected int currentVolume = Metadata.VolumeLevels.VolumeSilence;
-    protected Metadata.ZoneState currentState = Metadata.ZoneState.NotStarted;
+    protected int currentVolume = VolumeLevels.VolumeSilence;
+    protected ZoneState currentState = ZoneState.NotStarted;
     protected double currentPlaybackRate = 1.0;
 
     protected IntPtr hDrain = IntPtr.Zero;
@@ -160,7 +160,7 @@ namespace MultiZonePlayer
     protected virtual void PlayMovieInWindow()
     {
         // Reset status variables
-        this.currentState = Metadata.ZoneState.NotStarted;
+        this.currentState = ZoneState.NotStarted;
         ConnectAndRunGraph();
     }
 
@@ -193,10 +193,10 @@ namespace MultiZonePlayer
 			hr = this.graphBuilder.AddFilter(infiniteTeeFilter, "InfiniteTee");
 			DsError.ThrowExceptionForHR(hr);
 
-			List<Metadata.ZoneDetails> zones = zoneForm.GetClonedZones();
+			List<ZoneDetails> zones = zoneForm.GetClonedZones();
 			if (zones.Count == 0) zones.Add(zoneForm.ZoneDetails);
 
-			foreach (Metadata.ZoneDetails device in zones)
+			foreach (ZoneDetails device in zones)
 			{
 				MLog.Log(this, "Playing " + device.ZoneName + " output " + device.OutputDeviceAutoCompleted() 
 					+ " cloned count=" + zoneForm.GetClonedZones().Count);
@@ -275,7 +275,7 @@ namespace MultiZonePlayer
 			DsError.ThrowExceptionForHR(hr);
 
 			SetVolume(this.currentVolume);
-			this.currentState = Metadata.ZoneState.Running;
+			this.currentState = ZoneState.Running;
 		}
 		catch (Exception ex)
 		{
@@ -286,7 +286,7 @@ namespace MultiZonePlayer
 
     
 
-    public Metadata.ZoneState GetState()
+    public ZoneState GetState()
     {
         return this.currentState;
     }
@@ -340,7 +340,7 @@ namespace MultiZonePlayer
         hr = this.mediaControl.Stop();
 
       // Clear global flags
-      this.currentState = Metadata.ZoneState.NotStarted;
+      this.currentState = ZoneState.NotStarted;
       this.isAudioOnly = true;
       this.isFullScreen = false;
 
@@ -473,15 +473,15 @@ namespace MultiZonePlayer
         return;
 
       // Toggle play/pause behavior
-      if ((this.currentState == Metadata.ZoneState.Paused) || (this.currentState == Metadata.ZoneState.NotStarted))
+      if ((this.currentState == ZoneState.Paused) || (this.currentState == ZoneState.NotStarted))
       {
         if (this.mediaControl.Run() >= 0)
-            this.currentState = Metadata.ZoneState.Running;
+            this.currentState = ZoneState.Running;
       }
       else
       {
         if (this.mediaControl.Pause() >= 0)
-            this.currentState = Metadata.ZoneState.Paused;
+            this.currentState = ZoneState.Paused;
       }
     }
 
@@ -494,7 +494,7 @@ namespace MultiZonePlayer
         return;
 
       // Stop and reset postion to beginning
-      if ((this.currentState == Metadata.ZoneState.Paused) || (this.currentState == Metadata.ZoneState.Running))
+      if ((this.currentState == ZoneState.Paused) || (this.currentState == ZoneState.Running))
       {
         hr = this.mediaControl.Stop();
 
@@ -504,7 +504,7 @@ namespace MultiZonePlayer
         // Display the first frame to indicate the reset condition
         hr = this.mediaControl.Pause();
       }
-      this.currentState = Metadata.ZoneState.NotStarted;
+      this.currentState = ZoneState.NotStarted;
     }
 
     public int ToggleMute()
@@ -526,14 +526,14 @@ namespace MultiZonePlayer
         return hr;
       }
 
-      if (this.currentVolume == Metadata.VolumeLevels.VolumeSilence)
+      if (this.currentVolume == VolumeLevels.VolumeSilence)
       {
           this.currentVolume = this.beforeMuteVolume;
       }
       else
       {
           this.beforeMuteVolume = this.currentVolume;
-          this.currentVolume = Metadata.VolumeLevels.VolumeSilence;
+          this.currentVolume = VolumeLevels.VolumeSilence;
       }
 
       // Switch volume levels
@@ -583,8 +583,8 @@ namespace MultiZonePlayer
             return hr;
         }
 
-        if ((this.currentVolume + step) > Metadata.VolumeLevels.VolumeFull) return Metadata.VolumeLevels.VolumeFull;
-        if ((this.currentVolume + step) < Metadata.VolumeLevels.VolumeSilence) return Metadata.VolumeLevels.VolumeSilence;
+        if ((this.currentVolume + step) > VolumeLevels.VolumeFull) return VolumeLevels.VolumeFull;
+        if ((this.currentVolume + step) < VolumeLevels.VolumeSilence) return VolumeLevels.VolumeSilence;
 
         // Set new volume
         hr = this.basicAudio.put_Volume(this.currentVolume + step);
@@ -607,7 +607,7 @@ namespace MultiZonePlayer
       if (this.frameStep != null)
       {
         // The graph must be paused for frame stepping to work
-          if (this.currentState != Metadata.ZoneState.Paused)
+          if (this.currentState != ZoneState.Paused)
           PauseClip();
 
         // Step the requested number of frames, if supported
@@ -631,7 +631,7 @@ namespace MultiZonePlayer
         if (hr == 0)
         {
           // The graph must be paused for frame stepping to work
-            if (this.currentState != Metadata.ZoneState.Paused)
+            if (this.currentState != ZoneState.Paused)
             PauseClip();
 
           // Step the requested number of frames, if supported

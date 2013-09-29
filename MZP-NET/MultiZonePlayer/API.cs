@@ -21,7 +21,7 @@ namespace MultiZonePlayer
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
 			int zoneId = -1;
-			Metadata.ZoneDetails zoneDetails;
+			ZoneDetails zoneDetails;
 			try
             {
 				
@@ -35,15 +35,15 @@ namespace MultiZonePlayer
 					return;
 				}
 
-				Metadata.ValueList val = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId.ToString(), Metadata.CommandSources.rawinput);
-				val.Add(Metadata.GlobalParams.cmdsource, Metadata.CommandSources.rawinput.ToString());
+				ValueList val = new ValueList(GlobalParams.zoneid, zoneId.ToString(), CommandSources.rawinput);
+				val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 				zoneDetails = MZPState.Instance.GetZoneById(zoneId);
-				if (zoneDetails != null && zoneDetails.ClosureOpenCloseRelay.RelayType != Metadata.ClosureOpenCloseRelay.EnumRelayType.Undefined
+				if (zoneDetails != null && zoneDetails.ClosureOpenCloseRelay.RelayType != ClosureOpenCloseRelay.EnumRelayType.Undefined
 					&& zoneDetails.ClosureIdList==kd.Key)
 				{
-					val.Add(Metadata.GlobalParams.command, Metadata.GlobalCommands.closure.ToString());
-					val.Add(Metadata.GlobalParams.id, kd.Key);
-					val.Add(Metadata.GlobalParams.iscontactmade, kd.IsKeyDown.ToString());
+					val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+					val.Add(GlobalParams.id, kd.Key);
+					val.Add(GlobalParams.iscontactmade, kd.IsKeyDown.ToString());
 					//ZoneClosures.ProcessAction(zoneDetails, kd.Key, kd.IsKeyDown);
 					//return;
 					Thread th = new Thread(() => DoCommand(val));
@@ -81,7 +81,7 @@ namespace MultiZonePlayer
 						apicmd = "k" + intResult;
 					else
 						apicmd = cmdRemote.CommandName.ToLower();
-					val.Add(Metadata.GlobalParams.command, apicmd);
+					val.Add(GlobalParams.command, apicmd);
 					
 					Thread th = new Thread(() => DoCommand(val));
 					th.Name = "RawInput Key " + cmdRemote.CommandName;
@@ -95,10 +95,10 @@ namespace MultiZonePlayer
             }
         }
 
-        public static Metadata.CommandResult DoCommandFromGUIInput(String cmdName, String zoneId)
+        public static CommandResult DoCommandFromGUIInput(String cmdName, String zoneId)
         {
-            Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.zoneid, zoneId, Metadata.CommandSources.gui);
-            vals.Add(Metadata.GlobalParams.command, cmdName);
+            ValueList vals = new ValueList(GlobalParams.zoneid, zoneId, CommandSources.gui);
+            vals.Add(GlobalParams.command, cmdName);
             return DoCommand(vals);
         }
 
@@ -107,10 +107,10 @@ namespace MultiZonePlayer
             return JsonResult(DoCommand(vals));
         }*/
 
-		public static String DoCommandDirect(Metadata.GlobalCommands cmd, params string[] paramNameValuePair)
+		public static String DoCommandDirect(GlobalCommands cmd, params string[] paramNameValuePair)
 		{
-			Metadata.ValueList vals = new Metadata.ValueList(Metadata.GlobalParams.command,
-								cmd.ToString(), Metadata.CommandSources.system);
+			ValueList vals = new ValueList(GlobalParams.command,
+								cmd.ToString(), CommandSources.system);
 
 			for (int i = 0; i < paramNameValuePair.Length; i=i+2)
 			{
@@ -120,18 +120,18 @@ namespace MultiZonePlayer
 			return JsonResult(DoCommand(vals));
 		}
 
-		public static Metadata.CommandResult DoCommandFromWeb(Metadata.ValueList vals)//, out Metadata.ValueList retvalues)
+		public static CommandResult DoCommandFromWeb(ValueList vals)//, out Metadata.ValueList retvalues)
 		{
-			Metadata.CommandResult cmdres = DoCommand(vals);
+			CommandResult cmdres = DoCommand(vals);
 			//retvalues = cmdres.ValueList;
 			//return JsonResult(cmdres);
 			return cmdres;
 		}
         
-        public static Metadata.CommandResult DoCommand(Metadata.ValueList vals)
+        public static CommandResult DoCommand(ValueList vals)
         {
             //Metadata.ValueList resvalue;
-            Metadata.CommandResult cmdresult = new Metadata.CommandResult();
+            CommandResult cmdresult = new CommandResult();
             String cmdName;
             String detailedStatus="";
 			int remoteid, macroid;
@@ -140,29 +140,29 @@ namespace MultiZonePlayer
             {
                 //MZPState.Instance.PowerControl.ResumeFromPowerSaving();
                 //zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
-                cmdName = vals.GetValue(Metadata.GlobalParams.command);
+                cmdName = vals.GetValue(GlobalParams.command);
 				cmdresult.Command = cmdName;
-				if (cmdName != Metadata.GlobalCommands.closure.ToString() 
-					&& cmdName != Metadata.GlobalCommands.getpicture.ToString()
-					&& cmdName != Metadata.GlobalCommands.alarmevent.ToString())
+				if (cmdName != GlobalCommands.closure.ToString() 
+					&& cmdName != GlobalCommands.getpicture.ToString()
+					&& cmdName != GlobalCommands.alarmevent.ToString())
 					MLog.Log(null, "Executing DOCommand " + cmdName);
-				bool isCmdDefined = Enum.IsDefined(typeof(Metadata.GlobalCommands), cmdName);
+				bool isCmdDefined = Enum.IsDefined(typeof(GlobalCommands), cmdName);
                 
                 if (isCmdDefined)
 				{
 					#region standard commands
-					Metadata.GlobalCommands apicmd = (Metadata.GlobalCommands)Enum.Parse(typeof(Metadata.GlobalCommands), cmdName);
-                    if (!Metadata.CommandSyntax.Validate(vals))
+					GlobalCommands apicmd = (GlobalCommands)Enum.Parse(typeof(GlobalCommands), cmdName);
+                    if (!CommandSyntax.Validate(vals))
                     {
 						cmdresult.ErrorMessage = "ERROR, potential invalid command";
                         MLog.Log(null, cmdresult.ErrorMessage);
                     }
-					cmdresult.Result = Metadata.ResultEnum.OK;
+					cmdresult.Result = ResultEnum.OK;
                     //global commands are processed here, zone based commands are delegated to zones
                     switch (apicmd)
                     {
-                        case Metadata.GlobalCommands.help:
-                            foreach (String item in Enum.GetNames(typeof(Metadata.GlobalCommands)))
+                        case GlobalCommands.help:
+                            foreach (String item in Enum.GetNames(typeof(GlobalCommands)))
                             {
                                detailedStatus += item + ";" ;
                             }
@@ -175,65 +175,65 @@ namespace MultiZonePlayer
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                          */
-                        case Metadata.GlobalCommands.cameraevent:
+                        case GlobalCommands.cameraevent:
                             //we don't have zoneid, add it from camera id
-                            int oid = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.oid));
-                            vals.Add(Metadata.GlobalParams.zoneid, MZPState.Instance.GetZoneIdByCamZoneId(oid).ToString());
+                            int oid = Convert.ToInt16(vals.GetValue(GlobalParams.oid));
+                            vals.Add(GlobalParams.zoneid, MZPState.Instance.GetZoneIdByCamZoneId(oid).ToString());
                             //then pass command
                             DoZoneCommand(apicmd, vals, ref cmdresult);
                             //resvalue = values;
                             //result = JsonResult(res, err, values);
                             break;
-                        case Metadata.GlobalCommands.sleep:
+                        case GlobalCommands.sleep:
                             cmdresult.Result = GoToSleep(out cmdresult.ErrorMessage);
                             //result = JsonResult(res, err, null);
                             break;
-                        case Metadata.GlobalCommands.status:
+                        case GlobalCommands.status:
 							detailedStatus += MZPState.Instance.GetZonesStatus();
 							cmdresult.OutputMessage = detailedStatus;
                             //result = JsonResult(Metadata.ResultEnum.OK, detailedStatus, null);
                             break;
-                        case Metadata.GlobalCommands.genrelist:
+                        case GlobalCommands.genrelist:
 							cmdresult.ValueList = MediaLibrary.MusicGenres;
 							
                             //result = JsonResult(Metadata.ResultEnum.OK, "", resvalue);
                             break;
-                        case Metadata.GlobalCommands.artistlist:
+                        case GlobalCommands.artistlist:
 							cmdresult.ValueList = MediaLibrary.MusicArtists;
                             //result = JsonResult(Metadata.ResultEnum.OK, "", resvalue);
                             break;
-                        case Metadata.GlobalCommands.alarmarm:
-                            String areaid = vals.GetValue(Metadata.GlobalParams.areaid);
+                        case GlobalCommands.alarmarm:
+                            String areaid = vals.GetValue(GlobalParams.areaid);
                             cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Arm, areaid);
                             //result = JsonResult(cmdres.Result, cmdres.ErrorMessage, null);
                             break;
-                        case Metadata.GlobalCommands.alarmdisarm:
-                            cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Disarm, vals.GetValue(Metadata.GlobalParams.areaid));
+                        case GlobalCommands.alarmdisarm:
+                            cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Disarm, vals.GetValue(GlobalParams.areaid));
                             //result = JsonResult(cmdres.Result, cmdres.ErrorMessage, null);
                             break;
-                        case Metadata.GlobalCommands.alarmkeypadbeep:
-                            cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.KeypadBeep, vals.GetValue(Metadata.GlobalParams.areaid));
+                        case GlobalCommands.alarmkeypadbeep:
+                            cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.KeypadBeep, vals.GetValue(GlobalParams.areaid));
                             //result = JsonResult(cmdres.Result, cmdres.ErrorMessage, null);
                             break;
-                        case Metadata.GlobalCommands.alarmstay:
-                            cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Stay, vals.GetValue(Metadata.GlobalParams.areaid));
+                        case GlobalCommands.alarmstay:
+                            cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Stay, vals.GetValue(GlobalParams.areaid));
                             //result = JsonResult(cmdres.Result, cmdres.ErrorMessage, null);
                             break;
-                        case Metadata.GlobalCommands.restartispy:
+                        case GlobalCommands.restartispy:
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
 							MZPState.RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
 							//resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
-                        case Metadata.GlobalCommands.restartwinload:
+                        case GlobalCommands.restartwinload:
                             MZPState.RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
 								IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal);
                             //resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
-                        case Metadata.GlobalCommands.setnotify:
+                        case GlobalCommands.setnotify:
                             String action;
-                            action = vals.GetValue(Metadata.GlobalParams.action);
+                            action = vals.GetValue(GlobalParams.action);
                             switch (action)
                             {
                                 case "enablegtalk":
@@ -255,22 +255,22 @@ namespace MultiZonePlayer
                             //result = JsonResult(Metadata.ResultEnum.OK, detailedStatus, null);
                             //resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, status, Metadata.CommandSources.Internal);
                             break;
-                        case Metadata.GlobalCommands.sendsms:
-                            String message = vals.GetValue(Metadata.GlobalParams.msg);
+                        case GlobalCommands.sendsms:
+                            String message = vals.GetValue(GlobalParams.msg);
                             MZPState.Instance.m_messengerList.Find(x => x.GetType().Equals(typeof(SMS))).SendMessageToTarget(message);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
-                        case Metadata.GlobalCommands.restartsystem:
+                        case GlobalCommands.restartsystem:
                             MZPState.RestartComputer("restart command received");
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
-                        case Metadata.GlobalCommands.makebuzz:
+                        case GlobalCommands.makebuzz:
                             MZPState.Instance.MessengerMakeBuzz();
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
-                        case Metadata.GlobalCommands.powerevent:
-                            Boolean failure = vals.GetValue(Metadata.GlobalParams.action).ToLower().Equals("true");
-                            String datetime = vals.GetValue(Metadata.GlobalParams.datetime);
+                        case GlobalCommands.powerevent:
+                            Boolean failure = vals.GetValue(GlobalParams.action).ToLower().Equals("true");
+                            String datetime = vals.GetValue(GlobalParams.datetime);
                             if (MZPState.Instance.IsPowerFailure != failure)
                             {
                                 MZPState.Instance.IsPowerFailure = failure;
@@ -280,44 +280,44 @@ namespace MultiZonePlayer
 							cmdresult.OutputMessage = "power failure=" + failure;
                             //result = JsonResult(Metadata.ResultEnum.OK, , null);
                             break;
-						case Metadata.GlobalCommands.getpicture:
-							int pictcount = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.count));
-							int interval = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.interval));
-							string face = vals.GetValue(Metadata.GlobalParams.face);
+						case GlobalCommands.getpicture:
+							int pictcount = Convert.ToInt16(vals.GetValue(GlobalParams.count));
+							int interval = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
+							string face = vals.GetValue(GlobalParams.face);
 							string picture = MediaLibrary.AllPictureFiles.IteratePicture(pictcount, interval,face);
 							string[] pictsplit = picture.Split('.');
-							cmdresult.ValueList= new Metadata.ValueList();
+							cmdresult.ValueList= new ValueList();
 							cmdresult.ValueList.BinaryData = Utilities.ReadBinaryFile(picture);
-							cmdresult.ValueList.Add(Metadata.GlobalParams.contenttype, "image/" + pictsplit[pictsplit.Length - 1]);
+							cmdresult.ValueList.Add(GlobalParams.contenttype, "image/" + pictsplit[pictsplit.Length - 1]);
 							cmdresult.OutputMessage = "picture retrieved=" + picture;
 							
 							//result = JsonResult(Metadata.ResultEnum.OK, , null);
 							break;
-						case Metadata.GlobalCommands.remotepoweron:
-							remoteid=Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
+						case GlobalCommands.remotepoweron:
+							remoteid=Convert.ToInt16(vals.GetValue(GlobalParams.remoteid));
 							cmdresult.OutputMessage = RemotePowerControl.SwitchOn(remoteid);
 							//result = MZPState.Instance.RemoteControl.RFOn(remoteid);
 							//result = JsonResult(Metadata.ResultEnum.OK, "remoteon="+result, null);
 							break;
-						case Metadata.GlobalCommands.remotepoweroff:
-							remoteid=Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
+						case GlobalCommands.remotepoweroff:
+							remoteid=Convert.ToInt16(vals.GetValue(GlobalParams.remoteid));
 							cmdresult.OutputMessage = RemotePowerControl.SwitchOff(remoteid);
 							//result = MZPState.Instance.RemoteControl.RFOff(remoteid);
 							//result = JsonResult(Metadata.ResultEnum.OK, "remoteoff="+result, null);
 							break;
-						case Metadata.GlobalCommands.remoteadjustdim:
-							remoteid = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.remoteid));
-							int dimvalue = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.dimvalue));
+						case GlobalCommands.remoteadjustdim:
+							remoteid = Convert.ToInt16(vals.GetValue(GlobalParams.remoteid));
+							int dimvalue = Convert.ToInt16(vals.GetValue(GlobalParams.dimvalue));
 							cmdresult.OutputMessage = RemotePowerControl.AdjustDim(remoteid, dimvalue);
 							//result = MZPState.Instance.RemoteControl.RFOff(remoteid);
 							//result = JsonResult(Metadata.ResultEnum.OK, "remotedim=" + result, null);
 							break;
-						case Metadata.GlobalCommands.macro:
-							string shortcut = vals.GetValue(Metadata.GlobalParams.singleparamvalue);
+						case GlobalCommands.macro:
+							string shortcut = vals.GetValue(GlobalParams.singleparamvalue);
 							macroid = MZPState.Instance.GetMacroIdByShortcut(shortcut, "");
 							if (macroid == -1)
 							{
-								string id = vals.GetValue(Metadata.GlobalParams.id);
+								string id = vals.GetValue(GlobalParams.id);
 								macroid = Convert.ToInt16(id);
 							}
 							if (macroid != -1)
@@ -329,13 +329,13 @@ namespace MultiZonePlayer
 							else
 								cmdresult.ErrorMessage = "macro not found name="+shortcut;
 							break;
-						case Metadata.GlobalCommands.rfxcmd:
-							string rfxc = vals.GetValue(Metadata.GlobalParams.action);
+						case GlobalCommands.rfxcmd:
+							string rfxc = vals.GetValue(GlobalParams.action);
 							//string device = vals.GetValue(Metadata.GlobalParams.rfxdevicename);
 							cmdresult = MZPState.Instance.ExecuteRFXCmd(rfxc);//device, rfxc);
 							break;
-						case Metadata.GlobalCommands.runscript:
-							System.Diagnostics.Process proc = Utilities.RunProcessWait(IniFile.CurrentPath() + "\\scripts\\"+vals.GetValue(Metadata.GlobalParams.name),
+						case GlobalCommands.runscript:
+							System.Diagnostics.Process proc = Utilities.RunProcessWait(IniFile.CurrentPath() + "\\scripts\\"+vals.GetValue(GlobalParams.name),
 								System.Diagnostics.ProcessWindowStyle.Hidden);
 							cmdresult.OutputMessage = "Exit code="+proc.ExitCode;
 							break;
@@ -357,7 +357,7 @@ namespace MultiZonePlayer
 					{
 						cmdresult.ErrorMessage += "Unhandled API Command " + cmdName;
 						MLog.Log(null, cmdresult.ErrorMessage);
-						cmdresult.Result = Metadata.ResultEnum.ERR;
+						cmdresult.Result = ResultEnum.ERR;
 					}
                 }
             }
@@ -365,24 +365,24 @@ namespace MultiZonePlayer
             {
                 MLog.Log(ex, "Error DoCommand");
                 cmdresult.ErrorMessage += "Exception DoCommand " + ex.Message;
-				cmdresult.Result = Metadata.ResultEnum.ERR;
+				cmdresult.Result = ResultEnum.ERR;
             }
             return cmdresult;
         }
 
-        public static void DoZoneCommand(Metadata.GlobalCommands apicmd, Metadata.ValueList vals, ref Metadata.CommandResult result)
+        public static void DoZoneCommand(GlobalCommands apicmd, ValueList vals, ref CommandResult result)
             //private static String DoZoneCommand(String cmdName, int zoneId, out String errorMessage)
         {
             try
             {
-                int zoneId = InferZone(vals.GetValue(Metadata.GlobalParams.zoneid),
-					vals.GetValue(Metadata.GlobalParams.zonename), vals.GetValue(Metadata.GlobalParams.singleparamvalue));
+                int zoneId = InferZone(vals.GetValue(GlobalParams.zoneid),
+					vals.GetValue(GlobalParams.zonename), vals.GetValue(GlobalParams.singleparamvalue));
 
                 if (zoneId == -1)
                 {
 					result.ErrorMessage = "ERROR no zone found to process command" + apicmd;
 					MLog.Log(null, result.ErrorMessage);
-					result.Result = Metadata.ResultEnum.ERR;
+					result.Result = ResultEnum.ERR;
 					return;
                 }
 
@@ -392,7 +392,7 @@ namespace MultiZonePlayer
                 {
                     if (MZPState.Instance.GetZoneIfActive(zoneId) == null)
                     {
-                        if (Enum.IsDefined(typeof(Metadata.GlobalCommandsUniversal), apicmd.ToString()))
+                        if (Enum.IsDefined(typeof(GlobalCommandsUniversal), apicmd.ToString()))
                         {
                             MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
                             zoneId = MZPState.Instance.GetActiveChildZone(zoneId);
@@ -409,7 +409,7 @@ namespace MultiZonePlayer
                     {
                         MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
                         result.ErrorMessage = "Zone not active " + zoneId;
-                        result.Result = Metadata.ResultEnum.ERR;
+                        result.Result = ResultEnum.ERR;
 						return;
                     }
                     else
@@ -424,7 +424,7 @@ namespace MultiZonePlayer
                 else
                 {
                     result.ErrorMessage = "ControlCenter instance is null";
-					result.Result = Metadata.ResultEnum.ERR;
+					result.Result = ResultEnum.ERR;
 					MLog.Log(null, result.ErrorMessage);
 					return;
                 }
@@ -433,7 +433,7 @@ namespace MultiZonePlayer
             {
                 MLog.Log(ex, "Error DoZoneCommand cmd=" + apicmd);
                 result.ErrorMessage = ex.Message;
-                result.Result = Metadata.ResultEnum.ERR;
+                result.Result = ResultEnum.ERR;
             }
         }
 
@@ -446,7 +446,7 @@ namespace MultiZonePlayer
 			else
 			{
 				if (zonename == null) zonename = singleParamValue;
-				Metadata.ZoneDetails zonedetails;
+				ZoneDetails zonedetails;
 				if (zonename != null)
 				{
 					zonedetails = MZPState.Instance.ZoneDetails.Find(x =>
@@ -463,7 +463,7 @@ namespace MultiZonePlayer
 			return zoneId;
 		}
 
-        private static Metadata.ResultEnum GoToSleep(out String errMessage)
+        private static ResultEnum GoToSleep(out String errMessage)
         {
             ControlCenter.Instance.CloseAllZones();
             bool retVal = true;// Application.SetSuspendState(PowerState.Suspend, false, false);
@@ -471,22 +471,22 @@ namespace MultiZonePlayer
             if (retVal == false)
             {
                 errMessage = "Could not suspend the system";  
-                return Metadata.ResultEnum.ERR;
+                return ResultEnum.ERR;
             }
             else
             {
                 errMessage = "";
-                return Metadata.ResultEnum.OK;
+                return ResultEnum.OK;
             }
         }
 
-        private static String JsonResult(Metadata.CommandResult cmdres)//Metadata.ResultEnum result, String errorMessage, Metadata.ValueList values)
+        private static String JsonResult(CommandResult cmdres)//Metadata.ResultEnum result, String errorMessage, Metadata.ValueList values)
         {
             //Metadata.CommandResult cmdres = new Metadata.CommandResult();
             //cmdres.Result = result;
             //cmdres.ErrorMessage = errorMessage;
 
-            Metadata.ServerStatus srv = new Metadata.ServerStatus();
+            ServerStatus srv = new ServerStatus();
             srv.IsServerOn = true;
             if (MZPState.Instance != null)
             {

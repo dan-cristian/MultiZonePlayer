@@ -30,7 +30,7 @@ namespace MultiZonePlayer
         String m_user, m_password;
         //List<String> m_rosterList;
         List<agsXMPP.protocol.client.Presence> m_presenceList;
-		private Metadata.ValueList m_lastCommand = null;
+		private ValueList m_lastCommand = null;
 
         public GTalkMessengers(String user, String password)
         {
@@ -203,7 +203,7 @@ namespace MultiZonePlayer
 					int macroId = MZPState.Instance.GetMacroIdByShortcut(cmdName, "");
 					if (!isPowerUser)
 					{
-						Metadata.MacroEntry entry = MZPState.Instance.MacroList.Find(x => x.Id == macroId);
+						MacroEntry entry = MZPState.Instance.MacroList.Find(x => x.Id == macroId);
 						if (entry == null || !entry.AllowUserList.Contains(sender))
 						{
 							replymessage = "Not authorised gtalk sender " + sender;
@@ -221,10 +221,10 @@ namespace MultiZonePlayer
 						}
 						else
 						{
-							Metadata.ValueList val;
-							if (cmdName != Metadata.GlobalCommands.r.ToString())
+							ValueList val;
+							if (cmdName != GlobalCommands.r.ToString())
 							{
-								val = new Metadata.ValueList(Metadata.GlobalParams.command, cmdName, Metadata.CommandSources.messenger);
+								val = new ValueList(GlobalParams.command, cmdName, CommandSources.messenger);
 								for (int i = 1; i < atoms.Length; i++)
 								{
 									pair = atoms[i].Split(':');
@@ -235,7 +235,7 @@ namespace MultiZonePlayer
 									else
 									{
 										if (i == 1)//assume first param is zonename. replace _ to allow space in words
-											val.Add(Metadata.GlobalParams.singleparamvalue, atoms[i].Replace('_', ' '));
+											val.Add(GlobalParams.singleparamvalue, atoms[i].Replace('_', ' '));
 										else
 											MLog.Log(this, "Invalid parameter in " + atoms[i]);
 									}
@@ -245,14 +245,14 @@ namespace MultiZonePlayer
 							{
 								val = m_lastCommand;
 							}
-							Metadata.CommandResult res;
+							CommandResult res;
 							if (val != null)
 							{
 								res = API.DoCommand(val);
 								m_lastCommand = val;
 							}
 							else
-								res = new Metadata.CommandResult(Metadata.ResultEnum.ERR, "Error", "Error no last command exist");
+								res = new CommandResult(ResultEnum.ERR, "Error", "Error no last command exist");
 							string sysname = System.Security.Principal.WindowsIdentity.GetCurrent().Name.ToString();
 							replymessage = sysname + " (" + res.Command + "): " + res.Result + " - " + res.ErrorMessage + " - " + res.OutputMessage
 								+ res.ValuesToString();

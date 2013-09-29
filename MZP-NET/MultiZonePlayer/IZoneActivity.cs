@@ -23,8 +23,8 @@ namespace MultiZonePlayer
         void VolumeDown();
         void SaveStateIni();
         void Guide();
-        Metadata.ZoneState GetState();
-        Metadata.ZoneDetails ZoneDetails
+        ZoneState GetState();
+        ZoneDetails ZoneDetails
         {
             get;
         }
@@ -45,7 +45,7 @@ namespace MultiZonePlayer
     public class ZoneBase:IZoneActivity
     {
         protected DateTime m_lastSlowTickDateTime = DateTime.Now;
-		protected Metadata.ZoneDetails m_zoneDetails;
+		protected ZoneDetails m_zoneDetails;
 
 		public virtual void Stop()
 		{
@@ -83,13 +83,13 @@ namespace MultiZonePlayer
 
 		public virtual void Play()
 		{
-			m_zoneDetails.ZoneState = Metadata.ZoneState.Running;
+			m_zoneDetails.ZoneState = ZoneState.Running;
 			m_zoneDetails.IsActive = true;
 
 		}
 		public virtual void Pause()
 		{
-			m_zoneDetails.ZoneState = Metadata.ZoneState.Paused;
+			m_zoneDetails.ZoneState = ZoneState.Paused;
 		}
 		public virtual void Mute()
 		{
@@ -108,13 +108,13 @@ namespace MultiZonePlayer
 		{
 		}
 
-		public virtual Metadata.ZoneState GetState()
+		public virtual ZoneState GetState()
 		{
 
 			return m_zoneDetails.ZoneState;
 		}
 
-		public virtual Metadata.ZoneDetails ZoneDetails
+		public virtual ZoneDetails ZoneDetails
 		{
 			get
 			{

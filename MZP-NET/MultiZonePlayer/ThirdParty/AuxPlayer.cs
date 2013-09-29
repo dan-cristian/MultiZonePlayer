@@ -55,7 +55,7 @@ namespace MultiZonePlayer
 
 
                      // Reset status variables
-                     this.currentState = Metadata.ZoneState.NotStarted;
+                     this.currentState = ZoneState.NotStarted;
 
                      //this.currentVolume = VolumeFull;
 
@@ -146,7 +146,7 @@ namespace MultiZonePlayer
                  DsError.ThrowExceptionForHR(hr);
 
                  SetVolume(this.currentVolume);
-                 this.currentState = Metadata.ZoneState.Running;
+                 this.currentState = ZoneState.Running;
 
              }
 

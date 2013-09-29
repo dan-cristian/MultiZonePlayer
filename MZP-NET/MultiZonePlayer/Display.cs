@@ -13,10 +13,10 @@ namespace MultiZonePlayer
     
     public abstract class Display:SerialBase
     {
-        protected Metadata.ZoneDetails m_zoneDetails;
+        protected ZoneDetails m_zoneDetails;
         public enum InputTypeEnum {AV, HDMI, Unknown };
 
-        public Metadata.ZoneDetails ZoneDetails
+        public ZoneDetails ZoneDetails
         {
             get { return m_zoneDetails; }
             
@@ -84,11 +84,11 @@ namespace MultiZonePlayer
         private int m_stdtimeout = 5000;
         
 
-        public DisplayLGTV(String connection, Metadata.ZoneDetails p_zoneDetails)
+        public DisplayLGTV(String connection, ZoneDetails p_zoneDetails)
         {
             Initialise("9600", "None", "One", "8", connection, CommunicationManager.TransmissionType.Text);
             m_zoneDetails = p_zoneDetails;
-            m_zoneDetails.ZoneState = Metadata.ZoneState.NotStarted;
+            m_zoneDetails.ZoneState = ZoneState.NotStarted;
         }
 
         ~DisplayLGTV()
