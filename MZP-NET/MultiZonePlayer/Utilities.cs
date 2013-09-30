@@ -57,7 +57,7 @@ namespace MultiZonePlayer
 				return text.Substring(startPos + startDelimiter.Length, 
 					endPos - (startPos + startDelimiter.Length));
 			else
-				return "";
+				return null;
 		}
 	}
 

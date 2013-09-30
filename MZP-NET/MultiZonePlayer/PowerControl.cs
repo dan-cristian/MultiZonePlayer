@@ -277,15 +277,15 @@ namespace MultiZonePlayer
 					Thread.Sleep(100);
 					MLog.Log(this,"Closing relay, reading all data");
 					ReadAllData();
-					MLog.Log(this,"Closing relay, purge rx");
+					//MLog.Log(this,"Closing relay, purge rx");
 					m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_RX);
-					MLog.Log(this,"Closing relay, purge tx");
+					//MLog.Log(this,"Closing relay, purge tx");
 					m_usb8Relay.Purge(FTD2XX_NET.FTDI.FT_PURGE.FT_PURGE_TX);
 					Thread.Sleep(100);
-					MLog.Log(this, "Now resetting");
+					//MLog.Log(this, "Now resetting");
 					m_usb8Relay.ResetDevice();
 					Thread.Sleep(100);
-					MLog.Log(this,"Now closing");
+					//MLog.Log(this,"Now closing");
 					status = m_usb8Relay.Close();
 					MLog.Log(this,"Now closed");
 				}
@@ -318,9 +318,9 @@ namespace MultiZonePlayer
         {
             FTD2XX_NET.FTDI.FT_STATUS status;
             uint uvalue = 0;
-            MLog.Log(this,"Reading bytes avail");
+            //MLog.Log(this,"Reading bytes avail");
             status = m_usb8Relay.GetRxBytesAvailable(ref uvalue);
-			MLog.Log(this, "Reading bytes avail="+uvalue);
+			//MLog.Log(this, "Reading bytes avail="+uvalue);
             if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
             {
                 if ((uvalue > 0))
@@ -330,9 +330,9 @@ namespace MultiZonePlayer
                     uint numRead = 0;
 					Thread.Sleep(100);
                     status = m_usb8Relay.Read(dataBuffer, uvalue, ref numRead);
-                    if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                        MLog.Log(this,"Read data numread=" + numRead + " status=" + status);
-                    else
+                    if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
+                    //    MLog.Log(this,"Read data numread=" + numRead + " status=" + status);
+                    //else
                         MLog.Log(this,"Read failed, status = " + status);
                 }
             }
@@ -350,7 +350,7 @@ namespace MultiZonePlayer
 			byte bvalue = 0;
 			MLog.Log(this, "Updating socket status");
 			m_usb8Relay.GetPinStates(ref bvalue);
-			MLog.Log(this, "Updated socket status OK");
+			//MLog.Log(this, "Updated socket status OK");
 			m_socketsStatus = Convert.ToString(bvalue, 2);
 			m_socketsStatus = m_socketsStatus.PadLeft(8, '0');
 			m_socketsStatus = Utilities.ReverseString(m_socketsStatus);

@@ -161,6 +161,8 @@
     <Content Include="m\zone-closure.html" />
     <Content Include="m\zone-cmd.html" />
     <Content Include="m\zone-main.html" />
+    <Content Include="m\zone-music.html" />
+    <Content Include="m\zone-video.html" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

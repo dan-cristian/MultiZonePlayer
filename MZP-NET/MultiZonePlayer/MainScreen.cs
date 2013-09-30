@@ -122,22 +122,12 @@ namespace MultiZonePlayer
             //Set up the event handler for the KeyboardHook's
             //KeyIntercepted event
             //Program.kh.KeyIntercepted += new KeyboardHook.KeyboardHookEventHandler(ControlCenter.kh_KeyIntercepted);
-        }
-
-        private void MainScreen_Leave(object sender, EventArgs e)
-        {
-           
-        }
+		}
 
         private void timerGetFocus_Tick(object sender, EventArgs e)
         {
-            
-        }
 
-        private void MainScreen_Deactivate(object sender, EventArgs e)
-        {
-            
-        }
+		}
 
         private void MainScreen_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -166,5 +156,10 @@ namespace MultiZonePlayer
             audio.MdiParent = this;
             audio.Show();
         }
+
+		private void MainScreen_Activated(object sender, EventArgs e)
+		{
+			MLog.Log(this, "Got focus");
+		}
     }
 }

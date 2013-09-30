@@ -224,7 +224,10 @@ namespace MultiZonePlayer
 		{
 			base.Close();
 			if (!m_isXBMCProcessOn || !m_isXBMCPlayerRunning)
+			{
+				MLog.Log(this, "Closing XBMC, process=" + m_isXBMCProcessOn + " player=" + m_isXBMCPlayerRunning);
 				PostURLCmdMessage("Application.Quit");
+			}
 		}
 
         public override void Play()
@@ -372,6 +375,7 @@ namespace MultiZonePlayer
 						resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
 						if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
 						{
+							m_isXBMCPlayerRunning = true;
 							m_zoneDetails.Title = resp.result.items[0].label;
 							m_zoneDetails.Author = "xbmc";
 							m_zoneDetails.RequirePower = true;
@@ -380,7 +384,6 @@ namespace MultiZonePlayer
 							m_zoneDetails.ActivityType = GlobalCommands.xbmc;
 							if (!MZPState.Instance.IsWinloadLoading)
 								Utilities.SetForegroundWindow(GetXBMCHandle());
-							m_isXBMCPlayerRunning = true;
 						}
 						else
 						{
@@ -399,8 +402,6 @@ namespace MultiZonePlayer
                 catch (Exception ex)
                 {
                     MLog.Log(this, "Unable to json parse XBMC response " + result + " err="+ex.Message);
-					m_isXBMCPlayerRunning = false;
-                    //Close();
                 }
             }
         }
@@ -409,7 +410,7 @@ namespace MultiZonePlayer
         {
             base.Tick();
             //slower tick
-            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 5)
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 10)
             {
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;

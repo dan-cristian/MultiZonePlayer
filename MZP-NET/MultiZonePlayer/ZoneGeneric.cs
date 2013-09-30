@@ -831,10 +831,11 @@ namespace MultiZonePlayer
                 //close if no recent activity detected on an active zone
                 if (m_zoneDetails.HasPastActivity && m_zoneDetails.IsActive 
 					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.nul)
-					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.xbmc))
+					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.xbmc)
+					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.tv))
                 {
-                    MLog.Log(this, "Zone " + m_zoneDetails.ZoneName + 
-						" closed due to inactivity, activity="+m_zoneDetails.ActivityType.ToString());
+                    MLog.Log(this, "Zone " + m_zoneDetails.ZoneName +
+						" closed due to inactivity, activity=" + m_zoneDetails.ActivityType.ToString() + " lastcmd=" + m_zoneDetails.LastLocalCommandDateTime);
                     if (m_zoneForm != null) m_zoneForm.CloseFormSafe();
                 }
 

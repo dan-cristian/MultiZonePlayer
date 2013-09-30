@@ -102,8 +102,8 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.notifyuser,		GlobalParams.sourcezoneid),
 			new CommandSyntax(GlobalCommands.runscript,			GlobalParams.name),
 			new CommandSyntax(GlobalCommands.closure,			GlobalParams.id, GlobalParams.iscontactmade),
-			new CommandSyntax(GlobalCommands.poweron,			GlobalParams.zonename),
-			new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename),
+			//new CommandSyntax(GlobalCommands.poweron,			GlobalParams.zonename),
+			//new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename),
 			new CommandSyntax(GlobalCommands.powertoggle,		GlobalParams.zoneid),
 
 			/*

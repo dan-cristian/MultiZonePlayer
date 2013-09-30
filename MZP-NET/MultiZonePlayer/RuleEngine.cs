@@ -305,12 +305,20 @@ namespace MultiZonePlayer
 			{
 				propInfo = Type.GetType(instance.GetType().FullName).GetProperty(propName);
 				if (propInfo != null)
+				{
+					if (parameters!=null && parameters.Length > 0)
+						MLog.Log(null, "Warning, Property called with parameters");
 					value = propInfo.GetValue(instance, null);
+				}
 				else
 				{
 					fieldInfo = instance.GetType().GetField(propName);
 					if (fieldInfo != null)
+					{
+						if (parameters != null && parameters.Length > 0)
+							MLog.Log(null, "Warning, Field called with parameters");
 						value = fieldInfo.GetValue(instance);
+					}
 					else
 					{
 						methInfo = instance.GetType().GetMethod(propName);
@@ -336,7 +344,7 @@ namespace MultiZonePlayer
 									}
 									catch (Exception e)
 									{
-										MLog.Log(e, "Unable to cast prop=" + Clean(propName));
+										MLog.Log(null, "Unable to cast prop=" + Clean(propName) + " param="+parameters[p] + " err="+e.Message);
 									}
 								}
 								value = methInfo.Invoke(instance, parameters);
@@ -348,7 +356,7 @@ namespace MultiZonePlayer
 							else
 							{
 								value = null;
-								MLog.Log(null, "wrong numbers of method params, meth=" + Clean(propName) 
+								MLog.Log(null, "wrong numbers of method params, meth=" + Clean(propName)
 									+ " expected=" + methInfo.GetParameters().Length + " given=" + parsLen);
 							}
 						}
@@ -504,18 +512,20 @@ namespace MultiZonePlayer
 			foreach (RuleEntry rule in ruleList)
 			{
 				string parsedCode = rule.JSCode;
+				//replacing variables
+				/*
 				if (rule.VariableList != null)
 				{
 					object value;
 					foreach (string variable in rule.VariableList)
 					{
 						value = Reflect.GetPropertyField(callingInstance, variable);
-						if (value != null)
+						if (value != null) //TODO check the need
 							parsedCode = parsedCode.Replace("[" + variable + "]", value.ToString());
-						else
-							MLog.Log(null, "No instance variable found for jscode, var=" + variable);
+						//else
+						//	MLog.Log(null, "No instance variable found for jscode, var=" + variable);
 					}
-				}
+				}*/
 
 				try
 				{
@@ -715,7 +725,12 @@ namespace MultiZonePlayer
 
 		public MediaImageItem CurrentPicture
 		{
-			get {return MediaLibrary.AllPictureFiles.CurrentIteratePicture;}
+			get {
+				if (MediaLibrary.AllPictureFiles != null && MediaLibrary.AllPictureFiles.CurrentIteratePicture != null)
+					return MediaLibrary.AllPictureFiles.CurrentIteratePicture;
+				else
+					return new MediaImageItem("picture not yet available", "picture not yet available");
+			}
 		}
 
 		#endregion

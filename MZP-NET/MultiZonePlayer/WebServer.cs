@@ -481,10 +481,10 @@ namespace MultiZonePlayer
 			do
 			{
 				script = result.Substring(delim_start, delim_end);
-				if (script != "")
+				if (script != null && script != "")
 				{
 					target = result.Substring(delim_end, delim_start + delim_end);
-					if (target == "")
+					if (target == null)
 					{
 						MLog.Log(this, "Could not find script target");
 						break;
@@ -567,13 +567,19 @@ namespace MultiZonePlayer
 								result = result + "";
 							result = result.ReplaceFirst(delim_start + delim_end, "");
 							break;
+						case "?":
+							string exp = atoms[1], expresult;
+							Reflect.GenericReflect(ref exp);
+							expresult= ExpressionEvaluator.EvaluateBoolToString(exp);
+							result = result.Replace(delim_start + script + delim_end + target + delim_start + delim_end, expresult);
+							break;
 						default:
 							break;
 					}
 				}
 				cycles++;
 			}
-			while (script != "" && cycles<=100);
+			while (script != null && script != "" && cycles<=100);
 			if (cycles>100)
 				MLog.Log(this, "Error, infinite cycles reached");
 		}

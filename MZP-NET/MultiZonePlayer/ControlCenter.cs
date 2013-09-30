@@ -438,7 +438,8 @@ namespace MultiZonePlayer
                 {
                     zone.Close();
                 }
-                MZPState.Instance.Shutdown();
+                if (MZPState.Instance != null)
+					MZPState.Instance.Shutdown();
             }
             catch (Exception ex)
             {

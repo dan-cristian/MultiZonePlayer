@@ -346,7 +346,16 @@ public class MZPState
 		else
 			return null;
 	}
-
+	public List<String> ZoneTypesAvailable
+	{
+		get {
+			return ZoneDetails.Select(x => x.Type.ToString()).Distinct().ToList();
+		}
+	}
+	public String ZoneTypesAvailableByIndex(int i)
+	{
+		return ZoneTypesAvailable[i];
+	}
 	public int ZonesCount
 	{
 		get { return ZoneDetails.Count; }
