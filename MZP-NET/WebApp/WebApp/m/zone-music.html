@@ -6,14 +6,14 @@
 	<meta http-equiv="content-type" content="text/html;charset=unicode;" />
 </head>
 <body style="width: 100%;text-align:center">
-<button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Running"%><%%>" onclick="ajaxCall('result','cmd.html?command=play&zoneid=%_zoneid', true)">►</button>
+<button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Running"%>" onclick="ajaxCall('result','cmd.html?command=play&zoneid=%_zoneid', true)"><b>></b></button>
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=next&zoneid=%_zoneid', true)"><b>>></b></button>
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=stop&zoneid=%_zoneid', true)">■</button>
-<button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Paused"%><%%>" onclick="ajaxCall('result','cmd.html?command=pause&zoneid=%_zoneid', true)"><b>||</b></button>
+<button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Paused"%>" onclick="ajaxCall('result','cmd.html?command=pause&zoneid=%_zoneid', true)"><b>||</b></button>
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=volumedown&zoneid=%_zoneid', true)"><b>-</b></button>
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=volumeup&zoneid=%_zoneid', true)"><b>+</b></button>
 <button class="Caption">#Zones,%_zoneid.VolumeLevel#</button>
-<meter value="#Zones,%_zoneid.PositionPercent#" min="0" max="100">#Zones,%_zoneid.ZoneState#</meter>
+<meter value="#Zones,%_zoneid.PositionPercent#" min="0" max="100">#Zones,%_zoneid.ZoneState# #Zones,%_zoneid.PositionPercent#%</meter>
 <hr />
 <p><acronym title="Title">#Zones,%_zoneid.Title#</acronym> | <acronym title="Author">#Zones,%_zoneid.Author#</acronym>
  | <acronym title="Album">#Zones,%_zoneid.Album#</acronym> | <acronym title="Genre">#Zones,%_zoneid.Genre#</acronym></p>

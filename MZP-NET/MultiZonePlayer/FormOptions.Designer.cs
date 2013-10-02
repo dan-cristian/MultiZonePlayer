@@ -115,6 +115,7 @@
 			this.Zones_TempDeviceId = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Zones_PowerType = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.Zones_Type = new System.Windows.Forms.DataGridViewComboBoxColumn();
+			this.Zones_HeatSchedule = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabParams.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvZones)).BeginInit();
@@ -204,7 +205,8 @@
             this.Zones_NearbyZoneIdList,
             this.Zones_TempDeviceId,
             this.Zones_PowerType,
-            this.Zones_Type});
+            this.Zones_Type,
+            this.Zones_HeatSchedule});
 			this.dgvZones.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.dgvZones.Location = new System.Drawing.Point(3, 2);
 			this.dgvZones.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -885,6 +887,12 @@
 			this.Zones_Type.Name = "Zones_Type";
 			this.Zones_Type.Width = 42;
 			// 
+			// Zones_HeatSchedule
+			// 
+			this.Zones_HeatSchedule.HeaderText = "HeatSchedule";
+			this.Zones_HeatSchedule.Name = "Zones_HeatSchedule";
+			this.Zones_HeatSchedule.Width = 21;
+			// 
 			// FormOptions
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1008,5 +1016,6 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_TempDeviceId;
 		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_PowerType;
 		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_Type;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Zones_HeatSchedule;
     }
 }

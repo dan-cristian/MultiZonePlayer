@@ -127,7 +127,7 @@ namespace MultiZonePlayer
 					zone.ClosureOpenCloseRelay==null?ClosureOpenCloseRelay.EnumRelayType.Undefined.ToString():
 					zone.ClosureOpenCloseRelay.RelayType.ToString(), 
 					zone.ClosureIdList, zone.PowerOnDelay, zone.NearbyZonesIdList, zone.TemperatureDeviceId, zone.PowerType,
-					zone.Type.ToString());
+					zone.Type.ToString(), zone.HeatSchedule);
 
                 if (zone.DisplayType!="")
                 {
@@ -182,6 +182,7 @@ namespace MultiZonePlayer
 					zone.TemperatureDeviceId = (dgvZones.Rows[r].Cells[Zones_TempDeviceId.Name].Value ?? "").ToString();
 					zone.PowerType = (dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString();
 					zone.Type = (ZoneType)Enum.Parse(typeof(ZoneType),(dgvZones.Rows[r].Cells[Zones_Type.Name].Value ?? "Undefined").ToString());
+					zone.HeatSchedule = dgvZones.Rows[r].Cells[Zones_HeatSchedule.Name].Value.ToString();
 					zone.SaveStateToIni();
                 }
             }

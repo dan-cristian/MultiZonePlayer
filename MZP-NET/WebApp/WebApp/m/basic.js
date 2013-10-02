@@ -22,3 +22,6 @@ function ajaxCall(targetDiv,url,forceReload) {
 	xmlhttp.open("GET", url, true);
 	xmlhttp.send();
 }
+function showText(targetDiv, text) {
+	document.getElementById(targetDiv).innerHTML = text;
+}

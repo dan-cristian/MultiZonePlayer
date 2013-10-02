@@ -338,6 +338,7 @@ namespace MultiZonePlayer
             }
             else
             {
+				m_isXBMCProcessOn = true;
                 String result = PostURLMessage(GET_URL, "Player.GetActivePlayers");
                 try
                 {

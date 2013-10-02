@@ -545,6 +545,17 @@ namespace MultiZonePlayer
 						return Id.ToString();
 			}
 		}
+		public String Details
+		{
+			get
+			{
+				String result="";
+				if (RepeatMonth != "" || RepeatWeekDay != "" || RepeatTime != "")
+					result = "Schedule Month="+RepeatMonth + " WeekDay="+RepeatWeekDay+ " Time="+RepeatTime;
+				
+				return result;
+			}
+		}
 		public static void SaveToIni(List<MacroEntry> list)
 		{
 			String json;
@@ -819,6 +830,7 @@ namespace MultiZonePlayer
 		public String TemperatureDeviceId;
 		public double TemperatureMaxAlarm=1000;
 		public double TemperatureMinAlarm=-1000;
+		public String HeatSchedule;
 
 		public int VolumeLevel;
 		public long Position = 0;
@@ -1360,6 +1372,7 @@ namespace MultiZonePlayer
 				TemperatureDeviceId = zonestorage.TemperatureDeviceId;
 				PowerType = zonestorage.PowerType;
 				Type = zonestorage.Type;
+				HeatSchedule = zonestorage.HeatSchedule;
 				//Temperature = "1";
 			}
 

@@ -40,7 +40,9 @@
 		onclick="window.open('zone-main.html?zoneid=#Zones,%_zoneid.ChildZone,%i.ZoneId#','_self')">#Zones,%_zoneid.ChildZone,%i.ZoneName#</button>
 <%%>
 <%for;i;0;++;#Zones,%_zoneid.MacroCount#;%>
-<button onclick="ajaxCall('result','cmd.html?command=macro&zoneid=%_zoneid&id=#Zones,%_zoneid.Macro,%i.Id#', true)">[#Zones,%_zoneid.Macro,%i.Description#]</button>
+<button onclick="ajaxCall('result','cmd.html?command=macro&zoneid=%_zoneid&id=#Zones,%_zoneid.Macro,%i.Id#', true)"
+	onmouseover="showText('result','#Zones,%_zoneid.Macro,%i.Details#')" onmouseout="showText('result','')"
+	>[#Zones,%_zoneid.Macro,%i.Description#]</button>
 <%%>
 <button onclick="window.open('start.html', '_self')">Back</button>
 <div id="result"></div>

@@ -272,14 +272,14 @@ namespace MultiZonePlayer
 			{
 				paramAtoms = method.Split(new String[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 				if (paramAtoms.Length > 1)
-				{
+				{//first param will be method name
 					parameters = new object[paramAtoms.Length - 1];
 					for (int i = 0; i < parameters.Length; i++)
 						parameters[i] = paramAtoms[i + 1];
 					runMethod = paramAtoms[0];
 				}
 				else
-				{
+				{//only method name exist
 					parameters = null;
 					runMethod = method;
 				}
@@ -301,14 +301,33 @@ namespace MultiZonePlayer
 			object value;
 			Boolean varFound = false;
 
+			if (instance == null)
+				return null;
+
 			try
 			{
 				propInfo = Type.GetType(instance.GetType().FullName).GetProperty(propName);
-				if (propInfo != null)
+				if (propInfo != null || propName=="?")
 				{
-					if (parameters!=null && parameters.Length > 0)
-						MLog.Log(null, "Warning, Property called with parameters");
-					value = propInfo.GetValue(instance, null);
+					if (propInfo != null)
+						value = propInfo.GetValue(instance, null);
+					else
+						value = instance;
+
+					if (parameters != null && parameters.Length > 0)
+					{
+						//MLog.Log(null, "Warning, Property called with parameters");
+						if (value.GetType().Name=="List`1") 
+						{
+							if (value.ToString().Contains(typeof(MultiZonePlayer.ZoneDetails).ToString()))
+								value = ((List<ZoneDetails>)value)[Convert.ToInt32(parameters[0])];
+							else
+								MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type="+value.ToString());
+						}
+						else
+							MLog.Log(null, "Unknown main type for property index " + Clean(propName) + " type=" + value.ToString());
+					}
+					
 				}
 				else
 				{
@@ -734,6 +753,122 @@ namespace MultiZonePlayer
 		}
 
 		#endregion
+
+		public static void GenerateServerSideScript(ref String result)
+		{
+			//MLog.Log(this, "Generating SS script");
+			const string delim_start = "<%", delim_end = "%>";
+			String script, target, scriptReflect;
+			int cycles = 0;
+			do
+			{
+				script = result.Substring(delim_start, delim_end);
+				if (script != null && script != "")
+				{
+					scriptReflect = script;
+					Reflect.GenericReflect(ref scriptReflect);
+					string[] atoms = scriptReflect.Split(';');
+
+					target = result.Substring(delim_end, delim_start + delim_end);
+					if (atoms[0] == "?" && target == null)
+						target = "";
+					if (target == null)
+					{
+						MLog.Log(null, "Could not find script target");
+						break;
+					}
+					int resultInsertIndex = result.IndexOf(target);
+					
+
+					switch (atoms[0])
+					{
+						case "for":
+							if (script.Contains("for"))
+							{
+								string var, start, end, oper, cond;
+								var = atoms[1];
+								start = atoms[2];
+								oper = atoms[3];
+								end = atoms[4];
+								cond = atoms[5];
+
+								int forstart, forend;
+								string filter;
+								forstart = Convert.ToInt16(start);
+								forend = Convert.ToInt16(end);
+								String generated;
+
+								switch (oper)
+								{
+									case "++":
+										String reseval = "";
+										for (int j = forstart; j < forend; j++)
+										{
+											if (cond != "")
+											{
+												filter = cond.Replace("%" + var, j.ToString());
+												Reflect.GenericReflect(ref filter);
+												reseval = ExpressionEvaluator.EvaluateBoolToString(filter);
+											}
+											if (cond == "" || Convert.ToBoolean(reseval))
+											{
+												generated = target.Replace("%" + var, j.ToString());
+												result = result.Insert(resultInsertIndex, generated);
+												resultInsertIndex += generated.Length;
+											}
+										}
+										break;
+									case "--":
+										for (int j = forstart; j < forend; j--)
+										{
+											generated = target.Replace("%" + var, j.ToString());
+											result = result.Insert(resultInsertIndex, generated);
+											resultInsertIndex += generated.Length;
+										}
+										break;
+								}
+							}
+							result = result.Replace(delim_start + script + delim_end, "").Replace(target + delim_start + delim_end, "");
+							break;
+						case "iif":
+							string eval, casetrue, casefalse;
+							eval = atoms[1];
+							casetrue = atoms[2];
+							casefalse = atoms[3];
+
+							result = result.Replace(delim_start + script + delim_end, "");
+							if (eval.ToLower() == "true")
+								result = result.Replace(target, casetrue);
+							else
+								result = result.Replace(target, casefalse);
+							result = result.ReplaceFirst(delim_start + delim_end, "");
+							break;
+						case "if":
+							string res;
+							res = atoms[1];
+							result = result.Replace(delim_start + script + delim_end, "");
+							if (res.ToLower() == "false")
+								result = result.Replace(target, "");
+							else
+								result = result + "";
+							result = result.ReplaceFirst(delim_start + delim_end, "");
+							break;
+						case "?":
+							string exp = atoms[1], expresult;
+							Reflect.GenericReflect(ref exp);
+							expresult = ExpressionEvaluator.EvaluateBoolToString(exp);
+							result = result.Replace(delim_start + script + delim_end, expresult);// + target + delim_start + delim_end, expresult);
+							break;
+						default:
+							break;
+					}
+				}
+				cycles++;
+			}
+			while (script != null && script != "" && cycles <= 100);
+			if (cycles > 100)
+				MLog.Log(null, "Error, infinite cycles reached");
+		}
 	}
 
 }

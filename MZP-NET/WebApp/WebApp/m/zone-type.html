@@ -1,0 +1,18 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head id="Head1">
+<meta http-equiv="content-type" content="text/html;charset=unicode;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>%_type List</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body onload="refresh(60000)" onerror="refresh(60000)" style="text-align:center">
+
+<%for;i;0;++;#S.ZonesWithType,%_type.Count#;%>
+	<button class="Action#S.ZonesWithType,%_type.?,%i.HasAction# Activity#S.ZonesWithType,%_type.?,%i.ActivityType#"
+		onclick="window.open('zone-main.html?zoneid=#S.ZonesWithType,%_type.?,%i.ZoneId#','_self')">#S.ZonesWithType,%_type.?,%i.ZoneName#</button>
+	<%%>
+<br />
+<button onclick="window.open('start.html', '_self')">Back</button>
+</body>
+</html>
