@@ -10,7 +10,7 @@ div.VisibleFalse {display: none;}
 hr {width:90%;}
 p {margin: 2px 0;}
 /***FIRST STYLE THE BUTTON***/
-button{
+button, input{
 cursor:pointer; /*forces the cursor to change to a hand when the button is hovered*/
 padding:5px 15px; /*add some padding to the inside of the button*/
 background:#35b128; /*the colour of the button*/

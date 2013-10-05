@@ -78,7 +78,7 @@ namespace MultiZonePlayer
             [Description("HDMI 1a")] x_90
         };
         private int DISPLAY_ID=0;
-        private string m_input;
+        private string m_input, m_connection;
         private bool m_isOnValue = false;
         private int m_volumeLevel = -1;
         private int m_stdtimeout = 5000;
@@ -86,7 +86,8 @@ namespace MultiZonePlayer
 
         public DisplayLGTV(String connection, ZoneDetails p_zoneDetails)
         {
-            Initialise("9600", "None", "One", "8", connection, CommunicationManager.TransmissionType.Text);
+			m_connection = connection;
+			Reinitialise();
             m_zoneDetails = p_zoneDetails;
             m_zoneDetails.ZoneState = ZoneState.NotStarted;
         }
@@ -96,6 +97,10 @@ namespace MultiZonePlayer
             Disconnect();
         }
 
+		public void Reinitialise()
+		{
+			Initialise("9600", "None", "One", "8", m_connection, CommunicationManager.TransmissionType.Text);
+		}
         public override String SendCommand(Enum cmd, String value)
         {
             String command = cmd.ToString().Split('_')[1] + " " + DISPLAY_ID.ToString() + " " + value;
@@ -124,7 +129,9 @@ namespace MultiZonePlayer
             }
             else
             {
-                //MLog.Log(this, "Getstatus TV returned error, msg=" + result);
+				m_isOnValue = false;
+				//TODO might be a blocker when tv is off
+				Reinitialise();
             }
 
             return result;

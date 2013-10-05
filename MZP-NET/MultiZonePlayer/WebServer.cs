@@ -233,7 +233,8 @@ namespace MultiZonePlayer
 						foreach (String atom in atoms)
 						{
 							item = atom; //.Replace("^", "&");
-							vars = item.Split(new String[] {"="}, StringSplitOptions.RemoveEmptyEntries);
+							//vars = item.Split(new String[] {"="}, StringSplitOptions.RemoveEmptyEntries);
+							vars = item.SplitTwo("=");
 							if (Enum.IsDefined(typeof (GlobalParams), vars[0]))
 							{
 								param = (GlobalParams) Enum.Parse(typeof (GlobalParams), vars[0]);

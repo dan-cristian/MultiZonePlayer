@@ -39,6 +39,7 @@ public class MZPState
     private List<ZoneDetails> m_zoneList;
     private List<MoodMusic> m_moodMusicList;
 
+	private Cron m_cron;
     private MultiZonePlayer.Tail m_Tail;
     private ZoneEvents m_zoneEvents;
     private Alarm m_systemAlarm;
@@ -197,6 +198,12 @@ public class MZPState
 		m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
 		m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
 		InitMediaLibrary();
+
+		m_cron = new Cron();
+		Thread cron = new Thread(() => m_cron.start());
+		cron.Name = "Cron Service";
+		cron.Start();
+
         LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
 				
     }
@@ -284,6 +291,11 @@ public class MZPState
             {
                 msg.Close();
             }
+			m_cron.stop();
+			foreach (ZoneDetails zone in ZoneDetails)
+			{
+				zone.SaveStateToIni();
+			}
             m_sysState = null;
         }
         catch (Exception)
@@ -1083,6 +1095,24 @@ public class MZPState
 		}
 	}
 
+	public void CheckForCronSchedule()
+	{
+		if (m_cron != null)
+		{
+			String cronText="";
+
+			foreach (ZoneDetails zone in ZoneDetails)
+			{
+				if (zone.CronSchedule != "")
+					cronText += zone.CronSchedule+"\n";
+			}
+			if (cronText != m_cron.CronTabText)
+			{//cron definition has changed, reload
+				m_cron.readCrontabString(cronText);
+			}
+		}
+	}
+
 	public int GetMacroIdByShortcut(string shortcut, string deviceName)
 	{
 		if (shortcut != null)
@@ -1237,6 +1267,7 @@ public class MZPState
         CheckForExternalZoneEvents();
 		CheckForScheduleMacroEvents();
 		CheckForUpsStatus();
+		CheckForCronSchedule();
         m_powerControlDenkovi.timerPowerSaving_Tick();
 		m_powerControlNumato.timerPowerSaving_Tick();
 		m_oneWire.Tick();

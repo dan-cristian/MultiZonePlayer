@@ -136,7 +136,6 @@
     <Content Include="m\tv.html" />
     <Content Include="m\utilities.js" />
     <Content Include="m\video.html" />
-    <Content Include="m\Wami.swf" />
     <Content Include="m\galleria\galleria-1.2.8.js" />
     <Content Include="m\galleria\galleria-1.2.8.min.js" />
     <Content Include="m\galleria\plugins\flickr\flickr-demo.html" />
@@ -162,6 +161,7 @@
     <Content Include="m\zone-cmd.html" />
     <Content Include="m\zone-main.html" />
     <Content Include="m\zone-music.html" />
+    <Content Include="m\zone-sched.html" />
     <Content Include="m\zone-type.html" />
     <Content Include="m\zone-video.html" />
     <Content Include="Web.config" />

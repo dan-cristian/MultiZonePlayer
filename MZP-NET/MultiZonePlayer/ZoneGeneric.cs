@@ -357,6 +357,15 @@ namespace MultiZonePlayer
 					//System.Threading.Thread.Sleep(4000);//ensure we can hear this
 					m_zoneDetails.RequirePower = needsPower;
 					break;
+				case GlobalCommands.setfield:
+					string field = vals.GetValue(GlobalParams.field);
+					string text = vals.GetValue(GlobalParams.text);
+					System.Reflection.FieldInfo fieldInfo = m_zoneDetails.GetType().GetField(field);
+					if (fieldInfo != null)
+						fieldInfo.SetValue(m_zoneDetails, text);
+					else
+						MLog.Log(this, "Error setting value, not found field="+field);
+					break;
 				#endregion
                 default:
                     

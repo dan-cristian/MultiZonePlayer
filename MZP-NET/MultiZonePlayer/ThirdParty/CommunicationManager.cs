@@ -198,6 +198,27 @@ namespace MultiZonePlayer
 
     }
 
+	public class ExSerialPort : SerialPort
+	{
+		protected override void Dispose(bool disposing)
+		{
+			// our variant for
+			// 
+			// http://social.msdn.microsoft.com/Forums/en-US/netfxnetcom/thread/8b02d5d0-b84e-447a-b028-f853d6c6c690
+			// http://connect.microsoft.com/VisualStudio/feedback/details/140018/serialport-crashes-after-disconnect-of-usb-com-port
+
+			var stream = (System.IO.Stream)typeof(SerialPort).GetField("internalSerialStream", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(this);
+
+			if (stream != null)
+			{
+				try { stream.Dispose(); }
+				catch { }
+			}
+
+			base.Dispose(disposing);
+		}
+	}
+
     public class CommunicationManager
     {
         #region Manager Enums
@@ -223,7 +244,7 @@ namespace MultiZonePlayer
         private Func<String, int> _callback;
         //private RichTextBox _displayWindow;
         //global manager variables
-        private SerialPort comPort = new SerialPort();
+        private SerialPort comPort = new ExSerialPort();
         private System.Object m_lockThisReceive = new System.Object();
 		public Boolean VerboseDebug = true;
 		protected DateTime m_lastReinitTryDate = DateTime.MinValue;
@@ -511,9 +532,9 @@ namespace MultiZonePlayer
         void comPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
 			string msg, msgDisplay="";
-            lock (m_lockThisReceive)
+            try
             {
-                try
+				lock (m_lockThisReceive)    
                 {
 					if (Thread.CurrentThread != null && 
 						(Thread.CurrentThread.Name == null ||
@@ -628,11 +649,12 @@ namespace MultiZonePlayer
                     }
 
                 }
-                catch (Exception ex)
-                {
-                    MLog.Log(ex, "Error com port data received com=" + comPort.PortName);
-                }
+			}
+            catch (Exception ex)
+            {
+                MLog.Log(ex, "Error com port data received com=" + comPort!=null?comPort.PortName:" null port");
             }
+            
         }
         void comPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
@@ -644,7 +666,7 @@ namespace MultiZonePlayer
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, "Error com port error received com=" + comPort.PortName);
+				MLog.Log(ex, "Error com port error received com=" + comPort != null ? comPort.PortName : " null port");
 			}
         }
         #endregion

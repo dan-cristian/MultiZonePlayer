@@ -59,6 +59,22 @@ namespace MultiZonePlayer
 			else
 				return null;
 		}
+
+		public static String[] SplitTwo(this string text, String separator)
+		{
+			String[] result;
+			int index = text.IndexOf(separator);
+			if (index >= 0)
+			{
+				result = new String[2];
+				result[0] = text.Substring(0, index);
+				result[1] = text.Substring(index + separator.Length);
+				return result;
+			}
+			result = new string[1];
+			result[0] = text;
+			return result;
+		}
 	}
 
     public class Utilities

@@ -187,6 +187,7 @@
       <DependentUpon>AudioManagement.cs</DependentUpon>
     </Compile>
     <Compile Include="IoDevices.cs" />
+    <Compile Include="ThirdParty\Cron.cs" />
     <Compile Include="ThirdParty\FTD2XX_NET.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Messengers.cs" />
@@ -207,7 +208,9 @@
     <Compile Include="ControlCenter.Designer.cs">
       <DependentUpon>ControlCenter.cs</DependentUpon>
     </Compile>
-    <Compile Include="ThirdParty\CommunicationManager.cs" />
+    <Compile Include="ThirdParty\CommunicationManager.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ThirdParty\DCPlayer.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -39,7 +39,111 @@ namespace MultiZonePlayer
 		system,
 		messenger
 	}
-
+	public enum GlobalCommands
+	{
+		nul,
+		k0,
+		k1,
+		k2,
+		k3,
+		k4,
+		k5,
+		k6,
+		k7,
+		k8,
+		k9,
+		help,
+		status,
+		selectzone,
+		sleep,
+		shutdown,
+		music,
+		video,
+		tv,
+		xbmc,
+		play,
+		stop,
+		pause,
+		next,
+		previous,
+		rewind,
+		ffwd,
+		up,
+		down,
+		left,
+		right,
+		volumeset,
+		volumedown,
+		volumeup,
+		mute,
+		repeat,
+		fullscreen,
+		ratingset,
+		enter,
+		record,
+		guide,
+		chup,
+		chdown,
+		photo,
+		dvd,
+		radio,
+		streammp3,
+		back,
+		musicclone,
+		microphone,
+		genrelist,
+		setgenrelist,
+		sleeptimer,
+		artistlist,
+		setartistlist,
+		setwaketimer,
+		medialist,
+		setmediaitem,
+		cameraevent,
+		dismisscameraalert,
+		togglecameraalert,
+		setmoodmusic,
+		getmoodmusiclist,
+		searchmediaitem,
+		musicalarm,
+		alarmevent,
+		alarmarm,
+		alarmdisarm,
+		alarmkeypadbeep,
+		alarmstay,
+		alarmautoarm,
+		micrecord,
+		micplay,
+		followmemusic,
+		restartispy,
+		restartwinload,
+		holdcriteria,
+		setnotify,
+		restartsystem,
+		sendsms,
+		zonearm,
+		zonedisarm,
+		makebuzz,
+		powerevent,
+		tvsetinput,
+		powercycle,
+		remotepoweron,
+		remotepoweroff,
+		remoteadjustdim,
+		getpicture,
+		macro,
+		rfxcmd,
+		r,//repeat last command
+		notifyuser,
+		closure,
+		closurearm,
+		closuredisarm,
+		runscript,
+		poweron,
+		poweroff,
+		powertoggle,
+		setfield
+	}
 	public class CommandSyntax
 	{
 		GlobalCommands Command;
@@ -182,7 +286,7 @@ namespace MultiZonePlayer
 		dimvalue,
 		singleparamvalue,
 		id,iscontactmade,
-		name,
+		name,text,field,
 		r//random no
 	}
 
@@ -243,6 +347,7 @@ namespace MultiZonePlayer
 		}
 	}
 
+	
 	public class ValueList
 	{
             
@@ -389,6 +494,34 @@ namespace MultiZonePlayer
 		public void SetIndexValues(List<String> list)
 		{
 			IndexValueList = list;
+		}
+
+		public static void ParseStringToValues(string text, string pairSeparator, string keySeparator, ref ValueList vals)
+		{
+			GlobalParams param;
+			String[] pairs= text.Split(new String[]{pairSeparator}, StringSplitOptions.RemoveEmptyEntries);
+			String[] keyval;
+			String key,val;
+
+			foreach (string pair in pairs)
+			{
+				keyval = pair.SplitTwo(keySeparator);
+				if (keyval.Length>1)
+				{
+					key = keyval[0];
+					val = keyval[1];
+				
+					if (Enum.IsDefined(typeof (GlobalParams), key))
+					{
+						param = (GlobalParams) Enum.Parse(typeof (GlobalParams), key);
+						vals.Add(param, val);
+					}
+					else
+					{
+						MLog.Log(null, "Parsed unknown parameter:" + key);
+					}
+				}
+			}
 		}
 	}
 
@@ -666,110 +799,7 @@ namespace MultiZonePlayer
 		}
 	}
 
-	public enum GlobalCommands
-	{
-		nul,
-		k0,
-		k1,
-		k2,
-		k3,
-		k4,
-		k5,
-		k6,
-		k7,
-		k8,
-		k9,
-		help,
-		status,
-		selectzone,
-		sleep,
-		shutdown,
-		music,
-		video,
-		tv,
-		xbmc,
-		play,
-		stop,
-		pause,
-		next,
-		previous,
-		rewind,
-		ffwd,
-		up,
-		down,
-		left,
-		right,
-		volumeset,
-		volumedown,
-		volumeup,
-		mute,
-		repeat,
-		fullscreen,
-		ratingset,
-		enter,
-		record,
-		guide,
-		chup,
-		chdown,
-		photo,
-		dvd,
-		radio,
-		streammp3,
-		back,
-		musicclone,
-		microphone,
-		genrelist,
-		setgenrelist,
-		sleeptimer,
-		artistlist,
-		setartistlist,
-		setwaketimer,
-		medialist,
-		setmediaitem,
-		cameraevent,
-		dismisscameraalert,
-		togglecameraalert,
-		setmoodmusic,
-		getmoodmusiclist,
-		searchmediaitem,
-		musicalarm,
-		alarmevent,
-		alarmarm,
-		alarmdisarm,
-		alarmkeypadbeep,
-		alarmstay,
-		alarmautoarm,
-		micrecord,
-		micplay,
-		followmemusic,
-		restartispy,
-		restartwinload,
-		holdcriteria,
-		setnotify,
-		restartsystem,
-		sendsms,
-		zonearm,
-		zonedisarm,
-		makebuzz,
-		powerevent,
-		tvsetinput,
-		powercycle,
-		remotepoweron,
-		remotepoweroff,
-		remoteadjustdim,
-		getpicture,
-		macro,
-		rfxcmd,
-		r,//repeat last command
-		notifyuser,
-		closure,
-		closurearm,
-		closuredisarm,
-		runscript,
-		poweron,
-		poweroff,
-		powertoggle
-	}
+	
 
 	public enum ResultEnum
 	{
@@ -830,7 +860,7 @@ namespace MultiZonePlayer
 		public String TemperatureDeviceId;
 		public double TemperatureMaxAlarm=1000;
 		public double TemperatureMinAlarm=-1000;
-		public String HeatSchedule;
+		public String CronSchedule="";
 
 		public int VolumeLevel;
 		public long Position = 0;
@@ -1372,7 +1402,7 @@ namespace MultiZonePlayer
 				TemperatureDeviceId = zonestorage.TemperatureDeviceId;
 				PowerType = zonestorage.PowerType;
 				Type = zonestorage.Type;
-				HeatSchedule = zonestorage.HeatSchedule;
+				CronSchedule = zonestorage.CronSchedule;
 				//Temperature = "1";
 			}
 

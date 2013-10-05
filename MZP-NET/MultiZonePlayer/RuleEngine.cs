@@ -245,6 +245,8 @@ namespace MultiZonePlayer
 			object instance = ReflectionInterface.Instance;
 			String[] lineAtoms;
 			object value;
+			if (!result.Contains("#"))
+				return;
 
 			lineAtoms = result.Split(new String[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 			foreach (String line in lineAtoms)
@@ -366,7 +368,15 @@ namespace MultiZonePlayer
 										MLog.Log(null, "Unable to cast prop=" + Clean(propName) + " param="+parameters[p] + " err="+e.Message);
 									}
 								}
-								value = methInfo.Invoke(instance, parameters);
+								try
+								{
+									value = methInfo.Invoke(instance, parameters);
+								}
+								catch (Exception ex)
+								{
+									MLog.Log(ex, "Err invoking method " + Clean(propName));
+									value = null;
+								}
 								if (value == null && !varFound)
 								{
 									MLog.Log(null, "Warning, null result returned on prop=" + Clean(propName));
