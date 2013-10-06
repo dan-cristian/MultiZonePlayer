@@ -1,6 +1,6 @@
-﻿<!DOCTYPE html>
-<html lang="en"><head id="Head1">
-<meta http-equiv="content-type" content="text/html;charset=unicode;" />
+﻿<!doctype html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8;" />
 <meta name="robots" content="index, follow, noodp" />
 <title>#Zones,%_zoneid.ZoneName# actions</title>
 <link href="mobile.css" rel="stylesheet" type="text/css" />
@@ -43,7 +43,7 @@
 <button onclick="ajaxCall('result','cmd.html?command=macro&zoneid=%_zoneid&id=#Zones,%_zoneid.Macro,%i.Id#', true)"
 	onmouseover="showText('result','#Zones,%_zoneid.Macro,%i.Details#')" onmouseout="showText('result','')"
 	>[#Zones,%_zoneid.Macro,%i.Description#]</button>
-<%%>
+<%%><br />
 <button onclick="window.open('zone-sched.html?zoneid=%_zoneid', '_self')">Schedule</button>
 <button onclick="window.open('start.html', '_self')">Back</button>
 <div id="result"></div>

@@ -131,7 +131,7 @@ namespace MultiZonePlayer
             {
 				m_isOnValue = false;
 				//TODO might be a blocker when tv is off
-				Reinitialise();
+				//Reinitialise();
             }
 
             return result;

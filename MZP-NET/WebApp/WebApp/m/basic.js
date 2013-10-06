@@ -1,8 +1,14 @@
 function refresh(interval) {
 	setTimeout(function () { reload() }, interval);
 }
+function refresh(interval, url) {
+	setTimeout(function () { reload(url) }, interval);
+}
 function reload() {
 	window.location.reload();
+}
+function reload(url) {
+	window.open(url, "_self");
 }
 function ajaxCall(targetDiv,url,forceReload) {
 	var xmlhttp;
@@ -24,4 +30,7 @@ function ajaxCall(targetDiv,url,forceReload) {
 }
 function showText(targetDiv, text) {
 	document.getElementById(targetDiv).innerHTML = text;
+}
+function showDiv(targetDiv) {
+	document.getElementById(targetDiv).style.display = "block";
 }

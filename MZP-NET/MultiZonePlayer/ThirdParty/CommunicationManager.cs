@@ -212,7 +212,8 @@ namespace MultiZonePlayer
 			if (stream != null)
 			{
 				try { stream.Dispose(); }
-				catch { }
+				catch (Exception e) 
+				{ MLog.Log(e, "Error exsserial dispose"); }
 			}
 
 			base.Dispose(disposing);
@@ -244,7 +245,7 @@ namespace MultiZonePlayer
         private Func<String, int> _callback;
         //private RichTextBox _displayWindow;
         //global manager variables
-        private SerialPort comPort = new ExSerialPort();
+		private SerialPort comPort = new ExSerialPort();
         private System.Object m_lockThisReceive = new System.Object();
 		public Boolean VerboseDebug = true;
 		protected DateTime m_lastReinitTryDate = DateTime.MinValue;
@@ -421,7 +422,12 @@ namespace MultiZonePlayer
 				Boolean result;
                 //first check if the port is already open
                 //if its open then close it
-                if (comPort.IsOpen == true) comPort.Close();
+				if (comPort.IsOpen == true)
+				{
+					MLog.Log(this, "Comport already opened com=" + comPort.PortName);
+					return true;
+					//comPort.Close();
+				}
 				m_reinitTries++;
 				m_lastReinitTryDate = DateTime.Now;
 
@@ -440,16 +446,23 @@ namespace MultiZonePlayer
                 comPort.Open();
 				result = comPort.IsOpen;
 				if (result)
+				{
 					m_reinitTries = 0;
-                //display message
-                MLog.Log(this,"Port "+comPort.PortName +" opened with baud=" + comPort.BaudRate);
-                MLog.LogModem(comPort.PortName + " Opened with baud=" + comPort.BaudRate +"\r\n");
-				
+					//display message
+					MLog.Log(this, "Port " + comPort.PortName + " opened with baud=" + comPort.BaudRate);
+					MLog.LogModem(comPort.PortName + " Opened with baud=" + comPort.BaudRate + "\r\n");
+				}
+				else
+					MLog.Log(this, "Port " + comPort.PortName + " failed to be opened");
                 return result;
             }
             catch (Exception ex)
             {
-                MLog.Log(this, "Error open port " + comPort.PortName + " " + ex.Message);
+				if (comPort.PortName == "COM1")
+				{
+					MLog.Log(this, "DEBUG TARGET");
+				}
+                MLog.Log(ex, "Error open port " + comPort.PortName + " " + ex.Message);
                 return false;
             }
         }

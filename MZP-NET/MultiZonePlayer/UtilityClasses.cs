@@ -287,6 +287,7 @@ namespace MultiZonePlayer
 		singleparamvalue,
 		id,iscontactmade,
 		name,text,field,
+		type,
 		r//random no
 	}
 
@@ -347,7 +348,17 @@ namespace MultiZonePlayer
 		}
 	}
 
+	public class ZoneList
+	{
+		public static List<ZoneDetails> List(ZoneType value, String operation)
+		{
+			//List<ZoneDetails> zones;
+			return MZPState.Instance.ZoneDetails.FindAll(x => x.Type == value);
+		}
+		
+	}
 	
+
 	public class ValueList
 	{
             
@@ -876,6 +887,7 @@ namespace MultiZonePlayer
 		public String Album;
 		public String Year;
 		public String SourceURL;
+		public LastFmMeta Meta;
 
 		public Boolean CameraAlertActive = true;
 		private Boolean m_movementAlert = false, m_movementAlertLast = false;
@@ -1339,77 +1351,85 @@ namespace MultiZonePlayer
 		public void LoadStateFromIni()
 		{
 			String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
-
-			if (json != "")
+			try
 			{
-				ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
-
-				ZoneName = zonestorage.ZoneName;
-				ParentZoneId = zonestorage.ParentZoneId;
-				PowerIndex = zonestorage.PowerIndex;
-				PowerOnDelay = zonestorage.PowerOnDelay;
-				DefaultVolumePercent = zonestorage.DefaultVolumePercent;
-
-				CameraId = zonestorage.CameraId;
-				if (CameraId != "") HasCamera = true;
-				AlarmZoneId = zonestorage.AlarmZoneId;
-				if (AlarmZoneId != -1) HasMotionSensor = true;
-				AlarmAreaId = zonestorage.AlarmAreaId;
-
-				OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
-				OutputKeywords = zonestorage.OutputKeywords;
-				//OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
-				if (!OutputDeviceAutoCompleted().Equals(""))
+				if (json != "")
 				{
-					HasSpeakers = true;
-				}
+					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
 
-				WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);
-				OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(WavedeviceIndex);
+					ZoneName = zonestorage.ZoneName;
+					ParentZoneId = zonestorage.ParentZoneId;
+					PowerIndex = zonestorage.PowerIndex;
+					PowerOnDelay = zonestorage.PowerOnDelay;
+					DefaultVolumePercent = zonestorage.DefaultVolumePercent;
 
-				WakeTime = zonestorage.WakeTime;
-				WakeWeekDay = zonestorage.WakeWeekDay;
-				SleepHourMin = zonestorage.SleepHourMin;
+					CameraId = zonestorage.CameraId;
+					if (CameraId != "") HasCamera = true;
+					AlarmZoneId = zonestorage.AlarmZoneId;
+					if (AlarmZoneId != -1) HasMotionSensor = true;
+					AlarmAreaId = zonestorage.AlarmAreaId;
 
-				DisplayType = zonestorage.DisplayType;
-				DisplayConnection = zonestorage.DisplayConnection;
-				if (DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString()))
-				{
-					HasDisplay = true;
-				}
-				else
-					if (DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
-						HasVideoPlayer = true;
+					OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
+					OutputKeywords = zonestorage.OutputKeywords;
+					//OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
+					if (!OutputDeviceAutoCompleted().Equals(""))
+					{
+						HasSpeakers = true;
+					}
 
-				if (zonestorage.ClosureOpenCloseRelay != null)
-				{
-					ClosureOpenCloseRelay = zonestorage.ClosureOpenCloseRelay;
-					ClosureOpenCloseRelay.RelayType = zonestorage.ClosureOpenCloseRelay.RelayType;
+					WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);
+					OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(WavedeviceIndex);
+
+					WakeTime = zonestorage.WakeTime;
+					WakeWeekDay = zonestorage.WakeWeekDay;
+					SleepHourMin = zonestorage.SleepHourMin;
+
+					DisplayType = zonestorage.DisplayType;
+					DisplayConnection = zonestorage.DisplayConnection;
+					if (DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString()))
+					{
+						HasDisplay = true;
+					}
+					else
+						if (DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
+							HasVideoPlayer = true;
+
+					if (zonestorage.ClosureOpenCloseRelay != null)
+					{
+						ClosureOpenCloseRelay = zonestorage.ClosureOpenCloseRelay;
+						ClosureOpenCloseRelay.RelayType = zonestorage.ClosureOpenCloseRelay.RelayType;
+					}
+					else
+					{
+						ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
+						ClosureOpenCloseRelay.RelayType = ClosureOpenCloseRelay.EnumRelayType.Undefined;
+					}
+
+					ClosureIdList = zonestorage.ClosureIdList.Trim();
+					ClosureCounts = zonestorage.ClosureCounts;
+					if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
+						IsClosureArmed = true;
+					NearbyZonesIdList = zonestorage.NearbyZonesIdList;
+					if (NearbyZonesIdList.Length > 0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
+						NearbyZonesIdList += ";";
+					TemperatureDeviceId = zonestorage.TemperatureDeviceId;
+					PowerType = zonestorage.PowerType;
+					Type = zonestorage.Type;
+					CronSchedule = zonestorage.CronSchedule;
+					//Temperature = "1";
 				}
-				else
-				{
-					ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
-					ClosureOpenCloseRelay.RelayType = ClosureOpenCloseRelay.EnumRelayType.Undefined;
-				}
-					
-				ClosureIdList = zonestorage.ClosureIdList.Trim();
-				ClosureCounts = zonestorage.ClosureCounts;
-				if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
-					IsClosureArmed = true;
-				NearbyZonesIdList = zonestorage.NearbyZonesIdList;
-				if (NearbyZonesIdList.Length>0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
-					NearbyZonesIdList += ";";
-				TemperatureDeviceId = zonestorage.TemperatureDeviceId;
-				PowerType = zonestorage.PowerType;
-				Type = zonestorage.Type;
-				CronSchedule = zonestorage.CronSchedule;
-				//Temperature = "1";
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Unable to load zone");
 			}
 
 		}
 
 		public void SaveStateToIni()
 		{
+			//remove fields that generate serialisation problems
+			this.Meta = null;
 			String json = JSON.Instance.ToJSON(this, false);
 			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
 		}

@@ -3,7 +3,7 @@
     <title>Video #Zones,%_zoneid.ZoneName#</title>
     <script type="text/JavaScript" src="basic.js"></script> 
     <link href="mobile.css" rel="stylesheet" type="text/css" />
-	<meta http-equiv="content-type" content="text/html;charset=unicode;" />
+	<meta http-equiv="content-type" content="text/html;charset=UTF-8;" />
 </head>
 <body style="width: 100%;text-align:center">
 <button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Running"%>" onclick="ajaxCall('result','cmd.html?command=play&zoneid=%_zoneid', true)">►</button>
@@ -16,10 +16,12 @@
 <meter value="#Zones,%_zoneid.PositionPercent#" min="0" max="100">#Zones,%_zoneid.ZoneState#</meter>
 <br />
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=up&zoneid=%_zoneid', true)"><b>^</b></button>
-<button class="Small" onclick="ajaxCall('result','cmd.html?command=down&zoneid=%_zoneid', true)"><b>v</b></button>
-<button class="Small" onclick="ajaxCall('result','cmd.html?command=enter&zoneid=%_zoneid', true)"><b>OK</b></button>
+<br />
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=left&zoneid=%_zoneid', true)"><b><</b></button>
+<button class="Small" onclick="ajaxCall('result','cmd.html?command=enter&zoneid=%_zoneid', true)"><b>OK</b></button>
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=right&zoneid=%_zoneid', true)"><b>></b></button>
+<br />
+<button class="Small" onclick="ajaxCall('result','cmd.html?command=down&zoneid=%_zoneid', true)"><b>v</b></button>
 <hr />
 <p><acronym title="Title">#Zones,%_zoneid.Title#</acronym> | <acronym title="Author">#Zones,%_zoneid.Author#</acronym>
 <hr />

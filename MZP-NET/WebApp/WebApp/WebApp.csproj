@@ -161,6 +161,8 @@
     <Content Include="m\zone-cmd.html" />
     <Content Include="m\zone-main.html" />
     <Content Include="m\zone-music.html" />
+    <Content Include="m\zone-musiclist.html" />
+    <Content Include="m\zone-musicselect.html" />
     <Content Include="m\zone-sched.html" />
     <Content Include="m\zone-type.html" />
     <Content Include="m\zone-video.html" />

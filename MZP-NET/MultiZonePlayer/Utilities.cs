@@ -75,6 +75,13 @@ namespace MultiZonePlayer
 			result[0] = text;
 			return result;
 		}
+
+		public static byte[] GetBytes(this string str)
+		{
+			byte[] bytes = new byte[str.Length * sizeof(char)];
+			System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+			return bytes;
+		}
 	}
 
     public class Utilities
@@ -261,7 +268,7 @@ namespace MultiZonePlayer
             return (proc.Length != 0);
         }
 
-        public static Process RunProcessWait(String command, ProcessWindowStyle style)
+        public static Process RunProcessWait(String command, ProcessWindowStyle style, ProcessPriorityClass priority)
         {
             String fileName;
             String arguments="";
@@ -295,6 +302,8 @@ namespace MultiZonePlayer
             //extProc.StartInfo.ErrorDialog = false;
             extProc.StartInfo.WindowStyle = style;
             extProc.Start();
+			if (!extProc.HasExited)
+				extProc.PriorityClass = priority;
 #if DEBUG 
             System.Threading.Thread.Sleep(100);
 #else
@@ -451,6 +460,20 @@ namespace MultiZonePlayer
                 MLog.Log(ex, "Unable to write file=" + fileName);
             }
         }
+
+		public static void WriteTextFile(String fileName, String data)
+		{
+			try
+			{
+				FileStream fs = File.Create(IniFile.CurrentPath() + fileName);
+				fs.Write(data.GetBytes(), 0, data.Length);
+				fs.Close();
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Unable to write text file=" + fileName);
+			}
+		}
 
         public static void MoveFile(String sourceFullPath, String destinationFullPath, bool overrideDestination)
         {
@@ -1226,6 +1249,24 @@ namespace MultiZonePlayer
 				foreach (XElement el in items)
 				{
 					meta.SimilarArtists.Add(el.Element("name").Value);
+					if (meta.ArtistURL == null)
+					{
+						meta.ArtistURL = el.Element("url").Value;
+						meta.ImageURL = (string) el.Elements("image").First(x => x.Attribute("size").Value == "medium");
+							//el.Element("image").Value;
+					}
+				}
+				items = doc.Descendants("bio");
+				foreach (XElement el in items)
+				{
+					if (meta.ArtistOrigin==null)
+					{
+						XElement e = el.Element("placeformed");
+						meta.ArtistOrigin = e!=null?e.Value:null;
+						meta.ArtistSummary = el.Element("summary").Value;
+						e = el.Element("yearformed");
+						meta.YearFormed = e != null ? e.Value : null;
+					}
 				}
 			}
 			catch (Exception ex)

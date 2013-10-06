@@ -299,7 +299,8 @@ namespace MultiZonePlayer
 					}
 					String contentType;
 					byte[] binaryData = null;
-					if (cmdResult != null) binaryData = cmdResult.ValueList.BinaryData;
+					if (cmdResult != null && cmdResult.ValueList!=null) 
+						binaryData = cmdResult.ValueList.BinaryData;
 					if (binaryData != null)
 					{
 						contentType = cmdResult.ValueList.GetValue(GlobalParams.contenttype);

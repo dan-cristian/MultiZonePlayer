@@ -130,13 +130,23 @@ namespace MultiZonePlayer
 
 							if (var2.ToLower().Contains("command="))
 							{
+								String[] cmds = var2.SplitTwo(" ");
 								Reflect.GenericReflect(ref var1);
 								String reseval = ExpressionEvaluator.EvaluateBoolToString(var1);
 								if (Convert.ToBoolean(reseval))
 								{
 									ValueList val = new ValueList();
-									ValueList.ParseStringToValues(var2, ";", "=", ref val);
+									ValueList.ParseStringToValues(cmds[0], ";", "=", ref val);
 									API.DoCommand(val);
+								}
+								else
+								{
+									if (cmds.Length > 1)
+									{
+										ValueList val = new ValueList();
+										ValueList.ParseStringToValues(cmds[1], ";", "=", ref val);
+										API.DoCommand(val);
+									}
 								}
 							}
 							/*Process proc = new Process();

@@ -18,6 +18,9 @@ namespace MultiZonePlayer
         {
 
             public const String INI_FILE = "\\MultiZonePlayer.ini";
+			public const String MEDIA_MUSIC_STORAGE_FILE = "\\MediaMusic.data";
+			public const String MEDIA_VIDEO_STORAGE_FILE = "\\MediaVideo.data";
+			public const String MEDIA_PICTURE_STORAGE_FILE = "\\MediaPicture.data";
 			public const String SCHEDULER_FILE = "\\scheduler.ini";
 			public const String RULES_FILE = "\\rules.ini";
 			public const String CSV_TEMPERATURE_HUMIDITY = "\\temp-hum.csv";
@@ -185,6 +188,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_LASTFM_API_KEY = new String[] { "PARAM_LASTFM_API_KEY", "9d320007e2d23c9571f466030c7f2ddc" };
 			public static String[] PARAM_LASTFM_SECRET_KEY = new String[] { "PARAM_LASTFM_SECRET_KEY", "812f830d23965715878d5cd1390ada1a" };
 			public static String[] PARAM_LASTFM_WS_URL = new String[] { "PARAM_LASTFM_WS_URL", "http://ws.audioscrobbler.com/2.0/?" };
+			public static String[] PARAM_LASTFM_FORCE_META_UPDATE = new String[] { "PARAM_LASTFM_FORCE_META_UPDATE", "1", "1 to force meta refresh, 0 to load from disk" };
 
 			public static String[] PARAM_GPIO_CDC_MANUFACTURER_NAME = new String[] { "PARAM_GPIO_CDC_MANUFACTURER_NAME", "Microchip Technology, Inc.", "GPIO manufacturer name used to auto identify COM port name" };
 			public static String[] PARAM_GPIO_CDC_COMPORT = new String[] { "PARAM_GPIO_CDC_COMPORT", "COM7" };
@@ -196,6 +200,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_UPS_MUSTEK_STATUS_URL = new String[] { "PARAM_UPS_MUSTEK_STATUS_URL", "http://localhost:12349", "Web port for UPS Assistant app - mustek UPS" };
 
 			public static String[] PARAM_TIMESPAN_FORMAT = new String[] { "PARAM_TIMESPAN_LONG_FORMAT", @"d\dh\hm\ms\s", "Long Format to display time intervals" };
+			
 
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
@@ -272,6 +277,7 @@ namespace MultiZonePlayer
 				PARAM_LASTFM_API_KEY,
 				PARAM_LASTFM_SECRET_KEY,
 				PARAM_LASTFM_WS_URL,
+				PARAM_LASTFM_FORCE_META_UPDATE,
 				//PARAM_RFXCOM_PORT,
 				PARAM_RFX_DEVICE_NAME,
 				PARAM_RELAY_DEVICE_NAME,

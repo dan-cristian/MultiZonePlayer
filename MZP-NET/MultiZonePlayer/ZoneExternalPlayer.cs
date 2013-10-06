@@ -89,8 +89,8 @@ namespace MultiZonePlayer
 
 			if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
 			{
-				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1], 
-					System.Diagnostics.ProcessWindowStyle.Normal);
+				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1],
+					System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.AboveNormal);
 			}
             Display displayZone = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
             if (displayZone != null)

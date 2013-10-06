@@ -83,14 +83,22 @@ namespace MultiZonePlayer
 		{
 			lock (_evaluator)
 			{
-				return _evaluatorType.InvokeMember(
-							operation,
-							BindingFlags.InvokeMethod,
-							null,
-							_evaluator,
-							new object[] { statement },
-							CultureInfo.CurrentCulture
-						 );
+				try
+				{
+					return _evaluatorType.InvokeMember(
+								operation,
+								BindingFlags.InvokeMethod,
+								null,
+								_evaluator,
+								new object[] { statement },
+								CultureInfo.CurrentCulture
+							 );
+				}
+				catch (Exception ex)
+				{
+					MLog.Log(ex, "Error evaluate JS to object");
+					return "<ERROR JS>";
+				}
 			}
 		}
 		#endregion
@@ -639,7 +647,7 @@ namespace MultiZonePlayer
 			get { return DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT); }
 		}
 
-		public String GetCmdValues(String zoneid, String command, String htmldelimiter)
+		public String GetCmdValues(String zoneid, String command, String htmldelimiter, int maxLines)
 		{
 			ValueList vals = new ValueList(CommandSources.web);
 			//Metadata.ValueList resvalue;
@@ -649,14 +657,15 @@ namespace MultiZonePlayer
 			vals.Add(GlobalParams.zoneid, zoneid);
 			vals.Add(GlobalParams.command, command);
 
-
 			resCmd = API.DoCommandFromWeb(vals);//, out resvalue);
 
 			if (resCmd.ValueList != null)
 			{
 				if (resCmd.ValueList.IndexList != null)
 				{
-					for (int i = 0; i < resCmd.ValueList.IndexList.Count; i++)
+					if (maxLines<0)
+						maxLines = resCmd.ValueList.IndexList.Count;
+					for (int i = 0; i < Math.Min(resCmd.ValueList.IndexList.Count, maxLines); i++)
 					{
 						result += "<" + htmldelimiter + " value=" + resCmd.ValueList.IndexList[i] + ">" + resCmd.ValueList.IndexValueList[i] + "</" + htmldelimiter + ">\r\n";
 					}
@@ -845,7 +854,8 @@ namespace MultiZonePlayer
 							eval = atoms[1];
 							casetrue = atoms[2];
 							casefalse = atoms[3];
-
+							if (eval.ToLower() != "true" && eval.ToLower() != "false")
+								eval = ExpressionEvaluator.EvaluateBoolToString(eval);
 							result = result.Replace(delim_start + script + delim_end, "");
 							if (eval.ToLower() == "true")
 								result = result.Replace(target, casetrue);
@@ -856,6 +866,8 @@ namespace MultiZonePlayer
 						case "if":
 							string res;
 							res = atoms[1];
+							if (res.ToLower()!="true" && res.ToLower() != "false")
+								res = ExpressionEvaluator.EvaluateBoolToString(res);
 							result = result.Replace(delim_start + script + delim_end, "");
 							if (res.ToLower() == "false")
 								result = result.Replace(target, "");
@@ -865,7 +877,7 @@ namespace MultiZonePlayer
 							break;
 						case "?":
 							string exp = atoms[1], expresult;
-							Reflect.GenericReflect(ref exp);
+							//Reflect.GenericReflect(ref exp);
 							expresult = ExpressionEvaluator.EvaluateBoolToString(exp);
 							result = result.Replace(delim_start + script + delim_end, expresult);// + target + delim_start + delim_end, expresult);
 							break;

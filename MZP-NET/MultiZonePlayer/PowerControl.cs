@@ -626,7 +626,7 @@ namespace MultiZonePlayer
             {
                 MLog.Log(null,"Power resume action initiated zone " + zoneId);
                 String powerOnCommand = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONEPOWERONCTRL_GEMBIRD, zoneId.ToString());
-				Utilities.RunProcessWait(powerOnCommand, System.Diagnostics.ProcessWindowStyle.Minimized);
+				Utilities.RunProcessWait(powerOnCommand, System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
                 MLog.Log(null,"Power resume action completed zone " + zoneId);
 
                 //wait for socket to go on
@@ -660,7 +660,7 @@ namespace MultiZonePlayer
             {
                 MLog.Log(null,"Power save action initiated zone " + zoneId);
                 String powerOffCommand = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONEPOWEROFFCTRL_GEMBIRD, zoneId.ToString());
-				Utilities.RunProcessWait(powerOffCommand, System.Diagnostics.ProcessWindowStyle.Minimized);
+				Utilities.RunProcessWait(powerOffCommand, System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
                 MLog.Log(null,"Power save action completed zone " + zoneId);
 
                 //wait for socket to go off
@@ -699,7 +699,7 @@ namespace MultiZonePlayer
                 Open();
 
             Utilities.MoveFile(IniFile.PARAM_POWER_CONTROL_STATUS_FILE_GEMBIRD[1], IniFile.PARAM_POWER_CONTROL_STATUS_FILE_GEMBIRD[1] + ".old", true);
-			Utilities.RunProcessWait(MZPState.Instance.powerControlStatusCommand, System.Diagnostics.ProcessWindowStyle.Minimized);
+			Utilities.RunProcessWait(MZPState.Instance.powerControlStatusCommand, System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 
             int i = 0;
             while (true)
@@ -734,7 +734,7 @@ namespace MultiZonePlayer
 
         protected override void Open()
         {
-			Utilities.RunProcessWait(IniFile.PARAM_POWER_CONTROL_APP_PATH_GEMBIRD[1], System.Diagnostics.ProcessWindowStyle.Minimized);
+			Utilities.RunProcessWait(IniFile.PARAM_POWER_CONTROL_APP_PATH_GEMBIRD[1], System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
         }
 
         public override bool IsPowerControlOn()

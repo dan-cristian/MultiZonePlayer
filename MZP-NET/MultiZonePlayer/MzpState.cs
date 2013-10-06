@@ -14,7 +14,7 @@ namespace MultiZonePlayer
 public class MZPState
 {
     private static MZPState m_sysState = null;
-          
+    
     private ArrayList m_systemInputDeviceList = null;
     private Hashtable m_systemInputDeviceNames = null;
 
@@ -23,8 +23,6 @@ public class MZPState
     private List<ControlDevice> m_iniControlList = new List<ControlDevice>();
     public List<Playlist> m_playlist = new List<Playlist>();
     public Hashtable zoneDefaultInputs;
-
-    //private List<Utilities.WAVEOUTCAPS> m_waveoutdeviceList;
 
     private static RemotePipi[] remotePipi;
     private static int maxRemotes = 10;
@@ -65,8 +63,6 @@ public class MZPState
     private List<Display> m_displayList = new List<Display>();
     private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
 
-	//private USB_RC2.ELROUsbRC2 m_remoteControl = new USB_RC2.ELROUsbRC2();
-
 	private List<MacroEntry> m_macroList;
 	private List<GenericUPS> m_upsList;
 
@@ -80,12 +76,6 @@ public class MZPState
 	{
 		get { return m_oneWire; }
 	}
-
-	/*internal USB_RC2.ELROUsbRC2 RemoteControl
-	{
-		get { return m_remoteControl; }
-		set { m_remoteControl = value; }
-	}*/
 
     public List<ZoneGeneric> ActiveZones
     {
@@ -197,7 +187,7 @@ public class MZPState
 		m_upsList = new List<GenericUPS>();
 		m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
 		m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
-		InitMediaLibrary();
+		MediaLibrary.InitialiseLibrary();
 
 		m_cron = new Cron();
 		Thread cron = new Thread(() => m_cron.start());
@@ -264,11 +254,12 @@ public class MZPState
 		return macros;
 	}
 
-	public static void RestartGenericProc(string procName, string procPath, System.Diagnostics.ProcessWindowStyle startState)
+	public static void RestartGenericProc(string procName, string procPath, 
+		System.Diagnostics.ProcessWindowStyle startState, System.Diagnostics.ProcessPriorityClass priority)
 	{
 		MLog.Log(null, "Restarting " + procName);
 		Utilities.CloseProcSync(procName);
-		Utilities.RunProcessWait(procPath,	System.Diagnostics.ProcessWindowStyle.Normal);
+		Utilities.RunProcessWait(procPath,	System.Diagnostics.ProcessWindowStyle.Normal, priority);
 	}
             
 
@@ -296,6 +287,7 @@ public class MZPState
 			{
 				zone.SaveStateToIni();
 			}
+			MediaLibrary.SaveLibraryToIni();
             m_sysState = null;
         }
         catch (Exception)
@@ -312,7 +304,7 @@ public class MZPState
 
     public static void RestartComputer(String reason)
     {
-        MLog.Log(null, "RESTARTING COMPUTER");
+        MLog.Log(null, "RESTARTING COMPUTER for reason " + reason);
         MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "RESTARTING COMPUTER for reason " + reason, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical,null);
         Thread.Sleep(3000);
         System.Diagnostics.Process.Start("shutdown.exe", "-r -f -t 0");
@@ -346,8 +338,10 @@ public class MZPState
 
 	public List<ZoneDetails> ZonesWithType(ZoneType type)
 	{
-		return ZoneDetails.FindAll(x=>x.Type==type);
+		return ZoneList.List(type, "=");
 	}
+
+	
 
 	public ZoneDetails ZoneWithType(ZoneType type, int index)
 	{
@@ -675,27 +669,6 @@ public class MZPState
         }
     }
 
-    private void InitMediaLibrary()
-    {
-		MLog.Log(this, "MediaLibrary Init started");
-        Thread thmu = new Thread(() => MediaLibrary.InitialiseMusic());
-        thmu.Name = "MediaLibrary Music";
-        thmu.Start();
-
-		Application.DoEvents();
-
-		Thread thpi = new Thread(() => MediaLibrary.InitialisePictures());
-		thpi.Name = "MediaLibrary Pictures";
-		thpi.Start();
-
-		Application.DoEvents();
-
-		Thread thmo = new Thread(() => MediaLibrary.InitialiseVideos());
-		thmo.Name = "MediaLibrary Movies";
-		thmo.Start();
-		MLog.Log(this, "MediaLibrary Init ended, async process");
-    }
-
     public int GetZoneIdByAlarmZoneId(int alarmZoneId)
     {
         ZoneDetails zone = m_zoneList.Find(x => x.AlarmZoneId.Equals(alarmZoneId));
@@ -832,7 +805,7 @@ public class MZPState
 			{
 				MLog.Log(this, "iSpy proc not running, restarting. Searched for proc:" + IniFile.PARAM_ISPY_PROCNAME[1]);
 				Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
-				RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
+				RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 			}
 		}
 	}
@@ -845,7 +818,7 @@ public class MZPState
                 MLog.Log(this, "WINLOAD proc not running, restarting");
 				m_isWinloadLoading = true;
 				RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
-					IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal);
+					IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.BelowNormal);
             }
             else
             {

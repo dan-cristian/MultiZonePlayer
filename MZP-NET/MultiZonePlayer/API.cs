@@ -137,13 +137,13 @@ namespace MultiZonePlayer
             try
             {
                 //MZPState.Instance.PowerControl.ResumeFromPowerSaving();
-                //zoneId = Convert.ToInt16(vals.GetValue(Metadata.GlobalParams.zoneid));
+                String zoneId = vals.GetValue(GlobalParams.zoneid);
                 cmdName = vals.GetValue(GlobalParams.command);
 				cmdresult.Command = cmdName;
 				if (cmdName != GlobalCommands.closure.ToString() 
 					&& cmdName != GlobalCommands.getpicture.ToString()
 					&& cmdName != GlobalCommands.alarmevent.ToString())
-					MLog.Log(null, "Executing DOCommand " + cmdName);
+					MLog.Log(null, "Executing DOCommand " + cmdName + " zoneid="+zoneId);
 				bool isCmdDefined = Enum.IsDefined(typeof(GlobalCommands), cmdName);
                 
                 if (isCmdDefined)
@@ -219,13 +219,14 @@ namespace MultiZonePlayer
                             break;
                         case GlobalCommands.restartispy:
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
-							MZPState.RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized);
+							MZPState.RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], 
+								IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 							//resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case GlobalCommands.restartwinload:
                             MZPState.RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
-								IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal);
+								IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.BelowNormal);
                             //resvalue = new Metadata.ValueList(Metadata.GlobalParams.msg, "all ok", Metadata.CommandSources.system);
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
@@ -334,7 +335,7 @@ namespace MultiZonePlayer
 							break;
 						case GlobalCommands.runscript:
 							System.Diagnostics.Process proc = Utilities.RunProcessWait(IniFile.CurrentPath() + "\\scripts\\"+vals.GetValue(GlobalParams.name),
-								System.Diagnostics.ProcessWindowStyle.Hidden);
+								System.Diagnostics.ProcessWindowStyle.Hidden, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 							cmdresult.OutputMessage = "Exit code="+proc.ExitCode;
 							break;
                         default:

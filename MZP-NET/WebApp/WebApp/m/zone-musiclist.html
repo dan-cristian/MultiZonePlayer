@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html><html lang="en">
+<head>
+<title>Music Playlist #Zones,%_zoneid.ZoneName#</title>
+<script type="text/JavaScript" src="basic.js"></script> 
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<meta http-equiv="content-type" content="text/html;charset=UTF-8;" />
+</head>
+<body style="width: 100%;text-align:center">
+<form action="zone-music.html?zoneid=%_zoneid" method="post">
+<input name="command" type="hidden" value="setmediaitem"/>
+<select multiple="no" size="10" name="selectedindex">
+#GetCmdValues,%_zoneid,medialist,option,200#
+<option value=-1>... Maximum 200 items listed ...</option>
+</select><br />
+<input type="submit" value="Play Title" />
+</form>
+<p><acronym title="Title">#Zones,%_zoneid.Title#</acronym> | <acronym title="Author">#Zones,%_zoneid.Author#</acronym>
+ | <acronym title="Album">#Zones,%_zoneid.Album#</acronym> | <acronym title="Genre">#Zones,%_zoneid.Genre#</acronym></p>
+<hr />
+<span>Hold</span><br />
+<button onclick="window.open('zone-music.html?command=holdcriteria&zoneid=%_zoneid&action=artist','_self')">Artist</button>
+<button onclick="window.open('zone-music.html?command=holdcriteria&zoneid=%_zoneid&action=genre','_self')">Genre</button>
+<button onclick="window.open('zone-music.html?command=holdcriteria&zoneid=%_zoneid&action=album','_self')">Album</button>
+<button onclick="window.open('zone-music.html?command=holdcriteria&zoneid=%_zoneid&action=rating','_self')">Rating</button>
+<button onclick="window.open('zone-music.html?command=holdcriteria&zoneid=%_zoneid&action=folder','_self')">Folder</button>
+<button onclick="window.open('zone-music.html?command=holdcriteria&zoneid=%_zoneid','_self')">Toggle</button>
+<button onclick="window.open('zone-music.html?command=holdcriteria&zoneid=%_zoneid&action=nothing','_self')">Cancel</button>
+<br />
+<button onclick="window.open('zone-music.html?zoneid=%_zoneid', '_self')">Back</button>
+</body>
+</html>

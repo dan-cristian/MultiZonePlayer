@@ -739,7 +739,7 @@ namespace MultiZonePlayer
 				|| (DateTime.Now.Subtract(m_zoneDetails.LastNotifyZoneEventTriggered).TotalHours>1))
 			{
 				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-open-" + m_zoneDetails.ZoneId + ".bat",
-					System.Diagnostics.ProcessWindowStyle.Hidden);
+					System.Diagnostics.ProcessWindowStyle.Hidden, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 				m_zoneDetails.NotifyZoneEventTriggered = ZoneNotifyState.Open;
 				m_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}
@@ -750,7 +750,7 @@ namespace MultiZonePlayer
 			if (p_zoneDetails.NotifyZoneEventTriggered == ZoneNotifyState.Open)
 			{
 				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-close-" + p_zoneDetails.ZoneId + ".bat",
-					System.Diagnostics.ProcessWindowStyle.Hidden);
+					System.Diagnostics.ProcessWindowStyle.Hidden, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 				p_zoneDetails.NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 				p_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}

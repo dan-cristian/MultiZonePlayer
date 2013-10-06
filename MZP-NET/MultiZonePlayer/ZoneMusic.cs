@@ -738,9 +738,9 @@ namespace MultiZonePlayer
             }
         }
 
-            public ValueList ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
+            public void ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
             {
-                ValueList result = new ValueList();
+                //ValueList result = new ValueList();
                 String action = action = vals.GetValue(GlobalParams.action);
                 int rating;               
                 switch (cmdRemote)
@@ -798,7 +798,7 @@ namespace MultiZonePlayer
 						SetArtistList(vals, vals.GetValue(GlobalParams.singleparamvalue));
                         break;
                     case GlobalCommands.medialist:
-                        result = GetSongValueList();
+                        cmdresult.ValueList = GetSongValueList();
                         break;
                     case GlobalCommands.setmediaitem:
 						string keyword = vals.GetValue(GlobalParams.singleparamvalue);
@@ -821,7 +821,7 @@ namespace MultiZonePlayer
 							Play(Convert.ToInt16(vals.IndexValueList[0]));
                         break;
                     case GlobalCommands.getmoodmusiclist:
-                        result = GetMoodValueList();
+                        cmdresult.ValueList = GetMoodValueList();
                         break;
                     case GlobalCommands.setmoodmusic:
 						if (vals.GetValue(GlobalParams.moodindex) != null)
@@ -859,7 +859,7 @@ namespace MultiZonePlayer
                         break;
                 }
                 
-                return result;
+                //return result;
             }
 			public override void Tick()
             {
@@ -881,6 +881,7 @@ namespace MultiZonePlayer
                     m_zoneDetails.SourceURL = CurrentItem.SourceURL;
                     m_zoneDetails.Playlist = m_currentPlaylistName;
                     m_zoneDetails.PlaylistCount = m_songList.Count;
+					m_zoneDetails.Meta = CurrentItem.Meta;
                 }
                 if (m_dcPlay!=null) m_dcPlay.Tick();
             }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using ExifLib;
+using System.Threading;
 
 namespace MultiZonePlayer
 {
@@ -264,6 +265,10 @@ namespace MultiZonePlayer
 		public LastFmMeta Meta;
 		private TagLib.File m_tagFile = null;
 
+		public AudioItem()
+		{
+		}
+
 		public AudioItem(String url, String folder, LastFmMeta meta)
 		{
 			SourceURL = url;
@@ -407,6 +412,10 @@ namespace MultiZonePlayer
 		public string Subject;
 		public List<String> Faces = new List<string>();
 		public String FaceList="";
+
+		public MediaImageItem()
+		{
+		}
 
 		public MediaImageItem(String url, String folder)
 		{
@@ -588,13 +597,18 @@ namespace MultiZonePlayer
 	}
 	public class LastFmMeta
 	{
-		public string URL;
+		public string URL=null;
+		public string ArtistURL = null;
 		public string MainGenre = null;
 		public string ArtistName;
 		public List<string> GenreTags;
-		public string ArtistOrigin;
+		public string ArtistOrigin=null;
 		public string Album;
 		public List<string> SimilarArtists;
+		public string ImageURL;
+		public string ArtistSummary=null;
+		public string YearFormed=null;
+
 
 		public LastFmMeta()
 		{
@@ -1131,7 +1145,7 @@ namespace MultiZonePlayer
 							metaDisk = fastJSON.JSON.Instance.ToObject<LastFmMeta>(metaText);
 							if (metaDisk.ArtistName == null)
 								metaDisk.ArtistName = dir.Name;
-							if (metaDisk.MainGenre == null)
+							if (metaDisk.MainGenre == null || IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1]=="1")
 							{
 								metaDownload = LastFMService.GetArtistMeta(metaDisk.ArtistName);
 								meta = metaDownload;
@@ -1305,6 +1319,28 @@ namespace MultiZonePlayer
 		{
 			get { return m_isMusicInitialised && m_isPicturesInitialised && m_isVideosInitialised; }
 		}
+
+		public static void InitialiseLibrary()
+		{
+			MLog.Log(null, "MediaLibrary Init started");
+			Thread thmu = new Thread(() => MediaLibrary.InitialiseMusic());
+			thmu.Name = "MediaLibrary Music";
+			thmu.Start();
+
+			Application.DoEvents();
+
+			Thread thpi = new Thread(() => MediaLibrary.InitialisePictures());
+			thpi.Name = "MediaLibrary Pictures";
+			thpi.Start();
+
+			Application.DoEvents();
+
+			Thread thmo = new Thread(() => MediaLibrary.InitialiseVideos());
+			thmo.Name = "MediaLibrary Movies";
+			thmo.Start();
+			MLog.Log(null, "MediaLibrary Init ended, async process running");
+		}
+
 		public static void InitialiseMusic()
 		{
 			m_isMusicInitialised = false;
@@ -1319,7 +1355,8 @@ namespace MultiZonePlayer
 
 			//save new items found in library
 			m_musicFiles.SaveUpdatedItems();
-
+			if (IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] == "1")
+				IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] = "0, last refresh at " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT);
 			m_isMusicInitialised = true;
 		}
 
@@ -1357,6 +1394,33 @@ namespace MultiZonePlayer
 			m_videoFiles.SaveUpdatedItems();
 
 			m_isVideosInitialised = true;
+		}
+
+		public static void SaveLibraryToIni()
+		{
+			String json;
+			try
+			{
+				if (m_isMusicInitialised)
+				{
+					json = fastJSON.JSON.Instance.ToJSON(m_musicFiles, false);
+					Utilities.WriteTextFile(IniFile.MEDIA_MUSIC_STORAGE_FILE, json);
+				}
+				if (m_isVideosInitialised)
+				{
+					json = fastJSON.JSON.Instance.ToJSON(m_videoFiles, false);
+					Utilities.WriteTextFile(IniFile.MEDIA_VIDEO_STORAGE_FILE, json);
+				}
+				if (m_isPicturesInitialised)
+				{
+					json = fastJSON.JSON.Instance.ToJSON(m_pictureFiles, false);
+					Utilities.WriteTextFile(IniFile.MEDIA_PICTURE_STORAGE_FILE, json);
+				}
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Cannot save media library");
+			}
 		}
 
 		public static MusicCollection AllAudioFiles
