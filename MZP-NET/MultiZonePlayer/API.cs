@@ -494,7 +494,8 @@ namespace MultiZonePlayer
             }
             cmdres.ServerStatus = srv;
             //cmdres.ValueList = values;
-            return fastJSON.JSON.Instance.ToJSON(cmdres, true);
+			JSONParameters param=new JSONParameters();param.UseExtensions = true;
+			return fastJSON.JSON.Instance.ToJSON(cmdres, param);
         }
 
         /*

@@ -1150,7 +1150,8 @@ namespace MultiZonePlayer
 								metaDownload = LastFMService.GetArtistMeta(metaDisk.ArtistName);
 								meta = metaDownload;
 								meta.URL = dir.FullName;
-								metaText = fastJSON.JSON.Instance.ToJSON(meta, false);
+								fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+								metaText = fastJSON.JSON.Instance.ToJSON(meta, param);
 								System.IO.File.WriteAllText(metaFile, metaText);
 							}
 							else
@@ -1403,17 +1404,20 @@ namespace MultiZonePlayer
 			{
 				if (m_isMusicInitialised)
 				{
-					json = fastJSON.JSON.Instance.ToJSON(m_musicFiles, false);
+					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+					json = fastJSON.JSON.Instance.ToJSON(m_musicFiles, param);
 					Utilities.WriteTextFile(IniFile.MEDIA_MUSIC_STORAGE_FILE, json);
 				}
 				if (m_isVideosInitialised)
 				{
-					json = fastJSON.JSON.Instance.ToJSON(m_videoFiles, false);
+					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+					json = fastJSON.JSON.Instance.ToJSON(m_videoFiles, param);
 					Utilities.WriteTextFile(IniFile.MEDIA_VIDEO_STORAGE_FILE, json);
 				}
 				if (m_isPicturesInitialised)
 				{
-					json = fastJSON.JSON.Instance.ToJSON(m_pictureFiles, false);
+					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+					json = fastJSON.JSON.Instance.ToJSON(m_pictureFiles, param);
 					Utilities.WriteTextFile(IniFile.MEDIA_PICTURE_STORAGE_FILE, json);
 				}
 			}

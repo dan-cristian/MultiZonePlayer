@@ -54,15 +54,20 @@ function getCheckedRadioValue(radioObj) {
    	}
    	var maxW = myWidth - 0;
    	var maxH = myHeight - 5;
-   	var resultW, resultH;
-
-	var ratio = Math.min(maxW / obj.width, maxH / obj.height);
-	if ((ratio == maxH / obj.height)) {
-		resultW = obj.width * ratio;
+   	var resultW, resultH, naturalWidth, naturalHeight;
+   	naturalHeight = obj.height;
+   	naturalWidth = obj.width;
+	if (naturalHeight == 0 || naturalWidth== 0) {
+		naturalHeight = obj.naturalHeight;
+		naturalWidth = obj.naturalWidth;
+	}
+	var ratio = Math.min(maxW / naturalWidth, maxH / naturalHeight);
+	if ((ratio == maxH / naturalHeight)) {
+		resultW = naturalWidth * ratio;
    		resultH= maxH;
    	} else {
    		resultW= maxW;
-   		resultH= obj.height * ratio;
+   		resultH= naturalHeight * ratio;
    	}
    	obj.width = resultW;
    	obj.height = resultH;

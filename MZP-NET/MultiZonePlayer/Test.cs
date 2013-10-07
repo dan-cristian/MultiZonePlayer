@@ -262,7 +262,7 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
-		  LastFMService.GetArtistMeta("Tiamat");
+		  
       }
 
       private void button7_Click(object sender, EventArgs e)

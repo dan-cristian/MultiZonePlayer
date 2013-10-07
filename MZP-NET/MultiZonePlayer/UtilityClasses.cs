@@ -706,7 +706,8 @@ namespace MultiZonePlayer
 			int line = 0;
 			foreach (MacroEntry entry in list)
 			{
-				json = JSON.Instance.ToJSON(entry, false);
+				fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+				json = JSON.Instance.ToJSON(entry, param);
 				Utilities.WritePrivateProfileString(IniFile.SCHEDULER_SECTION_MAIN, line.ToString(),
 					json, IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 			}
@@ -898,7 +899,7 @@ namespace MultiZonePlayer
 		public DateTime LastClosureEventDateTime = DateTime.MinValue;
 		public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 		public DateTime LastNotifyZoneEventTriggered;
-		public const double DEFAULT_TEMP_HUM = -1000;
+		protected const double DEFAULT_TEMP_HUM = -1000;
 		protected double m_temperature=DEFAULT_TEMP_HUM, m_humidity=DEFAULT_TEMP_HUM;
 		protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
@@ -1284,7 +1285,7 @@ namespace MultiZonePlayer
 
 				if (m_temperature != m_temperatureLast)
 				{
-					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString());
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString(), ZoneId.ToString());
 					Rules.ExecuteRule(this, "temp=" + m_temperature);
 					m_temperatureLast = m_temperature;
 				}
@@ -1313,7 +1314,7 @@ namespace MultiZonePlayer
 
 				if (m_humidity != m_humidityLast)
 				{
-					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString());
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString(), ZoneId.ToString());
 					Rules.ExecuteRule(this,"humid="+m_humidity);
 					m_humidityLast = m_humidity;
 				}
@@ -1422,6 +1423,7 @@ namespace MultiZonePlayer
 			catch (Exception ex)
 			{
 				MLog.Log(ex, "Unable to load zone");
+				throw new Exception("ZoneLoad Exception",ex);
 			}
 
 		}
@@ -1430,7 +1432,8 @@ namespace MultiZonePlayer
 		{
 			//remove fields that generate serialisation problems
 			this.Meta = null;
-			String json = JSON.Instance.ToJSON(this, false);
+			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+			String json = JSON.Instance.ToJSON(this, param);
 			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
 		}
 
@@ -1761,13 +1764,21 @@ namespace MultiZonePlayer
             Hashtable values = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_MUSICMOOD);
             MoodMusic mood;
 
-            foreach (String json in values.Values)
-            {
-                mood = fastJSON.JSON.Instance.ToObject(json) as MoodMusic;
-                mood.Genres.Sort(delegate(String a1, String a2) { return a2.CompareTo(a1); });
-                mood.Authors.Sort(delegate(String a1, String a2) { return a2.CompareTo(a1); });
-                list.Add(mood);
-            }
+			try
+			{
+				foreach (String json in values.Values)
+				{
+					mood = fastJSON.JSON.Instance.ToObject<MoodMusic>(json);
+					mood.Genres.Sort(delegate(String a1, String a2) { return a2.CompareTo(a1); });
+					mood.Authors.Sort(delegate(String a1, String a2) { return a2.CompareTo(a1); });
+					list.Add(mood);
+				}
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Error loading Moods");
+				throw new Exception("Error load moods", ex);
+			}
         }
 
         public static void SaveToIni(List<MoodMusic> list)
@@ -1811,7 +1822,7 @@ namespace MultiZonePlayer
 
             foreach (String json in values.Values)
             {
-                entry = fastJSON.JSON.Instance.ToObject(json) as MusicScheduleEntry;
+				entry = fastJSON.JSON.Instance.ToObject<MusicScheduleEntry>(json);
                 list.Add(entry);
             }
         }
@@ -1872,8 +1883,15 @@ namespace MultiZonePlayer
 			{
 				public string Name;
 				public string Value;
+				public FieldValue()
+				{
+				}
 			}
 			private List<Fields> FieldDef;
+
+			public RFXDevice()
+			{
+			}
 
 			public void PopulateFieldDefs()
 			{

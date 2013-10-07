@@ -9,11 +9,6 @@ div.VisibleTrue {display: block;}
 div.VisibleFalse {display: none;}
 hr {width:90%;}
 p {margin: 2px 0;}
-img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto 
-}
 /***FIRST STYLE THE BUTTON***/
 button, form input[type="submit"]{
 cursor:pointer; /*forces the cursor to change to a hand when the button is hovered*/

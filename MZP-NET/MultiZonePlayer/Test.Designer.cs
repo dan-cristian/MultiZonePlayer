@@ -28,6 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+			System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			this.button1 = new System.Windows.Forms.Button();
 			this.txt = new System.Windows.Forms.RichTextBox();
 			this.button2 = new System.Windows.Forms.Button();
@@ -41,6 +44,8 @@
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.button7 = new System.Windows.Forms.Button();
 			this.button8 = new System.Windows.Forms.Button();
+			this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+			((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// button1
@@ -59,7 +64,7 @@
 			this.txt.Location = new System.Drawing.Point(12, 47);
 			this.txt.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.txt.Name = "txt";
-			this.txt.Size = new System.Drawing.Size(1423, 233);
+			this.txt.Size = new System.Drawing.Size(1423, 157);
 			this.txt.TabIndex = 1;
 			this.txt.Text = "";
 			this.txt.TextChanged += new System.EventHandler(this.txt_TextChanged);
@@ -67,7 +72,7 @@
 			// button2
 			// 
 			this.button2.Location = new System.Drawing.Point(127, 12);
-			this.button2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.button2.Margin = new System.Windows.Forms.Padding(4);
 			this.button2.Name = "button2";
 			this.button2.Size = new System.Drawing.Size(100, 28);
 			this.button2.TabIndex = 2;
@@ -77,17 +82,17 @@
 			// 
 			// webBrowser1
 			// 
-			this.webBrowser1.Location = new System.Drawing.Point(17, 287);
-			this.webBrowser1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.webBrowser1.Location = new System.Drawing.Point(17, 210);
+			this.webBrowser1.Margin = new System.Windows.Forms.Padding(4);
 			this.webBrowser1.MinimumSize = new System.Drawing.Size(27, 25);
 			this.webBrowser1.Name = "webBrowser1";
-			this.webBrowser1.Size = new System.Drawing.Size(957, 338);
+			this.webBrowser1.Size = new System.Drawing.Size(348, 338);
 			this.webBrowser1.TabIndex = 3;
 			// 
 			// button3
 			// 
 			this.button3.Location = new System.Drawing.Point(265, 12);
-			this.button3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.button3.Margin = new System.Windows.Forms.Padding(4);
 			this.button3.Name = "button3";
 			this.button3.Size = new System.Drawing.Size(100, 28);
 			this.button3.TabIndex = 4;
@@ -107,7 +112,7 @@
 			// button4
 			// 
 			this.button4.Location = new System.Drawing.Point(415, 16);
-			this.button4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.button4.Margin = new System.Windows.Forms.Padding(4);
 			this.button4.Name = "button4";
 			this.button4.Size = new System.Drawing.Size(100, 28);
 			this.button4.TabIndex = 5;
@@ -118,7 +123,7 @@
 			// button5
 			// 
 			this.button5.Location = new System.Drawing.Point(580, 11);
-			this.button5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.button5.Margin = new System.Windows.Forms.Padding(4);
 			this.button5.Name = "button5";
 			this.button5.Size = new System.Drawing.Size(100, 28);
 			this.button5.TabIndex = 6;
@@ -139,7 +144,7 @@
 			// button6
 			// 
 			this.button6.Location = new System.Drawing.Point(760, 11);
-			this.button6.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.button6.Margin = new System.Windows.Forms.Padding(4);
 			this.button6.Name = "button6";
 			this.button6.Size = new System.Drawing.Size(100, 28);
 			this.button6.TabIndex = 9;
@@ -150,7 +155,7 @@
 			// textBox1
 			// 
 			this.textBox1.Location = new System.Drawing.Point(895, 10);
-			this.textBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.textBox1.Margin = new System.Windows.Forms.Padding(4);
 			this.textBox1.Name = "textBox1";
 			this.textBox1.Size = new System.Drawing.Size(132, 22);
 			this.textBox1.TabIndex = 10;
@@ -158,7 +163,7 @@
 			// button7
 			// 
 			this.button7.Location = new System.Drawing.Point(1063, 10);
-			this.button7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.button7.Margin = new System.Windows.Forms.Padding(4);
 			this.button7.Name = "button7";
 			this.button7.Size = new System.Drawing.Size(33, 28);
 			this.button7.TabIndex = 11;
@@ -169,7 +174,7 @@
 			// button8
 			// 
 			this.button8.Location = new System.Drawing.Point(1104, 10);
-			this.button8.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.button8.Margin = new System.Windows.Forms.Padding(4);
 			this.button8.Name = "button8";
 			this.button8.Size = new System.Drawing.Size(33, 28);
 			this.button8.TabIndex = 11;
@@ -177,11 +182,29 @@
 			this.button8.UseVisualStyleBackColor = true;
 			this.button8.Click += new System.EventHandler(this.button8_Click);
 			// 
+			// chart1
+			// 
+			chartArea1.Name = "ChartArea1";
+			this.chart1.ChartAreas.Add(chartArea1);
+			legend1.Name = "Legend1";
+			this.chart1.Legends.Add(legend1);
+			this.chart1.Location = new System.Drawing.Point(380, 210);
+			this.chart1.Name = "chart1";
+			series1.ChartArea = "ChartArea1";
+			series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+			series1.Legend = "Legend1";
+			series1.Name = "Series1";
+			this.chart1.Series.Add(series1);
+			this.chart1.Size = new System.Drawing.Size(468, 300);
+			this.chart1.TabIndex = 12;
+			this.chart1.Text = "chart1";
+			// 
 			// Test
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1370, 635);
+			this.Controls.Add(this.chart1);
 			this.Controls.Add(this.button8);
 			this.Controls.Add(this.button7);
 			this.Controls.Add(this.textBox1);
@@ -198,6 +221,7 @@
 			this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.Name = "Test";
 			this.Text = "Test";
+			((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -218,5 +242,6 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button button8;
+		private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
     }
 }

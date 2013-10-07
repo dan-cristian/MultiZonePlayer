@@ -8,7 +8,7 @@
     </title>
     <link href="mobile.css" rel="stylesheet" type="text/css" />
     <script type="text/JavaScript" src="utilities.js"></script> 
-	<script type="text/javascript" src="jquery-1.9.0.min.js"></script>
+	<script type="text/javascript" src="jquery-2.0.3.min.js"></script>
 
 	<script type="text/javascript">
 		var refreshCamCount = 0;
@@ -27,7 +27,7 @@
 		var auto_refresh_pict = setInterval(
 		function () {
 			loadPicture();
-		}, 30000);
+		}, 60000);
 
 		function loadMedia() {
 			$('#time').load('snip-time.html?' + 'r=' + Math.random());
@@ -68,8 +68,9 @@
 		}
 
 		function loadPicture() {
+			//alert("loading");
 			$('#picturedetails').load('snip-picturedetails.html?' + 'r=' + Math.random());
-			if (Math.ceil(refreshCamCount / 2) == refreshCamCount / 2) {
+			if (Math.ceil(refreshPictureCount / 2) == refreshPictureCount / 2) {
 				$('#picture').hide();
 				$('#picture').load('snip-picture.html?' + 'r=' + Math.random());
 
@@ -126,10 +127,10 @@
 		<br />
 		<div id="camset" style="display:none">
 		<table>
-		<tr><td><div id="cam7"></div></div></td></tr>
-		<tr><td><div id="cam12"></div></div></td></tr>
-		<tr><td><div id="cam6">	</div></div></td></tr>
-		<tr><td><div id="cam2">	</div></div></td></tr>
+		<tr><td><div id="cam7"></div></td></tr>
+		<tr><td><div id="cam12"></div></td></tr>
+		<tr><td><div id="cam6">	</div></td></tr>
+		<tr><td><div id="cam2">	</div></td></tr>
 		</table>
 		</div>
 
@@ -138,7 +139,7 @@
 		<tr><td><div id="xcam7"></div></td></tr>
 		<tr><td><div id="xcam12"></div></td></tr>
 		<tr><td><div id="xcam6"></div></td></tr>
-		<tr><td><div id="xcam2"></td></tr>
+		<tr><td><div id="xcam2"></div></td></tr>
 		</table>
 		</div>
 		
