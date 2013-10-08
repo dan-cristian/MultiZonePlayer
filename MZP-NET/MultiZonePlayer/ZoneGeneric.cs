@@ -362,9 +362,18 @@ namespace MultiZonePlayer
 					string text = vals.GetValue(GlobalParams.text);
 					System.Reflection.FieldInfo fieldInfo = m_zoneDetails.GetType().GetField(field);
 					if (fieldInfo != null)
-						fieldInfo.SetValue(m_zoneDetails, text);
+					{
+						Type paramType = fieldInfo.FieldType;
+						object obj = Convert.ChangeType(text, paramType);
+						fieldInfo.SetValue(m_zoneDetails, obj);
+						m_zoneDetails.SaveStateToIni();
+						cmdresult.OutputMessage += "Field " + field + " set to " + text;
+					}
 					else
-						MLog.Log(this, "Error setting value, not found field="+field);
+					{
+						cmdresult.OutputMessage +="Error setting value, not found field=" + field + " value=" + text;
+						MLog.Log(this, cmdresult.OutputMessage);
+					}
 					break;
 				#endregion
                 default:

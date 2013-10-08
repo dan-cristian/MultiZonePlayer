@@ -872,6 +872,7 @@ namespace MultiZonePlayer
 		public String TemperatureDeviceId;
 		public double TemperatureMaxAlarm=1000;
 		public double TemperatureMinAlarm=-1000;
+		public double TemperatureTarget = -1000;
 		public String CronSchedule="";
 
 		public int VolumeLevel;
@@ -1292,6 +1293,10 @@ namespace MultiZonePlayer
 			}
 		}
 
+		public double TemperatureTargetTreshhold
+		{
+			get { return TemperatureTarget + 0.2; }
+		}
 			
 		public TimeSpan TemperatureAge
 		{
@@ -1417,6 +1422,7 @@ namespace MultiZonePlayer
 					PowerType = zonestorage.PowerType;
 					Type = zonestorage.Type;
 					CronSchedule = zonestorage.CronSchedule;
+					TemperatureTarget = zonestorage.TemperatureTarget;
 					//Temperature = "1";
 				}
 			}
@@ -1430,6 +1436,7 @@ namespace MultiZonePlayer
 
 		public void SaveStateToIni()
 		{
+			MLog.Log(this, "Saving state to ini zone="+ZoneName);
 			//remove fields that generate serialisation problems
 			this.Meta = null;
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;

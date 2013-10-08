@@ -81,7 +81,7 @@ namespace MultiZonePlayer
         private string m_input, m_connection;
         private bool m_isOnValue = false;
         private int m_volumeLevel = -1;
-        private int m_stdtimeout = 5000;
+        private int m_stdtimeout = 4000;
         
 
         public DisplayLGTV(String connection, ZoneDetails p_zoneDetails)

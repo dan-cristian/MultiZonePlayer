@@ -341,7 +341,17 @@ public class MZPState
 		return ZoneList.List(type, "=");
 	}
 
-	
+	public List<String> GetFieldList(String className)
+	{
+		System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
+			System.Reflection.Assembly.GetExecutingAssembly().GetName().Name+"."+className);
+		Object p = handle.Unwrap();
+		Type t = p.GetType();
+		if (t != null)
+			return t.GetFields().Select(x=>x.Name).ToList();
+		else
+			return null;
+	}
 
 	public ZoneDetails ZoneWithType(ZoneType type, int index)
 	{

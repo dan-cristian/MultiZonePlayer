@@ -24,6 +24,7 @@ namespace MultiZonePlayer
 		private String GET_URL = "/jsonrpc?";
 		private bool m_bringToForegroundOnce = false;
 		private bool m_isXBMCProcessOn, m_isXBMCPlayerRunning;
+		private Display m_display;
 
         public class XBMCLimits
         {
@@ -92,29 +93,37 @@ namespace MultiZonePlayer
 				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1],
 					System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.AboveNormal);
 			}
-            Display displayZone = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
-            if (displayZone != null)
-            {
-                if (!displayZone.IsOn)
-                {
-                    MLog.Log(this, "XBMC initialising display TV");
-                    displayZone.IsOn = true;
-                    System.Threading.Thread.Sleep(10000);
-                }
-                else
-                    MLog.Log(this, "Display is ON already for XBMC");
-                if (displayZone.InputType != Display.InputTypeEnum.HDMI)
-                {
-                    MLog.Log(this, "XBMC set input to HDMI");
-                    displayZone.InputType = Display.InputTypeEnum.HDMI;
-                }
-                else
-                    MLog.Log(this, "Display is set to HDMI already for XBMC");
-            }
-            else
-                MLog.Log(this, "No display found for XBMC, CHECK!, zonename="+zoneDetails.ZoneName);
-			Monitor.RefreshFrequencySecondary();
+			FixDisplay();
+			
         }
+
+		private void FixDisplay()
+		{
+			m_display = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == m_zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
+			if (m_display != null)
+			{
+				if (!m_display.IsOn)
+				{
+					MLog.Log(this, "XBMC initialising display TV, was OFF");
+					m_display.IsOn = true;
+					System.Threading.Thread.Sleep(10000);
+					Monitor.RefreshFrequencySecondary();
+				}
+				//else
+				//	MLog.Log(this, "Display is ON already for XBMC");
+				if (m_display.InputType != Display.InputTypeEnum.HDMI)
+				{
+					MLog.Log(this, "XBMC set input to HDMI");
+					m_display.InputType = Display.InputTypeEnum.HDMI;
+					Monitor.RefreshFrequencySecondary();
+				}
+				//else
+				//	MLog.Log(this, "Display is set to HDMI already for XBMC");
+			}
+			else
+				MLog.Log(this, "No display found for XBMC, CHECK!, zonename=" + m_zoneDetails.ZoneName);
+			
+		}
 
 		public ValueList ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
         {
@@ -411,8 +420,14 @@ namespace MultiZonePlayer
         {
             base.Tick();
             //slower tick
+
             if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 10)
             {
+				if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
+				{
+					FixDisplay();
+				}
+
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;
 

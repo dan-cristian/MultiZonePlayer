@@ -251,26 +251,42 @@ namespace MultiZonePlayer
 		public static void GenericReflect(ref String result)
 		{
 			object instance = ReflectionInterface.Instance;
-			String[] lineAtoms;
+			String[] lineAtoms, complexAtoms;
 			object value;
+			String complexLine, complexAtom;
+			int complexLen;
 			if (!result.Contains("#"))
 				return;
 
 			lineAtoms = result.Split(new String[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 			foreach (String line in lineAtoms)
 			{
-				value = ReflectLine(instance, line);
+				complexLine = line;
+				complexLen = line.Split(new String[] { ":" }, StringSplitOptions.RemoveEmptyEntries).Length;
+				for (int i = 0; i < complexLen-1; i++)
+				{
+					complexAtoms = complexLine.Split(new String[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
+					complexAtom = complexAtoms[complexAtoms.Length-1];
+					value = ReflectLine(instance, complexAtom);
+					if (value != null)
+					{
+						complexLine = complexLine.Replace(":" + complexAtom, "."+value.ToString());
+					}
+				}
+				
+				value = ReflectLine(instance, complexLine);
 				if (value == null)
 				{
-					//MLog.Log(null, "Failure reflecting line=" + Clean(line));
+					//don't do anything as expressions with variables should not be altered
 				}
 				else
-					result = result.Replace("#" + line + "#", value.ToString());
+					if (value.GetType() != typeof(Exception))
+						result = result.Replace("#" + line + "#", value.ToString());
 			}
 		}
 
 
-		private static String ReflectLine(Object instance, String atom)
+		private static Object ReflectLine(Object instance, String atom)
 		{
 			object value;
 			String[] methodAtoms, paramAtoms;
@@ -297,10 +313,10 @@ namespace MultiZonePlayer
 				if (value == null)
 					break;
 			}
-			if (value != null)
-				return value.ToString();
-			else
-				return null;
+			//if (value != null)
+				return value;//.ToString();
+			//else
+			//	return null;
 		}
 
 		public static Object GetPropertyField(object instance, string propName, params object[] parameters)
@@ -327,15 +343,25 @@ namespace MultiZonePlayer
 					if (parameters != null && parameters.Length > 0)
 					{
 						//MLog.Log(null, "Warning, Property called with parameters");
-						if (value.GetType().Name=="List`1") 
+						if (value.GetType().Name == "List`1")
 						{
 							if (value.ToString().Contains(typeof(MultiZonePlayer.ZoneDetails).ToString()))
 								value = ((List<ZoneDetails>)value)[Convert.ToInt32(parameters[0])];
 							else
-								MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type="+value.ToString());
+								if (value.ToString().Contains(typeof(System.String).ToString()))
+									value = ((List<String>)value)[Convert.ToInt32(parameters[0])];
+								else
+								//"System.Collections.Generic.List`1[System.String]"
+								{
+									MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
+									value = new Exception();
+								}
 						}
 						else
+						{
 							MLog.Log(null, "Unknown main type for property index " + Clean(propName) + " type=" + value.ToString());
+							value = new Exception();
+						}
 					}
 					
 				}
@@ -374,6 +400,8 @@ namespace MultiZonePlayer
 									catch (Exception e)
 									{
 										MLog.Log(null, "Unable to cast prop=" + Clean(propName) + " param="+parameters[p] + " err="+e.Message);
+										value = new Exception();
+										break;
 									}
 								}
 								try
@@ -383,7 +411,7 @@ namespace MultiZonePlayer
 								catch (Exception ex)
 								{
 									MLog.Log(ex, "Err invoking method " + Clean(propName));
-									value = null;
+									value = new Exception();
 								}
 								if (value == null && !varFound)
 								{
@@ -392,7 +420,7 @@ namespace MultiZonePlayer
 							}
 							else
 							{
-								value = null;
+								value = new Exception();
 								MLog.Log(null, "wrong numbers of method params, meth=" + Clean(propName)
 									+ " expected=" + methInfo.GetParameters().Length + " given=" + parsLen);
 							}
@@ -400,7 +428,7 @@ namespace MultiZonePlayer
 						else
 						{
 							//??
-							value = null;
+							value = new Exception(); 
 							//MLog.Log(null, "unknown prop type for prop=" + Clean(propName));
 						}
 					}
@@ -409,7 +437,7 @@ namespace MultiZonePlayer
 			catch (Exception ex)
 			{
 				MLog.Log(ex, "Error reflecting on prop="+Clean(propName));
-				value = null;
+				value = new Exception();
 			}
 
 			return value;

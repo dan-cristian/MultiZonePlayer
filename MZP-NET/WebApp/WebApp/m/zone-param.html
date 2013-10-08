@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>#Zones,%_zoneid.ZoneName# parameters</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body style="text-align:left">
+<table>
+<%for;i;0;++;#S.GetFieldList,ZoneDetails.Count#;%>
+<tr><td>
+<form id="param" action="?zoneid=%_zoneid" method="post">
+<input name="command" type="hidden" value="setfield"/>
+<input id="Submit#S.GetFieldList,ZoneDetails.?,%i#" type="submit" value="Set" />
+<input type="text" name="text" value="#Zones,%_zoneid:S.GetFieldList,ZoneDetails.?,%i#"/>
+<input name="field" type="hidden" value="#S.GetFieldList,ZoneDetails.?,%i#"/>
+#S.GetFieldList,ZoneDetails.?,%i#
+</td></tr>
+</form>
+<%%>
+</table>
+<button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
+</body>
+</html>

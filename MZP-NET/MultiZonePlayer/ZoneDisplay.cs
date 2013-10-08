@@ -119,7 +119,7 @@ namespace MultiZonePlayer
             base.Tick();
 
             // SLOW TICK
-            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 45)
             {
                 m_lastSlowTickDateTime = DateTime.Now;
                 CacheCurrentState();
