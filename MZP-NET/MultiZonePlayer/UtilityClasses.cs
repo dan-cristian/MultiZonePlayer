@@ -12,6 +12,8 @@ namespace MultiZonePlayer
     /*
      * Interface collection of classes used for mobile client comm 
      */
+	
+
 	public enum GlobalCommandsUniversal
 	{
 		volumedown = GlobalCommands.volumedown,
@@ -830,6 +832,12 @@ namespace MultiZonePlayer
 		Error
 	}
 
+	public class Constants
+	{
+		public const string CAPABILITY_TEMP = "temp", CAPABILITY_HUM = "hum", EVENT_TYPE_CLOSURE = "closure";
+		public const string EVENT_TYPE_CAMALERT = "camalert", EVENT_TYPE_SENSORALERT = "sensoralert";
+	}
+
 	public class ZoneDetails
 	{
 		public int ZoneId = 0;
@@ -901,14 +909,13 @@ namespace MultiZonePlayer
 		public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 		public DateTime LastNotifyZoneEventTriggered;
 		protected const double DEFAULT_TEMP_HUM = -1000;
+		
 		protected double m_temperature=DEFAULT_TEMP_HUM, m_humidity=DEFAULT_TEMP_HUM;
 		protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
-
 		// not serializable, hidden from json
-            
-            
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
+		
 
 		public ZoneDetails()
 		{
@@ -1189,88 +1196,14 @@ namespace MultiZonePlayer
 					return "";
 			}
 		}
-		/*
-		private const String DIV_SHOW = "block";
-		private const String DIV_HIDE = "none";
-		private const String IMG_TAG = "img";
-		private const String VIDEO_TAG = "video";
-		*/
-		/*
-		public String HTMLDIVStateMusicOrRadio
-		{
-			get
-			{
-				String res;
-				if (IsActive && (ActivityType.Equals(GlobalCommands.music) 
-				                 || ActivityType.Equals(GlobalCommands.streammp3)
-				                 || ActivityType.Equals(GlobalCommands.xbmc)))
-					res = DIV_SHOW;
-				else
-					res = DIV_HIDE;
-				return res;
-			}
-		}*/
+		
 		public Boolean IsClosureActivated
 		{
 			get {
 				return ClosureOpenCloseRelay.RelayContactMade;
 			}
 		}
-		/*
-		public String HasClosureNotifyAsDiv
-		{
-			get { return ClosureOpenCloseRelay.RelayState==ClosureOpenCloseRelay.EnumState.ContactClosed ? DIV_SHOW : DIV_HIDE; }
-		}
-		public String HasMediaActiveAsDiv
-		{
-			get
-			{
-				String res;
-				if (IsActive && (ActivityType.Equals(GlobalCommands.music)
-				                 || ActivityType.Equals(GlobalCommands.streammp3)
-				                 || ActivityType.Equals(GlobalCommands.xbmc)))
-					res = DIV_SHOW;
-				else
-					res = DIV_HIDE;
-				return res;
-			}
-		}
-
-		public String HasNotifyMoveAsImg
-		{
-			get { return HasImmediateMove || HasRecentMove ? IMG_TAG : "inactive_"+IMG_TAG; }
-		}
-
-		public String HasNotifyMoveAsVideo
-		{
-			get { return HasImmediateMove || HasRecentMove ? VIDEO_TAG : "inactive_" + VIDEO_TAG; }
-		}
-
-		public String IsActiveAsDiv
-		{
-			get {return IsActive ? DIV_SHOW : DIV_HIDE;}
-		}
-
-		public String HasImmediateMoveAsDiv
-		{
-			get { return HasImmediateMove ? DIV_SHOW : DIV_HIDE; }
-		}
-
-		public String HasRecentMoveAsDiv
-		{
-			get { return HasRecentMove ? DIV_SHOW : DIV_HIDE; }
-		}
-
-		public String HasPastMoveAsDiv
-		{
-			get { return HasPastMove ? DIV_SHOW : DIV_HIDE; }
-		}
-
-		public String HasNotifyMoveAsDiv
-		{
-			get { return HasImmediateMove || HasRecentMove ? DIV_SHOW : DIV_HIDE; }
-		}
-		*/
+	
 		public Boolean HasNotifyMove
 		{
 			get { return HasImmediateMove || HasRecentMove; }
@@ -1286,7 +1219,8 @@ namespace MultiZonePlayer
 
 				if (m_temperature != m_temperatureLast)
 				{
-					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "temp", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString(), ZoneId.ToString());
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, 
+						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString(), ZoneId.ToString());
 					Rules.ExecuteRule(this, "temp=" + m_temperature);
 					m_temperatureLast = m_temperature;
 				}
@@ -1319,7 +1253,8 @@ namespace MultiZonePlayer
 
 				if (m_humidity != m_humidityLast)
 				{
-					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, "hum", DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString(), ZoneId.ToString());
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName, 
+						Constants.CAPABILITY_HUM, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString(), ZoneId.ToString());
 					Rules.ExecuteRule(this,"humid="+m_humidity);
 					m_humidityLast = m_humidity;
 				}
@@ -1423,6 +1358,7 @@ namespace MultiZonePlayer
 					Type = zonestorage.Type;
 					CronSchedule = zonestorage.CronSchedule;
 					TemperatureTarget = zonestorage.TemperatureTarget;
+					
 					//Temperature = "1";
 				}
 			}
@@ -1443,6 +1379,8 @@ namespace MultiZonePlayer
 			String json = JSON.Instance.ToJSON(this, param);
 			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
 		}
+
+		
 
 		public bool HasOutputDeviceAvailable()
 		{

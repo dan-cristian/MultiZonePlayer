@@ -787,7 +787,9 @@ namespace MultiZonePlayer
 
 			string message = "Closure state " + key + " is " + lastState.RelayState + " on zone " + m_zoneDetails.ZoneName;
 			MLog.Log(this, message);
-			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString(), m_zoneDetails.ZoneId.ToString());
+			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key, 
+				DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString(), m_zoneDetails.ZoneId.ToString(),
+				Constants.EVENT_TYPE_CLOSURE);
 			if (lastState.RelayState == ClosureOpenCloseRelay.EnumState.ContactClosed)
 			{
 				MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message, MZPEvent.EventType.Security,
@@ -818,7 +820,7 @@ namespace MultiZonePlayer
 			m_zoneDetails.MovementAlert = true;
 		}
 
-        public void Tick()
+        public void TickFast()
         {
             try
             {
@@ -860,9 +862,8 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-                MLog.Log(ex, this, "Error zone timer");
+                MLog.Log(ex, this, "Error tick fast");
             }
-            
         }
     }
 

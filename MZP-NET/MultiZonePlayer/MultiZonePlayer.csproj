@@ -187,7 +187,9 @@
     <Compile Include="AudioManagement.Designer.cs">
       <DependentUpon>AudioManagement.cs</DependentUpon>
     </Compile>
-    <Compile Include="GraphGen.cs" />
+    <Compile Include="GraphGen.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="IoDevices.cs" />
     <Compile Include="ThirdParty\Cron.cs" />
     <Compile Include="ThirdParty\fastJSON\dynamic.cs" />

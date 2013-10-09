@@ -136,14 +136,14 @@ namespace MultiZonePlayer
 						foreach (ZoneGeneric zone in activeZoneClone)
 						{
 							if (MZPState.Instance == null) break;
-							zone.Tick();
+							zone.TickFast();
 						}
 					}
                     // SLOW TICK
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
-                        MZPState.Instance.Tick();
+                        MZPState.Instance.TickSlow();
 						foreach (ZoneDetails details in MZPState.Instance.ZoneDetails)
 						{
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);

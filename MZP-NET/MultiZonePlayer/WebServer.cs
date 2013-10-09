@@ -405,10 +405,10 @@ namespace MultiZonePlayer
 			try
 			{
 				if (isBinary)
-					binaryData = Utilities.ReadBinaryFileRelativeToAppPath("\\webroot\\" + localFile);
+					binaryData = Utilities.ReadBinaryFileRelativeToAppPath(IniFile.WEBROOT_SUBFOLDER + localFile);
 				else
 				{
-					result = Utilities.ReadFileRelativeToAppPath("\\webroot\\" + localFile);
+					result = Utilities.ReadFileRelativeToAppPath(IniFile.WEBROOT_SUBFOLDER + localFile);
 
 					//set client passed params
 					foreach (String param in context.Request.QueryString.Keys)

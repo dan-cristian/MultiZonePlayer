@@ -186,6 +186,7 @@
 			// 
 			chartArea1.Name = "ChartArea1";
 			this.chart1.ChartAreas.Add(chartArea1);
+			legend1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
 			legend1.Name = "Legend1";
 			this.chart1.Legends.Add(legend1);
 			this.chart1.Location = new System.Drawing.Point(380, 210);

@@ -161,5 +161,12 @@ namespace MultiZonePlayer
 		{
 			MLog.Log(this, "Got focus");
 		}
+
+		private void chartToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			SimpleGraph form = new SimpleGraph();
+			form.MdiParent = this;
+			form.Show();
+		}
     }
 }

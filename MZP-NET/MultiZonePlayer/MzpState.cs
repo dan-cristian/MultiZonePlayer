@@ -125,6 +125,7 @@ public class MZPState
         MLog.Log(this, "Retrieving system available audio output devices");
                 
 		String deviceName;
+		RFXDeviceDefinition.LoadFromIni();
         MLog.Log(this, "Loading zones from ini");
         m_zoneList = new List<ZoneDetails>();
         MultiZonePlayer.ZoneDetails.LoadFromIni(ref m_zoneList);
@@ -172,7 +173,7 @@ public class MZPState
         m_Tail = new MultiZonePlayer.Tail(IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[1]);
         m_Tail.MoreData += new MultiZonePlayer.Tail.MoreDataHandler(m_zoneEvents.Tail_MoreData_PARADOX);
 
-		RFXDeviceDefinition.LoadFromIni();
+		
 
 		Thread lazyLoad = new Thread(() => LoadSerials());
 		lazyLoad.Name = "LoadSerials";
@@ -1078,8 +1079,9 @@ public class MZPState
 		}
 	}
 
-	public void CheckForCronSchedule()
+	public void ZoneSlowTickActivities()
 	{
+		//Check Cron
 		if (m_cron != null)
 		{
 			String cronText="";
@@ -1092,6 +1094,17 @@ public class MZPState
 			if (cronText != m_cron.CronTabText)
 			{//cron definition has changed, reload
 				m_cron.readCrontabString(cronText);
+			}
+		}
+
+		//generate images
+		foreach (ZoneDetails zone in ZoneDetails)
+		{
+			if (zone.HasTemperatureSensor || zone.HasHumiditySensor)
+			{
+				SimpleGraph graph = new SimpleGraph();
+				graph.ShowTempHumGraph(zone.ZoneId);
+				graph.Close();
 			}
 		}
 	}
@@ -1239,7 +1252,7 @@ public class MZPState
         LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance, zonedetails));
     }
 
-    public void Tick()
+    public void TickSlow()
     {
 		HealthCheckiSpy();
         HealthCheckWinload();
@@ -1250,7 +1263,7 @@ public class MZPState
         CheckForExternalZoneEvents();
 		CheckForScheduleMacroEvents();
 		CheckForUpsStatus();
-		CheckForCronSchedule();
+		ZoneSlowTickActivities();
         m_powerControlDenkovi.timerPowerSaving_Tick();
 		m_powerControlNumato.timerPowerSaving_Tick();
 		m_oneWire.Tick();

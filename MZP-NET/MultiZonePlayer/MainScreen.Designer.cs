@@ -67,6 +67,7 @@
 			this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolTip = new System.Windows.Forms.ToolTip(this.components);
 			this.timerGetFocus = new System.Windows.Forms.Timer(this.components);
+			this.chartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip.SuspendLayout();
 			this.toolStrip.SuspendLayout();
 			this.statusStrip.SuspendLayout();
@@ -81,7 +82,8 @@
             this.toolsMenu,
             this.windowsMenu,
             this.helpMenu,
-            this.testToolStripMenuItem});
+            this.testToolStripMenuItem,
+            this.chartToolStripMenuItem});
 			this.menuStrip.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip.MdiWindowListItem = this.windowsMenu;
 			this.menuStrip.Name = "menuStrip";
@@ -366,6 +368,13 @@
 			this.timerGetFocus.Interval = 3000;
 			this.timerGetFocus.Tick += new System.EventHandler(this.timerGetFocus_Tick);
 			// 
+			// chartToolStripMenuItem
+			// 
+			this.chartToolStripMenuItem.Name = "chartToolStripMenuItem";
+			this.chartToolStripMenuItem.Size = new System.Drawing.Size(55, 22);
+			this.chartToolStripMenuItem.Text = "Chart";
+			this.chartToolStripMenuItem.Click += new System.EventHandler(this.chartToolStripMenuItem_Click);
+			// 
 			// MainScreen
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -377,7 +386,7 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.IsMdiContainer = true;
 			this.MainMenuStrip = this.menuStrip;
-			this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+			this.Margin = new System.Windows.Forms.Padding(4);
 			this.Name = "MainScreen";
 			this.Text = "MultiZone Player";
 			this.Activated += new System.EventHandler(this.MainScreen_Activated);
@@ -433,6 +442,7 @@
         private System.Windows.Forms.ToolStripMenuItem videoMamagementToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem audioManagementToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem chartToolStripMenuItem;
     }
 }
 

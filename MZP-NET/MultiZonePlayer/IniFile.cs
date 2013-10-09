@@ -36,7 +36,9 @@ namespace MultiZonePlayer
             public const String BEEP_OK_FILE_NAME = "\\BeepOK.wav";
             public const String BEEP_ERROR_FILE_NAME = "\\BeepError.wav";
             public const String TEST_FILE_NAME = "\\Test.mp3";
-            public static String DEFAULT_AUTO_DEV_NAME = "-AUTO BY KEYWORDS-";
+			public const String WEBROOT_SUBFOLDER = "\\webroot\\";
+			
+			public static String DEFAULT_AUTO_DEV_NAME = "-AUTO BY KEYWORDS-";
             public static String DEFAULT_AUTO_DEV_ID = "-1";
 			public const String SCHEDULER_SECTION_MAIN = "Scheduler";
 			public const String SCHEDULER_SECTION_RFX = "RFX";
