@@ -144,7 +144,8 @@ namespace MultiZonePlayer
 		poweron,
 		poweroff,
 		powertoggle,
-		setfield
+		setfield,
+		generategraph
 	}
 	public class CommandSyntax
 	{

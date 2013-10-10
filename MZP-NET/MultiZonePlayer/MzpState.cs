@@ -1098,15 +1098,15 @@ public class MZPState
 		}
 
 		//generate images
-		foreach (ZoneDetails zone in ZoneDetails)
+		/*foreach (ZoneDetails zone in ZoneDetails)
 		{
 			if (zone.HasTemperatureSensor || zone.HasHumiditySensor)
 			{
 				SimpleGraph graph = new SimpleGraph();
-				graph.ShowTempHumGraph(zone.ZoneId);
+				graph.ShowTempHumGraph(zone.ZoneId, 48);
 				graph.Close();
 			}
-		}
+		}*/
 	}
 
 	public int GetMacroIdByShortcut(string shortcut, string deviceName)

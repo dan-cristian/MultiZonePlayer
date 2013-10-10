@@ -35,7 +35,7 @@ namespace MultiZonePlayer
 			m_eventHistoryList.Add(reading);
 		}
 
-		public void ShowTempHumGraph(int zoneId)
+		public void ShowTempHumGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
 			var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -59,21 +59,33 @@ namespace MultiZonePlayer
 			this.chart1.Series.Add(series1);
 			this.chart1.Series.Add(series2);
 
-			foreach (var point in m_tempHistoryList.FindAll(x=>x.Item1==zoneId))
+			List<Tuple<int, DateTime,double>> tempValues = m_tempHistoryList.FindAll(x=>x.Item1==zoneId && DateTime.Now.Subtract(x.Item2).TotalHours<=ageHours);
+			foreach (var point in tempValues)
 			{
 				series1.Points.AddXY(point.Item2, point.Item3);
 			}
 
-			chart1.ChartAreas[0].RecalculateAxesScale();
+			List<Tuple<int, DateTime, double>> humValues = m_humHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+			//chart1.ChartAreas[0].RecalculateAxesScale();
 
-			foreach (var point in m_humHistoryList.FindAll(x => x.Item1 == zoneId))
+			foreach (var point in humValues)
 			{
 				series2.Points.AddXY(point.Item2, point.Item3);
 			}
+			//Tuple<int, DateTime, double> min = tempValues.Find(x => x.Item3 == 0);
+			double minT = tempValues.Min(x => x.Item3);
+			double minY = tempValues.Count>0 ? minT : double.MaxValue;
+			minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
+
+			chart1.ChartAreas[0].AxisY.Minimum = minY;
+			//DateTime lastValue = tempValues[tempValues.Count-1].Item2
+			//CustomLabel monthLabel = new CustomLabel(startOffset, endOffset, monthName, 1,     LabelMarkStyle.Box);
+			//chart1.ChartAreas[0].AxisX.CustomLabels.Add(;
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			
 			chart1.Invalidate();
-			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEBROOT_SUBFOLDER + "m\\tmp\\temp-hum-" + zoneId + ".gif", ChartImageFormat.Gif);
+			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEBROOT_SUBFOLDER 
+				+ "m\\tmp\\temp-hum-" + zoneId + "-"+ageHours+".gif", ChartImageFormat.Gif);
 		}
 
 		private void ShowEventGraph(int zoneId)
@@ -91,9 +103,6 @@ namespace MultiZonePlayer
 
 			
 			this.chart1.Series.Add(series3);
-
-
-
 			
 			foreach (var point in m_eventHistoryList.FindAll(x => x.Item1 == zoneId))
 			{
@@ -135,9 +144,9 @@ namespace MultiZonePlayer
 			//
 			// Form1
 			//
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.AutoScaleDimensions = new System.Drawing.SizeF(4F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(400, 300);
+			//this.ClientSize = new System.Drawing.Size(640, 480);
 			this.Controls.Add(this.chart1);
 			this.Name = "Form1";
 			this.Text = "FakeChart";

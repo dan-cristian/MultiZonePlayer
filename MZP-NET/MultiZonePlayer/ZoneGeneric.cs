@@ -375,6 +375,10 @@ namespace MultiZonePlayer
 						MLog.Log(this, cmdresult.OutputMessage);
 					}
 					break;
+				case GlobalCommands.generategraph:
+					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
+					new SimpleGraph().ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
+					break;
 				#endregion
                 default:
                     

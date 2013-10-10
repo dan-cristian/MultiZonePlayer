@@ -167,6 +167,7 @@ namespace MultiZonePlayer
 			SimpleGraph form = new SimpleGraph();
 			form.MdiParent = this;
 			form.Show();
+			form.ShowTempHumGraph(2,12);
 		}
     }
 }
