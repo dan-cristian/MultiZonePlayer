@@ -58,6 +58,7 @@ namespace MultiZonePlayer
 			this.chart1.Legends[0].Docking = Docking.Bottom;
 			this.chart1.Series.Add(series1);
 			this.chart1.Series.Add(series2);
+			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
 
 			List<Tuple<int, DateTime,double>> tempValues = m_tempHistoryList.FindAll(x=>x.Item1==zoneId && DateTime.Now.Subtract(x.Item2).TotalHours<=ageHours);
 			foreach (var point in tempValues)
