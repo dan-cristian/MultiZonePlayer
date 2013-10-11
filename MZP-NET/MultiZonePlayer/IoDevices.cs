@@ -675,58 +675,62 @@ namespace MultiZonePlayer
 
 		public void Reinitialise()
 		{
-			try
-			{
-				MLog.Log(this, "Initialising OneWire");
-				try
-				{
-					adapter = null;
-					adapter = OneWireAccessProvider.getDefaultAdapter();
-				}
-				catch (Exception ex)
-				{
-					MLog.Log(ex, this, "ERROR init onewire adapter");
-				}
-				if (adapter == null)
-				{
-					MLog.Log(this, "Error, OneWire adapter not found");
-					return;
-				}
-				MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
-				m_devices = new List<String>();
-				
-				// get exclusive use of adapter
-				adapter.beginExclusive(true);
+            try
+            {
+                MLog.Log(this, "Initialising OneWire");
+                try
+                {
+                    adapter = null;
+                    adapter = OneWireAccessProvider.getDefaultAdapter();
+                }
+                catch (Exception ex)
+                {
+                    MLog.Log(ex, this, "ERROR init onewire adapter");
+                }
+                if (adapter == null)
+                {
+                    MLog.Log(this, "Error, OneWire adapter not found");
+                    return;
+                }
+                MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
+                m_devices = new List<String>();
 
-				// clear any previous search restrictions
-				adapter.setSearchAllDevices();
-				adapter.targetAllFamilies();
-				adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
-				java.util.Enumeration containers = adapter.getAllDeviceContainers();
-				OneWireContainer element;
-				while (containers.hasMoreElements())
-				{
-					element = (OneWireContainer)containers.nextElement();
-					MLog.Log(this, "OneWire device found addr=" + element.getAddressAsString() 
-						+" name=" + element.getName() +" desc=" + element.getDescription());
-				}
-				adapter.endExclusive();
+                // get exclusive use of adapter
+                adapter.beginExclusive(true);
 
-				/*// Monitor of the network
-				dMonitor = new DeviceMonitor(adapter);
-				dMonitor.setDoAlarmSearch(false);
-				// setup event listener (should point to this form)
-				dMonitor.addDeviceMonitorEventListener(this);
-				m_searchThread = new Thread(() => dMonitor.run());
-				m_searchThread.Name = "OneWire Search";
-				m_searchThread.Start();
-				*/
-			}
-			catch (Exception ex)
-			{
-				MLog.Log(ex,this,"General 1wire exception occurred");
-			}
+                // clear any previous search restrictions
+                adapter.setSearchAllDevices();
+                adapter.targetAllFamilies();
+                adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+                java.util.Enumeration containers = adapter.getAllDeviceContainers();
+                OneWireContainer element;
+                while (containers.hasMoreElements())
+                {
+                    element = (OneWireContainer)containers.nextElement();
+                    MLog.Log(this, "OneWire device found addr=" + element.getAddressAsString()
+                        + " name=" + element.getName() + " desc=" + element.getDescription());
+                }
+                adapter.endExclusive();
 
+                /*// Monitor of the network
+                dMonitor = new DeviceMonitor(adapter);
+                dMonitor.setDoAlarmSearch(false);
+                // setup event listener (should point to this form)
+                dMonitor.addDeviceMonitorEventListener(this);
+                m_searchThread = new Thread(() => dMonitor.run());
+                m_searchThread.Name = "OneWire Search";
+                m_searchThread.Start();
+                */
+            }
+            catch (BadImageFormatException be)
+            {
+                MLog.Log(be, this, "General 1wire exception occurred");
+            }
+            catch (Exception ex)
+            {
+                MLog.Log(ex, this, "General 1wire exception occurred");
+            }
+            
 		}
 
 		// The following 3 methods implement the J# interface "DeviceMonitorEventListener" from the 1-Wire API (J#).  
