@@ -247,6 +247,10 @@ namespace MultiZonePlayer
                     {
                         cmdRemote = GlobalCommands.musicclone;
                     }
+
+					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, camId,
+						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "CamMove", m_zoneDetails.ZoneId.ToString(),
+						Constants.EVENT_TYPE_CAMALERT);
                     //TODO
                     break;
                 case GlobalCommands.dismisscameraalert:
@@ -265,8 +269,11 @@ namespace MultiZonePlayer
                     MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
                             vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(GlobalParams.status),
                             MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
-					
-                    
+
+					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, "",
+						eventDateTime.ToString(IniFile.DATETIME_FULL_FORMAT), "Sensor"+zonestate, m_zoneDetails.ZoneId.ToString(),
+						Constants.EVENT_TYPE_SENSORALERT);
+
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
                         cmdRemote = GlobalCommands.musicclone;
@@ -377,7 +384,9 @@ namespace MultiZonePlayer
 					break;
 				case GlobalCommands.generategraph:
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
-					new SimpleGraph().ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
+					SimpleGraph graph = new SimpleGraph();
+					graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
+					graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours);
 					break;
 				#endregion
                 default:

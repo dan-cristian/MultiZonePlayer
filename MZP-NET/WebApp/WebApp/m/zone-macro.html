@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>Macro #Zones,%_zoneid.ZoneName#</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body style="text-align:center">
+
+<%for;i;0;++;#Zones,%_zoneid.MacroCount#;%>
+<button onclick="ajaxCall('result','cmd.html?command=macro&zoneid=%_zoneid&id=#Zones,%_zoneid.Macro,%i.Id#', true)"
+	onmouseover="showText('result','#Zones,%_zoneid.Macro,%i.Details#')" onmouseout="showText('result','')"
+	>[#Zones,%_zoneid.Macro,%i.Description#]</button>
+<%%><br />
+<button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
+<div id="result"></div>
+</body>
+</html>

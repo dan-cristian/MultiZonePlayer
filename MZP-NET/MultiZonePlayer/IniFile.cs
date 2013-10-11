@@ -37,6 +37,7 @@ namespace MultiZonePlayer
             public const String BEEP_ERROR_FILE_NAME = "\\BeepError.wav";
             public const String TEST_FILE_NAME = "\\Test.mp3";
 			public const String WEBROOT_SUBFOLDER = "\\webroot\\";
+			public const String WEB_TMP_IMG_SUBFOLDER = "\\webroot\\m\\tmp\\";
 			
 			public static String DEFAULT_AUTO_DEV_NAME = "-AUTO BY KEYWORDS-";
             public static String DEFAULT_AUTO_DEV_ID = "-1";

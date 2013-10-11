@@ -7,7 +7,6 @@
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
 <body onload="refresh(60000)" onerror="refresh(60000)" style="text-align:center">
-
 <%if;#Zones,%_zoneid.HasSpeakers#%>
 <button class="Music#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-music.html?command=music&zoneid=%_zoneid','_self')">Music</button>
 <button class="Radio#Zones,%_zoneid.ActivityType#" onclick="window.open('streammp3.html?command=radio&zoneid=%_zoneid','_self')">Radio</button>
@@ -17,15 +16,16 @@
 <%%>
 <%if;#Zones,%_zoneid.HasCamera#%>
 <button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid', false)">Camera</button>
+<button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#</button>
 <%%>
 <%if;#Zones,%_zoneid.HasVideoPlayer#%>
 <button class="Video#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-video.html?command=video&zoneid=%_zoneid','_self')">Video</button>
 <%%>
 <%if;#Zones,%_zoneid.HasMotionSensor#%>
-<button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#">Motion</button>
+<button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">Motion</button>
 <%%>
 <%if;#Zones,%_zoneid.HasClosures#%>
-<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#">Closure #Zones,%_zoneid.ClosureState#</button>
+<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">Closure #Zones,%_zoneid.ClosureState#</button>
 <%%>
 <%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#Zones,%_zoneid.Temperature#°</button><%%>
 <%if;#Zones,%_zoneid.HasHumiditySensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#Zones,%_zoneid.Humidity#%</button><%%>
@@ -35,18 +35,15 @@
 <%%>
 <div id="camera"></div>
 <div id="temp-hum"></div>
+<div id="event"></div>
 <%if;"#Zones,%_zoneid.ChildZonesCount#"=="0"%><hr/><%%>
 <%for;i;0;++;#Zones,%_zoneid.ChildZonesCount#;%>
 <button class="Action#Zones,%_zoneid.ChildZone,%i.HasAction# Activity#Zones,%_zoneid.ChildZone,%i.ActivityType#" 
 		onclick="window.open('zone-main.html?zoneid=#Zones,%_zoneid.ChildZone,%i.ZoneId#','_self')">#Zones,%_zoneid.ChildZone,%i.ZoneName#</button>
-<%%>
-<%for;i;0;++;#Zones,%_zoneid.MacroCount#;%>
-<button onclick="ajaxCall('result','cmd.html?command=macro&zoneid=%_zoneid&id=#Zones,%_zoneid.Macro,%i.Id#', true)"
-	onmouseover="showText('result','#Zones,%_zoneid.Macro,%i.Details#')" onmouseout="showText('result','')"
-	>[#Zones,%_zoneid.Macro,%i.Description#]</button>
 <%%><br />
 <button onclick="window.open('zone-sched.html?zoneid=%_zoneid', '_self')">Schedule</button>
 <button onclick="window.open('zone-param.html?zoneid=%_zoneid', '_self')">Parameters</button>
+<button onclick="window.open('zone-macro.html?zoneid=%_zoneid', '_self')">Macros</button>
 <button onclick="window.open('start.html', '_self')">Back</button>
 <div id="result"></div>
 </body>

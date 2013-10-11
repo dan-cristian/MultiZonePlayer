@@ -12,7 +12,7 @@ namespace MultiZonePlayer
 		private System.ComponentModel.IContainer components = null;
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
-		private List<Tuple<int, DateTime, int>> m_eventHistoryList;
+		private List<Tuple<int, DateTime, int, String>> m_eventHistoryList;
 
 		public SimpleGraph()
 		{
@@ -30,7 +30,7 @@ namespace MultiZonePlayer
 			m_humHistoryList.Add(reading);
 		}
 
-		public void AddEventReading(Tuple<int, DateTime, int> reading)
+		public void AddEventReading(Tuple<int, DateTime, int, String> reading)
 		{
 			m_eventHistoryList.Add(reading);
 		}
@@ -44,7 +44,8 @@ namespace MultiZonePlayer
 				Color = System.Drawing.Color.Red,
 				IsVisibleInLegend = true,
 				IsXValueIndexed = false,
-				ChartType = SeriesChartType.Line
+				ChartType = SeriesChartType.Line,
+				BorderWidth = 2
 			};
 			var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
 			{
@@ -52,7 +53,8 @@ namespace MultiZonePlayer
 				Color = System.Drawing.Color.Blue,
 				IsVisibleInLegend = true,
 				IsXValueIndexed = false,
-				ChartType = SeriesChartType.Line
+				ChartType = SeriesChartType.Line,
+				BorderWidth = 2
 			};
 
 			this.chart1.Legends[0].Docking = Docking.Bottom;
@@ -74,7 +76,8 @@ namespace MultiZonePlayer
 				series2.Points.AddXY(point.Item2, point.Item3);
 			}
 			//Tuple<int, DateTime, double> min = tempValues.Find(x => x.Item3 == 0);
-			double minT = tempValues.Min(x => x.Item3);
+			double minT;
+			minT = tempValues.Count>0? tempValues.Min(x => x.Item3):0;
 			double minY = tempValues.Count>0 ? minT : double.MaxValue;
 			minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
 
@@ -85,31 +88,73 @@ namespace MultiZonePlayer
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			
 			chart1.Invalidate();
-			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEBROOT_SUBFOLDER 
-				+ "m\\tmp\\temp-hum-" + zoneId + "-"+ageHours+".gif", ChartImageFormat.Gif);
+			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER 
+				+ "temp-hum-" + zoneId + "-"+ageHours+".gif", ChartImageFormat.Gif);
 		}
 
-		private void ShowEventGraph(int zoneId)
+		public void ShowEventGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
-			
-			var series3 = new System.Windows.Forms.DataVisualization.Charting.Series
+
+			var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
 			{
-				Name = "Events",
-				Color = System.Drawing.Color.Yellow,
+				Name = "Closure",
+				Color = System.Drawing.Color.Red,
 				IsVisibleInLegend = true,
 				IsXValueIndexed = false,
-				ChartType = SeriesChartType.Point
+				ChartType = SeriesChartType.StepLine,
+				MarkerSize = 6,
+				BorderWidth = 2
+			};
+			var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
+			{
+				Name = "Sensor",
+				Color = System.Drawing.Color.Blue,
+				IsVisibleInLegend = true,
+				IsXValueIndexed = false,
+				ChartType = SeriesChartType.Point,
+				MarkerSize = 6
+			};
+			var series3 = new System.Windows.Forms.DataVisualization.Charting.Series
+			{
+				Name = "Camera",
+				Color = System.Drawing.Color.Green,
+				IsVisibleInLegend = true,
+				IsXValueIndexed = false,
+				ChartType = SeriesChartType.Point,
+				MarkerSize = 6
 			};
 
-			
+			this.chart1.Legends[0].Docking = Docking.Bottom;
+			this.chart1.Series.Add(series1);
+			this.chart1.Series.Add(series2);
 			this.chart1.Series.Add(series3);
-			
-			foreach (var point in m_eventHistoryList.FindAll(x => x.Item1 == zoneId))
+			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
+
+			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues;
+
+			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4==Constants.EVENT_TYPE_CLOSURE);
+			sensorValues =  m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4==Constants.EVENT_TYPE_SENSORALERT);
+			camValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4==Constants.EVENT_TYPE_CAMALERT);
+
+			foreach (var point in closureValues)
+			{
+				series1.Points.AddXY(point.Item2, point.Item3);
+			}
+			foreach (var point in sensorValues)
+			{
+				series2.Points.AddXY(point.Item2, point.Item3);
+			}
+			foreach (var point in camValues)
 			{
 				series3.Points.AddXY(point.Item2, point.Item3);
 			}
+			chart1.ChartAreas[0].AxisY.Minimum = 0;
+			chart1.ChartAreas[0].AxisY.Maximum = 4;
+			chart1.ChartAreas[0].RecalculateAxesScale();
 			chart1.Invalidate();
+			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+				+ "event-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -160,7 +205,7 @@ namespace MultiZonePlayer
 		{
 			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
-			m_eventHistoryList = new List<Tuple<int, DateTime, int>>();
+			m_eventHistoryList = new List<Tuple<int, DateTime, int, String>>();
 
 			//GET TEMP and HUM from storage
 			string[] allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath()+ IniFile.CSV_TEMPERATURE_HUMIDITY);
@@ -197,14 +242,33 @@ namespace MultiZonePlayer
 							ZoneName = data[0],
 							Key = data[1],
 							Date = Convert.ToDateTime(data[2]),
-							State = data[3],
+							State = GetStateValue(data[3]),
 							ZoneId = Convert.ToInt16(data[4]),
-							EventType = data[5] == Constants.EVENT_TYPE_CLOSURE ? 1 : (data[5] == Constants.EVENT_TYPE_CAMALERT ? 2 : (data[5]==Constants.EVENT_TYPE_SENSORALERT?3:0)),
+							EventType = data[5]
 						};
 
 			foreach (var line in query2)
 			{
-				m_eventHistoryList.Add(new Tuple<int, DateTime, int>(line.ZoneId, line.Date, line.EventType));
+				m_eventHistoryList.Add(new Tuple<int, DateTime, int, String>(line.ZoneId, line.Date, line.State, line.EventType));
+			}
+		}
+
+		private int GetStateValue(string state)
+		{
+			switch (state)
+			{
+				case "ContactOpen":
+					return 0;
+				case "ContactClosed":
+					return 1;
+				case "Sensoropened":
+					return 2;
+				case "Sensorclosed":
+					return 0;
+				case "CamMove":
+					return 3;
+				default:
+					return 0;
 			}
 		}
 	}

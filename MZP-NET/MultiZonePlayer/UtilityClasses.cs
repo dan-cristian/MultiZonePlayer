@@ -836,7 +836,7 @@ namespace MultiZonePlayer
 	public class Constants
 	{
 		public const string CAPABILITY_TEMP = "temp", CAPABILITY_HUM = "hum", EVENT_TYPE_CLOSURE = "closure";
-		public const string EVENT_TYPE_CAMALERT = "camalert", EVENT_TYPE_SENSORALERT = "sensoralert";
+		public const string EVENT_TYPE_CAMALERT = "cam", EVENT_TYPE_SENSORALERT = "sensor";
 	}
 
 	public class ZoneDetails

@@ -159,7 +159,9 @@
     <Content Include="m\zone-cam-pict.html" />
     <Content Include="m\zone-closure.html" />
     <Content Include="m\zone-cmd.html" />
+    <Content Include="m\zone-graph-event.html" />
     <Content Include="m\zone-graph.html" />
+    <Content Include="m\zone-macro.html" />
     <Content Include="m\zone-main.html" />
     <Content Include="m\zone-music.html" />
     <Content Include="m\zone-musiclist.html" />
