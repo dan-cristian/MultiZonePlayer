@@ -13,12 +13,15 @@
 	<script type="text/javascript">
 		var refreshCamCount = 0;
 		var refreshPictureCount = 0;
-
+		var refreshGraphCount = 0;
 		var auto_refresh_media = setInterval(
 		function () {
 			loadMedia();
-		}, 10000);
-
+		}, 5000);
+		var auto_refresh_graph = setInterval(
+		function () {
+			loadGraph();
+		}, 30000);
 		var auto_refresh_cam = setInterval(
 		function () {
 			loadCams();
@@ -31,7 +34,6 @@
 
 		function loadMedia() {
 			$('#time').load('snip-time.html?' + 'r=' + Math.random());
-			$('#graph').load('snip-graph.html?command=generatefullgraph&interval=24&zoneidlist=2,1,4&' + 'r=' + Math.random());
 			$('#media1').load('snip-media.html?zoneid=1' + '&r=' + Math.random());
 			$('#media2').load('snip-media.html?zoneid=2' + '&r=' + Math.random());
 			$('#media3').load('snip-media.html?zoneid=3' + '&r=' + Math.random());
@@ -39,7 +41,23 @@
 			$('#media5').load('snip-media.html?zoneid=5' + '&r=' + Math.random());
 		}
 
-
+		function loadGraph() {
+			if (Math.ceil(refreshGraphCount / 2) == refreshGraphCount / 2) {
+				$('#graph').load('snip-graph.html?command=generatefullgraph&interval=24&zoneidlist=2,1,4&' + 'r=' + Math.random());
+				setTimeout(function () {
+					$('#xgraph').hide();
+					$('#graph').show();
+				}, 1000);
+			}
+			else {
+				$('#xgraph').load('snip-graph.html?command=generatefullgraph&interval=24&zoneidlist=2,1,4&' + 'r=' + Math.random());
+				setTimeout(function () {
+					$('#graph').hide();
+					$('#xgraph').show();
+				}, 1000);
+			}
+			refreshGraphCount++;
+		}
 		function loadCams() {
 			
 			if (Math.ceil(refreshCamCount / 2) == refreshCamCount / 2) {
@@ -101,6 +119,7 @@
 			loadMedia();
 			loadCams();
 			loadPicture();
+			loadGraph();
 		}
 </script>
 
@@ -115,7 +134,8 @@
 		<table style="width:130px">
 		<tr><td style="color:White">
 		<div id="time"></div>
-		<div id="graph"></div>
+		<div id="graph" style="display:none"></div>
+		<div id="xgraph" style="display:none"></div>
 		<div id="picturedetails"></div>
 		</td></tr>
 		</table>

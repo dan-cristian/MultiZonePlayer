@@ -8,73 +8,63 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
+using System.ComponentModel;
 
 namespace MultiZonePlayer
 {
 public class MZPState
 {
     private static MZPState m_sysState = null;
-    
     private ArrayList m_systemInputDeviceList = null;
     private Hashtable m_systemInputDeviceNames = null;
-
     public String powerControlStatusCommand;
     public Hashtable iniUserList = new Hashtable();
     private List<ControlDevice> m_iniControlList = new List<ControlDevice>();
     public List<Playlist> m_playlist = new List<Playlist>();
     public Hashtable zoneDefaultInputs;
-
     private static RemotePipi[] remotePipi;
     private static int maxRemotes = 10;
     private List<ControlDevice> m_systemAvailableControlDevices = new List<ControlDevice>();
-
     private static BasePowerControl m_powerControlDenkovi, m_powerControlNumato;
-
     private Hashtable m_zoneInputDeviceNames = null;
-
     private Hashtable m_playListOLD = null;//list with all songs from current playlist
-
     private List<ZoneDetails> m_zoneList;
     private List<MoodMusic> m_moodMusicList;
-
 	private Cron m_cron;
     private MultiZonePlayer.Tail m_Tail;
     private ZoneEvents m_zoneEvents;
     private Alarm m_systemAlarm;
     private Boolean m_isFollowMeMusic = false;
     private Boolean m_isPowerFailure = false;
-
 	private Boolean m_isWinloadLoading = false;
-
-	public Boolean IsWinloadLoading
-	{
-		get { return m_isWinloadLoading; }
-		set { m_isWinloadLoading = value; }
-	}
-
     public List<IMessenger> m_messengerList = new List<IMessenger>();
     private NotifyState m_notifyState;
-
     private List<MusicScheduleEntry> m_musicScheduleList;
-
     private DateTime m_initMZPStateDateTime = DateTime.Now;
     private DateTime m_lastBuzzDateTime = DateTime.Now;
-
     private List<Display> m_displayList = new List<Display>();
     private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
-
 	private List<MacroEntry> m_macroList;
 	private List<GenericUPS> m_upsList;
-
 	private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
-
 	private WDIO m_wdio;
 	private OneWire m_oneWire;
+	private List<Alert> m_alertList = new List<Alert>();
+
+	public List<Alert> AlertList
+	{
+		get { return m_alertList; }
+	}
 
 	public OneWire OneWire
 	{
 		get { return m_oneWire; }
+	}
+	public Boolean IsWinloadLoading
+	{
+		get { return m_isWinloadLoading; }
+		set { m_isWinloadLoading = value; }
 	}
 
     public List<ZoneGeneric> ActiveZones
@@ -342,14 +332,29 @@ public class MZPState
 		return ZoneList.List(type, "=");
 	}
 
-	public List<String> GetFieldList(String className)
+	public List<String> GetEditableFieldList(String className)
 	{
 		System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
 			System.Reflection.Assembly.GetExecutingAssembly().GetName().Name+"."+className);
 		Object p = handle.Unwrap();
 		Type t = p.GetType();
 		if (t != null)
-			return t.GetFields().Select(x=>x.Name).ToList();
+			return t.GetFields().ToList().FindAll(x=>(
+				(x.GetCustomAttributes(typeof(DescriptionAttribute), false)!=null)&&(x.GetCustomAttributes(typeof(DescriptionAttribute), false).Length>0)
+				&&(((DescriptionAttribute[])x.GetCustomAttributes(typeof(DescriptionAttribute), false))[0].Description=="Edit"))
+				).Select(y=>y.Name).ToList();
+		else
+			return null;
+	}
+
+	public List<String> GetFieldList(String className)
+	{
+		System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
+			System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
+		Object p = handle.Unwrap();
+		Type t = p.GetType();
+		if (t != null)
+			return t.GetFields().ToList().Select(y => y.Name).ToList();
 		else
 			return null;
 	}
@@ -1251,6 +1256,14 @@ public class MZPState
     {
         LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance, zonedetails));
     }
+
+	public void TickFast()
+	{
+		if (m_alertList.Count > 0)
+		{
+			//TODO
+		}
+	}
 
     public void TickSlow()
     {

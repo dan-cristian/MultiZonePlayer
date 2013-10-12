@@ -9,14 +9,14 @@
 <body style="text-align:left">
 <button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
 <table>
-<%for;i;0;++;#S.GetFieldList,ZoneDetails.Count#;%>
+<%for;i;0;++;#S.GetEditableFieldList,ZoneDetails.Count#;%>
 <tr><td>
 <form id="param" action="?zoneid=%_zoneid" method="post">
 <input name="command" type="hidden" value="setfield"/>
-<input id="Submit#S.GetFieldList,ZoneDetails.?,%i#" type="submit" value="Set" />
-<input type="text" name="text" value="#Zones,%_zoneid:S.GetFieldList,ZoneDetails.?,%i#"/>
-<input name="field" type="hidden" value="#S.GetFieldList,ZoneDetails.?,%i#"/>
-#S.GetFieldList,ZoneDetails.?,%i#
+<input id="Submit#S.GetEditableFieldList,ZoneDetails.?,%i#" type="submit" value="Set" />
+<input type="text" name="text" value="#Zones,%_zoneid:S.GetEditableFieldList,ZoneDetails.?,%i#"/>
+<input name="field" type="hidden" value="#S.GetEditableFieldList,ZoneDetails.?,%i#"/>
+#S.GetEditableFieldList,ZoneDetails.?,%i#
 </td></tr>
 </form>
 <%%>

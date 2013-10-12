@@ -38,42 +38,46 @@ namespace MultiZonePlayer
 		public void ShowTempHumGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
-			var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
-			{
-				Name = "Temperature",
-				Color = System.Drawing.Color.Red,
-				IsVisibleInLegend = true,
-				IsXValueIndexed = false,
-				ChartType = SeriesChartType.Line,
-				BorderWidth = 2
-			};
-			var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
-			{
-				Name = "Humidity",
-				Color = System.Drawing.Color.Blue,
-				IsVisibleInLegend = true,
-				IsXValueIndexed = false,
-				ChartType = SeriesChartType.Line,
-				BorderWidth = 2
-			};
-
 			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.Series.Add(series1);
-			this.chart1.Series.Add(series2);
 			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
 
 			List<Tuple<int, DateTime,double>> tempValues = m_tempHistoryList.FindAll(x=>x.Item1==zoneId && DateTime.Now.Subtract(x.Item2).TotalHours<=ageHours);
-			foreach (var point in tempValues)
+			if (tempValues.Count > 0)
 			{
-				series1.Points.AddXY(point.Item2, point.Item3);
+				var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
+				{
+					Name = "Temperature",
+					Color = System.Drawing.Color.Red,
+					IsVisibleInLegend = true,
+					IsXValueIndexed = false,
+					ChartType = SeriesChartType.Line,
+					BorderWidth = 2
+				};
+				this.chart1.Series.Add(series1);
+				foreach (var point in tempValues)
+				{
+					series1.Points.AddXY(point.Item2, point.Item3);
+				}
 			}
 
 			List<Tuple<int, DateTime, double>> humValues = m_humHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
 			//chart1.ChartAreas[0].RecalculateAxesScale();
-
-			foreach (var point in humValues)
+			if (humValues.Count > 0)
 			{
-				series2.Points.AddXY(point.Item2, point.Item3);
+				var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
+				{
+					Name = "Humidity",
+					Color = System.Drawing.Color.Blue,
+					IsVisibleInLegend = true,
+					IsXValueIndexed = false,
+					ChartType = SeriesChartType.Line,
+					BorderWidth = 2
+				};
+				this.chart1.Series.Add(series2);
+				foreach (var point in humValues)
+				{
+					series2.Points.AddXY(point.Item2, point.Item3);
+				}
 			}
 			//Tuple<int, DateTime, double> min = tempValues.Find(x => x.Item3 == 0);
 			double minT;
@@ -121,27 +125,9 @@ namespace MultiZonePlayer
 					{
 						series1.Points.AddXY(point.Item2, point.Item3);
 					}
+
 				}
-				/*List<Tuple<int, DateTime, double>> humValues = m_humHistoryList.FindAll(x => x.Item1 == zone.ZoneId
-					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
-				if (humValues.Count > 0)
-				{
-					var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
-					{
-						Name = "Hum " + zone.ZoneName,
-						Color = System.Drawing.Color.FromName(color),
-						IsVisibleInLegend = true,
-						IsXValueIndexed = false,
-						ChartType = SeriesChartType.Line,
-						BorderDashStyle = ChartDashStyle.Dot,
-						BorderWidth = 2
-					};
-					this.chart1.Series.Add(series2);
-					foreach (var point in humValues)
-					{
-						series2.Points.AddXY(point.Item2, point.Item3);
-					}
-				}*/
+				
 				double minT;
 				minT = tempValues.Count > 0 ? tempValues.Min(x => x.Item3) : 0;
 				minY = tempValues.Count > 0 ? minT : double.MaxValue;
@@ -149,6 +135,8 @@ namespace MultiZonePlayer
 
 				lastMinY = Math.Min(lastMinY, minY);
 			}
+			chart1.ChartAreas[0].AxisY.MajorGrid.LineWidth = 0;
+			chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
 			chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			chart1.Invalidate();
@@ -258,7 +246,7 @@ namespace MultiZonePlayer
 			//
 			// Form1
 			//
-			this.AutoScaleDimensions = new System.Drawing.SizeF(4F, 20F);
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 18F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			//this.ClientSize = new System.Drawing.Size(640, 480);
 			this.Controls.Add(this.chart1);

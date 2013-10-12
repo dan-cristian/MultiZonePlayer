@@ -273,6 +273,7 @@ namespace MultiZonePlayer
                             if (MZPState.Instance.IsPowerFailure != failure)
                             {
                                 MZPState.Instance.IsPowerFailure = failure;
+
                                 MZPState.Instance.LogEvent(MZPEvent.EventSource.Environment, "Power Failure state is " + failure + " at " + datetime, 
                                     MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
                             }

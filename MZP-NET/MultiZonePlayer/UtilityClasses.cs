@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using fastJSON;
@@ -844,10 +844,10 @@ namespace MultiZonePlayer
 	public class ZoneDetails
 	{
 		public int ZoneId = 0;
-		public String Description;
+		[Description("Edit")] public String Description;
 		public Boolean IsActive = false;
 		//public int MinutesUntilSleep = -1;
-		public String SleepHourMin = "";//format HH:MM
+		[Description("Edit")] public String SleepHourMin = "";//format HH:MM
 		public String ZoneName;
 		private ZoneState m_zoneState, m_zoneStateLast=MultiZonePlayer.ZoneState.Undefined;
 		public int ParentZoneId = -1;
@@ -876,17 +876,18 @@ namespace MultiZonePlayer
 		public String DisplayType = "";
 		public Boolean RequirePower = false;
 		public Boolean IsClosureArmed = false;
-		public String NearbyZonesIdList = "";//zone id list separated by ;
-		public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
+		[Description("Edit")] public String NearbyZonesIdList = "";//zone id list separated by ;
+		[Description("Edit")] public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
 		//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
 		public ClosureOpenCloseRelay ClosureOpenCloseRelay;
 		public ulong ClosureCounts = 0;
-		public String TemperatureDeviceId;
-		public double TemperatureMaxAlarm=1000;
-		public double TemperatureMinAlarm=-1000;
-		public double TemperatureTarget = -1000;
+		[Description("Edit")] public String TemperatureDeviceId;
+
+		[Description("Edit")] public double TemperatureMaxAlarm = 1000;
+		[Description("Edit")] public double TemperatureMinAlarm = -1000;
+		[Description("Edit")] public double TemperatureTarget = -1000;
 		public String CronSchedule="";
-		public String Color;
+		[Description("Edit")] public String Color;
 
 		public int VolumeLevel;
 		public long Position = 0;
@@ -1213,7 +1214,7 @@ namespace MultiZonePlayer
 		{
 			get { return HasImmediateMove || HasRecentMove; }
 		}
-
+		
 		public double Temperature
 		{
 			get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
@@ -1221,6 +1222,17 @@ namespace MultiZonePlayer
 			{
 				m_temperature = value;
 				m_lastTempSet = DateTime.Now;
+
+				if (Temperature > TemperatureMaxAlarm)
+				{
+					MZPState.Instance.AlertList.Add(new Alert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
+						+ ZoneName + ", temp is " + Temperature));
+				}
+				if (Temperature < TemperatureMinAlarm)
+				{
+					MZPState.Instance.AlertList.Add(new Alert("Min temperature [" + TemperatureMinAlarm + "] exceeded on zone "
+						+ ZoneName + ", temp is " + Temperature));
+				}
 
 				if (m_temperature != m_temperatureLast)
 				{
@@ -2107,6 +2119,20 @@ namespace MultiZonePlayer
             AreaId = areaid;
         }
     }
+	public class Alert
+	{
+		public DateTime When = DateTime.Now;
+		public String Cause;
+		//public String UserMessage;
+		public Boolean UserAcknowledged = false;
+		public DateTime LastSendAttempt = DateTime.MinValue;
+		public Boolean Archived = false;
+
+		public Alert(String cause)
+		{
+			Cause = cause;
+		}
+	}
 
     public class MZPEvent
     {

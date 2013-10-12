@@ -138,6 +138,7 @@ namespace MultiZonePlayer
 							if (MZPState.Instance == null) break;
 							zone.TickFast();
 						}
+						MZPState.Instance.TickFast();
 					}
                     // SLOW TICK
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
