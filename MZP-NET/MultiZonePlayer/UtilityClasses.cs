@@ -102,7 +102,7 @@ namespace MultiZonePlayer
 		medialist,
 		setmediaitem,
 		cameraevent,
-		dismisscameraalert,
+		dismissalert,
 		togglecameraalert,
 		setmoodmusic,
 		getmoodmusiclist,
@@ -263,7 +263,7 @@ namespace MultiZonePlayer
             medialist,
             setmediaitem,
             cameraevent,
-            dismisscameraalert,
+            dismissalert,
             togglecameraalert,
             setmoodmusic,
             getmoodmusiclist,
@@ -786,35 +786,7 @@ namespace MultiZonePlayer
 		Alarm
 	}
 
-	public class CamAlert
-	{
-		private static int startIndex = 0;
-		public int Index;
-		public String CamId;
-		public DateTime AlarmTime;
-		public String AlarmSource;
-		public String CustomMessage;
-		public bool WasAcknowledged;
-		public bool WasIgnored;
-		public int ParentZoneId;
 
-		public CamAlert()
-		{
-		}
-
-		public CamAlert(String alarmSource, String customMessage, String camId, int parentZoneId, bool isAlertActive)
-		{
-			AlarmTime = DateTime.Now;
-			AlarmSource = alarmSource;
-			CustomMessage = customMessage;
-			WasAcknowledged = false;
-			WasIgnored = !isAlertActive;
-			CamId = camId;
-			Index = startIndex;
-			ParentZoneId = parentZoneId;
-			startIndex++;
-		}
-	}
 
 	
 
@@ -1226,12 +1198,12 @@ namespace MultiZonePlayer
 				if (Temperature > TemperatureMaxAlarm)
 				{
 					MZPState.Instance.AlertList.Add(new Alert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
-						+ ZoneName + ", temp is " + Temperature));
+						+ ZoneName + ", temp is " + Temperature, this));
 				}
 				if (Temperature < TemperatureMinAlarm)
 				{
 					MZPState.Instance.AlertList.Add(new Alert("Min temperature [" + TemperatureMinAlarm + "] exceeded on zone "
-						+ ZoneName + ", temp is " + Temperature));
+						+ ZoneName + ", temp is " + Temperature, this));
 				}
 
 				if (m_temperature != m_temperatureLast)
@@ -1377,6 +1349,8 @@ namespace MultiZonePlayer
 					Type = zonestorage.Type;
 					CronSchedule = zonestorage.CronSchedule;
 					TemperatureTarget = zonestorage.TemperatureTarget;
+					TemperatureMaxAlarm = zonestorage.TemperatureMaxAlarm;
+					TemperatureMinAlarm = zonestorage.TemperatureMinAlarm;
 					Color = zonestorage.Color;
 					//Temperature = "1";
 				}
@@ -2119,18 +2093,58 @@ namespace MultiZonePlayer
             AreaId = areaid;
         }
     }
+	public class CamAlert
+	{
+		private static int startIndex = 0;
+		public int Index;
+		public String CamId;
+		public DateTime AlarmTime;
+		public String AlarmSource;
+		public String CustomMessage;
+		public bool WasAcknowledged;
+		public bool WasIgnored;
+		public int ParentZoneId;
+
+		public CamAlert()
+		{
+		}
+
+		public CamAlert(String alarmSource, String customMessage, String camId, int parentZoneId, bool isAlertActive)
+		{
+			AlarmTime = DateTime.Now;
+			AlarmSource = alarmSource;
+			CustomMessage = customMessage;
+			WasAcknowledged = false;
+			WasIgnored = !isAlertActive;
+			CamId = camId;
+			Index = startIndex;
+			ParentZoneId = parentZoneId;
+			startIndex++;
+		}
+	}
 	public class Alert
 	{
+		private static int m_id = 0;
+		private int id;
 		public DateTime When = DateTime.Now;
 		public String Cause;
 		//public String UserMessage;
 		public Boolean UserAcknowledged = false;
 		public DateTime LastSendAttempt = DateTime.MinValue;
+		public DateTime AcknowledgeDate;
 		public Boolean Archived = false;
+		public ZoneDetails Zone;
 
-		public Alert(String cause)
+		public Alert(String cause, ZoneDetails zone)
 		{
 			Cause = cause;
+			Zone = zone;
+			id = m_id;
+			m_id++;
+		}
+		public int Id
+		{
+			get { return id; }
 		}
 	}
 

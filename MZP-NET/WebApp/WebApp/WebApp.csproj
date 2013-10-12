@@ -106,6 +106,7 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="m\alerts.html" />
     <Content Include="m\auth.html" />
     <Content Include="m\basic.js" />
     <Content Include="m\default.html" />

@@ -15,6 +15,9 @@
 	<%for;i;0;++;#S.ZoneTypesAvailable.Count#;%>
 	<button onclick="window.open('zone-type.html?type=#S.ZoneTypesAvailableByIndex,%i#','_self')">#S.ZoneTypesAvailableByIndex,%i#</button>
 	<%%>
+	<%if;"#S.ActiveAlertList.Count#"!="0"%>
+	<button class="PressedTrue" onclick="window.open('alerts.html','_self')">Alerts [#S.ActiveAlertList.Count#]</button>
+	<%%>
 	<button onclick="window.open('alarm.html','_self')">Alarm #SystemAlarm.AreaState#</button>
 	<a href="slide.html">Slide</a>
 <!--/td></tr></table-->

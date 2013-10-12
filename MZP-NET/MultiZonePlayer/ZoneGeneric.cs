@@ -253,9 +253,6 @@ namespace MultiZonePlayer
 						Constants.EVENT_TYPE_CAMALERT);
                     //TODO
                     break;
-                case GlobalCommands.dismisscameraalert:
-                    MZPState.Instance.ZoneEvents.DismissAlert(vals);
-                    break;
                 case GlobalCommands.togglecameraalert:
                     MZPState.Instance.ZoneEvents.ToggleAlertStatus(vals);
                     break;

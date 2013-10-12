@@ -1,0 +1,17 @@
+﻿<!doctype html>
+<html lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="robots" content="index, follow, noodp" />
+<title>Alerts</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body style="text-align:left">
+<%for;i;0;++;#S.ActiveAlertList.Count#;%>
+<button onclick="window.open('?command=dismissalert&id=#S.ActiveAlertList.?,%i.Id#','_self')">Delete</button> #S.ActiveAlertList.?,%i.When# #S.ActiveAlertList.?,%i.Zone.ZoneName# #S.ActiveAlertList.?,%i.Cause#
+<br />
+<%%>
+<br />
+<button onclick="window.open('start.html', '_self')">Back</button>
+</body>
+</html>

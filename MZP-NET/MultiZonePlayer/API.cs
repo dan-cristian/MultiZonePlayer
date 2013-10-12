@@ -352,6 +352,12 @@ namespace MultiZonePlayer
 							}
 							graph.ShowTempGraph(ageHours, zoneList);
 							break;
+						case GlobalCommands.dismissalert:
+							int aid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
+							//MZPState.Instance.ZoneEvents.DismissAlert(vals);
+							MZPState.Instance.DismissAlert(aid);
+							break;
+
                         default:
                             DoZoneCommand(apicmd, vals, ref cmdresult);
                             break;

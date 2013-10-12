@@ -351,11 +351,14 @@ namespace MultiZonePlayer
 								if (value.ToString().Contains(typeof(System.String).ToString()))
 									value = ((List<String>)value)[Convert.ToInt32(parameters[0])];
 								else
-								//"System.Collections.Generic.List`1[System.String]"
-								{
-									MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
-									value = new Exception();
-								}
+									if (value.ToString().Contains(typeof(MultiZonePlayer.Alert).ToString()))
+										value = ((List<Alert>)value)[Convert.ToInt32(parameters[0])];
+									else
+									//"System.Collections.Generic.List`1[System.String]"
+									{
+										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
+										value = new Exception();
+									}
 						}
 						else
 						{

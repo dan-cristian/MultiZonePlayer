@@ -587,6 +587,10 @@ public class MZPState
         return null;
     }
 
+	public List<Alert> ActiveAlertList
+	{
+		get { return m_alertList.FindAll(x => !x.UserAcknowledged); }
+	}
     public void InitRemotes()
     {
         //this.multiPlayerDataSet.Remotes.Count;
@@ -1256,6 +1260,16 @@ public class MZPState
     {
         LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance, zonedetails));
     }
+
+	public void DismissAlert(int alertId)
+	{
+		Alert alert = m_alertList.Find(x => x.Id == alertId);
+		if (alert != null)
+		{
+			alert.UserAcknowledged = true;
+			alert.AcknowledgeDate = DateTime.Now;
+		}
+	}
 
 	public void TickFast()
 	{
