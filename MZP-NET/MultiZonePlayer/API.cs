@@ -338,6 +338,19 @@ namespace MultiZonePlayer
 								System.Diagnostics.ProcessWindowStyle.Hidden, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 							cmdresult.OutputMessage = "Exit code="+proc.ExitCode;
 							break;
+						case GlobalCommands.generatefullgraph:
+							int _zoneid;
+							int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
+							SimpleGraph graph = new SimpleGraph();
+							string[] zones = vals.GetValue(GlobalParams.zoneidlist).Split(',');
+							List<ZoneDetails> zoneList = new List<ZoneDetails>();
+							foreach (string _zone in zones)
+							{
+								_zoneid = Convert.ToInt16(_zone);
+								zoneList.Add(MZPState.Instance.GetZoneById(_zoneid));
+							}
+							graph.ShowTempGraph(ageHours, zoneList);
+							break;
                         default:
                             DoZoneCommand(apicmd, vals, ref cmdresult);
                             break;

@@ -145,7 +145,47 @@ namespace MultiZonePlayer
 		poweroff,
 		powertoggle,
 		setfield,
-		generategraph
+		generategraph,
+		generatefullgraph
+	}
+	public enum GlobalParams
+	{
+		command,
+		zoneid,
+		sourcezoneid,
+		zonename,
+		msg,
+		result,
+		selectedindex,
+		datetime,
+		volumelevel,
+		ratingvalue,
+		indexarray,
+		activity,
+		alertsource,
+		alertindex,
+		oid,//=camid
+		pass,
+		searchvalue,
+		action,
+		scope,
+		status,
+		areaid,
+		weekday,
+		cmdsource,
+		contenttype,
+		count,
+		interval,
+		face,
+		remoteid,
+		moodname,
+		moodindex,
+		dimvalue,
+		singleparamvalue,
+		id, iscontactmade,
+		name, text, field,
+		type,zoneidlist,
+		r//random no
 	}
 	public class CommandSyntax
 	{
@@ -254,45 +294,7 @@ namespace MultiZonePlayer
 		};
 	}
 
-	public enum GlobalParams
-	{
-		command,
-		zoneid,
-		sourcezoneid,
-		zonename,
-		msg,
-		result,
-		selectedindex,
-		datetime,
-		volumelevel,
-		ratingvalue,
-		indexarray,
-		activity,
-		alertsource,
-		alertindex,
-		oid,//=camid
-		pass,
-		searchvalue,
-		action,
-		scope,
-		status,
-		areaid,
-		weekday,
-		cmdsource,
-		contenttype,
-		count,
-		interval,
-		face,
-		remoteid,
-		moodname,
-		moodindex,
-		dimvalue,
-		singleparamvalue,
-		id,iscontactmade,
-		name,text,field,
-		type,
-		r//random no
-	}
+
 
 	public class CommandResult
 	{
@@ -842,6 +844,7 @@ namespace MultiZonePlayer
 	public class ZoneDetails
 	{
 		public int ZoneId = 0;
+		public String Description;
 		public Boolean IsActive = false;
 		//public int MinutesUntilSleep = -1;
 		public String SleepHourMin = "";//format HH:MM
@@ -883,6 +886,7 @@ namespace MultiZonePlayer
 		public double TemperatureMinAlarm=-1000;
 		public double TemperatureTarget = -1000;
 		public String CronSchedule="";
+		public String Color;
 
 		public int VolumeLevel;
 		public long Position = 0;
@@ -1266,6 +1270,8 @@ namespace MultiZonePlayer
 		{
 			get { return Math.Round(DateTime.Now.Subtract(m_lastHumSet).TotalMinutes).ToString(); }
 		}
+
+		
 		#endregion
 		public static void LoadFromIni(ref List<ZoneDetails> zones)
 		{
@@ -1298,7 +1304,7 @@ namespace MultiZonePlayer
 				if (json != "")
 				{
 					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
-
+					Description = zonestorage.Description;
 					ZoneName = zonestorage.ZoneName;
 					ParentZoneId = zonestorage.ParentZoneId;
 					PowerIndex = zonestorage.PowerIndex;
@@ -1359,7 +1365,7 @@ namespace MultiZonePlayer
 					Type = zonestorage.Type;
 					CronSchedule = zonestorage.CronSchedule;
 					TemperatureTarget = zonestorage.TemperatureTarget;
-					
+					Color = zonestorage.Color;
 					//Temperature = "1";
 				}
 			}

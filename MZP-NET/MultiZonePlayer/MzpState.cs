@@ -1103,7 +1103,7 @@ public class MZPState
 			if (zone.HasTemperatureSensor || zone.HasHumiditySensor)
 			{
 				SimpleGraph graph = new SimpleGraph();
-				graph.ShowTempHumGraph(zone.ZoneId, 48);
+				graph.ShowTempGraph(zone.ZoneId, 48);
 				graph.Close();
 			}
 		}*/

@@ -651,6 +651,7 @@ namespace MultiZonePlayer
 		Thread m_searchThread;
 		List<String> m_devices;
 		const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
+		double TEMP_DEFAULT = 85;
 
 		public OneWire()
 		{
@@ -770,6 +771,7 @@ namespace MultiZonePlayer
 			if (adapter != null)
 			{
 				TemperatureContainer temp;
+				double tempVal;
 				// get exclusive use of adapter
 				adapter.beginExclusive(true);
 
@@ -789,10 +791,21 @@ namespace MultiZonePlayer
 
 					if (zone != null)
 					{
-						temp = (TemperatureContainer)element;
-						state = temp.readDevice();
-						temp.doTemperatureConvert(state);
-						zone.Temperature = temp.getTemperature(state);
+						try
+						{
+							temp = (TemperatureContainer)element;
+							state = temp.readDevice();
+							temp.doTemperatureConvert(state);
+							tempVal = temp.getTemperature(state);
+							if (tempVal != TEMP_DEFAULT)
+								zone.Temperature = tempVal;
+							else
+								MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
+						}
+						catch (Exception ex)
+						{
+							MLog.Log(ex, this, "Err reading OneWire temperature zone="+zone.ZoneName);
+						}
 					}
 					else
 					{

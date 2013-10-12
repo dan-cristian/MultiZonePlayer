@@ -17,7 +17,7 @@
 		var auto_refresh_media = setInterval(
 		function () {
 			loadMedia();
-		}, 5000);
+		}, 10000);
 
 		var auto_refresh_cam = setInterval(
 		function () {
@@ -31,6 +31,7 @@
 
 		function loadMedia() {
 			$('#time').load('snip-time.html?' + 'r=' + Math.random());
+			$('#graph').load('snip-graph.html?command=generatefullgraph&interval=24&zoneidlist=2,1,4&' + 'r=' + Math.random());
 			$('#media1').load('snip-media.html?zoneid=1' + '&r=' + Math.random());
 			$('#media2').load('snip-media.html?zoneid=2' + '&r=' + Math.random());
 			$('#media3').load('snip-media.html?zoneid=3' + '&r=' + Math.random());
@@ -40,6 +41,7 @@
 
 
 		function loadCams() {
+			
 			if (Math.ceil(refreshCamCount / 2) == refreshCamCount / 2) {
 				
 				$('#cam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
@@ -113,6 +115,7 @@
 		<table style="width:130px">
 		<tr><td style="color:White">
 		<div id="time"></div>
+		<div id="graph"></div>
 		<div id="picturedetails"></div>
 		</td></tr>
 		</table>

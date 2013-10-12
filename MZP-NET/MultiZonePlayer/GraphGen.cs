@@ -92,6 +92,69 @@ namespace MultiZonePlayer
 				+ "temp-hum-" + zoneId + "-"+ageHours+".gif", ChartImageFormat.Gif);
 		}
 
+		public void ShowTempGraph(int ageHours, List<ZoneDetails> zones)
+		{
+			double lastMinY=double.MaxValue, minY=double.MaxValue;
+			chart1.Series.Clear();
+			//chart1.BackColor = System.Drawing.Color.Transparent;
+			this.chart1.Legends[0].Docking = Docking.Bottom;
+			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
+			String color;
+			foreach (ZoneDetails zone in zones)
+			{
+				color = zone.Color != null ? zone.Color : "Black";
+				List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zone.ZoneId 
+					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+				if (tempValues.Count > 0)
+				{
+					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
+					{
+						Name = "Temp " + zone.Description,
+						Color = System.Drawing.Color.FromName(color),
+						IsVisibleInLegend = true,
+						IsXValueIndexed = false,
+						ChartType = SeriesChartType.Line,
+						BorderWidth = 2
+					};
+					this.chart1.Series.Add(series1);
+					foreach (var point in tempValues)
+					{
+						series1.Points.AddXY(point.Item2, point.Item3);
+					}
+				}
+				/*List<Tuple<int, DateTime, double>> humValues = m_humHistoryList.FindAll(x => x.Item1 == zone.ZoneId
+					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+				if (humValues.Count > 0)
+				{
+					var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
+					{
+						Name = "Hum " + zone.ZoneName,
+						Color = System.Drawing.Color.FromName(color),
+						IsVisibleInLegend = true,
+						IsXValueIndexed = false,
+						ChartType = SeriesChartType.Line,
+						BorderDashStyle = ChartDashStyle.Dot,
+						BorderWidth = 2
+					};
+					this.chart1.Series.Add(series2);
+					foreach (var point in humValues)
+					{
+						series2.Points.AddXY(point.Item2, point.Item3);
+					}
+				}*/
+				double minT;
+				minT = tempValues.Count > 0 ? tempValues.Min(x => x.Item3) : 0;
+				minY = tempValues.Count > 0 ? minT : double.MaxValue;
+				//minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
+
+				lastMinY = Math.Min(lastMinY, minY);
+			}
+			chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
+			chart1.ChartAreas[0].RecalculateAxesScale();
+			chart1.Invalidate();
+			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+				+ "temp-hum-all-" + ageHours + ".gif", ChartImageFormat.Gif);
+		}
 		public void ShowEventGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
@@ -133,9 +196,12 @@ namespace MultiZonePlayer
 
 			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues;
 
-			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4==Constants.EVENT_TYPE_CLOSURE);
-			sensorValues =  m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4==Constants.EVENT_TYPE_SENSORALERT);
-			camValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4==Constants.EVENT_TYPE_CAMALERT);
+			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 
+				&& x.Item4==Constants.EVENT_TYPE_CLOSURE);
+			sensorValues =  m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 
+				&& x.Item4==Constants.EVENT_TYPE_SENSORALERT && x.Item3!=0);
+			camValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+				&& x.Item4 == Constants.EVENT_TYPE_CAMALERT && x.Item3 != 0);
 
 			foreach (var point in closureValues)
 			{
@@ -151,6 +217,8 @@ namespace MultiZonePlayer
 			}
 			chart1.ChartAreas[0].AxisY.Minimum = 0;
 			chart1.ChartAreas[0].AxisY.Maximum = 4;
+			chart1.ChartAreas[0].AxisY.MajorGrid.LineWidth = 0;
+			chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			chart1.Invalidate();
 			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER

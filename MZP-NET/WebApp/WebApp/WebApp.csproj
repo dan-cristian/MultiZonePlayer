@@ -122,9 +122,9 @@
     <Content Include="m\music.png" />
     <Content Include="m\musicplaylist.html" />
     <Content Include="m\musicselect.html" />
-    <Content Include="m\recorder.js" />
     <Content Include="m\slide.html" />
     <Content Include="m\snip-cam.html" />
+    <Content Include="m\snip-graph.html" />
     <Content Include="m\snip-media.html" />
     <Content Include="m\snip-picture.html" />
     <Content Include="m\snip-picturedetails.html" />
@@ -136,26 +136,6 @@
     <Content Include="m\tv.html" />
     <Content Include="m\utilities.js" />
     <Content Include="m\video.html" />
-    <Content Include="m\galleria\galleria-1.2.8.js" />
-    <Content Include="m\galleria\galleria-1.2.8.min.js" />
-    <Content Include="m\galleria\plugins\flickr\flickr-demo.html" />
-    <Content Include="m\galleria\plugins\flickr\flickr-loader.gif" />
-    <Content Include="m\galleria\plugins\flickr\galleria.flickr.js" />
-    <Content Include="m\galleria\plugins\flickr\galleria.flickr.min.js" />
-    <Content Include="m\galleria\plugins\flickr\loader.gif" />
-    <Content Include="m\galleria\plugins\history\galleria.history.js" />
-    <Content Include="m\galleria\plugins\history\galleria.history.min.js" />
-    <Content Include="m\galleria\plugins\history\history-demo.html" />
-    <Content Include="m\galleria\plugins\picasa\galleria.picasa.js" />
-    <Content Include="m\galleria\plugins\picasa\galleria.picasa.min.js" />
-    <Content Include="m\galleria\plugins\picasa\loader.gif" />
-    <Content Include="m\galleria\plugins\picasa\picasa-demo.html" />
-    <Content Include="m\galleria\themes\classic\classic-demo.html" />
-    <Content Include="m\galleria\themes\classic\classic-loader.gif" />
-    <Content Include="m\galleria\themes\classic\classic-map.png" />
-    <Content Include="m\galleria\themes\classic\galleria.classic.css" />
-    <Content Include="m\galleria\themes\classic\galleria.classic.js" />
-    <Content Include="m\galleria\themes\classic\galleria.classic.min.js" />
     <Content Include="m\zone-cam-pict.html" />
     <Content Include="m\zone-closure.html" />
     <Content Include="m\zone-cmd.html" />
@@ -180,9 +160,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="m\galleria\LICENSE" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

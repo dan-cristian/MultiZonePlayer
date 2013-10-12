@@ -1,30 +1,18 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Alarm</title>
-    
+﻿<!doctype html>
+<html lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="robots" content="index, follow, noodp" />
+<title>Alarm</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
 </head>
 <body>
-
-    <table>
-        <tr>
-            <td><a href="alarm.html?command=alarmarm&areaid=1">Arm</a></td>
-            <td><a href="alarm.html?command=alarmdisarm&areaid=1">Disarm</a></td>
-            <td><a href="alarm.html?command=alarmstay&areaid=1">Stay</a></td>
-            <td><a href="alarm.html?command=alarmkeypadbeep&areaid=1">Keypad Beep</a></td>
-        </tr>
-    </table>
-    <br />
-    <table>
-        <tr>
-            <td><a href="alarm.html">Status</a></td>
-            <td>#SystemAlarm.AreaState#</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td><a href="start.html">Back</a></td>
-        </tr>
-    </table>
-
+<button class="Caption">#SystemAlarm.AreaState#</button><br />
+<button onclick="window.open('?command=alarmarm&areaid=1','_self')">Arm</button>
+<button onclick="window.open('?command=alarmdisarm&areaid=1','_self')">Disarm</button>
+<button onclick="window.open('?command=alarmstay&areaid=1','_self')">Stay</button>
+<button onclick="window.open('?command=alarmkeypadbeep&areaid=1','_self')">Keypad Beep</button>
+<br />
+<button onclick="window.open('start.html', '_self')">Back</button>
 </body>
 </html>

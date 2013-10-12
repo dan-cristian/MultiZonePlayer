@@ -167,11 +167,11 @@ namespace MultiZonePlayer
 			SimpleGraph form = new SimpleGraph();
 			form.MdiParent = this;
 			form.Show();
-			form.ShowTempHumGraph(2,12);
+			form.ShowEventGraph(2,12);
 			SimpleGraph form2 = new SimpleGraph();
 			form2.MdiParent = this;
 			form2.Show();
-			form2.ShowEventGraph(2, 12);
+			form2.ShowTempGraph(12, MZPState.Instance.ZoneDetails);
 		}
     }
 }
