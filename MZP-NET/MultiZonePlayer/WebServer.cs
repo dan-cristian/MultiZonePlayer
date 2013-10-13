@@ -103,6 +103,8 @@ namespace MultiZonePlayer
 			{
 				try
 				{
+					if (MZPState.Instance == null)
+						break;
 					//MLog.Log(null, "Web server waiting for requests");
 					HttpListenerContext ctx = listener.GetContext();
 					//MLog.LogWeb(listener.GetContext().Request);//, "Web request " + ctx.Request.Url.AbsoluteUri + " from " + ctx.Request.RemoteEndPoint.Address);

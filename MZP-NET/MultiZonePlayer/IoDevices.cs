@@ -275,7 +275,7 @@ namespace MultiZonePlayer
 						MLog.Log(this, "Unknown zone for RFX response " + response);
 				}
 				else MLog.Log(this, "No RFX device identified for response " + response);
-			} while (response.Length > 0);
+			} while (response.Length > 0 && MZPState.Instance!=null);
 
 
 			//String message = response.ToLower().Replace("\r", "").Replace("\n", "").ToLower();
@@ -804,7 +804,7 @@ namespace MultiZonePlayer
 						}
 						catch (Exception ex)
 						{
-							MLog.Log(ex, this, "Err reading OneWire temperature zone="+zone.ZoneName);
+							MLog.Log(this, "Err reading OneWire temperature zone="+zone.ZoneName+" err="+ex.Message);
 						}
 					}
 					else

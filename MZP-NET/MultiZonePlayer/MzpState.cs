@@ -256,35 +256,42 @@ public class MZPState
 
     public void Shutdown()
     {
-        try
-        {
-            foreach (string file in Directory.GetFiles(IniFile.CurrentPath(), "*" + IniFile.TEMP_EXTENSION))
-            {
-                File.Delete(file);
-            }
-            PowerControlOff();
-            WebServer.Shutdown();
-            m_Tail.Stop();
-            foreach (Display disp in m_displayList)
-            {
-                disp.Disconnect();
-            }
-            foreach (IMessenger msg in m_messengerList)
-            {
-                msg.Close();
-            }
+		try
+		{
+			foreach (string file in Directory.GetFiles(IniFile.CurrentPath(), "*" + IniFile.TEMP_EXTENSION))
+			{
+				File.Delete(file);
+			}
+			PowerControlOff();
+			WebServer.Shutdown();
+			m_Tail.Stop();
+			foreach (Display disp in m_displayList)
+			{
+				disp.Disconnect();
+			}
+			foreach (IMessenger msg in m_messengerList)
+			{
+				msg.Close();
+			}
 			m_cron.stop();
 			foreach (ZoneDetails zone in ZoneDetails)
 			{
 				zone.SaveStateToIni();
 			}
+			foreach (IMessenger mes in m_messengerList)
+			{
+				mes.Close();
+			}
 			MediaLibrary.SaveLibraryToIni();
-            m_sysState = null;
-        }
-        catch (Exception)
-        {
-            m_sysState = null;
-        }
+			m_sysState = null;
+		}
+		catch (Exception)
+		{
+		}
+		finally
+		{
+			m_sysState = null;
+		}
 
     }
 
@@ -434,20 +441,67 @@ public class MZPState
 
 	public void PowerControlOn(int zoneid)
 	{
-		if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
-			m_powerControlDenkovi.PowerOn(zoneid);
+		ZoneDetails zone = GetZoneById(zoneid);
+		bool switchedOn = false; String powerdevice;
+		if (zone.HasPowerCapabilities)
+		{
+			if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
+			{
+				if (!m_powerControlDenkovi.IsPowerOn(zoneid))
+				{
+					switchedOn = true;
+				}
+				m_powerControlDenkovi.PowerOn(zoneid);
+				powerdevice = "Denkovi";
+			}
+			else
+			{
+				if (!m_powerControlNumato.IsPowerOn(zoneid))
+				{
+					switchedOn = true;
+				}
+				if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
+					m_powerControlNumato.PowerOn(zoneid);
+				powerdevice = "Numato";
+			}
+			if (switchedOn)
+				Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, powerdevice,
+					 DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOn", zoneid.ToString(),
+					 Constants.EVENT_TYPE_POWER);
+		}
 		else
-			if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
-				m_powerControlNumato.PowerOn(zoneid);
+			MLog.Log(this, "Error, Power ON command sent to zone without power cap: " + zone.ZoneName);
 	}
 
 	public void PowerControlOff(int zoneid)
 	{
-		if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
-			m_powerControlDenkovi.PowerOff(zoneid);
+		ZoneDetails zone = GetZoneById(zoneid);
+		bool switchedOff = false;String powerdevice;
+
+		if (zone.HasPowerCapabilities)
+		{
+			if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
+			{
+				if (m_powerControlDenkovi.IsPowerOn(zoneid))
+					switchedOff = true;
+				m_powerControlDenkovi.PowerOff(zoneid);
+				powerdevice = "Denkovi";
+			}
+			else
+			{
+				if (m_powerControlNumato.IsPowerOn(zoneid))
+					switchedOff = true;
+				if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
+					m_powerControlNumato.PowerOff(zoneid);
+				powerdevice = "Numato";
+			}
+			if (switchedOff)
+				Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, powerdevice,
+					 DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOff", zoneid.ToString(),
+					 Constants.EVENT_TYPE_POWER);
+		}
 		else
-			if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
-				m_powerControlNumato.PowerOff(zoneid);
+			MLog.Log(this, "Error, Power OFF command sent to zone without power cap: " + zone.ZoneName);
 	}
 
 	public void PowerControlOff()

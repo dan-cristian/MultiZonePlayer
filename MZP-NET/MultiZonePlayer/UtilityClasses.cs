@@ -809,8 +809,8 @@ namespace MultiZonePlayer
 
 	public class Constants
 	{
-		public const string CAPABILITY_TEMP = "temp", CAPABILITY_HUM = "hum", EVENT_TYPE_CLOSURE = "closure";
-		public const string EVENT_TYPE_CAMALERT = "cam", EVENT_TYPE_SENSORALERT = "sensor";
+		public const string CAPABILITY_TEMP = "temp", CAPABILITY_HUM = "hum", EVENT_TYPE_POWER="power";
+		public const string EVENT_TYPE_CAMALERT = "cam", EVENT_TYPE_SENSORALERT = "sensor", EVENT_TYPE_CLOSURE = "closure";
 	}
 
 	public class ZoneDetails
@@ -830,7 +830,7 @@ namespace MultiZonePlayer
 		public String WakeWeekDay = "";
 		public String CameraId = "";
 		public Boolean HasSpeakers = false;
-		public int DefaultVolumePercent;
+		[Description("Edit")] public int DefaultVolumePercent;
 		public String OutputKeywords;
 		public String OutputDeviceUserSelected;
 		public ZoneType Type = ZoneType.Undefined;

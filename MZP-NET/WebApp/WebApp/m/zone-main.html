@@ -31,18 +31,20 @@
 <%if;#Zones,%_zoneid.HasHumiditySensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#Zones,%_zoneid.Humidity#%</button><%%>
 <%if;#Zones,%_zoneid.HasPowerCapabilities#%>
 <button class="Pressed#Zones,%_zoneid.IsPowerOn#" 
-	onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid', true)">Power #Zones,%_zoneid.IsPowerOn#</button>
+	onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid', true)">Power</button>
+<button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#</button>
 <%%>
 <div id="camera"></div>
 <div id="temp-hum"></div>
 <div id="event"></div>
-<%if;"#Zones,%_zoneid.ChildZonesCount#"=="0"%><hr/><%%>
+<%if;"#Zones,%_zoneid.ChildZonesCount#"!="0"%><hr/><%%>
 <%for;i;0;++;#Zones,%_zoneid.ChildZonesCount#;%>
 <button class="Action#Zones,%_zoneid.ChildZone,%i.HasAction# Activity#Zones,%_zoneid.ChildZone,%i.ActivityType#" 
 		onclick="window.open('zone-main.html?zoneid=#Zones,%_zoneid.ChildZone,%i.ZoneId#','_self')">#Zones,%_zoneid.ChildZone,%i.ZoneName#</button>
 <%%><br />
-<button onclick="window.open('zone-sched.html?zoneid=%_zoneid', '_self')">Schedule</button>
-<button onclick="window.open('zone-param.html?zoneid=%_zoneid', '_self')">Parameters</button>
+<hr />
+<button onclick="window.open('zone-sched.html?zoneid=%_zoneid', '_self')">Sched</button>
+<button onclick="window.open('zone-param.html?zoneid=%_zoneid', '_self')">Params</button>
 <button onclick="window.open('zone-macro.html?zoneid=%_zoneid', '_self')">Macros</button>
 <button onclick="window.open('start.html', '_self')">Back</button>
 <div id="result"></div>

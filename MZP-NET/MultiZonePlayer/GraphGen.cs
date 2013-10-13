@@ -51,7 +51,7 @@ namespace MultiZonePlayer
 					IsVisibleInLegend = true,
 					IsXValueIndexed = false,
 					ChartType = SeriesChartType.Line,
-					BorderWidth = 2
+					BorderWidth = 1
 				};
 				this.chart1.Series.Add(series1);
 				foreach (var point in tempValues)
@@ -71,7 +71,7 @@ namespace MultiZonePlayer
 					IsVisibleInLegend = true,
 					IsXValueIndexed = false,
 					ChartType = SeriesChartType.Line,
-					BorderWidth = 2
+					BorderWidth = 1
 				};
 				this.chart1.Series.Add(series2);
 				foreach (var point in humValues)
@@ -118,7 +118,7 @@ namespace MultiZonePlayer
 						IsVisibleInLegend = true,
 						IsXValueIndexed = false,
 						ChartType = SeriesChartType.Line,
-						BorderWidth = 2
+						BorderWidth = 1
 					};
 					this.chart1.Series.Add(series1);
 					foreach (var point in tempValues)
@@ -146,43 +146,9 @@ namespace MultiZonePlayer
 		public void ShowEventGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
-
-			var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
-			{
-				Name = "Closure",
-				Color = System.Drawing.Color.Red,
-				IsVisibleInLegend = true,
-				IsXValueIndexed = false,
-				ChartType = SeriesChartType.StepLine,
-				MarkerSize = 6,
-				BorderWidth = 2
-			};
-			var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
-			{
-				Name = "Sensor",
-				Color = System.Drawing.Color.Blue,
-				IsVisibleInLegend = true,
-				IsXValueIndexed = false,
-				ChartType = SeriesChartType.Point,
-				MarkerSize = 6
-			};
-			var series3 = new System.Windows.Forms.DataVisualization.Charting.Series
-			{
-				Name = "Camera",
-				Color = System.Drawing.Color.Green,
-				IsVisibleInLegend = true,
-				IsXValueIndexed = false,
-				ChartType = SeriesChartType.Point,
-				MarkerSize = 6
-			};
-
 			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.Series.Add(series1);
-			this.chart1.Series.Add(series2);
-			this.chart1.Series.Add(series3);
 			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
-
-			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues;
+			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues, powerValues;
 
 			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 
 				&& x.Item4==Constants.EVENT_TYPE_CLOSURE);
@@ -190,18 +156,80 @@ namespace MultiZonePlayer
 				&& x.Item4==Constants.EVENT_TYPE_SENSORALERT && x.Item3!=0);
 			camValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
 				&& x.Item4 == Constants.EVENT_TYPE_CAMALERT && x.Item3 != 0);
+			powerValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+				&& x.Item4 == Constants.EVENT_TYPE_POWER);
 
-			foreach (var point in closureValues)
+			if (closureValues.Count > 0)
 			{
-				series1.Points.AddXY(point.Item2, point.Item3);
+				var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
+				{
+					Name = "Closure",
+					Color = System.Drawing.Color.Red,
+					IsVisibleInLegend = true,
+					IsXValueIndexed = false,
+					ChartType = SeriesChartType.StepLine,
+					MarkerSize = 6,
+					BorderWidth = 1
+				};
+				this.chart1.Series.Add(series1);
+				foreach (var point in closureValues)
+				{
+					series1.Points.AddXY(point.Item2, point.Item3);
+				}
 			}
-			foreach (var point in sensorValues)
+
+			if (sensorValues.Count > 0)
 			{
-				series2.Points.AddXY(point.Item2, point.Item3);
+				var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
+				{
+					Name = "Sensor",
+					Color = System.Drawing.Color.Blue,
+					IsVisibleInLegend = true,
+					IsXValueIndexed = false,
+					ChartType = SeriesChartType.Point,
+					MarkerSize = 6
+				};
+				this.chart1.Series.Add(series2);
+				foreach (var point in sensorValues)
+				{
+					series2.Points.AddXY(point.Item2, point.Item3);
+				}
 			}
-			foreach (var point in camValues)
+
+			if (camValues.Count > 0)
 			{
-				series3.Points.AddXY(point.Item2, point.Item3);
+				var series3 = new System.Windows.Forms.DataVisualization.Charting.Series
+				{
+					Name = "Camera",
+					Color = System.Drawing.Color.Green,
+					IsVisibleInLegend = true,
+					IsXValueIndexed = false,
+					ChartType = SeriesChartType.Point,
+					MarkerSize = 6
+				};
+				this.chart1.Series.Add(series3);
+				foreach (var point in camValues)
+				{
+					series3.Points.AddXY(point.Item2, point.Item3);
+				}
+			}
+			if (powerValues.Count > 0)
+			{
+				var series4 = new System.Windows.Forms.DataVisualization.Charting.Series
+				{
+					Name = "Power",
+					Color = System.Drawing.Color.Orange,
+					IsVisibleInLegend = true,
+					IsXValueIndexed = false,
+					ChartType = SeriesChartType.StepLine,
+					MarkerSize = 6,
+					BorderWidth = 1
+				};
+				this.chart1.Series.Add(series4);
+				foreach (var point in powerValues)
+				{
+					series4.Points.AddXY(point.Item2, point.Item3);
+				}
 			}
 			chart1.ChartAreas[0].AxisY.Minimum = 0;
 			chart1.ChartAreas[0].AxisY.Maximum = 4;
@@ -316,13 +344,17 @@ namespace MultiZonePlayer
 				case "ContactOpen":
 					return 0;
 				case "ContactClosed":
-					return 1;
-				case "Sensoropened":
 					return 2;
+				case "Sensoropened":
+					return 3;
 				case "Sensorclosed":
 					return 0;
 				case "CamMove":
-					return 3;
+					return 4;
+				case "PowerOn":
+					return 1;
+				case "PowerOff":
+					return 0;
 				default:
 					return 0;
 			}

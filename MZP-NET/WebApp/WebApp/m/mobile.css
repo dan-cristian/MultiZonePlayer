@@ -8,14 +8,14 @@ a.med {font-size:16px;}
 div.VisibleTrue {display: block;}
 div.VisibleFalse {display: none;}
 hr {width:90%;}
-p {margin: 2px 0;}
+p {margin: 3px 0;}
 /***FIRST STYLE THE BUTTON***/
 button, form input[type="submit"]{
 cursor:pointer; /*forces the cursor to change to a hand when the button is hovered*/
-padding:5px 15px; /*add some padding to the inside of the button*/
+padding:10px 15px; /*add some padding to the inside of the button*/
 background:#35b128; /*the colour of the button*/
 border:1px solid #33842a; /*required or the default border for the browser will appear*/
-min-width:110px;
+min-width:100px;
 /*give the button curved corners, alter the size as required*/
 -moz-border-radius: 10px;
 -webkit-border-radius: 10px;
@@ -37,7 +37,7 @@ font-size:1em;
 -moz-box-shadow: 0 0 1px rgba(0,0,0, .75);
 box-shadow: 0 0 1px rgba(0,0,0, .75);
 }*/
-button.Small{min-width:40px;}
+button.Small{min-width:20px;}
 button.PressedTrue,button.Pressedtrue{background-color: Red;}
 button.VisibleTrue {display:inline-block;}
 button.VisibleFalse {display:none;}
