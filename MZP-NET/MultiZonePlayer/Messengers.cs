@@ -207,7 +207,8 @@ namespace MultiZonePlayer
 						if (entry == null || !entry.AllowUserList.Contains(sender))
 						{
 							replymessage = "Not authorised gtalk sender " + sender;
-							MZPState.Instance.LogEvent(MZPEvent.EventSource.System, replymessage, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
+							Alert.CreateAlert(replymessage, null, false, Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
+							//MZPState.Instance.LogEvent(MZPEvent.EventSource.System, replymessage, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
 							SendMessageToUser(replymessage, sender);
 							return;
 						}

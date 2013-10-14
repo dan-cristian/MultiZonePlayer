@@ -34,12 +34,25 @@ namespace MultiZonePlayer
 		{
 			m_eventHistoryList.Add(reading);
 		}
+		private String GetDateFormat(int ageHours)
+		{
+			String format;
+			if (ageHours <= 24)
+				format = "HH:mm";
+			else
+				if (ageHours <= 48)
+					format = "ddd HH:mm";
+				else
+					format = "dd MMM HH:mm";
+			return format;
+			
+		}
 
 		public void ShowTempHumGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
 			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
+			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
 
 			List<Tuple<int, DateTime,double>> tempValues = m_tempHistoryList.FindAll(x=>x.Item1==zoneId && DateTime.Now.Subtract(x.Item2).TotalHours<=ageHours);
 			if (tempValues.Count > 0)
@@ -102,7 +115,7 @@ namespace MultiZonePlayer
 			chart1.Series.Clear();
 			//chart1.BackColor = System.Drawing.Color.Transparent;
 			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
+			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
 			String color;
 			foreach (ZoneDetails zone in zones)
 			{
@@ -147,7 +160,7 @@ namespace MultiZonePlayer
 		{
 			chart1.Series.Clear();
 			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = "dd MMM HH:mm";
+			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
 			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues, powerValues;
 
 			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 

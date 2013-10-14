@@ -1,6 +1,7 @@
 body {margin:0px;padding:0px;text-align:center}
 table {width: 100%;text-align:left;border-spacing:0px;}
 tr {text-align:left;}
+tr.Header {font-weight:bold;background-color:Lime}
 td {text-align:left;table-layout:auto;padding:0px;border-width:thin;border-style:none;}
 a {text-decoration: none;}
 a.big {font-size:96px;}

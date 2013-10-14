@@ -704,12 +704,22 @@ namespace MultiZonePlayer
                 adapter.targetAllFamilies();
                 adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
                 java.util.Enumeration containers = adapter.getAllDeviceContainers();
-                OneWireContainer element;
+				OneWireContainer element; TemperatureContainer temp;
+				sbyte[] state;
                 while (containers.hasMoreElements())
                 {
                     element = (OneWireContainer)containers.nextElement();
                     MLog.Log(this, "OneWire device found addr=" + element.getAddressAsString()
                         + " name=" + element.getName() + " desc=" + element.getDescription());
+
+					//does not work
+					/*if (element.getName() == "DS18B20")
+					{
+						temp = (TemperatureContainer)element;
+						state = temp.readDevice();
+						temp.setTemperatureResolution(temp.getTemperatureResolutions()[1],state);
+						temp.writeDevice(state);
+					}*/
                 }
                 adapter.endExclusive();
 
@@ -798,7 +808,7 @@ namespace MultiZonePlayer
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
 							if (tempVal != TEMP_DEFAULT)
-								zone.Temperature = tempVal;
+								zone.Temperature = Math.Round(tempVal, 2);
 							else
 								MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
 						}

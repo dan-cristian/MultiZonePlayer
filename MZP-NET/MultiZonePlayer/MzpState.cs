@@ -50,13 +50,7 @@ public class MZPState
 	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
 	private WDIO m_wdio;
 	private OneWire m_oneWire;
-	private List<Alert> m_alertList = new List<Alert>();
-
-	public List<Alert> AlertList
-	{
-		get { return m_alertList; }
-	}
-
+	
 	public OneWire OneWire
 	{
 		get { return m_oneWire; }
@@ -303,7 +297,8 @@ public class MZPState
     public static void RestartComputer(String reason)
     {
         MLog.Log(null, "RESTARTING COMPUTER for reason " + reason);
-        MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "RESTARTING COMPUTER for reason " + reason, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical,null);
+		Alert.CreateAlert("RESTARTING COMPUTER for reason " + reason, null, false, Alert.NotificationFlags.NeedsImmediateUserAck, 1);
+		//MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "RESTARTING COMPUTER for reason " + reason, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical,null);
         Thread.Sleep(3000);
         System.Diagnostics.Process.Start("shutdown.exe", "-r -f -t 0");
     }
@@ -643,7 +638,7 @@ public class MZPState
 
 	public List<Alert> ActiveAlertList
 	{
-		get { return m_alertList.FindAll(x => !x.UserAcknowledged); }
+		get { return Alert.ActiveAlertList; }
 	}
     public void InitRemotes()
     {
@@ -1315,22 +1310,22 @@ public class MZPState
         LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance, zonedetails));
     }
 
-	public void DismissAlert(int alertId)
+	public void CheckAlerts()
 	{
-		Alert alert = m_alertList.Find(x => x.Id == alertId);
-		if (alert != null)
+		if (Alert.ActiveAlertList.Count > 0)
 		{
-			alert.UserAcknowledged = true;
-			alert.AcknowledgeDate = DateTime.Now;
+			List<Alert> alerts = Alert.GetAlertsToSend();
+			foreach (Alert alert in alerts)
+			{
+				SendMessengerMessageToAll(alert.Cause);
+				alert.LastSendOK = DateTime.Now;
+			}
 		}
 	}
 
 	public void TickFast()
 	{
-		if (m_alertList.Count > 0)
-		{
-			//TODO
-		}
+		CheckAlerts();
 	}
 
     public void TickSlow()

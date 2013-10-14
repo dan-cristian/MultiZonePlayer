@@ -273,9 +273,9 @@ namespace MultiZonePlayer
                             if (MZPState.Instance.IsPowerFailure != failure)
                             {
                                 MZPState.Instance.IsPowerFailure = failure;
-
-                                MZPState.Instance.LogEvent(MZPEvent.EventSource.Environment, "Power Failure state is " + failure + " at " + datetime, 
-                                    MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
+								Alert.CreateAlert("Power Failure state is " + failure, null, !failure, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
+                                //MZPState.Instance.LogEvent(MZPEvent.EventSource.Environment, "Power Failure state is " + failure + " at " + datetime, 
+                                //    MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
                             }
 							cmdresult.OutputMessage = "power failure=" + failure;
                             //result = JsonResult(Metadata.ResultEnum.OK, , null);
@@ -355,7 +355,7 @@ namespace MultiZonePlayer
 						case GlobalCommands.dismissalert:
 							int aid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
 							//MZPState.Instance.ZoneEvents.DismissAlert(vals);
-							MZPState.Instance.DismissAlert(aid);
+							Alert.DismissAlert(aid);
 							break;
 
                         default:

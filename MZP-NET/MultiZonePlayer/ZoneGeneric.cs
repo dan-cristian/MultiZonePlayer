@@ -238,8 +238,12 @@ namespace MultiZonePlayer
 					MZPState.Instance.ZoneEvents.AddCamAlert(vals);
                     String camId = vals.GetValue(GlobalParams.oid);
                     string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
-                    MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, 
-						MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
+					if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.IsArmed)
+					{
+						Alert.CreateAlert(message, m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+					}
+					//MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, 
+					//	MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
 					
 					m_zoneDetails.MovementAlert = false;
                    
@@ -263,9 +267,14 @@ namespace MultiZonePlayer
                     DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(GlobalParams.datetime));
                     m_zoneDetails.LastAlarmMovementDateTime = eventDateTime;
 
-                    MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
-                            vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(GlobalParams.status),
-                            MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
+					if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.IsArmed)
+					{
+						Alert.CreateAlert(vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(GlobalParams.status),
+							m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+					}
+                    //MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
+                    //        vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(GlobalParams.status),
+                    //        MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
 
 					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, "",
 						eventDateTime.ToString(IniFile.DATETIME_FULL_FORMAT), "Sensor"+zonestate, m_zoneDetails.ZoneId.ToString(),
@@ -802,8 +811,12 @@ namespace MultiZonePlayer
 				Constants.EVENT_TYPE_CLOSURE);
 			if (lastState.RelayState == ClosureOpenCloseRelay.EnumState.ContactClosed)
 			{
-				MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message, MZPEvent.EventType.Security,
-					MZPEvent.EventImportance.Informative, m_zoneDetails);
+				if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.IsArmed)
+				{
+					Alert.CreateAlert(message, m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+				}
+				//MZPState.Instance.LogEvent(MZPEvent.EventSource.Closure, message, MZPEvent.EventType.Security,
+				//	MZPEvent.EventImportance.Informative, m_zoneDetails);
 			}
 			m_zoneDetails.MovementAlert = false;
 		}

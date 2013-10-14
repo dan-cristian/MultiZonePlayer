@@ -125,8 +125,8 @@ namespace MultiZonePlayer
             {
                 try
                 {
+					Application.DoEvents();
                     Thread.Sleep(IniFile.ZONE_INACTIVITY_CYCLE_DURATION);
-					
                     // FAST TICK
                     RefreshState();
 

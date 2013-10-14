@@ -1197,14 +1197,17 @@ namespace MultiZonePlayer
 
 				if (Temperature > TemperatureMaxAlarm)
 				{
-					MZPState.Instance.AlertList.Add(new Alert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
-						+ ZoneName + ", temp is " + Temperature, this));
+					Alert.CreateAlert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
+						+ ZoneName + ", temp is " + Temperature, this, false,
+						Alert.NotificationFlags.NotifyUserAfterXHours,1);
 				}
-				if (Temperature < TemperatureMinAlarm)
-				{
-					MZPState.Instance.AlertList.Add(new Alert("Min temperature [" + TemperatureMinAlarm + "] exceeded on zone "
-						+ ZoneName + ", temp is " + Temperature, this));
-				}
+				else
+					if (Temperature < TemperatureMinAlarm)
+					{
+						Alert.CreateAlert("Min temperature [" + TemperatureMinAlarm + "] exceeded on zone "
+							+ ZoneName + ", temp is " + Temperature, this, false,
+							Alert.NotificationFlags.NotifyUserAfterXHours, 1);
+					}
 
 				if (m_temperature != m_temperatureLast)
 				{
@@ -2123,28 +2126,181 @@ namespace MultiZonePlayer
 		}
 	}
 	public class Alert
-	{
+	{	
+		[Flags]
+		public enum NotificationFlags
+		{
+			NeedsImmediateUserAck,//int(retryinterval minutes)
+			SystemError,
+			NotifyUserAfterXOccurences,//int(occurence)
+			NotifyUserAfterXSeconds,
+			NotifyUserAfterXMinutes,
+			NotifyUserAfterXHours
+		}
+
+		private static List<Alert> m_alertList = new List<Alert>();
 		private static int m_id = 0;
 		private int id;
-		public DateTime When = DateTime.Now;
-		public String Cause;
-		//public String UserMessage;
+		
+		public String UniqueId;
+		public ZoneDetails Zone;
 		public Boolean UserAcknowledged = false;
+		public DateTime LastSendOK = DateTime.MinValue;
 		public DateTime LastSendAttempt = DateTime.MinValue;
 		public DateTime AcknowledgeDate;
 		public Boolean Archived = false;
-		public ZoneDetails Zone;
+		public List<DateTime> When = new List<DateTime>();
+		public String Cause;
+		public DateTime FirstOccurence, LastOccurence;
+		public int OccurenceCount=0, SendAttemptCount=0;
+		public List<NotificationFlags> Flags;
+		public List<Object> FlagVars;
+		//private Object[] m_flagVars;
 
-		public Alert(String cause, ZoneDetails zone)
+		public Alert(String cause, ZoneDetails zone, String uniqueId, params Object[] flagVars)
 		{
 			Cause = cause;
 			Zone = zone;
 			id = m_id;
 			m_id++;
+			UniqueId = uniqueId;
+			//Flags = flags;
+			//m_flagVars = flagVars;
+			Flags = new List<NotificationFlags>();
+			FlagVars = new List<object>();
+
+			foreach (Object o in flagVars)
+			{
+				if (o.GetType() == typeof(NotificationFlags))
+					Flags.Add((NotificationFlags)o);
+				else
+					FlagVars.Add(o);
+			}
+			Update(cause, zone);
 		}
+
 		public int Id
 		{
 			get { return id; }
+		}
+
+		public void Update(String cause, ZoneDetails zone)
+		{
+			When.Add(DateTime.Now);
+			FirstOccurence = When[0];
+			LastOccurence = When[When.Count-1];
+			OccurenceCount = When.Count;
+			UserAcknowledged = false;
+		}
+
+		public static Alert CreateAlert(String cause, ZoneDetails zone, Boolean dismissPrevAlert, params Object[] flagVars)
+		{
+			var callingFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+			String uniqueId = "Native-" + callingFrame.GetNativeOffset() + "-IL-" + callingFrame.GetILOffset();
+			Alert alert = m_alertList.Find(x => x.UniqueId == uniqueId && !x.Archived);
+			if (dismissPrevAlert && alert != null)
+			{
+				alert.UserAcknowledged = true;
+				alert.Archived = true;
+				alert.AcknowledgeDate = DateTime.Now;
+				alert.Cause += "AUTO DISMISSED";
+			}
+			else
+			{
+				if (alert == null)
+				{
+					alert = new Alert(cause, zone, uniqueId, flagVars);
+					m_alertList.Add(alert);
+				}
+				else
+				{
+					alert.Update(cause, zone);
+				}
+			}
+			return alert;
+		}
+
+		public static List<Alert> AlertList
+		{
+			get { return m_alertList; }
+		}
+		public static List<Alert> ActiveAlertList
+		{
+			get { return m_alertList.FindAll(x => !x.UserAcknowledged && !x.Archived); }
+		}
+
+		public static void DismissAlert(int alertId)
+		{
+			Alert alert = m_alertList.Find(x => x.Id == alertId);
+			if (alert != null)
+			{
+				alert.UserAcknowledged = true;
+				alert.AcknowledgeDate = DateTime.Now;
+				alert.Archived = true;
+			}
+		}
+
+		private static int GetEnumFlagIndex(Enum input)
+		{
+			int i = 0;
+			foreach (Enum value in Enum.GetValues(input.GetType()))
+			{
+				if (input.HasFlag(value))
+					return i;
+				i++;
+			}
+			return -1;
+		}
+
+		public static List<Alert> GetAlertsToSend()
+		{
+			List<Alert> alerts = new List<Alert>();
+			int flagVar;
+			foreach (Alert alert in ActiveAlertList)
+			{
+				for (int i = 0; i < alert.Flags.Count; i++)
+				{
+					switch(alert.Flags[i])
+					{
+						case NotificationFlags.NotifyUserAfterXSeconds:
+							{
+								flagVar = Convert.ToInt16(alert.FlagVars[i]);
+								if (DateTime.Now.Subtract(alert.FirstOccurence).TotalSeconds >= flagVar && alert.LastSendOK == DateTime.MinValue)
+									alerts.Add(alert);
+								break;
+							}
+						case NotificationFlags.NotifyUserAfterXMinutes:
+						{
+							flagVar = Convert.ToInt16(alert.FlagVars[i]);
+							if (DateTime.Now.Subtract(alert.FirstOccurence).TotalMinutes >= flagVar && alert.LastSendOK == DateTime.MinValue)
+								alerts.Add(alert);
+							break;
+						}
+						case NotificationFlags.NotifyUserAfterXHours:
+						{
+							flagVar = Convert.ToInt16(alert.FlagVars[i]);
+							if (DateTime.Now.Subtract(alert.FirstOccurence).TotalHours >= flagVar && alert.LastSendOK== DateTime.MinValue)
+								alerts.Add(alert);
+							break;
+						}
+						case  NotificationFlags.NeedsImmediateUserAck:
+						{
+							flagVar = Convert.ToInt16(alert.FlagVars[i]);
+							if (DateTime.Now.Subtract(alert.LastSendOK).TotalMinutes >= flagVar && alert.LastSendOK == DateTime.MinValue)
+								alerts.Add(alert);
+							break;
+						}
+						case NotificationFlags.NotifyUserAfterXOccurences:
+						{
+							flagVar = Convert.ToInt16(alert.FlagVars[i]);
+							if (alert.OccurenceCount >= flagVar && alert.LastSendOK == DateTime.MinValue)
+								alerts.Add(alert);
+							break;
+						}
+					}
+				}
+			}
+			return alerts;
 		}
 	}
 
