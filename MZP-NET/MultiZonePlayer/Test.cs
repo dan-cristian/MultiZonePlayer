@@ -20,6 +20,7 @@ using Microsoft.Win32;
 
 using System.Management; // need to add System.Management to your project references.
 
+using InTheHand.Net.Sockets;
 
 using System.Text.RegularExpressions;
 using Vlc.DotNet.Core;
@@ -263,8 +264,9 @@ namespace MultiZonePlayer
       private void button6_Click(object sender, EventArgs e)
       {
 		  
-      }
 
+      }
+	  
       private void button7_Click(object sender, EventArgs e)
       {
           int vol = getvol() + 1;

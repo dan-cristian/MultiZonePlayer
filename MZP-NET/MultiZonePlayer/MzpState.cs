@@ -10,6 +10,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.ComponentModel;
 
+
 namespace MultiZonePlayer
 {
 public class MZPState
@@ -1333,6 +1334,24 @@ public class MZPState
 		}
 	}
 
+	public void CheckBluetooth()
+	{
+		try
+		{
+			foreach (Bluetooth.Device dev in Bluetooth.DiscoverDevices())
+			{
+				MLog.Log(this, "BLUETOOTH DEVICE FOUND: " + dev.DeviceName + " Seen:" + dev.LastSeen
+					+ " Used:" + dev.LastUsed + " Addr:" + dev.Nap + " Conn:" + dev.Connected + " Rememb:"+dev.Remembered
+					+ " Auth:"+dev.Authenticated);
+				
+			}
+		}
+		catch (Exception ex)
+		{
+			MLog.Log(this, "Bluetooth error " + ex.Message);
+		}
+	}
+
 	public void TickFast()
 	{
 		CheckAlerts();
@@ -1353,6 +1372,7 @@ public class MZPState
         m_powerControlDenkovi.timerPowerSaving_Tick();
 		m_powerControlNumato.timerPowerSaving_Tick();
 		m_oneWire.Tick();
+		CheckBluetooth();
 
 		if (MediaLibrary.AllAudioFiles != null)
 			MediaLibrary.AllAudioFiles.SaveUpdatedItems();

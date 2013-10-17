@@ -7,6 +7,8 @@ using System.Threading;
 using System.Net;
 using System.Runtime.InteropServices;
 
+using InTheHand.Net.Sockets;
+
 using com.dalsemi.onewire;
 using com.dalsemi.onewire.adapter;
 using com.dalsemi.onewire.container;
@@ -1369,5 +1371,52 @@ namespace MultiZonePlayer
 			return state[state.Length - 1 - pinIndex] == '1';
 		}
 	}
+
+	public class Bluetooth
+	{
+		public class Device
+		{
+			public string DeviceName { get; set; }
+			public bool Authenticated { get; set; }
+			public bool Connected { get; set; }
+			public ushort Nap { get; set; }
+			public uint Sap { get; set; }
+			public DateTime LastSeen { get; set; }
+			public DateTime LastUsed { get; set; }
+			public bool Remembered { get; set; }
+
+			public Device(BluetoothDeviceInfo device_info)
+			{
+				this.Authenticated = device_info.Authenticated;
+				this.Connected = device_info.Connected;
+				this.DeviceName = device_info.DeviceName;
+				this.LastSeen = device_info.LastSeen;
+				this.LastUsed = device_info.LastUsed;
+				this.Nap = device_info.DeviceAddress.Nap;
+				this.Sap = device_info.DeviceAddress.Sap;
+				this.Remembered = device_info.Remembered;
+			}
+
+			public override string ToString()
+			{
+				return this.DeviceName;
+			}
+		}
+
+		public static List<Device> DiscoverDevices()
+		{
+			BluetoothClient bc = new BluetoothClient();
+			List<Device> devices = new List<Device>();
+			BluetoothDeviceInfo[] array = bc.DiscoverDevices(10, true, false, false);//bc.DiscoverDevices();
+			int count = array.Length;
+			for (int i = 0; i < count; i++)
+			{
+				Device device = new Device(array[i]);
+				devices.Add(device);
+			}
+			return devices;
+		}
+	}
+
 }
 

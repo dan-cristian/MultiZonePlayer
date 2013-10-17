@@ -134,6 +134,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>ThirdParty\HE853.dll</HintPath>
     </Reference>
+    <Reference Include="InTheHand.Net.Personal">
+      <HintPath>ThirdParty\32feet\InTheHand.Net.Personal.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.JScript" />
     <Reference Include="OneWireAPI.NET">
       <HintPath>ThirdParty\1wire\OneWireAPI.NET.dll</HintPath>
