@@ -976,13 +976,15 @@ public class MZPState
         return false;
     }
 
-    public void SendMessengerMessageToAll(String message)
+    public Boolean SendMessengerMessageToAll(String message)
     {
-		EmailNotifier.SendEmail(message);
+		Boolean result = false;
+		result = EmailNotifier.SendEmail(message);
         foreach (IMessenger m in m_messengerList)
         {
-            m.SendMessageToTarget(message);
+            result = m.SendMessageToTarget(message) || result;
         }
+		return result;
     }
 
     public void MessengerMakeBuzz()
@@ -1317,8 +1319,16 @@ public class MZPState
 			List<Alert> alerts = Alert.GetAlertsToSend();
 			foreach (Alert alert in alerts)
 			{
-				SendMessengerMessageToAll(alert.Cause);
-				alert.LastSendOK = DateTime.Now;
+				if (SendMessengerMessageToAll(alert.InitialCause))
+				{
+					alert.LastSendOK = DateTime.Now;
+					alert.SendOKCount++;
+				}
+				else
+				{
+					alert.LastSendAttempt = DateTime.Now;
+					alert.SendAttemptCount++;
+				}
 			}
 		}
 	}

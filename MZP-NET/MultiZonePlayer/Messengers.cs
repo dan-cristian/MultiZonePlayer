@@ -13,7 +13,7 @@ namespace MultiZonePlayer
 {
     public interface IMessenger
     {
-        void SendMessageToTarget(String message);
+        Boolean SendMessageToTarget(String message);
         void ReceiveMessage(String message, String sender);
         Boolean TestConnection();
         void Reinitialise();
@@ -152,8 +152,9 @@ namespace MultiZonePlayer
         }*/
 
 
-        public void SendMessageToTarget(String message)
+        public Boolean SendMessageToTarget(String message)
         {
+			Boolean result = false ;
             if (!objXmpp.Authenticated)
             {
                 MLog.Log(this, "Messenger not authenticated, try relogin");
@@ -164,11 +165,15 @@ namespace MultiZonePlayer
 			for (int i = 0; i < targets.Length; i++)
 			{
 				if (objXmpp != null && objXmpp.Authenticated)
-					objXmpp.Send(new agsXMPP.protocol.client.Message(new agsXMPP.Jid(targets[i]), 
+				{
+					objXmpp.Send(new agsXMPP.protocol.client.Message(new agsXMPP.Jid(targets[i]),
 						agsXMPP.protocol.client.MessageType.chat, message));
+					result = true;
+				}
 				else
 					MLog.Log(this, "Messenger not authenticated yet, message dropped");
 			}
+			return result;
         }
 
 		public void SendMessageToUser(String message, string user)
@@ -311,31 +316,42 @@ namespace MultiZonePlayer
 
 	class EmailNotifier
 	{
-		public static void SendEmail(string messageText)
+		public static Boolean SendEmail(string messageText)
 		{
-			var fromAddress = new MailAddress(IniFile.PARAM_GTALK_USERNAME[1], "Antonio Gaudi 33");
-			var toAddress = new MailAddress(IniFile.PARAM_GTALK_TARGETUSER[1].Split(';')[0], "Dan Cristian");
-			string fromPassword = IniFile.PARAM_GTALK_USERPASS[1];
-			string subject = messageText;
-			string body = MZPState.Instance.GetZonesStatus();
+			Boolean result = false;
+			try
+			{
 
-			var smtp = new SmtpClient
-			{
-				Host = "smtp.gmail.com",
-				Port = 587,
-				EnableSsl = true,
-				DeliveryMethod = SmtpDeliveryMethod.Network,
-				UseDefaultCredentials = false,
-				Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-			};
-			using (var message = new MailMessage(fromAddress, toAddress)
-			{
-				Subject = subject,
-				Body = body
-			})
-			{
-				smtp.Send(message);
+				var fromAddress = new MailAddress(IniFile.PARAM_GTALK_USERNAME[1], "Antonio Gaudi 33");
+				var toAddress = new MailAddress(IniFile.PARAM_GTALK_TARGETUSER[1].Split(';')[0], "Dan Cristian");
+				string fromPassword = IniFile.PARAM_GTALK_USERPASS[1];
+				string subject = messageText;
+				string body = MZPState.Instance.GetZonesStatus();
+
+				var smtp = new SmtpClient
+				{
+					Host = "smtp.gmail.com",
+					Port = 587,
+					EnableSsl = true,
+					DeliveryMethod = SmtpDeliveryMethod.Network,
+					UseDefaultCredentials = false,
+					Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+				};
+				using (var message = new MailMessage(fromAddress, toAddress)
+				{
+					Subject = subject,
+					Body = body
+				})
+				{
+					smtp.Send(message);
+					result = true;
+				}
 			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Error sending email");
+			}
+			return result;
 		}
 	}
 }

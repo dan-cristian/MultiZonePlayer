@@ -51,9 +51,10 @@ namespace MultiZonePlayer
 		public void ShowTempHumGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
+			chart1.Titles.Clear();
 			this.chart1.Legends[0].Docking = Docking.Bottom;
 			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
-
+			chart1.Titles.Add("Temperature & Humidity @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT));
 			List<Tuple<int, DateTime,double>> tempValues = m_tempHistoryList.FindAll(x=>x.Item1==zoneId && DateTime.Now.Subtract(x.Item2).TotalHours<=ageHours);
 			if (tempValues.Count > 0)
 			{
@@ -113,9 +114,11 @@ namespace MultiZonePlayer
 		{
 			double lastMinY=double.MaxValue, minY=double.MaxValue;
 			chart1.Series.Clear();
+			chart1.Titles.Clear();
 			//chart1.BackColor = System.Drawing.Color.Transparent;
 			this.chart1.Legends[0].Docking = Docking.Bottom;
 			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
+			chart1.Titles.Add("Temperature @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT));
 			String color;
 			foreach (ZoneDetails zone in zones)
 			{
@@ -159,8 +162,10 @@ namespace MultiZonePlayer
 		public void ShowEventGraph(int zoneId, int ageHours)
 		{
 			chart1.Series.Clear();
+			chart1.Titles.Clear();
 			this.chart1.Legends[0].Docking = Docking.Bottom;
 			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
+			chart1.Titles.Add("Events @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT));
 			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues, powerValues;
 
 			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 

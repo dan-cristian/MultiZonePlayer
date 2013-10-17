@@ -12,7 +12,7 @@
 <%for;i;0;++;#S.ActiveAlertList.Count#;%>
 <tr><td><button class="Small" onclick="window.open('?command=dismissalert&id=#S.ActiveAlertList.?,%i.Id#','_self')">Delete</button></td>
 <td>#S.ActiveAlertList.?,%i.FirstOccurence#</td><td>#S.ActiveAlertList.?,%i.LastOccurence#</td>
-<td>#S.ActiveAlertList.?,%i.OccurenceCount#</td><td>#S.ActiveAlertList.?,%i.Zone.ZoneName#</td><td>#S.ActiveAlertList.?,%i.Cause#</td>
+<td>#S.ActiveAlertList.?,%i.OccurenceCount#</td><td>#S.ActiveAlertList.?,%i.Zone.ZoneName#</td><td>#S.ActiveAlertList.?,%i.InitialCause#; #S.ActiveAlertList.?,%i.LastCause#</td>
 </tr>
 <%%>
 </table>

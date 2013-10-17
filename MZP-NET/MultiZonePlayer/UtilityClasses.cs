@@ -2150,16 +2150,16 @@ namespace MultiZonePlayer
 		public DateTime AcknowledgeDate;
 		public Boolean Archived = false;
 		public List<DateTime> When = new List<DateTime>();
-		public String Cause;
+		public String InitialCause=null, LastCause=null;
 		public DateTime FirstOccurence, LastOccurence;
-		public int OccurenceCount=0, SendAttemptCount=0;
+		public int OccurenceCount=0, SendAttemptCount=0, SendOKCount=0;
 		public List<NotificationFlags> Flags;
 		public List<Object> FlagVars;
 		//private Object[] m_flagVars;
 
 		public Alert(String cause, ZoneDetails zone, String uniqueId, params Object[] flagVars)
 		{
-			Cause = cause;
+			
 			Zone = zone;
 			id = m_id;
 			m_id++;
@@ -2186,6 +2186,13 @@ namespace MultiZonePlayer
 
 		public void Update(String cause, ZoneDetails zone)
 		{
+			if (InitialCause == null)
+			{
+				InitialCause = cause;
+				LastCause = "";
+			}
+			else
+				LastCause = cause;
 			When.Add(DateTime.Now);
 			FirstOccurence = When[0];
 			LastOccurence = When[When.Count-1];
@@ -2203,7 +2210,7 @@ namespace MultiZonePlayer
 				alert.UserAcknowledged = true;
 				alert.Archived = true;
 				alert.AcknowledgeDate = DateTime.Now;
-				alert.Cause += "AUTO DISMISSED";
+				alert.InitialCause += "AUTO DISMISSED";
 			}
 			else
 			{
@@ -2265,35 +2272,35 @@ namespace MultiZonePlayer
 						case NotificationFlags.NotifyUserAfterXSeconds:
 							{
 								flagVar = Convert.ToInt16(alert.FlagVars[i]);
-								if (DateTime.Now.Subtract(alert.FirstOccurence).TotalSeconds >= flagVar && alert.LastSendOK == DateTime.MinValue)
+								if (alert.LastOccurence.Subtract(alert.FirstOccurence).TotalSeconds >= flagVar && alert.LastSendOK == DateTime.MinValue)
 									alerts.Add(alert);
 								break;
 							}
 						case NotificationFlags.NotifyUserAfterXMinutes:
 						{
 							flagVar = Convert.ToInt16(alert.FlagVars[i]);
-							if (DateTime.Now.Subtract(alert.FirstOccurence).TotalMinutes >= flagVar && alert.LastSendOK == DateTime.MinValue)
+							if (alert.LastOccurence.Subtract(alert.FirstOccurence).TotalMinutes >= flagVar && alert.SendOKCount == 0)
 								alerts.Add(alert);
 							break;
 						}
 						case NotificationFlags.NotifyUserAfterXHours:
 						{
 							flagVar = Convert.ToInt16(alert.FlagVars[i]);
-							if (DateTime.Now.Subtract(alert.FirstOccurence).TotalHours >= flagVar && alert.LastSendOK== DateTime.MinValue)
+							if (alert.LastOccurence.Subtract(alert.FirstOccurence).TotalHours >= flagVar && alert.SendOKCount == 0)
 								alerts.Add(alert);
 							break;
 						}
 						case  NotificationFlags.NeedsImmediateUserAck:
 						{
 							flagVar = Convert.ToInt16(alert.FlagVars[i]);
-							if (DateTime.Now.Subtract(alert.LastSendOK).TotalMinutes >= flagVar && alert.LastSendOK == DateTime.MinValue)
+							if (DateTime.Now.Subtract(alert.LastSendOK).TotalMinutes >= flagVar && alert.SendOKCount== 0)
 								alerts.Add(alert);
 							break;
 						}
 						case NotificationFlags.NotifyUserAfterXOccurences:
 						{
 							flagVar = Convert.ToInt16(alert.FlagVars[i]);
-							if (alert.OccurenceCount >= flagVar && alert.LastSendOK == DateTime.MinValue)
+							if (alert.OccurenceCount >= flagVar && alert.SendOKCount == 0)
 								alerts.Add(alert);
 							break;
 						}

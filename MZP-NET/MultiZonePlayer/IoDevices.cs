@@ -92,9 +92,10 @@ namespace MultiZonePlayer
 			MLog.Log(this, "ReceiveMessage from " + sender + " = " + message);
 		}
 
-		public void SendMessageToTarget(String message)
+		public Boolean SendMessageToTarget(String message)
 		{
 			MLog.Log(this, "ERROR send message not implemented in modem");
+			return false;
 		}
 
 		public override bool TestConnection()
@@ -313,9 +314,10 @@ namespace MultiZonePlayer
 			//MLog.Log(this, "SMS from " +sender + " = " + message);
 		}
 
-		public void SendMessageToTarget(String message)
+		public Boolean SendMessageToTarget(String message)
 		{
 			MLog.Log(this, "RFX comm does not implement sendmessage");
+			return false;
 		}
 
 		public override bool TestConnection()
@@ -659,9 +661,10 @@ namespace MultiZonePlayer
 		}
 
 		
-		public void SendMessageToTarget(string message)
+		public Boolean SendMessageToTarget(string message)
 		{
-			throw new NotImplementedException();
+			MLog.Log(this, "Error not implemented");
+			return false;
 		}
 
 		public void ReceiveMessage(string message, string sender)

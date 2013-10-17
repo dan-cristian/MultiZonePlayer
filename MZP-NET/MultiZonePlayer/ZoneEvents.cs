@@ -186,7 +186,14 @@ namespace MultiZonePlayer
 									MZPState.Instance.SystemAlarm.IsArmed = false;
 									break;
 							}*/
-							Alert.CreateAlert(action + " AreaEvent " + areastate.ToString() + " is " + state, null, false, Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
+							switch (areastate)
+							{
+								case Alarm.EnumAreaState.alarm:
+								case Alarm.EnumAreaState.sirenon:
+									Alert.CreateAlert(action + " AreaEvent " + areastate.ToString() + " is " + state, null, false, Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
+									break;
+							}
+							
                             //MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " AreaEvent " + areastate.ToString() + " is " + state, 
                             //    MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, null);
                             break;
