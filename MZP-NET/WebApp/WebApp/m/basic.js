@@ -1,4 +1,5 @@
 function refresh(interval) {
+	window.scrollTo(0, 1);
 	setTimeout(function () { reload() }, interval);
 }
 function refresh(interval, url) {

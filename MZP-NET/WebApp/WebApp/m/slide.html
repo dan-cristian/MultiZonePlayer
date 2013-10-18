@@ -3,6 +3,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8;" />
     <meta name="robots" content="index, follow, noodp" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>
       Slideshow
     </title>
@@ -89,7 +90,6 @@
 
 		function loadPicture() {
 			//alert("loading");
-			$('#picturedetails').load('snip-picturedetails.html?' + 'r=' + Math.random());
 			if (Math.ceil(refreshPictureCount / 2) == refreshPictureCount / 2) {
 				$('#picture').hide();
 				$('#picture').load('snip-picture.html?' + 'r=' + Math.random());
@@ -112,6 +112,7 @@
 				}, 3000);
 
 			}
+			$('#picturedetails').load('snip-picturedetails.html?' + 'r=' + Math.random());
 			refreshPictureCount++;
 		}
 		
