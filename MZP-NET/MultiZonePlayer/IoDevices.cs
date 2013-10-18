@@ -7,7 +7,9 @@ using System.Threading;
 using System.Net;
 using System.Runtime.InteropServices;
 
+using InTheHand.Net;
 using InTheHand.Net.Sockets;
+using InTheHand.Net.Bluetooth;
 
 using com.dalsemi.onewire;
 using com.dalsemi.onewire.adapter;
@@ -982,14 +984,13 @@ namespace MultiZonePlayer
 					ValueList val = new ValueList(GlobalParams.command, GlobalCommands.powerevent.ToString(), CommandSources.system);
 					val.Add(GlobalParams.action, failure.ToString());
 					val.Add(GlobalParams.datetime, DateTime.Now.ToString());
-					ValueList retval;
 					CommandResult retcmd = API.DoCommandFromWeb(val);//, out retval);
 					//Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
 				}
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, this, "Unable to read status");
+				MLog.Log(this, "Unable to read UPS status" + ex.Message);
 			}
 		}
 	}
@@ -1379,11 +1380,13 @@ namespace MultiZonePlayer
 			public string DeviceName { get; set; }
 			public bool Authenticated { get; set; }
 			public bool Connected { get; set; }
+			public BluetoothAddress Address { get; set; }
 			public ushort Nap { get; set; }
 			public uint Sap { get; set; }
 			public DateTime LastSeen { get; set; }
 			public DateTime LastUsed { get; set; }
 			public bool Remembered { get; set; }
+			public BluetoothDeviceInfo DevInfo { get; set; }
 
 			public Device(BluetoothDeviceInfo device_info)
 			{
@@ -1392,14 +1395,17 @@ namespace MultiZonePlayer
 				this.DeviceName = device_info.DeviceName;
 				this.LastSeen = device_info.LastSeen;
 				this.LastUsed = device_info.LastUsed;
+				this.Address = device_info.DeviceAddress;
 				this.Nap = device_info.DeviceAddress.Nap;
 				this.Sap = device_info.DeviceAddress.Sap;
 				this.Remembered = device_info.Remembered;
+				this.DevInfo = device_info;
 			}
 
 			public override string ToString()
 			{
-				return this.DeviceName;
+				return DeviceName + " Seen:" + LastSeen	+ " Used:" + LastUsed + " Addr:" + Address 
+					+ " Conn:" + Connected + " Rememb:"+Remembered + " Auth:"+ Authenticated;
 			}
 		}
 
@@ -1407,14 +1413,53 @@ namespace MultiZonePlayer
 		{
 			BluetoothClient bc = new BluetoothClient();
 			List<Device> devices = new List<Device>();
-			BluetoothDeviceInfo[] array = bc.DiscoverDevices(10, true, false, false);//bc.DiscoverDevices();
+			
+			BluetoothDeviceInfo[] array = bc.DiscoverDevices(10, true, true, true);//bc.DiscoverDevices();
 			int count = array.Length;
 			for (int i = 0; i < count; i++)
 			{
 				Device device = new Device(array[i]);
-				devices.Add(device);
+				if (CanConnect(device))
+				{
+					//MLog.Log(null, "Active BT device detected " + device.ToString());
+					devices.Add(device);
+				}
 			}
 			return devices;
+		}
+
+		public static Boolean CanConnect(Device device)
+		{
+			//BluetoothClient bc = new BluetoothClient();
+			//BluetoothEndPoint be;
+			//Guid service = BluetoothService.SdpProtocol;
+
+			bool inRange;
+			Guid fakeUuid = new Guid("{F13F471D-47CB-41d6-9609-BAD0690BF891}"); // A specially created value, so no matches.
+			try 
+			{
+				ServiceRecord[] records = device.DevInfo.GetServiceRecords(fakeUuid);
+				//Debug.Assert(records.Length == 0, "Why are we getting any records?? len: " + records.Length);
+				inRange = true;
+			} 
+			catch (Exception) {
+			   inRange = false;
+			}
+			return inRange;
+			/*
+			try
+			{
+				be = new BluetoothEndPoint(device.Address, service);
+				bc.Close();
+				bc.Connect(be);
+				bc.Close();
+				return true;
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(null, "Could not connect to BT device " + device.ToString() + " ERROR="+ex.Message);
+				return false;
+			}*/
 		}
 	}
 

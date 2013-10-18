@@ -48,7 +48,7 @@ public class MZPState
 	private List<MacroEntry> m_macroList;
 	private List<GenericUPS> m_upsList;
 	private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
-	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue;
+	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 	private WDIO m_wdio;
 	private OneWire m_oneWire;
 	
@@ -1336,13 +1336,15 @@ public class MZPState
 
 	public void CheckBluetooth()
 	{
+		if (DateTime.Now.Subtract(m_lastBTCheck).TotalMinutes < 1)
+			return;
+
+		m_lastBTCheck = DateTime.Now;
 		try
 		{
 			foreach (Bluetooth.Device dev in Bluetooth.DiscoverDevices())
 			{
-				MLog.Log(this, "BLUETOOTH DEVICE FOUND: " + dev.DeviceName + " Seen:" + dev.LastSeen
-					+ " Used:" + dev.LastUsed + " Addr:" + dev.Nap + " Conn:" + dev.Connected + " Rememb:"+dev.Remembered
-					+ " Auth:"+dev.Authenticated);
+				MLog.Log(this, "BLUETOOTH DEVICE FOUND: " + dev.ToString());
 				
 			}
 		}
