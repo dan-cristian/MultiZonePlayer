@@ -1,0 +1,28 @@
+﻿<!doctype html>
+<html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="robots" content="index, follow, noodp" />
+<title>Users</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body style="text-align:left">
+<table style="border-width:1px;border-color:Black;border-style:inset">
+<tr class="Header"><td>NearbyUsers</td><td>User</td></tr>
+<%for;i;0;++;#S.UserIsNearList.Count#;%>
+<tr><td><button class="Small" onclick="window.open('?command=nul&id=#S.UserIsNearList.?,%i.Id#','_self')">?</button></td>
+<td>#S.UserIsNearList.?,%i.Name# seen since #S.UserIsNearList.?,%i.NearbyPresentSince#</td>
+</tr>
+<%%>
+<tr><td>&nbsp</td></tr>
+<tr class="Header"><td>PresentUsers</td><td>User</td></tr>
+<%for;i;0;++;#S.UserPresenceList.Count#;%>
+<tr><td><button class="Small" onclick="window.open('?command=nul&id=#S.UserPresenceList.?,%i.User.Id#','_self')">?</button></td>
+<td>#S.UserPresenceList.?,%i.User.Name#, last seen at #S.UserPresenceList.?,%i.LastBTActiveDate#, contact lost count=#S.UserPresenceList.?,%i.BTLostContactCount#</td>
+</tr>
+<%%>
+</table>
+<br />
+<button onclick="window.open('start.html', '_self')">Back</button>
+</body>
+</html>

@@ -10,9 +10,9 @@ namespace MultiZonePlayer
     public class ZoneGeneric : IPlayEvent
     {
 
-        private Users m_zoneUser = null;
+        private User m_zoneUser = null;
 
-        public Users ZoneUser
+        public User ZoneUser
         {
             get { return m_zoneUser; }
             set { m_zoneUser = value; }
@@ -70,7 +70,7 @@ namespace MultiZonePlayer
 			m_clonedZones = new List<ZoneDetails>();
 
             //default user - all
-            m_zoneUser = new Users("0","all","000");//SystemState.iniUserList["000"] as Users;
+            m_zoneUser = new User(0,"all","000");//SystemState.iniUserList["000"] as User;
             LoadZoneIni();
         }
 
@@ -722,7 +722,7 @@ namespace MultiZonePlayer
             m_clonedZones.Remove(zone);
         }
 
-        public Users GetUser()
+        public User GetUser()
         {
             return m_zoneUser;
         }

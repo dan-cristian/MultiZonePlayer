@@ -1407,6 +1407,17 @@ namespace MultiZonePlayer
 				return DeviceName + " Seen:" + LastSeen	+ " Used:" + LastUsed + " Addr:" + Address 
 					+ " Conn:" + Connected + " Rememb:"+Remembered + " Auth:"+ Authenticated;
 			}
+			public override int GetHashCode() {
+				return this.Address.GetHashCode();
+			}
+			public override bool Equals(object obj) {
+				if (!(obj is Bluetooth.Device))
+					throw new ArgumentException("obj is not an Bluetooth.Device");
+				var dev = obj as Bluetooth.Device;
+				if (dev == null)
+					return false;
+				return this.Address.Equals(dev.Address);
+			}
 		}
 
 		public static List<Device> DiscoverDevices()

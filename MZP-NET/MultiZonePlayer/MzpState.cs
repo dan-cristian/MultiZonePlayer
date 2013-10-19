@@ -19,7 +19,7 @@ public class MZPState
     private ArrayList m_systemInputDeviceList = null;
     private Hashtable m_systemInputDeviceNames = null;
     public String powerControlStatusCommand;
-    public Hashtable iniUserList = new Hashtable();
+    //public Hashtable iniUserList = new Hashtable();
     private List<ControlDevice> m_iniControlList = new List<ControlDevice>();
     public List<Playlist> m_playlist = new List<Playlist>();
     public Hashtable zoneDefaultInputs;
@@ -51,7 +51,8 @@ public class MZPState
 	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 	private WDIO m_wdio;
 	private OneWire m_oneWire;
-	
+	private List<Bluetooth.Device> m_lastBTDeviceList = new List<Bluetooth.Device>();
+
 	public OneWire OneWire
 	{
 		get { return m_oneWire; }
@@ -90,11 +91,11 @@ public class MZPState
         set { m_isPowerFailure = value; }
     }
 
-	public WDIO Gpio
-	{
+	public WDIO Gpio{
 		get { return m_wdio; }
 	}
 
+	
     public MZPState()
     {
         m_sysState = this;
@@ -114,13 +115,13 @@ public class MZPState
         MLog.Log(this, "Loading zones from ini");
         m_zoneList = new List<ZoneDetails>();
         MultiZonePlayer.ZoneDetails.LoadFromIni(ref m_zoneList);
-
-        m_moodMusicList = new List<MoodMusic>();
+		User.LoadFromIni();
+		m_moodMusicList = new List<MoodMusic>();
         MoodMusic.LoadFromIni(ref m_moodMusicList);
 
         LoadIniParams();
         LoadIniSections();
-        LoadIniUsers();
+        
 
 		LoadSystemAndUserControls();
                 
@@ -390,6 +391,17 @@ public class MZPState
     {
         get { return m_zoneEvents; }
     }
+
+	
+	public List<User> UserList {
+		get { return MultiZonePlayer.User.UserList; }
+	}
+	public List<UserPresence> UserPresenceList{
+		get { return MultiZonePlayer.UserPresence.PresenceList; }
+	}
+	public List<User> UserIsNearList {
+		get { return MultiZonePlayer.UserPresence.UserIsNearList; }
+	}
 
     public Alarm SystemAlarm
     {
@@ -679,25 +691,7 @@ public class MZPState
         }
     }
 
-    private void LoadIniUsers()
-    {
-        String id, name, code;
-        bool loop = true;
-        int r = 0;
-
-        while (loop)
-        {
-            id = IniFile.IniReadValue(IniFile.INI_SECTION_USERS + r.ToString(), "UserId");
-            name = IniFile.IniReadValue(IniFile.INI_SECTION_USERS + r.ToString(), "UserName");
-            code = IniFile.IniReadValue(IniFile.INI_SECTION_USERS + r.ToString(), "UserCode");
-            if (id != "")
-            {
-                iniUserList.Add(code, new Users(id, name, code));
-            }
-            else loop = false;
-            r++;
-        }
-    }
+    
 
     private void LoadIniSections()
     {
@@ -1339,17 +1333,35 @@ public class MZPState
 		if (DateTime.Now.Subtract(m_lastBTCheck).TotalMinutes < 1)
 			return;
 
+		User user;
+		List<Bluetooth.Device> currentDeviceList, newDevices, leftDevices, existingDevices;
 		m_lastBTCheck = DateTime.Now;
-		try
-		{
-			foreach (Bluetooth.Device dev in Bluetooth.DiscoverDevices())
-			{
-				MLog.Log(this, "BLUETOOTH DEVICE FOUND: " + dev.ToString());
-				
+		try	{
+			currentDeviceList = Bluetooth.DiscoverDevices();
+			newDevices = currentDeviceList.Except(m_lastBTDeviceList).ToList();
+			leftDevices = m_lastBTDeviceList.Except(currentDeviceList).ToList();
+			existingDevices = m_lastBTDeviceList.Intersect(currentDeviceList).ToList();
+
+			foreach (Bluetooth.Device dev in newDevices){
+				user = User.GetUser(dev.Address.ToString());
+				if (user != null)
+					UserPresence.AddBTPresence(user);
+				else
+					MLog.Log(this, "Unknown user with Bluetooth device=" + dev.DeviceName + " Addr=" + dev.Address);
 			}
+			foreach (Bluetooth.Device dev in leftDevices) {
+				user = User.GetUser(dev.Address.ToString());
+				if (user != null)
+					UserPresence.RemoveBTPresence(User.GetUser(dev.Address.ToString()));
+			}
+			foreach (Bluetooth.Device dev in existingDevices) {
+				user = User.GetUser(dev.Address.ToString());
+				if (user != null)
+					UserPresence.UpdateBTPresence(User.GetUser(dev.Address.ToString()));
+			}
+			m_lastBTDeviceList = currentDeviceList;
 		}
-		catch (Exception ex)
-		{
+		catch (Exception ex){
 			MLog.Log(this, "Bluetooth error " + ex.Message);
 		}
 	}

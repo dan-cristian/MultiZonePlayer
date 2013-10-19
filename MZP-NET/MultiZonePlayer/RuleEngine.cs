@@ -344,7 +344,7 @@ namespace MultiZonePlayer
 					{
 						//MLog.Log(null, "Warning, Property called with parameters");
 						if (value.GetType().Name == "List`1")
-						{
+						{//WARNING - Order Long class name first - contains is not failproof
 							if (value.ToString().Contains(typeof(MultiZonePlayer.ZoneDetails).ToString()))
 								value = ((List<ZoneDetails>)value)[Convert.ToInt32(parameters[0])];
 							else
@@ -354,6 +354,13 @@ namespace MultiZonePlayer
 									if (value.ToString().Contains(typeof(MultiZonePlayer.Alert).ToString()))
 										value = ((List<Alert>)value)[Convert.ToInt32(parameters[0])];
 									else
+										if (value.ToString().Contains(typeof(MultiZonePlayer.UserPresence).ToString()))
+											value = ((List<UserPresence>)value)[Convert.ToInt32(parameters[0])];
+										else
+											if (value.ToString().Contains(typeof(MultiZonePlayer.User).ToString()))
+												value = ((List<User>)value)[Convert.ToInt32(parameters[0])];
+											else
+											
 									//"System.Collections.Generic.List`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());

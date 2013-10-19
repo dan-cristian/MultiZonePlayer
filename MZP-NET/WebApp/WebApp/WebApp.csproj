@@ -135,6 +135,7 @@
     <Content Include="m\status.html" />
     <Content Include="m\streammp3.html" />
     <Content Include="m\tv.html" />
+    <Content Include="m\users.html" />
     <Content Include="m\utilities.js" />
     <Content Include="m\video.html" />
     <Content Include="m\zone-cam-pict.html" />

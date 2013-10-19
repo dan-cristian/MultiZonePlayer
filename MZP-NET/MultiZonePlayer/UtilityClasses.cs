@@ -1562,18 +1562,126 @@ namespace MultiZonePlayer
     }
 
 
-    public class Users
+
+    public class User
     {
-        public String Id;
+		private static List<User> m_userList = new List<User>();
+		public static List<User> UserList {
+			get { return User.m_userList; }
+		}
+        public int Id;
         public String Name;
         public String Code;
-        public Users(String id, String name, String code)
-        {
+		public String PhoneBTAddress;
+		public String Email;
+		public String MobileNumber;
+		public UserRole Role;
+		public DateTime NearbyPresentSince;
+        
+		public enum UserRole {
+			Owner,
+			Family,
+			Friend,
+			Public
+		}
+
+		public User(){
+		}
+
+		public User(int id, String name, String code) {
             this.Id = id;
             this.Name = name;
             this.Code = code;
         }
+		
+		public static User GetUser(int id){
+			return m_userList.Find(x=>x.Id==id);
+		}
+		public static User GetUser(String BTAddress) {
+			return m_userList.Find(x => x.PhoneBTAddress == BTAddress);
+		}
+		public static void Add(User user){
+			m_userList.Add(user);
+		}
+		public static void LoadFromIni()
+		{
+			Hashtable values = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_USERS);
+            User user;
+
+			try	{
+				foreach (String json in values.Values)	{
+					user = fastJSON.JSON.Instance.ToObject<User>(json);
+					Add(user);
+				}
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(ex, "Error loading User");
+				throw new Exception("Error load User", ex);
+			}
+		}
+
+		public static void SaveToIni()
+		{
+			String json;
+			int r = 0;
+			foreach (User user in m_userList) {
+				json = fastJSON.JSON.Instance.ToJSON(user);
+				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS, r.ToString(), json);
+				r++;
+			}
+		}
     }
+
+	public class UserPresence{
+		private static List<UserPresence> m_presenceList = new List<UserPresence>();
+		public User User;
+		public DateTime LastBTActiveDate;
+		public DateTime LastMessengerActiveDate;
+		public PresenceType Type;
+		public int BTLostContactCount = 0;
+
+		public enum PresenceType {
+			Bluetooth,
+			Messenger,
+			NetworkIP
+		}
+
+		public static List<UserPresence> PresenceList {
+			get { return m_presenceList; }
+		}
+		public static List<User> UserIsNearList {
+			get { return m_presenceList.FindAll(x => x.Type == UserPresence.PresenceType.Bluetooth).Select(x => x.User).ToList(); }
+		}
+		public UserPresence(User user, PresenceType presenceType){
+			User = user;
+			LastBTActiveDate = DateTime.Now;
+			Type = presenceType;
+		}
+		public static void AddBTPresence(User user){
+			UserPresence up = m_presenceList.Find(x => x.User == user);
+			if (up == null) {
+				m_presenceList.Add(new UserPresence(user, PresenceType.Bluetooth));
+				user.NearbyPresentSince = DateTime.Now;
+				MLog.Log(null, "NEW BLUETOOTH DEVICE FOUND: " + user.PhoneBTAddress + " user=" + user.Name);
+			}
+		}
+		public static void RemoveBTPresence(User user) {
+			UserPresence up = m_presenceList.Find(x => x.User == user);
+			up.BTLostContactCount++;
+			if (up.BTLostContactCount > 2) {
+				m_presenceList.Remove(up);
+				user.NearbyPresentSince = DateTime.MaxValue;
+				MLog.Log(null, "BLUETOOTH DEVICE LEFT: " + user.PhoneBTAddress + " user=" + user.Name);
+			}
+			else {
+				MLog.Log(null, "BLUETOOTH lost contact count= "+up.BTLostContactCount +" addr="+ user.PhoneBTAddress + " user=" + user.Name);
+			}
+		}
+		public static void UpdateBTPresence(User user) {
+			m_presenceList.Find(x => x.User == user).LastBTActiveDate = DateTime.Now;
+		}
+	}
 
     public class MoodMusic
     {

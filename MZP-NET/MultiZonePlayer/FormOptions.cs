@@ -348,21 +348,22 @@ namespace MultiZonePlayer
 
                 if (userId != null && userCode != null)
                 {
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserId", userId);
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserName", userName);
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserCode", userCode);
+					User user = User.GetUser(Convert.ToInt16(userId));
+					user.Name = userName;
+					user.Code = userCode;
+                    //IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserId", userId);
+                    //IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserName", userName);
+                    //IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserCode", userCode);
                 }
             }
+			User.SaveToIni();
         }
 
         private void GUILoadUsers()
         {
-            Users usr;
-            IDictionaryEnumerator enumerator = MZPState.Instance.iniUserList.GetEnumerator();
-            while (enumerator.MoveNext())
+            foreach (User user in User.UserList)
             {
-                usr = enumerator.Value as Users;
-                dgvUsers.Rows.Add(usr.Id, usr.Name, usr.Code);
+                dgvUsers.Rows.Add(user.Id, user.Name, user.Code);
             }
         }
 
@@ -372,7 +373,7 @@ namespace MultiZonePlayer
             bool loop;
             int r;
 
-            for (int i = 0; i < MZPState.Instance.iniUserList.Count; i++)
+            for (int i = 0; i < User.UserList.Count; i++)
             {
                 r = 0;
                 loop = true;

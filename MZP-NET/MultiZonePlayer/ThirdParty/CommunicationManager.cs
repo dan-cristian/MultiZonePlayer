@@ -462,7 +462,7 @@ namespace MultiZonePlayer
 				{
 					MLog.Log(this, "DEBUG TARGET");
 				}
-                MLog.Log(ex, "Error open port " + comPort.PortName + " " + ex.Message);
+                MLog.Log(this, "Error open port " + comPort.PortName + " " + ex.Message);
                 return false;
             }
         }

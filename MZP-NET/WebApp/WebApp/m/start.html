@@ -13,6 +13,7 @@
 		onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones,%i.ZoneName#</button>
 	<%%>
 	<hr />
+	<button class="Action<%?;"#S.UserIsNearList.Count#"!="0"%>" onclick="window.open('users.html','_self')">Users [#S.UserIsNearList.Count#]</button>
 	<%for;i;0;++;#S.ZoneTypesAvailable.Count#;%>
 	<button onclick="window.open('zone-type.html?type=#S.ZoneTypesAvailableByIndex,%i#','_self')">#S.ZoneTypesAvailableByIndex,%i#</button>
 	<%%>

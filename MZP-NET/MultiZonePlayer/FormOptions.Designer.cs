@@ -662,7 +662,7 @@
 			this.tabUsers.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
 			this.tabUsers.Size = new System.Drawing.Size(947, 353);
 			this.tabUsers.TabIndex = 3;
-			this.tabUsers.Text = "Users";
+			this.tabUsers.Text = "User";
 			this.tabUsers.UseVisualStyleBackColor = true;
 			// 
 			// dgvUsers
