@@ -2,7 +2,7 @@
 <p>#Zones,23.ZoneName# #Zones,23.Temperature#° #Zones,23.TemperatureAgeAsTimeSpan#</p>
 <p>#Zones,7.ZoneName# #Zones,7.Temperature#° #Zones,7.TemperatureAgeAsTimeSpan#</p>
 <%if;"#S.UserIsNearList.Count#"!="0"%>
-<span style="background-color:Lime;color:Red">Users [#S.UserIsNearList.Count#]</span>
+<span style="background-color:Lime;color:Red">@Home [#S.UserIsNearSummary#]</span>
 <%%>
 <%if;"#S.ActiveAlertList.Count#"!="0"%>
 <span style="background-color:Red;color:Lime">Alerts [#S.ActiveAlertList.Count#]</span>

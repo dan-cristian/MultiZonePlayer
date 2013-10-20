@@ -203,7 +203,10 @@ namespace MultiZonePlayer
 			public static String[] PARAM_UPS_MUSTEK_STATUS_URL = new String[] { "PARAM_UPS_MUSTEK_STATUS_URL", "http://localhost:12349", "Web port for UPS Assistant app - mustek UPS" };
 
 			public static String[] PARAM_TIMESPAN_FORMAT = new String[] { "PARAM_TIMESPAN_LONG_FORMAT", @"d\dh\hm\ms\s", "Long Format to display time intervals" };
-			
+			public static String[] PARAM_ROUTER_HOST = new String[] { "PARAM_ROUTER_HOST", "http://192.168.0.1:88/", "Home router address and port" };
+			public static String[] PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL = new String[] { "PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL", "cgi-bin/luci/;stok=02bfb70c6bed15bd5fffa8d759fe2a0b/admin/network/wireless_status/radio0.network1", "Address to get wireless active clients fro home router" };
+			public static String[] PARAM_ROUTER_USER_NAME = new String[] { "PARAM_ROUTER_USER_NAME", "root", "User name for router" };
+			public static String[] PARAM_ROUTER_USER_PASS = new String[] { "PARAM_ROUTER_USER_PASS", "abcd1234", "router pass" };
 
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
@@ -287,8 +290,9 @@ namespace MultiZonePlayer
 				PARAM_GPIO_CDC_MANUFACTURER_NAME,
 				PARAM_WDIO_MANUFACTURER_NAME,
 				PARAM_WDIO_CHANNEL,
-				PARAM_TIMESPAN_FORMAT
-
+				PARAM_TIMESPAN_FORMAT,
+				PARAM_ROUTER_HOST,
+				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;

@@ -51,7 +51,7 @@ public class MZPState
 	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 	private WDIO m_wdio;
 	private OneWire m_oneWire;
-	private List<Bluetooth.Device> m_lastBTDeviceList = new List<Bluetooth.Device>();
+	
 
 	public OneWire OneWire
 	{
@@ -402,6 +402,9 @@ public class MZPState
 	public List<User> UserIsNearList {
 		get { return MultiZonePlayer.UserPresence.UserIsNearList; }
 	}
+	public String UserIsNearSummary {
+		get { return MultiZonePlayer.UserPresence.UserIsNearSummary; }
+	}
 
     public Alarm SystemAlarm
     {
@@ -520,6 +523,8 @@ public class MZPState
 		{
 			if ((zone.ActivityType != GlobalCommands.xbmc) || (!zone.IsActive))
 			{
+				MLog.Log(this, "Powering off zone " + zone.ZoneName + " activity=" + zone.ActivityType + " active=" + zone.IsActive
+					+ " reqpower=" + zone.RequirePower);
 				this.PowerControlOff(zone.ZoneId);
 			}
 		}
@@ -1328,42 +1333,13 @@ public class MZPState
 		}
 	}
 
-	public void CheckBluetooth()
+	public void CheckPresence()
 	{
-		if (DateTime.Now.Subtract(m_lastBTCheck).TotalMinutes < 1)
-			return;
-
-		User user;
-		List<Bluetooth.Device> currentDeviceList, newDevices, leftDevices, existingDevices;
+		//if (DateTime.Now.Subtract(m_lastBTCheck).TotalMinutes < 1)
+		//	return;
 		m_lastBTCheck = DateTime.Now;
-		try	{
-			currentDeviceList = Bluetooth.DiscoverDevices();
-			newDevices = currentDeviceList.Except(m_lastBTDeviceList).ToList();
-			leftDevices = m_lastBTDeviceList.Except(currentDeviceList).ToList();
-			existingDevices = m_lastBTDeviceList.Intersect(currentDeviceList).ToList();
-
-			foreach (Bluetooth.Device dev in newDevices){
-				user = User.GetUser(dev.Address.ToString());
-				if (user != null)
-					UserPresence.AddBTPresence(user);
-				else
-					MLog.Log(this, "Unknown user with Bluetooth device=" + dev.DeviceName + " Addr=" + dev.Address);
-			}
-			foreach (Bluetooth.Device dev in leftDevices) {
-				user = User.GetUser(dev.Address.ToString());
-				if (user != null)
-					UserPresence.RemoveBTPresence(User.GetUser(dev.Address.ToString()));
-			}
-			foreach (Bluetooth.Device dev in existingDevices) {
-				user = User.GetUser(dev.Address.ToString());
-				if (user != null)
-					UserPresence.UpdateBTPresence(User.GetUser(dev.Address.ToString()));
-			}
-			m_lastBTDeviceList = currentDeviceList;
-		}
-		catch (Exception ex){
-			MLog.Log(this, "Bluetooth error " + ex.Message);
-		}
+		UserPresence.CheckBluetooth();
+		UserPresence.CheckWifi();
 	}
 
 	public void TickFast()
@@ -1379,14 +1355,14 @@ public class MZPState
         AutoArmCheck();
         CheckForWakeTimers();
         CheckForAlarm();
-        CheckForExternalZoneEvents();
 		CheckForScheduleMacroEvents();
 		CheckForUpsStatus();
 		ZoneSlowTickActivities();
         m_powerControlDenkovi.timerPowerSaving_Tick();
 		m_powerControlNumato.timerPowerSaving_Tick();
 		m_oneWire.Tick();
-		CheckBluetooth();
+		CheckForExternalZoneEvents();
+		CheckPresence();
 
 		if (MediaLibrary.AllAudioFiles != null)
 			MediaLibrary.AllAudioFiles.SaveUpdatedItems();

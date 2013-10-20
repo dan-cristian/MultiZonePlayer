@@ -6,19 +6,23 @@
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
-<body style="text-align:left">
+<body style="text-align:left" onload="refresh(30000)">
 <table style="border-width:1px;border-color:Black;border-style:inset">
-<tr class="Header"><td>NearbyUsers</td><td>User</td></tr>
+<tr class="Header"><td>Users at Home</td><td>User</td><td>Date</td></tr>
 <%for;i;0;++;#S.UserIsNearList.Count#;%>
 <tr><td><button class="Small" onclick="window.open('?command=nul&id=#S.UserIsNearList.?,%i.Id#','_self')">?</button></td>
-<td>#S.UserIsNearList.?,%i.Name# seen since #S.UserIsNearList.?,%i.NearbyPresentSince#</td>
-</tr>
+<td>#S.UserIsNearList.?,%i.Name#</td>
+<td>since #S.UserIsNearList.?,%i.NearbyPresentSince#</td></tr>
 <%%>
-<tr><td>&nbsp</td></tr>
-<tr class="Header"><td>PresentUsers</td><td>User</td></tr>
+</table><br />
+<table style="border-width:1px;border-color:Black;border-style:inset">
+<tr class="Header"><td>Connected Users</td><td>User</td><td>Type</td><td>BT Date</td><td>Wifi Date</td></tr>
 <%for;i;0;++;#S.UserPresenceList.Count#;%>
 <tr><td><button class="Small" onclick="window.open('?command=nul&id=#S.UserPresenceList.?,%i.User.Id#','_self')">?</button></td>
-<td>#S.UserPresenceList.?,%i.User.Name#, last seen at #S.UserPresenceList.?,%i.LastBTActiveDate#, contact lost count=#S.UserPresenceList.?,%i.BTLostContactCount#</td>
+<td>#S.UserPresenceList.?,%i.User.Name#</td>
+<td>#S.UserPresenceList.?,%i.Type#</td>
+<td>last at #S.UserPresenceList.?,%i.LastBTActiveDate#, lost=#S.UserPresenceList.?,%i.BTLostContactCount#</td>
+<td>last at #S.UserPresenceList.?,%i.LastWifiActiveDate#, lost=#S.UserPresenceList.?,%i.WifiLostContactCount#</td>
 </tr>
 <%%>
 </table>

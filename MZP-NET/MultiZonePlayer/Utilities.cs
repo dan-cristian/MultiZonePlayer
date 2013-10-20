@@ -767,6 +767,9 @@ namespace MultiZonePlayer
         public string GetResponse()
         {
             // Set the encoding type
+			if (ContentType == "" || ContentType==null)
+				ContentType = "application/x-www-form-urlencoded";
+			
 			theRequest.ContentType = ContentType;// "application/x-www-form-urlencoded";
             theRequest.Timeout = 10000;
 
@@ -1062,6 +1065,13 @@ namespace MultiZonePlayer
             catch (Exception)
             { }
         }
+
+		public static void Assert(Boolean condition, String message) {
+			if (condition == false) {
+				var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
+				Log(null, "Error, ASSERTION Failed: " + message, callingMethod);
+			}
+		}
     }
 
     public class IMDBParser

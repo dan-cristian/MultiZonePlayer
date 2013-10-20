@@ -438,9 +438,9 @@ namespace MultiZonePlayer
 
 			public override void SaveStateIni()
             {
-                //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + m_zoneForm.GetZoneId() + "USR" + m_zoneForm.GetUser().Id, "PLAYLIST", GetPlayList());
-                //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + zoneForm.GetZoneId() + "USR" +zoneForm.GetUser().Id, "PLAYFILE", GetCurrentMusicFileFullPath());
-                //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + zoneForm.GetZoneId() + "USR" +zoneForm.GetUser().Id, "VOLUME", GetVolumeLevel().ToString());
+                //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + m_zoneForm.GetZoneId() + "USR" + m_zoneForm.GetUserByBT().Id, "PLAYLIST", GetPlayList());
+                //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + zoneForm.GetZoneId() + "USR" +zoneForm.GetUserByBT().Id, "PLAYFILE", GetCurrentMusicFileFullPath());
+                //IniFile.IniWriteValue(IniFile.INI_SECTION_ZONERESUME + zoneForm.GetZoneId() + "USR" +zoneForm.GetUserByBT().Id, "VOLUME", GetVolumeLevel().ToString());
             }
 
 			public override long Position
