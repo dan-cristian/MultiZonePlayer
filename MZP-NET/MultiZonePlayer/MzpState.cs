@@ -1349,21 +1349,34 @@ public class MZPState
 
     public void TickSlow()
     {
+		if (MZPState.Instance == null) return;
 		HealthCheckiSpy();
-        HealthCheckWinload();
-        HealthCheckMessengers();
-        AutoArmCheck();
-        CheckForWakeTimers();
-        CheckForAlarm();
+		if (MZPState.Instance == null) return;
+		HealthCheckWinload();
+		if (MZPState.Instance == null) return;
+		HealthCheckMessengers();
+		if (MZPState.Instance == null) return;
+		AutoArmCheck();
+		if (MZPState.Instance == null) return;
+		CheckForWakeTimers();
+		if (MZPState.Instance == null) return;
+		CheckForAlarm();
+		if (MZPState.Instance == null) return;
 		CheckForScheduleMacroEvents();
+		if (MZPState.Instance == null) return;
 		CheckForUpsStatus();
+		if (MZPState.Instance == null) return;
 		ZoneSlowTickActivities();
-        m_powerControlDenkovi.timerPowerSaving_Tick();
+		if (MZPState.Instance == null) return;
+		m_powerControlDenkovi.timerPowerSaving_Tick();
 		m_powerControlNumato.timerPowerSaving_Tick();
+		if (MZPState.Instance == null) return;
 		m_oneWire.Tick();
+		if (MZPState.Instance == null) return;
 		CheckForExternalZoneEvents();
+		if (MZPState.Instance == null) return;
 		CheckPresence();
-
+		if (MZPState.Instance == null) return;
 		if (MediaLibrary.AllAudioFiles != null)
 			MediaLibrary.AllAudioFiles.SaveUpdatedItems();
     }

@@ -1731,7 +1731,7 @@ namespace MultiZonePlayer
 				user.NearbyPresentSince = DateTime.Now;
 				user.NearbyPresenceType = type;
 				MLog.Log(null, "NEW "+type+" DEVICE FOUND User: " + user.Name);
-				
+				Rules.ExecuteRule(up, "User arrived on "+ type + " user="+user.Name);
 			}
 		}
 		//returns true if presence was removed/user left
@@ -1758,10 +1758,12 @@ namespace MultiZonePlayer
 				}
 				left = true;
 			}
-			if (left)
-				MLog.Log(null, "DEVICE "+type+"LEFT user: " + user.Name);
+			if (left) {
+				MLog.Log(null, "DEVICE " + type + "LEFT user: " + user.Name);
+				Rules.ExecuteRule(up, "User left on " + type + " user=" + user.Name);
+			}
 			else
-				MLog.Log(null, "DEVICE "+type+" lost contact count= "+lostCount+" user=" + user.Name);
+				MLog.Log(null, "DEVICE " + type + " lost contact count= " + lostCount + " user=" + user.Name);
 
 			return left;
 		}

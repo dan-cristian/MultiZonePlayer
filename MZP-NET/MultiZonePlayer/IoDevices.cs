@@ -1425,12 +1425,12 @@ namespace MultiZonePlayer
 			BluetoothClient bc = new BluetoothClient();
 			List<Device> devices = new List<Device>();
 			
-			BluetoothDeviceInfo[] array = bc.DiscoverDevices(10, true, true, true);//bc.DiscoverDevices();
+			BluetoothDeviceInfo[] array = bc.DiscoverDevices(15, true, true, true);//bc.DiscoverDevices();
 			int count = array.Length;
 			for (int i = 0; i < count; i++)
 			{
 				Device device = new Device(array[i]);
-				if (CanConnect(device))
+				if (MZPState.Instance!=null && CanConnect(device))
 				{
 					//MLog.Log(null, "Active BT device detected " + device.ToString());
 					devices.Add(device);
