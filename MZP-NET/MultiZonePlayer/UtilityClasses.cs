@@ -1595,7 +1595,12 @@ namespace MultiZonePlayer
             this.Name = name;
             this.Code = code;
         }
-		
+		public String NearbyPresentAgeAsTimeSpan {
+			get { return Utilities.DurationAsTimeSpan(NearbyPresentAge); }
+		}
+		public TimeSpan NearbyPresentAge {
+			get { return DateTime.Now.Subtract(NearbyPresentSince); }
+		}
 		public static User GetUser(int id){
 			return m_userList.Find(x=>x.Id==id);
 		}
