@@ -578,15 +578,17 @@ namespace MultiZonePlayer
 		public EnumRelayType RelayType = EnumRelayType.Undefined;
 		private bool m_contactMade = false;
 
-		public ClosureOpenCloseRelay()
-		{
+		public ClosureOpenCloseRelay(){
 		}
-		public ClosureOpenCloseRelay(bool isRelayContactMade)
-		{
+
+		public ClosureOpenCloseRelay(bool isRelayContactMade){
 			//Key = key;
 			RelayContactMade = isRelayContactMade;
 		}
 
+		public String LastChangeAgeAsTimeSpan {
+			get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastChange)); }
+		}
 		public EnumState RelayState
 		{
 			get { return m_relayState; }
@@ -1128,6 +1130,7 @@ namespace MultiZonePlayer
 			}
 		}
 
+		
 		public int MacroCount
 		{
 			get { 
@@ -1724,8 +1727,10 @@ namespace MultiZonePlayer
 		public static void AddPresence(User user, PresenceType type){
 			UserPresence up = m_presenceList.Find(x => x.User == user && x.Type == type);
 			if (up == null) {
-				switch (type)
-				{
+				user.NearbyPresentSince = DateTime.Now;
+				user.NearbyPresenceType = type;
+				MLog.Log(null, "NEW " + type + " DEVICE FOUND User: " + user.Name);
+				switch (type) {
 					case PresenceType.Bluetooth:
 						m_presenceList.Add(new UserPresence(user, PresenceType.Bluetooth));
 						break;
@@ -1733,11 +1738,11 @@ namespace MultiZonePlayer
 						m_presenceList.Add(new UserPresence(user, PresenceType.Wifi));
 						break;
 				}
-				user.NearbyPresentSince = DateTime.Now;
-				user.NearbyPresenceType = type;
-				MLog.Log(null, "NEW "+type+" DEVICE FOUND User: " + user.Name);
-				Rules.ExecuteRule(up, "User arrived on "+ type + " user="+user.Name);
+
+				Rules.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
 			}
+			else
+				MLog.Log(null, "Error, unexpected user presence found adding usr="+user);
 		}
 		//returns true if presence was removed/user left
 		public static bool RemovePresence(User user, PresenceType type) {
@@ -1756,7 +1761,7 @@ namespace MultiZonePlayer
 					lostCount = up.WifiLostContactCount;
 					break;
 			}
-			if (lostCount > 2) {
+			if (lostCount > 4) {
 				m_presenceList.Remove(up);
 				if (user.NearbyPresenceType == type) {
 					user.NearbyPresentSince = DateTime.MaxValue;
@@ -1764,7 +1769,7 @@ namespace MultiZonePlayer
 				left = true;
 			}
 			if (left) {
-				MLog.Log(null, "DEVICE " + type + "LEFT user: " + user.Name);
+				MLog.Log(null, "DEVICE " + type + " LEFT user: " + user.Name);
 				Rules.ExecuteRule(up, "User left on " + type + " user=" + user.Name);
 			}
 			else
@@ -1823,18 +1828,19 @@ namespace MultiZonePlayer
 
 		public static void CheckWifi() {
 			User user;
-			WebPostRequest post = new WebPostRequest(IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL[1], null);
-			post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
-			post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
-			String json = post.GetResponse();
-			/*UserPresence.OpenWrtWifiAssociations[] wrt = fastJSON.JSON.Instance.ToObject<UserPresence.OpenWrtWifiAssociations[]>(json);
-			if (wrt[0].assoclist != null) {
-				foreach (UserPresence.OpenWrtWifiAssociations.AssocList assoc in wrt[0].assoclist){
-					user = User.GetUserByWifi(assoc.Address);
-				}
-			}*/
-			String regex = "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})";
 			try {
+				WebPostRequest post = new WebPostRequest(IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL[1], null);
+				post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
+				post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
+				String json = post.GetResponse();
+				/*UserPresence.OpenWrtWifiAssociations[] wrt = fastJSON.JSON.Instance.ToObject<UserPresence.OpenWrtWifiAssociations[]>(json);
+				if (wrt[0].assoclist != null) {
+					foreach (UserPresence.OpenWrtWifiAssociations.AssocList assoc in wrt[0].assoclist){
+						user = User.GetUserByWifi(assoc.Address);
+					}
+				}*/
+				String regex = "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})";
+			
 				System.Text.RegularExpressions.MatchCollection match = System.Text.RegularExpressions.Regex.Matches(json, regex);
 				List<String> currentList, newList, leftList, existingList;
 				currentList = new List<string>();
@@ -1867,7 +1873,7 @@ namespace MultiZonePlayer
 				}
 			}
 			catch (Exception ex) {
-				MLog.Log(null, "Check Wifi error " + ex.Message);
+				MLog.Log(null, "CheckWifi error " + ex.Message);
 			}
 		}
 	}

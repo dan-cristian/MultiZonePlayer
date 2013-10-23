@@ -181,6 +181,10 @@ public class MZPState
 		cron.Name = "Cron Service";
 		cron.Start();
 
+		Thread bt = new Thread(() => Bluetooth.StartDiscovery());
+		bt.Name = "Bluetooth discovery service";
+		bt.Start();
+
         LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
 				
     }
@@ -868,20 +872,18 @@ public class MZPState
 
 	private void HealthCheckiSpy()
 	{
-		if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
-		{
+		
 			if (!Utilities.IsProcAlive(IniFile.PARAM_ISPY_PROCNAME[1]))
 			{
 				MLog.Log(this, "iSpy proc not running, restarting. Searched for proc:" + IniFile.PARAM_ISPY_PROCNAME[1]);
 				Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
 				RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 			}
-		}
+		
 	}
     private void HealthCheckWinload()
     {
-        if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
-        {
+        
             if (!Utilities.IsProcAlive(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1]))
             {
                 MLog.Log(this, "WINLOAD proc not running, restarting");
@@ -918,13 +920,12 @@ public class MZPState
                 }
                 //else MLog.Log(this, "WINLOAD move diff OK, min=" + diff);
             }
-        }
+        
     }
 
     private void AutoArmCheck()
     {
-        if (SystemAlarm.AreaState.Equals(Alarm.EnumAreaState.ready) && (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1])))
-        {
+        
             List<ZoneDetails> openZones;
             openZones = m_zoneList.FindAll(x => x.HasMotionSensor && (x.HasRecentMove || x.HasImmediateMove));
 
@@ -938,13 +939,12 @@ public class MZPState
                 API.DoCommandFromWeb(val, out retval);
                     */
             }
-        }
+        
     }
 
     private void HealthCheckMessengers()
     {
-        if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]))
-        {
+        
             Boolean ok;
             foreach (IMessenger m in m_messengerList)
             {
@@ -958,7 +958,7 @@ public class MZPState
 					}
 				}
             }
-        }
+        
     }
 
     public bool SendMessengerMessageToOne(String message)
@@ -1335,11 +1335,10 @@ public class MZPState
 
 	public void CheckPresence()
 	{
-		//if (DateTime.Now.Subtract(m_lastBTCheck).TotalMinutes < 1)
-		//	return;
-		m_lastBTCheck = DateTime.Now;
-		UserPresence.CheckBluetooth();
 		UserPresence.CheckWifi();
+		Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
+		Utilities.InternetGetConnectedState(ref istate, 0);
+		MLog.Log(this, "Internet Connection state is " + istate);
 	}
 
 	public void TickFast()
@@ -1349,14 +1348,18 @@ public class MZPState
 
     public void TickSlow()
     {
-		if (MZPState.Instance == null) return;
-		HealthCheckiSpy();
-		if (MZPState.Instance == null) return;
-		HealthCheckWinload();
-		if (MZPState.Instance == null) return;
-		HealthCheckMessengers();
-		if (MZPState.Instance == null) return;
-		AutoArmCheck();
+		if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1])) {
+			if (MZPState.Instance == null) return;
+			HealthCheckiSpy();
+			if (MZPState.Instance == null) return;
+			HealthCheckWinload();
+			if (MZPState.Instance == null) return;
+			CheckPresence();
+			if (MZPState.Instance == null) return;
+			AutoArmCheck();
+			if (MZPState.Instance == null) return;
+			HealthCheckMessengers();
+		}
 		if (MZPState.Instance == null) return;
 		CheckForWakeTimers();
 		if (MZPState.Instance == null) return;
@@ -1374,8 +1377,7 @@ public class MZPState
 		m_oneWire.Tick();
 		if (MZPState.Instance == null) return;
 		CheckForExternalZoneEvents();
-		if (MZPState.Instance == null) return;
-		CheckPresence();
+		
 		if (MZPState.Instance == null) return;
 		if (MediaLibrary.AllAudioFiles != null)
 			MediaLibrary.AllAudioFiles.SaveUpdatedItems();

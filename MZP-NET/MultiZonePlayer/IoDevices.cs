@@ -711,12 +711,14 @@ namespace MultiZonePlayer
                 adapter.targetAllFamilies();
                 adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
                 java.util.Enumeration containers = adapter.getAllDeviceContainers();
-				OneWireContainer element; TemperatureContainer temp;
-				sbyte[] state;
+				OneWireContainer element; //TemperatureContainer temp;
+				//sbyte[] state;
                 while (containers.hasMoreElements())
                 {
                     element = (OneWireContainer)containers.nextElement();
-                    MLog.Log(this, "OneWire device found addr=" + element.getAddressAsString()
+					ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+					String zonename = zone!=null?zone.ZoneName:"ZONE NOT ASSOCIATED";
+					MLog.Log(this, "OneWire device found zone="+zonename+", addr=" + element.getAddressAsString()
                         + " name=" + element.getName() + " desc=" + element.getDescription());
 
 					//does not work
@@ -791,7 +793,6 @@ namespace MultiZonePlayer
 				double tempVal;
 				// get exclusive use of adapter
 				adapter.beginExclusive(true);
-
 				// clear any previous search restrictions
 				adapter.setSearchAllDevices();
 				adapter.targetAllFamilies();
@@ -1424,17 +1425,25 @@ namespace MultiZonePlayer
 		{
 			BluetoothClient bc = new BluetoothClient();
 			List<Device> devices = new List<Device>();
-			
+			DateTime startDisc; Boolean canConnect;
 			BluetoothDeviceInfo[] array = bc.DiscoverDevices(15, true, true, true);//bc.DiscoverDevices();
 			int count = array.Length;
 			for (int i = 0; i < count; i++)
 			{
 				Device device = new Device(array[i]);
-				if (MZPState.Instance!=null && CanConnect(device))
+				if (MZPState.Instance == null) {
+					MLog.Log(null, "BT discovery interrupted");
+					return devices;
+				}
+				startDisc = DateTime.Now;
+				canConnect = CanConnect(device);
+				if (canConnect)
 				{
 					//MLog.Log(null, "Active BT device detected " + device.ToString());
 					devices.Add(device);
 				}
+				MLog.Log(null, "Discovery result="+canConnect+" on " + device.DeviceName + " took " 
+					+ Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(startDisc)));
 			}
 			return devices;
 		}
@@ -1471,6 +1480,19 @@ namespace MultiZonePlayer
 				MLog.Log(null, "Could not connect to BT device " + device.ToString() + " ERROR="+ex.Message);
 				return false;
 			}*/
+		}
+
+		public static void StartDiscovery() {
+			MLog.Log(null, "BT Discovery started");
+			while (MZPState.Instance != null) {
+				UserPresence.CheckBluetooth();
+				for (int i = 0; i < 60; i++) {
+					Thread.Sleep(1000);
+					if (MZPState.Instance == null)
+						return;
+				}
+			}
+			MLog.Log(null, "BT Discovery ended");
 		}
 	}
 

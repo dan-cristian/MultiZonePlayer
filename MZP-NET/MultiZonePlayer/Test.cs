@@ -263,18 +263,10 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
-		  WebPostRequest post = new WebPostRequest(IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL[1], null);
-		  post.Add("username", "root");
-		  post.Add("password", "abcd1234");
-		  String json = post.GetResponse();
-		  String regex = "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})";//"[A-Za-z0-9]*:[A-Za-z0-9][A-Za-z0-9]";
-		  MatchCollection match = Regex.Matches(json, regex);
-		  List<String> wifiHosts = new List<string>();
-		  if (match.Count>0) {
-			  foreach (Match mat in match) {
-				  wifiHosts.Add(mat.Groups[0].Value);
-			  }
-		  }
+			Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
+			Utilities.InternetGetConnectedState(ref istate, 0);
+			MLog.Log(this, "Internet Connection state is " + istate);
+
 
       }
 	  
