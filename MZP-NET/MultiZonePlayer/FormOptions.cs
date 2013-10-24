@@ -342,18 +342,15 @@ namespace MultiZonePlayer
 
             for (int r = 0; r < dgvUsers.Rows.Count; r++)
             {
-                userId = (String)dgvUsers.Rows[r].Cells[UserId.Name].Value;
-                userName = (String)dgvUsers.Rows[r].Cells[UserName.Name].Value;
-                userCode = (String)dgvUsers.Rows[r].Cells[UserCode.Name].Value;
+                userId = dgvUsers.Rows[r].Cells[UserId.Name].Value.ToString();
+                userName = dgvUsers.Rows[r].Cells[UserName.Name].Value.ToString();
+                userCode = dgvUsers.Rows[r].Cells[UserCode.Name].Value.ToString();
 
                 if (userId != null && userCode != null)
                 {
 					User user = User.GetUser(Convert.ToInt16(userId));
 					user.Name = userName;
 					user.Code = userCode;
-                    //IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserId", userId);
-                    //IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserName", userName);
-                    //IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS + userId.ToString(), "UserCode", userCode);
                 }
             }
 			User.SaveToIni();

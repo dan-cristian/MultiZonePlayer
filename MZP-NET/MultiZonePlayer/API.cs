@@ -200,6 +200,10 @@ namespace MultiZonePlayer
 							cmdresult.ValueList = MediaLibrary.MusicArtists;
                             //result = JsonResult(Metadata.ResultEnum.OK, "", resvalue);
                             break;
+						case GlobalCommands.movielist:
+							cmdresult.ValueList = MediaLibrary.MovieList;
+							//result = JsonResult(Metadata.ResultEnum.OK, "", resvalue);
+							break;
                         case GlobalCommands.alarmarm:
                             String areaid = vals.GetValue(GlobalParams.areaid);
                             cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Arm, areaid);

@@ -764,6 +764,7 @@ namespace MultiZonePlayer
         {
             MLog.LogWeb("WebPostRequest " + url);
             theRequest = WebRequest.Create(url);
+			theRequest.Timeout = 15000;
             theRequest.Method = "POST";
             theQueryData = new ArrayList();
 			ContentType = contenttype;

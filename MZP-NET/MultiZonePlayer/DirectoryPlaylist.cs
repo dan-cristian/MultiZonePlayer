@@ -1535,6 +1535,17 @@ namespace MultiZonePlayer
 				return val;
 			}
 		}
+		public static ValueList MovieList {
+			get {
+				//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+				var unique = m_videoFiles.GetVideoCollection().Select(i => i.Title).Distinct().ToList();
+				unique.Sort();
+
+				ValueList val = new ValueList(CommandSources.system);
+				val.SetIndexValues(unique.ToList());
+				return val;
+			}
+		}
 
 		public static List<AudioItem> GetMoodPlaylist(MoodMusic mood)
 		{

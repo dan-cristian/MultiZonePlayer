@@ -103,6 +103,7 @@ namespace MultiZonePlayer
             public  const int POWERSAVING_MAX_CYCLES = 60;
             public  const int POWERSAVING_CYCLE_WARNING = 8;
 
+			public static String[] PARAM_ALARM_SECURE_AREA_ID = new String[] { "PARAM_ALARM_SECURE_AREA_ID", "1" , "Area ID to secure when armed"};
             public static String[] PARAM_RADIO_APP = new String[] { "RADIO_APP", "c:\\Program Files\\VideoMate\\ComproFM 2\\ComproFM.exe" };
             public static String[] PARAM_RADIO_APP_WIN_TITLE = new String[] { "PARAM_RADIO_APP_WIN_TITLE", "ComproFM" };
             public static String[] PARAM_POWER_CONTROL_APP_PROCESSNAME = new String[] {"POWER_CONTROL_APP_PROCESSNAME", "pm"};
@@ -215,6 +216,7 @@ namespace MultiZonePlayer
 
             public static Object[] PARAMS = new Object[]
             {
+				PARAM_ALARM_SECURE_AREA_ID,
                 PARAM_RADIO_APP,
                 PARAM_RADIO_APP_WIN_TITLE,
                 PARAM_POWER_SAVING_APP,

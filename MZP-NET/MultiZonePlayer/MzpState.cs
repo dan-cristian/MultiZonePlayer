@@ -50,8 +50,19 @@ public class MZPState
 	private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 	private WDIO m_wdio;
+
+	public WDIO WDIO {
+		get { return m_wdio; }
+	}
 	private OneWire m_oneWire;
-	
+
+	public UserPresence UserPresence {
+		get { return UserPresence.Instance; }
+	}
+
+	public User User {
+		get { return User.Instance; }
+	}
 
 	public OneWire OneWire
 	{
@@ -103,7 +114,7 @@ public class MZPState
 		MLog.LoadFromIni();
         MLog.Log(this, "\r\n-----------------START--------------------");
 
-        m_systemAlarm = new Alarm(1);
+        m_systemAlarm = new Alarm(Convert.ToInt16(IniFile.PARAM_ALARM_SECURE_AREA_ID[1]));
         InitRemotes();
         m_powerControlDenkovi = new DenkoviPowerControl("8 Relay Brd USB");
 		m_powerControlNumato = new NumatoLPTControl(888);
@@ -338,6 +349,14 @@ public class MZPState
 	public List<ZoneDetails> ZonesWithType(ZoneType type)
 	{
 		return ZoneList.List(type, "=");
+	}
+
+	public class ZoneList {
+		public static List<ZoneDetails> List(ZoneType value, String operation) {
+			//List<ZoneDetails> zones;
+			return MZPState.Instance.ZoneDetails.FindAll(x => x.Type == value);
+		}
+
 	}
 
 	public List<String> GetEditableFieldList(String className)
@@ -1339,6 +1358,16 @@ public class MZPState
 		Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
 		Utilities.InternetGetConnectedState(ref istate, 0);
 		MLog.Log(this, "Internet Connection state is " + istate);
+
+		if (UserPresence.UserIsNearList.Count == 0
+			&& !SystemAlarm.IsArmed
+			&& MultiZonePlayer.ZoneDetails.HasImmediateMove_All.Find(x=>x.AlarmAreaId==SystemAlarm.AreaId)==null
+			&& MultiZonePlayer.ZoneDetails.HasRecentMove_All.Find(x => x.AlarmAreaId == SystemAlarm.AreaId) == null) 
+		{
+				Alert.CreateAlert("Safe Area not armed when all family members are out", null, false, 
+					Alert.NotificationFlags.NeedsImmediateUserAck, 120);
+		}
+
 	}
 
 	public void TickFast()

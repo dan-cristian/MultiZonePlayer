@@ -195,6 +195,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="IoDevices.cs" />
+    <Compile Include="Singletons.cs" />
     <Compile Include="ThirdParty\Cron.cs" />
     <Compile Include="ThirdParty\fastJSON\dynamic.cs" />
     <Compile Include="ThirdParty\fastJSON\Formatter.cs" />
@@ -286,6 +287,7 @@
     </Compile>
     <Compile Include="WebServer.cs" />
     <Compile Include="WinEventLogReader.cs" />
+    <Compile Include="ZoneDetails.cs" />
     <Compile Include="ZoneDisplay.cs" />
     <Compile Include="ZoneEvents.cs" />
     <Compile Include="ZoneExternalPlayer.cs" />

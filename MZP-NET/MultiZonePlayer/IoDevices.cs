@@ -371,51 +371,50 @@ namespace MultiZonePlayer
 			m_channel = IniFile.PARAM_WDIO_CHANNEL[1];
 			//ClearPins();
 			m_lastState = "";
-			for (int i = 0; i < m_zoneIdMap.Length; i++)
-			{
+			for (int i = 0; i < m_zoneIdMap.Length; i++) {
 				m_zoneIdMap[i] = -1;
 				m_lastState += STATE_CONTACT_NOTMADE;
 			}
+			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails) {
+				SetPinTypes(zone);
+			}
+		}
+
+		public void SetPinTypes(ZoneDetails zone) {
 			string pin; char iocmd = '?';
 			int startindex, end, pinindex, attriblength = 0;
-			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
-			{
-				startindex = zone.ClosureIdList.IndexOf(WDIO_ATTRIB_SWITCH);
-				if (startindex != -1)
-				{
-					iocmd = CMD_SWITCH;
-					attriblength = WDIO_ATTRIB_SWITCH.Length;
+			
+			startindex = zone.ClosureIdList.IndexOf(WDIO_ATTRIB_SWITCH);
+			if (startindex != -1) {
+				iocmd = CMD_SWITCH;
+				attriblength = WDIO_ATTRIB_SWITCH.Length;
+			}
+			else {
+				startindex = zone.ClosureIdList.IndexOf(WDIO_ATTRIB_BUTTON);
+				if (startindex != -1) {
+					iocmd = CMD_BUTTON;
+					attriblength = WDIO_ATTRIB_BUTTON.Length;
+				}
+
+			}
+			if (startindex != -1) {
+				end = zone.ClosureIdList.IndexOf(";", startindex);
+				if (end == -1) end = zone.ClosureIdList.Length - 1;
+				pin = zone.ClosureIdList.Substring(startindex + attriblength, end - startindex - attriblength + 1);
+				if (int.TryParse(pin, out pinindex))
+					pinindex = Convert.ToInt16(pin);
+				else
+					MLog.Log(this, "Error parsing pin=" + zone.ClosureIdList + " for zone " + zone.ZoneName);
+				if (pinindex >= 0 && pinindex < m_zoneIdMap.Length) {
+					m_zoneIdMap[pinindex] = zone.ZoneId;
+					Thread.Sleep(100);
+					MLog.Log(this, "Set IO pin " + pinindex + " zone=" + zone.ZoneName
+						+ " result=" + WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000));
 				}
 				else
-				{
-					startindex = zone.ClosureIdList.IndexOf(WDIO_ATTRIB_BUTTON);
-					if (startindex != -1)
-					{
-						iocmd = CMD_BUTTON;
-						attriblength = WDIO_ATTRIB_BUTTON.Length;
-					}
-
-				}
-				if (startindex != -1)
-				{
-					end = zone.ClosureIdList.IndexOf(";", startindex);
-					if (end == -1) end = zone.ClosureIdList.Length - 1;
-					pin = zone.ClosureIdList.Substring(startindex + attriblength, end - startindex - attriblength + 1);
-					if (int.TryParse(pin, out pinindex))
-						pinindex = Convert.ToInt16(pin);
-					else
-						MLog.Log(this, "Error parsing pin=" + zone.ClosureIdList + " for zone " + zone.ZoneName);
-					if (pinindex >= 0 && pinindex < m_zoneIdMap.Length)
-					{
-						m_zoneIdMap[pinindex] = zone.ZoneId;
-						Thread.Sleep(100);
-						MLog.Log(this, "Set IO pin " + pinindex + " zone=" + zone.ZoneName
-							+ " result=" + WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000));
-					}
-					else
-						MLog.Log(this, "Error pin index in zone " + zone.ZoneName + " is out of range: " + pinindex);
-				}
+					MLog.Log(this, "Error pin index in zone " + zone.ZoneName + " is out of range: " + pinindex);
 			}
+			
 		}
 
 		public override Boolean TestConnection()
