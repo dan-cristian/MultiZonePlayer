@@ -129,7 +129,6 @@ namespace MultiZonePlayer
                     Thread.Sleep(IniFile.ZONE_INACTIVITY_CYCLE_DURATION);
                     // FAST TICK
                     RefreshState();
-
 					if (MZPState.Instance != null)
 					{
 						activeZoneClone = MZPState.Instance.ActiveZones.ToArray();
@@ -144,7 +143,7 @@ namespace MultiZonePlayer
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
-                        MZPState.Instance.TickSlow();
+						MZPState.Instance.TickSlow();
 						foreach (ZoneDetails details in MZPState.Instance.ZoneDetails)
 						{
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);

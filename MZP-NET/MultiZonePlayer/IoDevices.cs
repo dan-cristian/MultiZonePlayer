@@ -654,9 +654,29 @@ namespace MultiZonePlayer
 		DSPortAdapter adapter;
 		DeviceMonitor dMonitor;
 		Thread m_searchThread;
-		List<String> m_devices;
+		List<Device> m_deviceList;
 		const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
+		const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
+		const string ONEWIRE_PHOTODEV_NAME = "DS2406";
 		double TEMP_DEFAULT = 85;
+
+		public List<Device> DeviceList {
+			get { return m_deviceList; }
+		}
+
+		public class Device {
+			public String Name;
+			public String Address;
+			public int Family;
+			public ZoneDetails Zone;
+
+			public Device(String name, String address, int family, ZoneDetails zone) {
+				Name = name;
+				Address = address;
+				Family = family;
+				Zone = zone;
+			}
+		}
 
 		public OneWire()
 		{
@@ -700,7 +720,7 @@ namespace MultiZonePlayer
                     return;
                 }
                 MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
-                m_devices = new List<String>();
+                m_deviceList = new List<Device>();
 
                 // get exclusive use of adapter
                 adapter.beginExclusive(true);
@@ -718,7 +738,7 @@ namespace MultiZonePlayer
 					ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
 					String zonename = zone!=null?zone.ZoneName:"ZONE NOT ASSOCIATED";
 					MLog.Log(this, "OneWire device found zone="+zonename+", addr=" + element.getAddressAsString()
-                        + " name=" + element.getName() + " desc=" + element.getDescription());
+                        + " name=" + element.getName() + " altname="+ element.getAlternateNames() +" speed="+element.getMaxSpeed()+" desc=" + element.getDescription()) ;
 
 					//does not work
 					/*if (element.getName() == "DS18B20")
@@ -763,7 +783,7 @@ namespace MultiZonePlayer
 			for (i = 0; i < devt.getDeviceCount(); i++)
 			{
 				MLog.Log(this, "OneWire Departing: " + devt.getAddressAsStringAt(i));
-				m_devices.Remove(devt.getAddressAsStringAt(i));
+				//m_deviceList.Remove(devt.getAddressAsStringAt(i));
 			}
 		}
 
@@ -774,7 +794,7 @@ namespace MultiZonePlayer
 			for (i = 0; i < devt.getDeviceCount(); i++)
 			{
 				MLog.Log(this,"OneWire Arriving: " + devt.getAddressAsStringAt(i));
-				m_devices.Add(devt.getAddressAsStringAt(i));
+				//m_deviceList.Add(devt.getAddressAsStringAt(i));
 			}
 		}
 
@@ -784,32 +804,66 @@ namespace MultiZonePlayer
 			MLog.Log(this, "1-Wire network exception occurred: " + dexc.exception);
 		}
 
-		public void Tick()
-		{
-			if (adapter != null)
-			{
-				TemperatureContainer temp;
-				double tempVal;
+		public void TickSlow(){
+			if (adapter != null){
+				int family = 0x28;
 				// get exclusive use of adapter
 				adapter.beginExclusive(true);
 				// clear any previous search restrictions
 				adapter.setSearchAllDevices();
-				adapter.targetAllFamilies();
+				//adapter.targetAllFamilies();
+				adapter.targetFamily(family);
 				adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
 				java.util.Enumeration containers = adapter.getAllDeviceContainers();
 				OneWireContainer element;
-				sbyte[] state;
 				ZoneDetails zone;
-				while (MZPState.Instance != null && containers.hasMoreElements())
-				{
+				m_deviceList.RemoveAll(x=>x.Family==family);
+				while (MZPState.Instance != null && containers.hasMoreElements()){
 					element = (OneWireContainer)containers.nextElement();
-					//MLog.Log(this, "OneWire device:" + element.getAddressAsString() + element.getName() + element.getDescription());
 					zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+					ProcessElement(zone, element);
+					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+				}
+				adapter.endExclusive();
+			}
+		}
 
-					if (zone != null)
-					{
-						try
-						{
+		public void TickFast() {
+			if (adapter != null) {
+				int family = 0x12;
+				// get exclusive use of adapter
+				adapter.beginExclusive(true);
+				// clear any previous search restrictions
+				adapter.setSearchAllDevices();
+				adapter.targetFamily(family);
+				//adapter.targetAllFamilies();
+				/*if (adapter.canHyperdrive())
+					adapter.setSpeed(DSPortAdapter.SPEED_HYPERDRIVE);
+				else if (adapter.canOverdrive())
+					adapter.setSpeed(DSPortAdapter.SPEED_OVERDRIVE);
+				else*/
+					adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+				java.util.Enumeration containers = adapter.getAllDeviceContainers();
+				OneWireContainer element;
+				ZoneDetails zone;
+				m_deviceList.RemoveAll(x => x.Family == family);
+				while (MZPState.Instance != null && containers.hasMoreElements()) {
+					element = (OneWireContainer)containers.nextElement();
+					zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+					ProcessElement(zone, element);
+					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+				}
+				adapter.endExclusive();
+			}
+		}
+
+		private void ProcessElement(ZoneDetails zone, OneWireContainer element) {
+			sbyte[] state;
+			TemperatureContainer temp; double tempVal;
+			if (zone != null) {
+				try {
+					switch (element.getName()) {
+						case ONEWIRE_TEMPDEV_NAME:
 							temp = (TemperatureContainer)element;
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
@@ -818,19 +872,53 @@ namespace MultiZonePlayer
 								zone.Temperature = Math.Round(tempVal, 2);
 							else
 								MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
-						}
-						catch (Exception ex)
-						{
-							MLog.Log(this, "Err reading OneWire temperature zone="+zone.ZoneName+" err="+ex.Message);
-						}
+							break;
+						case ONEWIRE_PHOTODEV_NAME:
+							SwitchContainer swd = (SwitchContainer)element;
+							state = swd.readDevice();
+							bool latch = swd.getLatchState(0, state);
+							bool level = swd.getLevel(0, state);
+							bool activity = swd.getSensedActivity(0, state);
+							bool high = swd.isHighSideSwitch();
+							bool alarm = element.isAlarming();
+
+							if (activity) {
+								swd.clearActivity();
+								swd.writeDevice(state);
+								swd.readDevice();
+							}
+
+							if (level) {
+								swd.clearActivity();
+								swd.writeDevice(state);
+								swd.readDevice();
+							}
+
+							if (level || activity) {
+								zone.ClosureCounts++;
+								MLog.Log(null, "BINGO CLOSURES=" + zone.ClosureCounts);
+							}
+							//swd.setLatchState(0, true, false, state);
+
+							//MLog.Log(null, "\n\nLEVEL=" + level + "  latch=" + latch + " activity=" + activity
+							//	+ " highside=" + high + "  alarming=" + alarm);
+							//OneWireContainer12 o12 = (OneWireContainer12)element;
+							//o12.setSearchConditions(0, OneWireContainer12.SOURCE_PIO, OneWireContainer12.POLARITY_ONE, state);
+							//o12.writeDevice(state);
+							//OneWireContainer05 o05 = (OneWireContainer05)element;
+							//int ilevel = o05.(0, state);
+							//MLog.Log(null, "ilevel=" + level + "latch=" + latch + " sensed=" + sensed);
+							break;
 					}
-					else
-					{
-						if (element.getName() != ONEWIRE_CONTROLLER_NAME)
-							MLog.Log(this, "UNNALOCATED OneWire device addr=" + element.getAddressAsString() + " name="+element.getName() + " desc="+element.getDescription());
-					}
+
 				}
-				adapter.endExclusive();
+				catch (Exception ex) {
+					MLog.Log(this, "Err reading OneWire temperature zone=" + zone.ZoneName + " err=" + ex.Message);
+				}
+			}
+			else {
+				if (element.getName() != ONEWIRE_CONTROLLER_NAME)
+					MLog.Log(this, "UNNALOCATED OneWire device addr=" + element.getAddressAsString() + " name=" + element.getName() + " desc=" + element.getDescription());
 			}
 		}
 

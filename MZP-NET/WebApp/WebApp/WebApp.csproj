@@ -109,6 +109,7 @@
     <Content Include="m\alerts.html" />
     <Content Include="m\auth.html" />
     <Content Include="m\basic.js" />
+    <Content Include="m\info.html" />
     <Content Include="m\zone-video-select.html" />
     <Content Include="m\default.html" />
     <Content Include="m\alarm.html" />

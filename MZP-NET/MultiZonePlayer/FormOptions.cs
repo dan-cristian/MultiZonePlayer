@@ -182,7 +182,7 @@ namespace MultiZonePlayer
 					zone.TemperatureDeviceId = (dgvZones.Rows[r].Cells[Zones_TempDeviceId.Name].Value ?? "").ToString();
 					zone.PowerType = (dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString();
 					zone.Type = (ZoneType)Enum.Parse(typeof(ZoneType),(dgvZones.Rows[r].Cells[Zones_Type.Name].Value ?? "Undefined").ToString());
-					zone.CronSchedule = dgvZones.Rows[r].Cells[Zones_HeatSchedule.Name].Value.ToString();
+					zone.CronSchedule = (dgvZones.Rows[r].Cells[Zones_HeatSchedule.Name].Value ?? "").ToString();
 					zone.SaveStateToIni();
                 }
             }
@@ -339,21 +339,23 @@ namespace MultiZonePlayer
             String userId;
             String userName;
             String userCode;
+			try {
+				for (int r = 0; r < dgvUsers.Rows.Count; r++) {
+					userId = dgvUsers.Rows[r].Cells[UserId.Name].Value.ToString();
+					userName = dgvUsers.Rows[r].Cells[UserName.Name].Value.ToString();
+					userCode = dgvUsers.Rows[r].Cells[UserCode.Name].Value.ToString();
 
-            for (int r = 0; r < dgvUsers.Rows.Count; r++)
-            {
-                userId = dgvUsers.Rows[r].Cells[UserId.Name].Value.ToString();
-                userName = dgvUsers.Rows[r].Cells[UserName.Name].Value.ToString();
-                userCode = dgvUsers.Rows[r].Cells[UserCode.Name].Value.ToString();
-
-                if (userId != null && userCode != null)
-                {
-					User user = User.GetUser(Convert.ToInt16(userId));
-					user.Name = userName;
-					user.Code = userCode;
-                }
-            }
-			User.SaveToIni();
+					if (userId != null && userCode != null) {
+						User user = User.GetUser(Convert.ToInt16(userId));
+						user.Name = userName;
+						user.Code = userCode;
+					}
+				}
+				User.SaveToIni();
+			}
+			catch (Exception ex) {
+				MLog.Log(ex, this, "error save users");
+			}
         }
 
         private void GUILoadUsers()

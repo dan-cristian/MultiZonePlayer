@@ -1373,6 +1373,7 @@ public class MZPState
 	public void TickFast()
 	{
 		CheckAlerts();
+		m_oneWire.TickFast();
 	}
 
     public void TickSlow()
@@ -1403,7 +1404,7 @@ public class MZPState
 		m_powerControlDenkovi.timerPowerSaving_Tick();
 		m_powerControlNumato.timerPowerSaving_Tick();
 		if (MZPState.Instance == null) return;
-		m_oneWire.Tick();
+		m_oneWire.TickSlow();
 		if (MZPState.Instance == null) return;
 		CheckForExternalZoneEvents();
 		

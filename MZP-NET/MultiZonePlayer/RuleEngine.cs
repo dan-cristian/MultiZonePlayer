@@ -360,7 +360,9 @@ namespace MultiZonePlayer
 											if (value.ToString().Contains(typeof(MultiZonePlayer.User).ToString()))
 												value = ((List<User>)value)[Convert.ToInt32(parameters[0])];
 											else
-											
+												if (value.ToString().Contains(typeof(MultiZonePlayer.OneWire.Device).ToString()))
+													value = ((List<OneWire.Device>)value)[Convert.ToInt32(parameters[0])];
+												else
 									//"System.Collections.Generic.List`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
