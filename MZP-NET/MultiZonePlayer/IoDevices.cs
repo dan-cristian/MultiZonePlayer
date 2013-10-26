@@ -253,7 +253,7 @@ namespace MultiZonePlayer
 					MLog.Log(this, "RFX result for response:[" + origResponse + "] is " + dev.DisplayValues());
 					if (dev.ZoneId != -1)
 					{
-						ZoneDetails zone = MZPState.Instance.GetZoneById(dev.ZoneId);
+						ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
 						switch (dev.DeviceType)
 						{
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:

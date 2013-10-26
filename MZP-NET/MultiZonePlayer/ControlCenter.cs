@@ -154,7 +154,7 @@ namespace MultiZonePlayer
 							{
 								if (MZPState.Instance.PowerControlIsOn(details.ZoneId))
 								{
-									MLog.Log(this, "No zones require power on index " + details.PowerIndex
+									MLog.Log(this, "No m_zoneList require power on index " + details.PowerIndex
 										+ ", powering off zone=" + details.ZoneName);
 									MZPState.Instance.PowerControlOff(details.ZoneId);
 								}
@@ -235,7 +235,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-                MLog.Log(ex, "Error close all zones");
+                MLog.Log(ex, "Error close all m_zoneList");
             }
         }
 
@@ -443,7 +443,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-				MLog.Log(ex, "Err closing zones");
+				MLog.Log(ex, "Err closing m_zoneList");
             }
         }
 

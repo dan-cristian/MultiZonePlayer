@@ -64,7 +64,7 @@ namespace MultiZonePlayer
 
         public ZoneGeneric(int zoneId)
         {
-            m_zoneDetails = MZPState.Instance.GetZoneById(zoneId);
+            m_zoneDetails = ZoneDetails.GetZoneById(zoneId);
             this.m_sourceZoneId = zoneId;
 
 			m_clonedZones = new List<ZoneDetails>();
@@ -346,7 +346,7 @@ namespace MultiZonePlayer
 					}
 					break;
 				case GlobalCommands.closure:
-					IoEvent(vals.GetValue(GlobalParams.id),
+					ClosureEvent(vals.GetValue(GlobalParams.id),
 						vals.GetValue(GlobalParams.iscontactmade).ToLower()=="true");
 					break;
 				case GlobalCommands.closurearm:
@@ -784,11 +784,35 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public void IoEvent(string key, Boolean isContactMade)// KeyDetail kd)
+		public void ClosureEvent(string key, Boolean isContactMade)// KeyDetail kd)
 		{
-			//if (isContactMade)
-			MLog.Log(this, "IoEvent zone="+m_zoneDetails.ZoneName+" key="+key + " contactmade="+isContactMade);
-			ClosureOpenCloseRelay lastState = m_zoneDetails.ClosureOpenCloseRelay;
+			MLog.Log(this, "ClosureEvent zone="+m_zoneDetails.ZoneName+" key="+key + " contactmade="+isContactMade);
+			Boolean isContactMadeLast = m_zoneDetails.IsClosureContactMade;
+			m_zoneDetails.IsClosureContactMade = isContactMade;
+			if (isContactMade)
+				m_zoneDetails.RelayState = EnumRelayState.ContactClosed;
+			else
+				m_zoneDetails.RelayState = EnumRelayState.ContactOpen;
+
+			RecordMoveEvent(MoveTypeEnum.Closure);
+
+			string message = "Closure contact state " + key + " is " + isContactMade 
+				+ " on zone " + m_zoneDetails.ZoneName;
+			MLog.Log(this, message);
+			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key,
+				DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), m_zoneDetails.RelayState.ToString(), 
+				m_zoneDetails.ZoneId.ToString(),Constants.EVENT_TYPE_CLOSURE);
+
+			if (isContactMade) {
+				if (m_zoneDetails.IsArmed || 
+					(MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId==m_zoneDetails.AlarmAreaId)) {
+					Alert.CreateAlert(message, m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+				}
+			}
+			m_zoneDetails.MovementAlert = false;
+
+			/*ClosureOpenCloseRelay lastState = m_zoneDetails.ClosureOpenCloseRelay;
+
 			if (lastState == null)
 			{
 				lastState = new ClosureOpenCloseRelay(isContactMade);
@@ -804,12 +828,12 @@ namespace MultiZonePlayer
 			
 			RecordMoveEvent(MoveTypeEnum.Closure);
 
-			string message = "Closure state " + key + " is " + lastState.RelayState + " on zone " + m_zoneDetails.ZoneName;
+			string message = "Closure contact state " + key + " is " + lastState.RelayState + " on zone " + m_zoneDetails.ZoneName;
 			MLog.Log(this, message);
 			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key, 
 				DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), lastState.RelayState.ToString(), m_zoneDetails.ZoneId.ToString(),
 				Constants.EVENT_TYPE_CLOSURE);
-			if (lastState.RelayState == ClosureOpenCloseRelay.EnumState.ContactClosed)
+			if (lastState.RelayState == ClosureOpenCloseRelay.EnumRelayState.ContactClosed)
 			{
 				if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.IsArmed)
 				{
@@ -819,6 +843,7 @@ namespace MultiZonePlayer
 				//	MZPEvent.EventImportance.Informative, m_zoneDetails);
 			}
 			m_zoneDetails.MovementAlert = false;
+			 */
 		}
 
 		private void RecordMoveEvent(MoveTypeEnum moveType)

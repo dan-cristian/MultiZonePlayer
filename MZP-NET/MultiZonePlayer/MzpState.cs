@@ -15,11 +15,15 @@ namespace MultiZonePlayer
 {
 public class MZPState
 {
+	[Description("Edit")]
+	public Boolean SMSEnabled = false;
+	[Description("Edit")]
+	public Boolean LandLineEnabled;
+
     private static MZPState m_sysState = null;
     private ArrayList m_systemInputDeviceList = null;
     private Hashtable m_systemInputDeviceNames = null;
     public String powerControlStatusCommand;
-    //public Hashtable iniUserList = new Hashtable();
     private List<ControlDevice> m_iniControlList = new List<ControlDevice>();
     public List<Playlist> m_playlist = new List<Playlist>();
     public Hashtable zoneDefaultInputs;
@@ -29,7 +33,7 @@ public class MZPState
     private static BasePowerControl m_powerControlDenkovi, m_powerControlNumato;
     private Hashtable m_zoneInputDeviceNames = null;
     private Hashtable m_playListOLD = null;//list with all songs from current playlist
-    private List<ZoneDetails> m_zoneList;
+    
     private List<MoodMusic> m_moodMusicList;
 	private Cron m_cron;
     private MultiZonePlayer.Tail m_Tail;
@@ -38,7 +42,7 @@ public class MZPState
     private Boolean m_isFollowMeMusic = false;
     private Boolean m_isPowerFailure = false;
 	private Boolean m_isWinloadLoading = false;
-    public List<IMessenger> m_messengerList = new List<IMessenger>();
+    public List<IMessenger> m_messengerList;
     private NotifyState m_notifyState;
     private List<MusicScheduleEntry> m_musicScheduleList;
     private DateTime m_initMZPStateDateTime = DateTime.Now;
@@ -123,9 +127,8 @@ public class MZPState
                 
 		String deviceName;
 		RFXDeviceDefinition.LoadFromIni();
-        MLog.Log(this, "Loading zones from ini");
-        m_zoneList = new List<ZoneDetails>();
-        MultiZonePlayer.ZoneDetails.LoadFromIni(ref m_zoneList);
+        MLog.Log(this, "Loading m_zoneList from ini");
+        MultiZonePlayer.ZoneDetails.LoadFromIni();
 		User.LoadFromIni();
 		m_moodMusicList = new List<MoodMusic>();
         MoodMusic.LoadFromIni(ref m_moodMusicList);
@@ -202,11 +205,14 @@ public class MZPState
 
 	private void LoadSerials()
 	{
+		m_messengerList = new List<IMessenger>();
 		m_wdio = new WDIO();//new GPIO();
 		m_oneWire = new OneWire();
 		m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERPASS[1]));
-		m_messengerList.Add(new SMS());
-		m_messengerList.Add(new Modem());
+		if (SMSEnabled)
+			m_messengerList.Add(new SMS());
+		if (LandLineEnabled)
+			m_messengerList.Add(new Modem());
 		m_messengerList.Add(new RFXCom());
 		m_messengerList.Add(m_wdio);
 		m_messengerList.Add(m_oneWire);
@@ -240,7 +246,7 @@ public class MZPState
 	public List<MacroEntry> GetZoneMacros(int zoneId)
 	{
 		List<MacroEntry> macros = null;
-		String zoneName = GetZoneById(zoneId).ZoneName;
+		String zoneName = MultiZonePlayer.ZoneDetails.GetZoneById(zoneId).ZoneName;
 		if (m_macroList != null)
 		{
 			macros = m_macroList.FindAll(x =>
@@ -343,21 +349,22 @@ public class MZPState
 
     public List<ZoneDetails> ZoneDetails
     {
-        get{return m_zoneList;}
+        get{return MultiZonePlayer.ZoneDetails.ZoneList;}
     }
 
 	public List<ZoneDetails> ZonesWithType(ZoneType type)
 	{
-		return ZoneList.List(type, "=");
+		return ZoneDetails.FindAll(x => x.Type == type);
+		//return ZoneList.List(type, "=");
 	}
-
+	/*
 	public class ZoneList {
 		public static List<ZoneDetails> List(ZoneType value, String operation) {
-			//List<ZoneDetails> zones;
+			//List<ZoneDetails> m_zoneList;
 			return MZPState.Instance.ZoneDetails.FindAll(x => x.Type == value);
 		}
 
-	}
+	}*/
 
 	public List<String> GetEditableFieldList(String className)
 	{
@@ -443,10 +450,7 @@ public class MZPState
     {
         get { return m_musicScheduleList; }
     }
-    public ZoneDetails GetZoneById(int zoneId)
-    {
-        return ZoneDetails.Find(item => item.ZoneId == zoneId);
-    }
+    
 
 	public ZoneDetails GetZoneIdByContainsName(String zoneName)
 	{
@@ -467,7 +471,7 @@ public class MZPState
 
     public BasePowerControl PowerControl(int zoneid)
     {
-		if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
+		if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 			return m_powerControlDenkovi;
 		else
 			return m_powerControlNumato;
@@ -475,11 +479,11 @@ public class MZPState
 
 	public void PowerControlOn(int zoneid)
 	{
-		ZoneDetails zone = GetZoneById(zoneid);
+		ZoneDetails zone = MultiZonePlayer.ZoneDetails.GetZoneById(zoneid);
 		bool switchedOn = false; String powerdevice;
 		if (zone.HasPowerCapabilities)
 		{
-			if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
+			if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 			{
 				if (!m_powerControlDenkovi.IsPowerOn(zoneid))
 				{
@@ -494,7 +498,7 @@ public class MZPState
 				{
 					switchedOn = true;
 				}
-				if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
+				if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
 					m_powerControlNumato.PowerOn(zoneid);
 				powerdevice = "Numato";
 			}
@@ -509,12 +513,12 @@ public class MZPState
 
 	public void PowerControlOff(int zoneid)
 	{
-		ZoneDetails zone = GetZoneById(zoneid);
+		ZoneDetails zone = MultiZonePlayer.ZoneDetails.GetZoneById(zoneid);
 		bool switchedOff = false;String powerdevice;
 
 		if (zone.HasPowerCapabilities)
 		{
-			if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
+			if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 			{
 				if (m_powerControlDenkovi.IsPowerOn(zoneid))
 					switchedOff = true;
@@ -525,7 +529,7 @@ public class MZPState
 			{
 				if (m_powerControlNumato.IsPowerOn(zoneid))
 					switchedOff = true;
-				if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
+				if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
 					m_powerControlNumato.PowerOff(zoneid);
 				powerdevice = "Numato";
 			}
@@ -554,10 +558,10 @@ public class MZPState
 	}
 	public bool PowerControlIsOn(int zoneid)
 	{
-		if (GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
+		if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString())
 			return m_powerControlDenkovi.IsPowerOn(zoneid);
 		else
-			if (GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
+			if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Numato.ToString())
 				return m_powerControlNumato.IsPowerOn(zoneid);
 			else return false;
 	}
@@ -594,7 +598,7 @@ public class MZPState
 	{
 		get{
 			bool move = false;
-			move = m_zoneList.Find(x => x.HasRecentMove || x.HasImmediateMove) != null;
+			move = ZoneDetails.Find(x => x.HasRecentMove || x.HasImmediateMove) != null;
 			return move;
 		}
 	}
@@ -660,7 +664,7 @@ public class MZPState
 			default:
 				foreach (ControlDevice dev in devices)
 				{
-					if (GetZoneById(dev.ZoneId).ClosureIdList == key)
+					if (MultiZonePlayer.ZoneDetails.GetZoneById(dev.ZoneId).ClosureIdList == key)
 						return dev.ZoneId;
 				}
 				return -1;
@@ -763,7 +767,7 @@ public class MZPState
 
     public int GetZoneIdByAlarmZoneId(int alarmZoneId)
     {
-        ZoneDetails zone = m_zoneList.Find(x => x.AlarmZoneId.Equals(alarmZoneId));
+        ZoneDetails zone = ZoneDetails.Find(x => x.AlarmZoneId.Equals(alarmZoneId));
         if (zone != null)
             return zone.ZoneId;
         else
@@ -772,7 +776,7 @@ public class MZPState
 
     public int GetZoneIdByCamZoneId(int camId)
     {
-        ZoneDetails zone = m_zoneList.Find(x => x.CameraId.Equals(camId.ToString()));
+		ZoneDetails zone = ZoneDetails.Find(x => x.CameraId.Equals(camId.ToString()));
         if (zone != null)
             return zone.ZoneId;
         else
@@ -919,7 +923,7 @@ public class MZPState
                 }
 
                 DateTime lastCamEvent = m_initMZPStateDateTime;
-                foreach (ZoneDetails zone in m_zoneList)
+				foreach (ZoneDetails zone in ZoneDetails)
                 {
                     if (zone.HasMotionSensor && zone.HasCamera)
                     {
@@ -946,7 +950,7 @@ public class MZPState
     {
         
             List<ZoneDetails> openZones;
-            openZones = m_zoneList.FindAll(x => x.HasMotionSensor && (x.HasRecentMove || x.HasImmediateMove));
+			openZones = ZoneDetails.FindAll(x => x.HasMotionSensor && (x.HasRecentMove || x.HasImmediateMove));
 
             if (openZones.Count == 0)
             {
@@ -1035,14 +1039,11 @@ public class MZPState
 
 		if (mzpevent != null)
 		{
-			List<ZoneDetails> zonesToNotify = null;
-			zonesToNotify = m_zoneList.FindAll(x => x.HasSpeakers && (x.IsActive || x.HasImmediateMove || x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
-				.OrderByDescending(x => x.IsActive).ThenByDescending(x => x.HasImmediateMove).ThenBy(x => x.LastLocalCommandAgeInSeconds).ToList();
-
+			List<ZoneDetails> zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;
 			if (excludeSource && mzpevent.ZoneDetails != null)
 				zonesToNotify.RemoveAll(x => x.ZoneId == mzpevent.ZoneDetails.ZoneId);
 
-			MLog.Log(this, "NotifyEvent to zones count=" + zonesToNotify.Count);
+			MLog.Log(this, "NotifyEvent to m_zoneList count=" + zonesToNotify.Count);
 
 			ValueList vals = new ValueList();
 			vals.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
@@ -1267,7 +1268,7 @@ public class MZPState
 
 			if ((mzpevent.ZoneDetails.IsClosureArmed) 
 				&& (mzpevent.Source == MZPEvent.EventSource.Closure)
-				&& (mzpevent.ZoneDetails.ClosureOpenCloseRelay.RelayState==ClosureOpenCloseRelay.EnumState.ContactClosed))
+				&& (mzpevent.ZoneDetails.IsClosureContactMade))
 			{
 				cause = "Closure event detected on closure armed zone" + mzpevent.ZoneDetails.ZoneName;
 				NotifyEventToUsers(mzpevent, cause, false, false);

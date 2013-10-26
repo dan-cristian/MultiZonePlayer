@@ -552,8 +552,10 @@ namespace MultiZonePlayer
 					if (Thread.CurrentThread != null && 
 						(Thread.CurrentThread.Name == null ||
 						!Thread.CurrentThread.Name.StartsWith("Serial Data")))
-						Thread.CurrentThread.Name = "Serial Data Received " + comPort.PortName;
-                    //determine the mode the user selected (binary/string)
+						Thread.CurrentThread.Name = "Serial Received " + comPort.PortName;
+					Thread th;
+					
+					//determine the mode the user selected (binary/string)
                     switch (CurrentTransmissionType)
                     {
                         //user chose string
@@ -578,7 +580,10 @@ namespace MultiZonePlayer
                                     MLog.LogModem(String.Format("{0} {1} READ 1 CHAR [{2}]\r\n",DateTime.Now.ToString(), comPort.PortName, + Convert.ToByte(msg[0])));
                                     //comPort.Close();
                                 }*/
-                                _callback(msg);
+								th = new Thread(() => _callback(msg));
+								th.Name = "Serial Received " + comPort.PortName + " Exec";
+								th.Start();
+                                //_callback(msg);
                             }
                             //string msg = comPort.ReadLine();
 
@@ -600,8 +605,11 @@ namespace MultiZonePlayer
 								msgDisplay = msg.Replace("\r", "{R}").Replace("\n", "{N}");
 								if (VerboseDebug)
 									MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
-								
-								_callback(msg);
+
+								th = new Thread(() => _callback(msg));
+								th.Name = "Serial Received " + comPort.PortName + " Exec";
+								th.Start();
+								//_callback(msg);
 							}
 							break;
 						case TransmissionType.TextR:
@@ -623,7 +631,11 @@ namespace MultiZonePlayer
 										if (VerboseDebug)
 											MLog.LogModem(String.Format("{0} {1}        read split [{2}] len={3}\r\n", DateTime.Now.ToString(), 
 												comPort.PortName, msgDisplay, atom.Length));
-										_callback(atom);
+
+										th = new Thread(() => _callback(atom));
+										th.Name = "Serial Received " + comPort.PortName + " Exec";
+										th.Start();
+										//_callback(atom);
 									}
 								}
 								catch (TimeoutException)
@@ -650,7 +662,10 @@ namespace MultiZonePlayer
 								MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msgDisplay.Length));
                             //display the data to the user
                             //DisplayData(MessageType.Incoming, ByteToHex(comBuffer) + "\n");
-							_callback(msgDisplay);
+							th = new Thread(() => _callback(msgDisplay));
+							th.Name = "Serial Received " + comPort.PortName + " Exec";
+							th.Start();
+							//_callback(msgDisplay);
 							break;
                         
 						 default:

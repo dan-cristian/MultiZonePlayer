@@ -9,6 +9,10 @@ using fastJSON;
 namespace MultiZonePlayer {
 
 	public class ZoneDetails {
+		private static List<ZoneDetails> m_zoneList = new List<ZoneDetails>();
+
+		
+
 		public int ZoneId = 0;
 		[Description("Edit")]
 		public String Description;
@@ -36,6 +40,7 @@ namespace MultiZonePlayer {
 		public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
 		public int AlarmZoneId = -1;
+		[Description("Edit")]
 		public int AlarmAreaId = -1;
 		public Boolean HasMotionSensor = false;
 		public Boolean HasMicrophone = false;
@@ -44,14 +49,18 @@ namespace MultiZonePlayer {
 		public String DisplayConnection = "";
 		public String DisplayType = "";
 		public Boolean RequirePower = false;
-		public Boolean IsClosureArmed = false;
 		[Description("Edit")]
 		public String NearbyZonesIdList = "";//zone id list separated by ;
 		[Description("Edit")]
 		public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
-		//public EnumRelayType ClosureRelayType = EnumRelayType.Undefined;
-		public ClosureOpenCloseRelay ClosureOpenCloseRelay;
+		//public ClosureOpenCloseRelay ClosureOpenCloseRelay;
+		[Description("Edit")]
 		public ulong ClosureCounts = 0;
+		public Boolean IsClosureArmed = false;
+		private Boolean m_isClosureContactMade = false, m_isClosureContactMadeLast = false;
+		public EnumRelayState RelayState = EnumRelayState.Undefined;
+		public EnumRelayType RelayType = EnumRelayType.Undefined;
+		
 		[Description("Edit")]
 		public String TemperatureDeviceId;
 
@@ -82,6 +91,7 @@ namespace MultiZonePlayer {
 		public LastFmMeta Meta;
 
 		public Boolean CameraAlertActive = true;
+		
 		private Boolean m_movementAlert = false, m_movementAlertLast = false;
 
 		public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
@@ -100,7 +110,7 @@ namespace MultiZonePlayer {
 
 
 		public ZoneDetails() {
-			ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
+			//ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
 		}
 
 		public ZoneDetails(int p_zoneId, String p_zoneName) {
@@ -116,6 +126,16 @@ namespace MultiZonePlayer {
 		}
 		#region getters
 
+		public Boolean IsClosureContactMade {
+			get { return m_isClosureContactMade; }
+			set {
+				m_isClosureContactMade = value; 
+				if (m_isClosureContactMade != m_isClosureContactMadeLast) {
+					Rules.ExecuteRule(this, "isclosurecontact=" + m_isClosureContactMade);
+					m_isClosureContactMadeLast= m_isClosureContactMade;
+				}
+			}
+		}
 		public ZoneState ZoneState {
 			get { return m_zoneState; }
 			set {
@@ -145,7 +165,7 @@ namespace MultiZonePlayer {
 							 + Utilities.DurationAsTimeSpan(LastMovementAge)
 							 + (HasImmediateMove ? " ImmediateMove " : "")
 							 + (HasRecentMove ? " RecentMove " : "")
-							 + (ClosureOpenCloseRelay.RelayType != ClosureOpenCloseRelay.EnumRelayType.Undefined ? " " + ClosureState + "@ " + LastClosureEventDateTime : " ")
+							 + (RelayType != EnumRelayType.Undefined ? " " + ClosureState + "@ " + LastClosureEventDateTime : " ")
 							 + Title
 							 + (Temperature != DEFAULT_TEMP_HUM ? " " + Temperature + "C" : "")
 							 + (Humidity != DEFAULT_TEMP_HUM ? " " + Humidity + "%" : "")
@@ -287,7 +307,7 @@ namespace MultiZonePlayer {
 
 		public String ClosureState {
 			get {
-				return ClosureOpenCloseRelay.RelayState.ToString();
+				return RelayState.ToString();
 			}
 		}
 
@@ -332,11 +352,11 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public Boolean IsClosureActivated {
+		/*public Boolean IsClosureActivated {
 			get {
 				return ClosureOpenCloseRelay.RelayContactMade;
 			}
-		}
+		}*/
 
 		public Boolean HasNotifyMove {
 			get { return HasImmediateMove || HasRecentMove; }
@@ -402,7 +422,7 @@ namespace MultiZonePlayer {
 
 
 		#endregion
-		public static void LoadFromIni(ref List<ZoneDetails> zones) {
+		public static void LoadFromIni() {
 			Hashtable zoneValues = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONES);
 
 			ZoneDetails zone;
@@ -414,10 +434,10 @@ namespace MultiZonePlayer {
 			foreach (int id in zoneValues.Keys) {
 				zone = new ZoneDetails(id, zoneValues[id].ToString());
 
-				zones.Add(zone);
+				m_zoneList.Add(zone);
 			}
 
-			zones.Sort(delegate(ZoneDetails a1, ZoneDetails a2) {
+			m_zoneList.Sort(delegate(ZoneDetails a1, ZoneDetails a2) {
 				return a1.ZoneId.CompareTo(a2.ZoneId);
 			});
 		}
@@ -463,19 +483,20 @@ namespace MultiZonePlayer {
 						if (DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
 							HasVideoPlayer = true;
 
-					if (zonestorage.ClosureOpenCloseRelay != null) {
+					/*if (zonestorage.ClosureOpenCloseRelay != null) {
 						ClosureOpenCloseRelay = zonestorage.ClosureOpenCloseRelay;
 						ClosureOpenCloseRelay.RelayType = zonestorage.ClosureOpenCloseRelay.RelayType;
 					}
 					else {
 						ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
 						ClosureOpenCloseRelay.RelayType = ClosureOpenCloseRelay.EnumRelayType.Undefined;
-					}
+					}*/
 
 					ClosureIdList = zonestorage.ClosureIdList.Trim();
 					ClosureCounts = zonestorage.ClosureCounts;
-					if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
-						IsClosureArmed = true;
+					
+					//if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
+					IsClosureArmed = true;
 					NearbyZonesIdList = zonestorage.NearbyZonesIdList;
 					if (NearbyZonesIdList.Length > 0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
 						NearbyZonesIdList += ";";
@@ -640,6 +661,14 @@ namespace MultiZonePlayer {
 		public Boolean IsNearbyZone(int zoneId) {
 			return NearbyZonesIdList.Contains(zoneId.ToString() + ";");
 		}
+		#region statics
+		public static List<ZoneDetails> ZoneList {
+			get { return ZoneDetails.m_zoneList; }
+		}
+
+		public static ZoneDetails GetZoneById(int zoneId) {
+			return m_zoneList.Find(item => item.ZoneId == zoneId);
+		}
 
 		public static TimeSpan LastMovementAge_Min {
 			get {
@@ -666,6 +695,16 @@ namespace MultiZonePlayer {
 				return MZPState.Instance.ZoneDetails.FindAll(x => x.HasRecentMove);
 			}
 		}
+
+		public static List<ZoneDetails> ZoneWithPotentialUserPresence_All {
+			get {
+				return m_zoneList.FindAll(x => x.HasSpeakers 
+					&& (x.IsActive || x.HasImmediateMove || x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
+					.OrderByDescending(x => x.IsActive).ThenByDescending(x => x.HasImmediateMove)
+					.ThenBy(x => x.LastLocalCommandAgeInSeconds).ToList();
+			}
+		}
+		#endregion
 	}
 
 
@@ -690,24 +729,23 @@ namespace MultiZonePlayer {
 		Closure
 	}
 
+	public enum EnumRelayState {
+		Undefined = -1,
+		ContactOpen = 0,
+		ContactClosed = 1
+	}
+	public enum EnumRelayType {
+		Undefined,
+		NormalOpen,
+		NormalClosed,
+		Button
+	}
+	/*
 	public class ClosureOpenCloseRelay {
-		public enum EnumState {
-			Undefined = -1,
-			ContactOpen = 0,
-			ContactClosed = 1
-		}
-
-		public enum EnumRelayType {
-			Undefined,
-			NormalOpen,
-			NormalClosed,
-			Button
-		}
-
 		//public string Key;
 		public DateTime LastChange;
-		private EnumState m_relayState = EnumState.Undefined;
-		private EnumState m_relayStateLast = EnumState.Undefined;
+		private EnumRelayState m_relayState = EnumRelayState.Undefined;
+		private EnumRelayState m_relayStateLast = EnumRelayState.Undefined;
 		public EnumRelayType RelayType = EnumRelayType.Undefined;
 		private bool m_contactMade = false;
 
@@ -722,7 +760,7 @@ namespace MultiZonePlayer {
 		public String LastChangeAgeAsTimeSpan {
 			get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastChange)); }
 		}
-		public EnumState RelayState {
+		public EnumRelayState RelayState {
 			get { return m_relayState; }
 			//set { m_relayState = value; }
 		}
@@ -741,25 +779,25 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public EnumState GetRelayState(bool isRelayContactMade) {
+		public EnumRelayState GetRelayState(bool isRelayContactMade) {
 			switch (RelayType) {
 				case EnumRelayType.NormalOpen:
 				case EnumRelayType.Button:
-					return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactClosed : ClosureOpenCloseRelay.EnumState.ContactOpen;
+					return isRelayContactMade ? EnumRelayState.ContactClosed : EnumRelayState.ContactOpen;
 				case EnumRelayType.NormalClosed:
-					return isRelayContactMade ? ClosureOpenCloseRelay.EnumState.ContactOpen : ClosureOpenCloseRelay.EnumState.ContactClosed;
+					return isRelayContactMade ? EnumRelayState.ContactOpen : EnumRelayState.ContactClosed;
 				default:
 					//MLog.Log(this, "Error, undefined relay type");
-					return EnumState.Undefined;
+					return EnumRelayState.Undefined;
 			}
 		}
 
 		public void ResetState() {
-			m_relayState = EnumState.Undefined;
-			m_relayStateLast = EnumState.Undefined;
+			m_relayState = EnumRelayState.Undefined;
+			m_relayStateLast = EnumRelayState.Undefined;
 		}
 
 		
 	}
-
+	*/
 }

@@ -147,7 +147,9 @@ namespace MultiZonePlayer
 		powertoggle,
 		setfield,
 		generategraph,
-		generatefullgraph
+		generatefullgraph,
+		doorring,
+		doorentry
 	}
 	public enum GlobalParams
 	{
@@ -186,6 +188,7 @@ namespace MultiZonePlayer
 		id, iscontactmade,
 		name, text, field,
 		type,zoneidlist,
+		
 		r//random no
 	}
 	public class CommandSyntax
@@ -253,6 +256,8 @@ namespace MultiZonePlayer
 			//new CommandSyntax(GlobalCommands.poweron,			GlobalParams.zonename),
 			//new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename),
 			new CommandSyntax(GlobalCommands.powertoggle,		GlobalParams.zoneid),
+			new CommandSyntax(GlobalCommands.doorring,			GlobalParams.sourcezoneid),
+			new CommandSyntax(GlobalCommands.doorentry,			GlobalParams.sourcezoneid),
 
 			/*
             genrelist,
@@ -1292,7 +1297,8 @@ namespace MultiZonePlayer
 		[Flags]
 		public enum NotificationFlags
 		{
-			NeedsImmediateUserAck,//int(retryinterval minutes)
+			///<summary>Integer, Retry interval in minutes</summary>
+			NeedsImmediateUserAck,
 			SystemError,
 			NotifyUserAfterXOccurences,//int(occurence)
 			NotifyUserAfterXSeconds,

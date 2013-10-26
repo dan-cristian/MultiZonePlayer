@@ -589,12 +589,12 @@ namespace MultiZonePlayer
 
 		public override void PowerOn(int zoneId)
 		{
-			m_lptDevice.WritePort((short)MZPState.Instance.GetZoneById(zoneId).PowerIndex, true);
+			m_lptDevice.WritePort((short)ZoneDetails.GetZoneById(zoneId).PowerIndex, true);
 		}
 
 		public override void PowerOff(int zoneId)
 		{
-			m_lptDevice.WritePort((short)MZPState.Instance.GetZoneById(zoneId).PowerIndex, false);
+			m_lptDevice.WritePort((short)ZoneDetails.GetZoneById(zoneId).PowerIndex, false);
 		}
 
 		public override void PowerOff()
@@ -604,7 +604,7 @@ namespace MultiZonePlayer
 
 		public override bool IsPowerOn(int zoneId)
 		{
-			return m_lptDevice.IsPowerOn((short)MZPState.Instance.GetZoneById(zoneId).PowerIndex);
+			return m_lptDevice.IsPowerOn((short)ZoneDetails.GetZoneById(zoneId).PowerIndex);
 		}
 	}
 
