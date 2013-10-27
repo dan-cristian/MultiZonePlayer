@@ -14,6 +14,9 @@
 #S.OneWire.DeviceList.?,%i.Name# #S.OneWire.DeviceList.?,%i.Address# #S.OneWire.DeviceList.?,%i.Zone.ZoneName#
 </td></tr>
 <%%>
+<%for;i;0;++;#S.ZoneTypesAvailable.Count#;%>
+	<button class="Small" onclick="window.open('zone-type.html?type=#S.ZoneTypesAvailableByIndex,%i#','_self')">#S.ZoneTypesAvailableByIndex,%i#</button>
+	<%%>
 </table>
 <button onclick="window.open('start.html', '_self')">Back</button>
 </body>

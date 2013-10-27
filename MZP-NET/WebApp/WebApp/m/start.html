@@ -2,7 +2,9 @@
 <html lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="robots" content="index, follow, noodp" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="HandheldFriendly" content="True" />
+<!--meta name="viewport" content="width=360, user-scalable=no" /-->
+<meta name="viewport" content="width=device-width, initial-scale=0.95, user-scalable=yes">
 <title>Start</title>
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
@@ -14,15 +16,18 @@
 	<%%>
 	<hr />
 	<button class="Action<%?;"#S.UserIsNearList.Count#"!="0"%>" onclick="window.open('users.html','_self')">Users [#S.UserIsNearList.Count#]</button>
-	<%for;i;0;++;#S.ZoneTypesAvailable.Count#;%>
-	<button onclick="window.open('zone-type.html?type=#S.ZoneTypesAvailableByIndex,%i#','_self')">#S.ZoneTypesAvailableByIndex,%i#</button>
-	<%%>
+	<button class="Small" onclick="window.open('zone-type.html?type=Closure#','_self')">Closures</button>
+	<button class="Small" onclick="window.open('zone-type.html?type=Component#','_self')">Devices</button>
 	<%if;"#S.ActiveAlertList.Count#"!="0"%>
 	<button class="PressedTrue" onclick="window.open('alerts.html','_self')">Alerts [#S.ActiveAlertList.Count#]</button>
 	<%%>
 	<button onclick="window.open('alarm.html','_self')">Alarm #SystemAlarm.AreaState#</button>
+	<br />
+	<button onclick="ajaxCall('result','cmd.html?command=macro&singleparamvalue=door', true)">Open Door</button>
+	<button onclick="ajaxCall('result','cmd.html?command=macro&singleparamvalue=gate', true)">Toggle Gate</button>
 	<br /><a href="slide.html">Slide</a>&nbsp;
 	<a href="Info.html">Info</a>
+	<div id="result"></div>
 <!--/td></tr></table-->
 
 </body>
