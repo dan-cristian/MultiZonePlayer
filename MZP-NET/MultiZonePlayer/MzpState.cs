@@ -685,6 +685,10 @@ public class MZPState
 	{
 		get { return Alert.ActiveAlertList; }
 	}
+
+	public List<Singleton> PerformanceList {
+		get { return Performance.List; }
+	}
     public void InitRemotes()
     {
         //this.multiPlayerDataSet.Remotes.Count;
@@ -1343,18 +1347,19 @@ public class MZPState
 				{
 					alert.LastSendOK = DateTime.Now;
 					alert.SendOKCount++;
+					MLog.Log(this, "User alert notified succesfully, alert "+alert.LastCause);
 				}
 				else
 				{
 					alert.LastSendAttempt = DateTime.Now;
 					alert.SendAttemptCount++;
+					MLog.Log(this, "User alert notification Failed, alert " + alert.LastCause);
 				}
 			}
 		}
 	}
 
-	public void CheckPresence()
-	{
+	public void CheckPresence() {
 		UserPresence.CheckWifi();
 		Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
 		Utilities.InternetGetConnectedState(ref istate, 0);
@@ -1363,8 +1368,7 @@ public class MZPState
 		if (UserPresence.UserIsNearList.Count == 0
 			&& !SystemAlarm.IsArmed
 			&& MultiZonePlayer.ZoneDetails.HasImmediateMove_All.Find(x=>x.AlarmAreaId==SystemAlarm.AreaId)==null
-			&& MultiZonePlayer.ZoneDetails.HasRecentMove_All.Find(x => x.AlarmAreaId == SystemAlarm.AreaId) == null) 
-		{
+			&& MultiZonePlayer.ZoneDetails.HasRecentMove_All.Find(x => x.AlarmAreaId == SystemAlarm.AreaId) == null) {
 				Alert.CreateAlert("Safe Area not armed when all family members are out", null, false, 
 					Alert.NotificationFlags.NeedsImmediateUserAck, 120);
 		}

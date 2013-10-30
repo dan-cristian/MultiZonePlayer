@@ -96,7 +96,7 @@ namespace MultiZonePlayer
             public const String PLAYLIST_DEFAULT = "default";
 
             public  const int VOLUME_STEP = 250;
-            public  const int ZONE_INACTIVITY_CYCLE_DURATION = 500;
+            public  const int ZONE_TICK_FAST_SLEEP = 500;
             public  const int ZONE_INACTIVITY_MAX_CYCLES = 120;
             public  const int POWERSAVING_CYCLE_DURATION = 10000;
             public  const int POWERSAVING_MAX_CYCLES = 60;
@@ -205,6 +205,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_TIMESPAN_FORMAT = new String[] { "PARAM_TIMESPAN_LONG_FORMAT", @"d\dh\hm\ms\s", "Long Format to display time intervals" };
 			public static String[] PARAM_ROUTER_HOST = new String[] { "PARAM_ROUTER_HOST", "http://192.168.0.1:88/", "Home router address and port" };
 			public static String[] PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL = new String[] { "PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL", "cgi-bin/luci/;stok=02bfb70c6bed15bd5fffa8d759fe2a0b/admin/network/wireless_status/radio0.network1", "Address to get wireless active clients fro home router" };
+			public static String[] PARAM_ROUTER_LOGOUT_URL = new String[] { "PARAM_ROUTER_LOGOUT_URL", "cgi-bin/luci/;stok=#TOKEN#/admin/logout/", "Logout url to clean temp session file, #TOKEN# represents the replaced variable" };
 			public static String[] PARAM_ROUTER_USER_NAME = new String[] { "PARAM_ROUTER_USER_NAME", "root", "User name for router" };
 			public static String[] PARAM_ROUTER_USER_PASS = new String[] { "PARAM_ROUTER_USER_PASS", "abcd1234", "router pass" };
 
@@ -293,7 +294,8 @@ namespace MultiZonePlayer
 				PARAM_WDIO_CHANNEL,
 				PARAM_TIMESPAN_FORMAT,
 				PARAM_ROUTER_HOST,
-				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL
+				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL,
+				PARAM_ROUTER_LOGOUT_URL
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;

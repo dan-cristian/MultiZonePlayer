@@ -18,6 +18,26 @@
 	<button class="Small" onclick="window.open('zone-type.html?type=#S.ZoneTypesAvailableByIndex,%i#','_self')">#S.ZoneTypesAvailableByIndex,%i#</button>
 	<%%>
 </table>
+<table style="border-width:1px;border-color:Black;border-style:inset">
+<tr class="Header">
+<td>Cause</td>
+<td>Errors</td>
+<td>Count</td>
+<td>Avg</td>
+<td>First</td>
+<td>Last</td>
+</tr>
+<%for;i;0;++;#S.PerformanceList.Count#;%>
+<td>#S.PerformanceList.?,%i.InitialMessage#; #S.PerformanceList.?,%i.LastMessage#</td>
+<td>#S.PerformanceList.?,%i.ErrorCount#</td>
+<td>#S.PerformanceList.?,%i.OccurenceCount#</td>
+<td>#S.PerformanceList.?,%i.AverageSpeed#</td>
+<td>#S.PerformanceList.?,%i.FirstOccurence#</td>
+<td>#S.PerformanceList.?,%i.LastOccurence#</td>
+</tr>
+<%%>
+</table>
+
 <button onclick="window.open('start.html', '_self')">Back</button>
 </body>
 </html>

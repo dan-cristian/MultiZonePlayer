@@ -818,12 +818,20 @@ namespace MultiZonePlayer
 				OneWireContainer element;
 				ZoneDetails zone;
 				m_deviceList.RemoveAll(x=>x.Family==family);
+				DateTime start = DateTime.Now;
+				int elementCount = 0, errCount=0;
 				while (MZPState.Instance != null && containers.hasMoreElements()){
 					element = (OneWireContainer)containers.nextElement();
 					zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
-					ProcessElement(zone, element);
+					if (!ProcessElement(zone, element))
+						errCount++;
 					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+					elementCount++;
 				}
+				Performance.Create("OneWire slow lookup for elements count=" + elementCount + " took "
+					+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount="+errCount, true,
+					Singleton.SingletonFlags.IsError, errCount,
+					Singleton.SingletonFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
 				adapter.endExclusive();
 			}
 		}
@@ -847,18 +855,27 @@ namespace MultiZonePlayer
 				OneWireContainer element;
 				ZoneDetails zone;
 				m_deviceList.RemoveAll(x => x.Family == family);
+				DateTime start = DateTime.Now;
+				int elementCount = 0, errCount=0;
 				while (MZPState.Instance != null && containers.hasMoreElements()) {
 					element = (OneWireContainer)containers.nextElement();
 					zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
-					ProcessElement(zone, element);
+					if (!ProcessElement(zone, element))
+						errCount++;
 					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+					elementCount++;
 				}
+
+				Performance.Create("OneWire fast lookup for elements count=" + elementCount + " took "
+					+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, false,
+					Singleton.SingletonFlags.IsError, errCount, 
+					Singleton.SingletonFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
 				adapter.endExclusive();
 			}
 		}
 
-		private void ProcessElement(ZoneDetails zone, OneWireContainer element) {
-			sbyte[] state;
+		private Boolean ProcessElement(ZoneDetails zone, OneWireContainer element) {
+			sbyte[] state; Boolean result = true;
 			TemperatureContainer temp; double tempVal;
 			if (zone != null) {
 				try {
@@ -896,7 +913,7 @@ namespace MultiZonePlayer
 
 							if (level || activity) {
 								zone.ClosureCounts++;
-								MLog.Log(null, "BINGO CLOSURES=" + zone.ClosureCounts);
+								//MLog.Log(null, "BINGO "+zone.ZoneName+"CLOSURES=" + zone.ClosureCounts);
 							}
 							//swd.setLatchState(0, true, false, state);
 
@@ -913,13 +930,20 @@ namespace MultiZonePlayer
 
 				}
 				catch (Exception ex) {
-					MLog.Log(this, "Err reading OneWire temperature zone=" + zone.ZoneName + " err=" + ex.Message);
+					String err = "Err reading OneWire zone=" + zone.ZoneName + " err=" + ex.Message;
+					Performance.Create(err, true, Performance.SingletonFlags.IsError, 1);
+					MLog.Log(this, err);
+					result = false;
 				}
 			}
 			else {
-				if (element.getName() != ONEWIRE_CONTROLLER_NAME)
-					MLog.Log(this, "UNNALOCATED OneWire device addr=" + element.getAddressAsString() + " name=" + element.getName() + " desc=" + element.getDescription());
+				if (element.getName() != ONEWIRE_CONTROLLER_NAME) {
+					String err = "UNNALOCATED OneWire device addr=" + element.getAddressAsString() + " name=" + element.getName() + " desc=" + element.getDescription();
+					Performance.Create(err, true);
+					MLog.Log(this, err);
+				}
 			}
+			return result;
 		}
 
 		public void Close()

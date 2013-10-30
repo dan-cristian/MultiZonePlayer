@@ -363,6 +363,9 @@ namespace MultiZonePlayer
 												if (value.ToString().Contains(typeof(MultiZonePlayer.OneWire.Device).ToString()))
 													value = ((List<OneWire.Device>)value)[Convert.ToInt32(parameters[0])];
 												else
+													if (value.ToString().Contains(typeof(MultiZonePlayer.Singleton).ToString()))
+														value = ((List<Singleton>)value)[Convert.ToInt32(parameters[0])];
+													else
 									//"System.Collections.Generic.List`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
@@ -804,10 +807,12 @@ namespace MultiZonePlayer
 		public MediaImageItem CurrentPicture
 		{
 			get {
-				if (MediaLibrary.AllPictureFiles != null && MediaLibrary.AllPictureFiles.CurrentIteratePicture != null)
-					return MediaLibrary.AllPictureFiles.CurrentIteratePicture;
-				else
-					return new MediaImageItem("picture not yet available", "picture not yet available");
+				try {
+					if (MediaLibrary.AllPictureFiles != null && MediaLibrary.AllPictureFiles.CurrentIteratePicture != null)
+						return MediaLibrary.AllPictureFiles.CurrentIteratePicture;
+				}
+				catch (Exception) { }
+				return new MediaImageItem("picture not yet available", "picture not yet available");
 			}
 		}
 

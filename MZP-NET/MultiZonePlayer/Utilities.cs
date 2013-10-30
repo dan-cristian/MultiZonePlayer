@@ -82,6 +82,15 @@ namespace MultiZonePlayer
 			System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
 			return bytes;
 		}
+
+		public static String Find(this string text, String findtext, String endDelimiter) {
+			int start = text.IndexOf(findtext) + findtext.Length;
+			int end = text.IndexOf(endDelimiter, start);
+			if (end >= start)
+				return text.Substring(start, end - start);
+			else
+				return "";
+		}
 	}
 
     public class Utilities

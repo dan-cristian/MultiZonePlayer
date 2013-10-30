@@ -5,12 +5,19 @@ using System.Linq;
 using System.Text;
 
 namespace MultiZonePlayer {
-	public sealed class Singleton {
+	public class Singleton {
+		[Flags]
+		public enum SingletonFlags
+		{
+			///<summary>Indicated this element had error, parameter is error count</summary>
+			IsError,
+			///<summary>Speed of operation in miliseconds</summary>
+			Speed
+		}
 		private static volatile Singleton instance;
 		private static object syncRoot = new Object();
-
-		private Singleton() { }
-
+		private static List<Singleton> m_list = new List<Singleton>();
+		private static int m_id = 0;
 		public static Singleton Instance {
 			get {
 				if (instance == null) {
@@ -19,12 +26,107 @@ namespace MultiZonePlayer {
 							instance = new Singleton();
 					}
 				}
-
 				return instance;
+			}
+		}
+
+		private int id;
+		private List<SingletonFlags> Flags;
+		private List<Object> FlagVars;
+		private List<Int32> Speed = new List<Int32>();
+		public String UniqueIdentifier;
+		public List<DateTime> When = new List<DateTime>();
+		public String InitialMessage = null, LastMessage = null;
+		public DateTime FirstOccurence, LastOccurence;
+		public int OccurenceCount = 0;
+		public int ErrorCount = 0;
+
+		public Singleton() { }
+		public Singleton(String uniqueIdentifier, String message, params Object[] flagVars) {
+			id = m_id;
+			m_id++;
+			UniqueIdentifier = uniqueIdentifier;
+			Update(message, flagVars);
+		}
+
+		public static List<Singleton> List {
+			get { return m_list; }
+		}
+		public int Id {
+			get { return id; }
+		}
+		public int MaxSpeed {
+			get { return Speed.Max(); }
+		}
+		public int MinSpeed {
+			get { return Speed.Min(); }
+		}
+		public int AverageSpeed {
+			get {
+				if (Speed.Count > 0)
+					return Speed.Aggregate((acc, cur) => acc + cur) / Speed.Count;
+				else 
+					return -1;
+			}
+		}
+		public static Singleton Create(String message, Boolean showInLog, params Object[] flagVars) {
+			var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod(); 
+			var callingFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+			String uniqueId = callingMethod.Name + "-" + callingFrame.GetNativeOffset() + "-" + callingFrame.GetILOffset();
+			Singleton element = m_list.Find(x => x.UniqueIdentifier== uniqueId);
+			if (element == null) {
+				element= new Singleton(uniqueId, message, flagVars);
+				m_list.Add(element);
+			}
+			else {
+				element.Update(message, flagVars);
+			}
+			if (showInLog) MLog.Log(null, message);
+			return element;
+		}
+
+		protected static void Add(Singleton element) {
+			m_list.Add(element);
+		}
+
+		protected void Update(String message, params Object[] flagVars) {
+			if (InitialMessage == null) {
+				InitialMessage = message;
+				LastMessage = "";
+			}
+			else
+				LastMessage = message;
+			When.Add(DateTime.Now);
+			FirstOccurence = When[0];
+			LastOccurence = When[When.Count - 1];
+			OccurenceCount = When.Count;
+			Flags = new List<SingletonFlags>();
+			FlagVars = new List<object>();
+			foreach (Object o in flagVars) {
+				if (o.GetType() == typeof(SingletonFlags)) {
+					Flags.Add((SingletonFlags)o);
+				}
+				else
+					FlagVars.Add(o);
+			}
+			SingletonFlags flag;
+			for (int i = 0; i < Flags.Count;i++) {
+				flag = Flags[i];
+				switch (flag) {
+					case SingletonFlags.IsError:
+						ErrorCount += Convert.ToInt16(FlagVars[i]);
+						break;
+					case SingletonFlags.Speed:
+						Speed.Add(Convert.ToInt32(FlagVars[i]));
+						break;
+				}
 			}
 		}
 	}
 
+	public class Performance:Singleton {
+		//public ;
+	}
 
 	public sealed class User {
 		private static List<User> m_userList = new List<User>();
@@ -324,6 +426,13 @@ namespace MultiZonePlayer {
 				post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
 				post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
 				String json = post.GetResponse();
+				String token = json.Find("stok=", "/");
+				string logoutReq = IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_LOGOUT_URL[1];
+				logoutReq = logoutReq.Replace("#TOKEN#", token);
+				post = new WebPostRequest(logoutReq, null);
+				post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
+				post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
+				String logout = post.GetResponse();
 				/*UserPresence.OpenWrtWifiAssociations[] wrt = fastJSON.JSON.Instance.ToObject<UserPresence.OpenWrtWifiAssociations[]>(json);
 				if (wrt[0].assoclist != null) {
 					foreach (UserPresence.OpenWrtWifiAssociations.AssocList assoc in wrt[0].assoclist){

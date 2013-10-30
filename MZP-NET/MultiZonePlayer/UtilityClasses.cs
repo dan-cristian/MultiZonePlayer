@@ -1292,6 +1292,8 @@ namespace MultiZonePlayer
 			startIndex++;
 		}
 	}
+
+	
 	public class Alert
 	{	
 		[Flags]
@@ -1325,9 +1327,7 @@ namespace MultiZonePlayer
 		public List<Object> FlagVars;
 		//private Object[] m_flagVars;
 
-		public Alert(String cause, ZoneDetails zone, String uniqueId, params Object[] flagVars)
-		{
-			
+		public Alert(String cause, ZoneDetails zone, String uniqueId, params Object[] flagVars){
 			Zone = zone;
 			id = m_id;
 			m_id++;

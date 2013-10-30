@@ -22,16 +22,20 @@ namespace MultiZonePlayer {
 		public String SleepHourMin = "";//format HH:MM
 		public String ZoneName;
 		private ZoneState m_zoneState, m_zoneStateLast = MultiZonePlayer.ZoneState.Undefined;
+		[Description("Edit")]
 		public int ParentZoneId = -1;
+		[Description("Edit")]
 		public int PowerIndex = -1;
 		public String PowerType;
 		public int PowerOnDelay;
 		public String WakeTime = "";
 		public String WakeWeekDay = "";
+		[Description("Edit")]
 		public String CameraId = "";
 		public Boolean HasSpeakers = false;
 		[Description("Edit")]
 		public int DefaultVolumePercent;
+		[Description("Edit")]
 		public String OutputKeywords;
 		public String OutputDeviceUserSelected;
 		public ZoneType Type = ZoneType.Undefined;
@@ -39,6 +43,7 @@ namespace MultiZonePlayer {
 		public int WavedeviceIndex;
 		public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
+		[Description("Edit")]
 		public int AlarmZoneId = -1;
 		[Description("Edit")]
 		public int AlarmAreaId = -1;
