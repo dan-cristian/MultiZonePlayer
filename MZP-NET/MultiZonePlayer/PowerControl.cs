@@ -230,7 +230,7 @@ namespace MultiZonePlayer
 
         private void ResetBoard()
         {
-            MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "Relay Action freezed, recovery needed", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Error, null);
+            MZPState.Instance.LogEvent(EventSource.System, "Relay Action freezed, recovery needed", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Error, null);
 			Reinitialise();
         }
 

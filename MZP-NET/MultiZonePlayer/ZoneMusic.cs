@@ -52,7 +52,7 @@ namespace MultiZonePlayer
                 SetVolumeLevel(zoneForm.ZoneDetails.GetDefaultVolume());
                 LoadPlaylist(m_currentPlaylistName);//, currentSongPath);
 
-                MZPState.Instance.LogEvent(MZPEvent.EventSource.GUI, "Music Started in zone " + m_zoneDetails.ZoneName, 
+                MZPState.Instance.LogEvent(EventSource.GUI, "Music Started in zone " + m_zoneDetails.ZoneName, 
                     MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, m_zoneDetails);
             }
 

@@ -381,7 +381,8 @@ namespace MultiZonePlayer
 			String[] contentAtoms = requestURL.Split('?');//('/');
 
 			localFile = contentAtoms[0];
-			if (localFile.Equals("")) localFile = IniFile.PARAM_WEB_DEFAULT_PAGE[1];
+			if (localFile.Equals("") || localFile.Equals("/")) 
+				localFile = IniFile.PARAM_WEB_DEFAULT_PAGE[1];
 
 			//find content type
 			String extension;
@@ -435,7 +436,7 @@ namespace MultiZonePlayer
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, "err read url" + requestURL);
+				MLog.Log(ex, "err read url:" + requestURL);
 			}
 
 

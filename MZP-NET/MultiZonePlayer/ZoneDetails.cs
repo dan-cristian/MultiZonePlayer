@@ -96,7 +96,7 @@ namespace MultiZonePlayer {
 		public LastFmMeta Meta;
 
 		public Boolean CameraAlertActive = true;
-		
+		private List<PictureSnapshot> m_pictureList = new List<PictureSnapshot>();
 		private Boolean m_movementAlert = false, m_movementAlertLast = false;
 
 		public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
@@ -665,6 +665,10 @@ namespace MultiZonePlayer {
 
 		public Boolean IsNearbyZone(int zoneId) {
 			return NearbyZonesIdList.Contains(zoneId.ToString() + ";");
+		}
+
+		public List<PictureSnapshot> PictureList {
+			get { return m_pictureList; }
 		}
 		#region statics
 		public static List<ZoneDetails> ZoneList {

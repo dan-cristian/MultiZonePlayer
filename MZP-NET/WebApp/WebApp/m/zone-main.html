@@ -18,6 +18,7 @@
 <%if;#Zones,%_zoneid.HasCamera#%>
 <button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid', false)">Camera</button>
 <button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#</button>
+<button onclick="window.open('zone-pictures.html?zoneid=%_zoneid', '_self')">Pictures</button>
 <%%>
 <%if;#Zones,%_zoneid.HasVideoPlayer#%>
 <button class="Video#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-video.html?command=video&zoneid=%_zoneid','_self')">Video</button>

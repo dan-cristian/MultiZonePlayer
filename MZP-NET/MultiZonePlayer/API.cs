@@ -361,33 +361,7 @@ namespace MultiZonePlayer
 							//MZPState.Instance.ZoneEvents.DismissAlert(vals);
 							Alert.DismissAlert(aid);
 							break;
-						case GlobalCommands.doorring:
-							List<ZoneDetails> zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;
-							int sourcezoneid = Convert.ToInt16(vals.GetValue(GlobalParams.sourcezoneid));
-							Alert.CreateAlert("Entry Door Ring", ZoneDetails.GetZoneById(sourcezoneid), false, Alert.NotificationFlags.NeedsImmediateUserAck, 120);
-							ValueList val1 = new ValueList();
-							val1.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
-							foreach (ZoneDetails zone in zonesToNotify) {
-								val1.Set(GlobalParams.zoneid, zone.ZoneId.ToString());
-								val1.Set(GlobalParams.sourcezoneid, sourcezoneid.ToString());
-								API.DoCommand(val1);
-							}
-							break;
-						case GlobalCommands.doorentry:
-							zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;
-							sourcezoneid = Convert.ToInt16(vals.GetValue(GlobalParams.sourcezoneid));
-							zonesToNotify.RemoveAll(x => x.ZoneId == sourcezoneid);
-							ValueList val2 = new ValueList();
-							val2.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
-							foreach (ZoneDetails zone in zonesToNotify) {
-								if (!ZoneDetails.GetZoneById(sourcezoneid).IsNearbyZone(zone.ZoneId)
-									&& !zone.IsNearbyZone(ZoneDetails.GetZoneById(sourcezoneid).ZoneId)) {
-									val2.Set(GlobalParams.zoneid, zone.ZoneId.ToString());
-									val2.Set(GlobalParams.sourcezoneid, sourcezoneid.ToString());
-									API.DoCommand(val2);
-								}
-							}
-							break;
+						
                         default:
                             DoZoneCommand(apicmd, vals, ref cmdresult);
                             break;

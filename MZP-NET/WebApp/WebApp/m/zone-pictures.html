@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>#Zones,%_zoneid.ZoneName# Pictures</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body style="text-align:center">
+<%for;i;0;++;#Zones,%_zoneid.PictureList.Count#;%>
+<p>
+<a href="pictures/#Zones,%_zoneid.PictureList.?,%i.FileName#">
+<img src="pictures/#Zones,%_zoneid.PictureList.?,%i.ThumbFileName#"/>
+#Zones,%_zoneid.PictureList.?,%i.EventSource# #Zones,%_zoneid.PictureList.?,%i.DateTimeTaken#</a>
+</p>
+<%%>
+<button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
+</body>
+</html>

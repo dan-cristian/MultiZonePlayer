@@ -47,7 +47,7 @@ namespace MultiZonePlayer
              {
                  try
                  {
-                     // If no filename specified by command line, show file open dialog
+                     // If no fullfilepath specified by command line, show file open dialog
                      this.inputDeviceName = inputDevice;
                      //m_outputDeviceList = new Hashtable();
                      //m_outputDeviceList.Add(zoneForm.GetZoneId(), outputDevice);

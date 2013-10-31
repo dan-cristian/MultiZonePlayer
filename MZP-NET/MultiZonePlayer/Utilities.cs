@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using System.Web;
 using System.Runtime.InteropServices.ComTypes;
+using System.Drawing;
 
 namespace MultiZonePlayer
 {
@@ -399,24 +400,24 @@ namespace MultiZonePlayer
 			}
 		}
 
-        public static void AppendToGenericLogFile(String text, MZPEvent.EventSource logType)
+        public static void AppendToGenericLogFile(String text, EventSource logType)
         {
             StreamWriter str;
             switch (logType)
             {
-                case MZPEvent.EventSource.System:
+                case EventSource.System:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_GENERAL_FILE);
                     break;
-                case MZPEvent.EventSource.Modem:
+                case EventSource.Modem:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_MODEM_FILE);
                     break;
-                case MZPEvent.EventSource.Web:
+                case EventSource.Web:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_WEB_FILE);
                     break;
-                case MZPEvent.EventSource.Keyboard:
+                case EventSource.Keyboard:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_KEY_FILE);
                     break;
-                case MZPEvent.EventSource.RawInput:
+                case EventSource.RawInput:
                     str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_RAWINPUT_FILE);
                     break;
                 default:
@@ -439,6 +440,63 @@ namespace MultiZonePlayer
             str.Close();
             return result;
         }
+		
+		public static void DeleteFilesOlderThan(String directory, String filePattern, int days){
+			var files = new DirectoryInfo(directory).GetFiles(filePattern);
+			foreach (var file in files)
+			{
+				if (DateTime.UtcNow - file.CreationTimeUtc > TimeSpan.FromDays(days))
+				{
+					File.Delete(file.FullName);
+				}
+			}
+		}
+
+		public static bool DownloadRemoteImageFile(string uri, string fileName) {
+			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+			HttpWebResponse response;
+			try {
+				response = (HttpWebResponse)request.GetResponse();
+			}
+			catch (Exception) {
+				return false;
+			}
+
+			// Check that the remote file was found. The ContentType
+			// check is performed since a request for a non-existent
+			// image file might be redirected to a 404-page, which would
+			// yield the StatusCode "OK", even though the image was not
+			// found.
+			if ((response.StatusCode == HttpStatusCode.OK ||
+				response.StatusCode == HttpStatusCode.Moved ||
+				response.StatusCode == HttpStatusCode.Redirect) &&
+				response.ContentType.StartsWith("image", StringComparison.OrdinalIgnoreCase)) {
+
+				// if the remote file was found, download it
+				using (Stream inputStream = response.GetResponseStream())
+				using (Stream outputStream = File.OpenWrite(fileName)) {
+					byte[] buffer = new byte[4096];
+					int bytesRead;
+					do {
+						bytesRead = inputStream.Read(buffer, 0, buffer.Length);
+						outputStream.Write(buffer, 0, bytesRead);
+					} while (bytesRead != 0);
+				}
+				return true;
+			}
+			else
+				return false;
+		}
+
+		public static String GenerateThumb(string sourceFilePath, string thumbExtension, int maxWidth) {
+			Image thumb, image = Image.FromFile(sourceFilePath);
+			Bitmap srcBmp = new Bitmap(sourceFilePath);
+			float ratio = 1f * srcBmp.Width / srcBmp.Height;
+			thumb = image.GetThumbnailImage(maxWidth, Convert.ToInt16(maxWidth/ratio), () => false, IntPtr.Zero);
+			string thumbPath = Path.ChangeExtension(sourceFilePath, thumbExtension);
+			thumb.Save(thumbPath);
+			return thumbPath;
+		}
 
 		public static String ReadFile(String filePath)
 		{
@@ -986,11 +1044,11 @@ namespace MultiZonePlayer
 					|| e.GetType().ToString().ToLower().Contains("exception") || text.ToLower().Contains("error"))//any error
 				{
 					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
-						+ Thread.CurrentThread.Name + "]:" + text + "\n", MZPEvent.EventSource.System);
+						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);
 				}
 				else
 					Utilities.AppendToGenericLogFile("DROPPED: "+System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
-						+ Thread.CurrentThread.Name + "]:" + text + "\n", MZPEvent.EventSource.System);
+						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);
             }
             catch (Exception)
             { }
@@ -1011,7 +1069,7 @@ namespace MultiZonePlayer
         {
             try
             {
-            Utilities.AppendToGenericLogFile(text, MZPEvent.EventSource.Modem);
+            Utilities.AppendToGenericLogFile(text, EventSource.Modem);
             }
             catch (Exception)
             { }
@@ -1023,7 +1081,7 @@ namespace MultiZonePlayer
             {
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r", DateTime.Now.ToString(),
                     request.RemoteEndPoint.Address, request.Url.AbsoluteUri, request.Headers.ToString().Replace('\n',' ').Replace('\r',' ')), 
-                    MZPEvent.EventSource.Web);
+                    EventSource.Web);
             }
             catch (Exception)
             { }
@@ -1036,7 +1094,7 @@ namespace MultiZonePlayer
                 
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r", DateTime.Now.ToString(),
 					request.RequestUri.AbsoluteUri, request.Headers.ToString().Replace('\n', ' ').Replace('\r', ' ')),
-                    MZPEvent.EventSource.Web);
+                    EventSource.Web);
             }
             catch (Exception)
             { }
@@ -1048,7 +1106,7 @@ namespace MultiZonePlayer
             {
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} \r", DateTime.Now.ToString(),
 					response.ResponseUri.AbsoluteUri, response.Headers.ToString().Replace('\n', ' ').Replace('\r', ' ')),
-                    MZPEvent.EventSource.Web);
+                    EventSource.Web);
             }
             catch (Exception)
             { }
@@ -1059,7 +1117,7 @@ namespace MultiZonePlayer
             try
             {
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} \r", DateTime.Now.ToString(),
-                    streamResponse), MZPEvent.EventSource.Web);
+                    streamResponse), EventSource.Web);
             }
             catch (Exception)
             { }
@@ -1070,7 +1128,7 @@ namespace MultiZonePlayer
             try
             {
                 Utilities.AppendToGenericLogFile(String.Format("{0} {1} \r", DateTime.Now.ToString("dd-MM hh:mm:ss-ff"), key), 
-                    MZPEvent.EventSource.Keyboard);
+                    EventSource.Keyboard);
             }
             catch (Exception)
             { }
@@ -1080,7 +1138,7 @@ namespace MultiZonePlayer
         {
             try
             {
-                Utilities.AppendToGenericLogFile(key, MZPEvent.EventSource.RawInput);
+                Utilities.AppendToGenericLogFile(key, EventSource.RawInput);
             }
             catch (Exception)
             { }

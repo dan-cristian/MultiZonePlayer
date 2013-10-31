@@ -199,7 +199,7 @@ public class MZPState
 		bt.Name = "Bluetooth discovery service";
 		bt.Start();
 
-        LogEvent(MZPEvent.EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
+        LogEvent(EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
 				
     }
 
@@ -1271,7 +1271,7 @@ public class MZPState
 			}
 
 			if ((mzpevent.ZoneDetails.IsClosureArmed) 
-				&& (mzpevent.Source == MZPEvent.EventSource.Closure)
+				&& (mzpevent.Source == EventSource.Closure)
 				&& (mzpevent.ZoneDetails.IsClosureContactMade))
 			{
 				cause = "Closure event detected on closure armed zone" + mzpevent.ZoneDetails.ZoneName;
@@ -1326,12 +1326,12 @@ public class MZPState
         }
     }
 
-    public void LogEvent(DateTime dateTime, MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, ZoneDetails zonedetails)
+    public void LogEvent(DateTime dateTime, EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, ZoneDetails zonedetails)
     {
         LogEvent(new MZPEvent(dateTime, source, message, type, importance, zonedetails));
     }
 
-    public void LogEvent(MZPEvent.EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, ZoneDetails zonedetails)
+    public void LogEvent(EventSource source, String message, MZPEvent.EventType type, MZPEvent.EventImportance importance, ZoneDetails zonedetails)
     {
         LogEvent(new MZPEvent(DateTime.Now, source, message, type, importance, zonedetails));
     }
@@ -1395,6 +1395,7 @@ public class MZPState
 			if (MZPState.Instance == null) return;
 			HealthCheckMessengers();
 		}
+		Utilities.DeleteFilesOlderThan(IniFile.CurrentPath() + IniFile.WEB_PICTURES_SUBFOLDER, "*.*", 3);
 		if (MZPState.Instance == null) return;
 		CheckForWakeTimers();
 		if (MZPState.Instance == null) return;

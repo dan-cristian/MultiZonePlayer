@@ -256,8 +256,8 @@ namespace MultiZonePlayer
 			//new CommandSyntax(GlobalCommands.poweron,			GlobalParams.zonename),
 			//new CommandSyntax(GlobalCommands.poweroff,			GlobalParams.zonename),
 			new CommandSyntax(GlobalCommands.powertoggle,		GlobalParams.zoneid),
-			new CommandSyntax(GlobalCommands.doorring,			GlobalParams.sourcezoneid),
-			new CommandSyntax(GlobalCommands.doorentry,			GlobalParams.sourcezoneid),
+			new CommandSyntax(GlobalCommands.doorring,			GlobalParams.zoneid),
+			new CommandSyntax(GlobalCommands.doorentry,			GlobalParams.zoneid),
 
 			/*
             genrelist,
@@ -1479,21 +1479,23 @@ namespace MultiZonePlayer
 		}
 	}
 
+	public enum EventSource
+    {
+        Alarm,
+		Closure,
+        GUI,
+        Cam,
+        System,
+        Environment,
+        Modem,
+        Web,
+        Keyboard,
+        RawInput
+    }
+
     public class MZPEvent
     {
-        public enum EventSource
-        {
-            Alarm,
-			Closure,
-            GUI,
-            Cam,
-            System,
-            Environment,
-            Modem,
-            Web,
-            Keyboard,
-            RawInput
-        }
+        
 
         public enum EventType
         {
@@ -1552,7 +1554,12 @@ namespace MultiZonePlayer
         }
     }
 
-    
+	public class PictureSnapshot {
+		public String FileName;
+		public String ThumbFileName;
+		public EventSource EventSource;
+		public DateTime DateTimeTaken;
+	}
 
 	
 		

@@ -28,7 +28,7 @@ namespace MultiZonePlayer
         /*
 		public void Start()
 		{
-			FileInfo targetFile = new FileInfo(this.filename);
+			FileInfo targetFile = new FileInfo(this.fullfilepath);
 
 			previousSeekPosition = 0;
 
@@ -57,7 +57,7 @@ namespace MultiZonePlayer
         /*
 		public string ReadFullFile()
 		{
-			using (StreamReader streamReader =new StreamReader(this.filename))
+			using (StreamReader streamReader =new StreamReader(this.fullfilepath))
 			{
 				return streamReader.ReadToEnd();
 			}

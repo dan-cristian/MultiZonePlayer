@@ -215,10 +215,10 @@ namespace MultiZonePlayer
         }
 
         /// <summary>
-		/// Create new file without overwritin existing files with the same filename.
+		/// Create new file without overwritin existing files with the same fullfilepath.
 		/// </summary>
 		/// <param name="destPath">destination path of the new file</param>
-		/// <param name="filename">filename of the file to be created</param>
+		/// <param name="fullfilepath">fullfilepath of the file to be created</param>
 		/// <returns>an output stream on the file</returns>
 		private static Stream createNewFile(String destPath, String filename)
 		{
@@ -244,7 +244,7 @@ namespace MultiZonePlayer
 				{
 					return File.Create(destPath + filename + ".mp3");
 				}
-				else // if file already exists, don't overwrite it. Instead, create a new file named <filename>(i).mp3
+				else // if file already exists, don't overwrite it. Instead, create a new file named <fullfilepath>(i).mp3
 				{
 					for (int i=1;; i++)
 					{

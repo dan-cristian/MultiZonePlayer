@@ -141,7 +141,7 @@ namespace MultiZonePlayer
           if (this.filename == string.Empty)
         {
 
-          //this.filename = GetClipFileName();
+          //this.fullfilepath = GetClipFileName();
           if (this.filename == string.Empty || filename == null)
             return;
         }
@@ -150,7 +150,7 @@ namespace MultiZonePlayer
       }
       catch (Exception ex)
       {
-      	MLog.Log(null,"OpenClip error filename=" +musicFile+", error =" + ex.Message + " - " + ex.StackTrace+ " - "+ lastErrorMesg);
+      	MLog.Log(null,"OpenClip error fullfilepath=" +musicFile+", error =" + ex.Message + " - " + ex.StackTrace+ " - "+ lastErrorMesg);
       	CloseClip();
       }
     }
@@ -177,7 +177,7 @@ namespace MultiZonePlayer
     {
 		try
 		{
-			//MLog.Log(this, "Playing file " + filename + " vol=" + this.currentVolume);
+			//MLog.Log(this, "Playing file " + fullfilepath + " vol=" + this.currentVolume);
 			int hr = 0;
 
 			this.graphBuilder = (IGraphBuilder)new FilterGraph();
@@ -348,7 +348,7 @@ namespace MultiZonePlayer
       CloseInterfaces();
 
       // Clear file name to allow selection of new file with open dialog
-      //this.filename = string.Empty;
+      //this.fullfilepath = string.Empty;
         
       // No current media state
       //this.currentState = Metadata.ZoneState.NotInitialised;

@@ -206,7 +206,7 @@ namespace MultiZonePlayer
 			else
 				MLog.Log(this, "no display connection details, zone not initialised " + m_zoneDetails.ZoneName);
         }
-        
+
         public void ProcessAction(GlobalCommands cmdRemote, ValueList vals, ref CommandResult cmdresult)
         {
             //Metadata.ValueList result = new Metadata.ValueList();
@@ -255,6 +255,7 @@ namespace MultiZonePlayer
 					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, camId,
 						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "CamMove", m_zoneDetails.ZoneId.ToString(),
 						Constants.EVENT_TYPE_CAMALERT);
+					SaveCurrentPicture(EventSource.Cam);
                     //TODO
                     break;
                 case GlobalCommands.togglecameraalert:
@@ -279,6 +280,7 @@ namespace MultiZonePlayer
 					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, "",
 						eventDateTime.ToString(IniFile.DATETIME_FULL_FORMAT), "Sensor"+zonestate, m_zoneDetails.ZoneId.ToString(),
 						Constants.EVENT_TYPE_SENSORALERT);
+					if (m_zoneDetails.HasCamera) SaveCurrentPicture(EventSource.Alarm);
 
                     if (MZPState.Instance.IsFollowMeMusic & m_zoneDetails.HasSpeakers)
                     {
@@ -348,6 +350,7 @@ namespace MultiZonePlayer
 				case GlobalCommands.closure:
 					ClosureEvent(vals.GetValue(GlobalParams.id),
 						vals.GetValue(GlobalParams.iscontactmade).ToLower()=="true");
+					if (m_zoneDetails.HasCamera) SaveCurrentPicture(EventSource.Closure);
 					break;
 				case GlobalCommands.closurearm:
 				case GlobalCommands.closuredisarm:	
@@ -393,6 +396,34 @@ namespace MultiZonePlayer
 					SimpleGraph graph = new SimpleGraph();
 					graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
 					graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours);
+					break;
+				case GlobalCommands.doorring:
+					List<ZoneDetails> zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;
+					//int sourcezoneid = Convert.ToInt16(vals.GetValue(GlobalParams.sourcezoneid));
+					Alert.CreateAlert("Entry Door Ring", m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 120);
+					ValueList val1 = new ValueList();
+					val1.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
+					foreach (ZoneDetails zone in zonesToNotify) {
+						val1.Set(GlobalParams.zoneid, zone.ZoneId.ToString());
+						val1.Set(GlobalParams.sourcezoneid, m_zoneDetails.ZoneId.ToString());
+						API.DoCommand(val1);
+					}
+					break;
+				case GlobalCommands.doorentry:
+					zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;
+					//sourcezoneid = Convert.ToInt16(vals.GetValue(GlobalParams.sourcezoneid));
+					zonesToNotify.RemoveAll(x => x.ZoneId == m_zoneDetails.ZoneId);
+					ValueList val2 = new ValueList();
+					val2.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
+					foreach (ZoneDetails zone in zonesToNotify) {
+						if (!m_zoneDetails.IsNearbyZone(zone.ZoneId)
+							&& !zone.IsNearbyZone(m_zoneDetails.ZoneId)) {
+							val2.Set(GlobalParams.zoneid, zone.ZoneId.ToString());
+							val2.Set(GlobalParams.sourcezoneid, m_zoneDetails.ZoneId.ToString());
+							API.DoCommand(val2);
+						}
+					}
+					if (m_zoneDetails.HasCamera) SaveCurrentPicture(EventSource.Closure);
 					break;
 				#endregion
                 default:
@@ -868,6 +899,30 @@ namespace MultiZonePlayer
 			m_zoneDetails.MovementAlert = true;
 		}
 
+		private String SaveCurrentPicture(EventSource source) {
+			string url="",fullfilepath="";
+			try {
+				url = IniFile.PARAM_ISPY_URL[1] + ":" + IniFile.PARAM_ISPY_PORT[1]
+					+ "/livefeed?oid=" + m_zoneDetails.CameraId + "&r=" + ReflectionInterface.Instance.Random;
+				string filename = m_zoneDetails.ZoneName + "-" + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT_FOR_FILE) + ".jpg";
+				fullfilepath = IniFile.CurrentPath() + IniFile.WEB_PICTURES_SUBFOLDER + filename;
+				
+				if (Utilities.DownloadRemoteImageFile(url, fullfilepath)) {
+					PictureSnapshot pict = new PictureSnapshot();
+					pict.FileName = filename;
+					pict.EventSource = source;
+					pict.DateTimeTaken = DateTime.Now;
+					pict.ThumbFileName = System.IO.Path.GetFileName(Utilities.GenerateThumb(fullfilepath, "png", 48));
+					m_zoneDetails.PictureList.Add(pict);
+					
+					return fullfilepath;
+				}
+			}
+			catch (Exception ex) {
+				MLog.Log(this, "Error save picture err="+ex.Message+" url=" + url + " file=" + fullfilepath);
+			}
+			return "";
+		}
         public void TickFast()
         {
             try

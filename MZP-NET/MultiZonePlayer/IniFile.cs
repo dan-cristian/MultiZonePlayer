@@ -37,7 +37,8 @@ namespace MultiZonePlayer
             public const String BEEP_ERROR_FILE_NAME = "\\BeepError.wav";
             public const String TEST_FILE_NAME = "\\Test.mp3";
 			public const String WEBROOT_SUBFOLDER = "\\webroot\\";
-			public const String WEB_TMP_IMG_SUBFOLDER = "\\webroot\\m\\tmp\\";
+			public const String WEB_TMP_IMG_SUBFOLDER = WEBROOT_SUBFOLDER+ "m\\tmp\\";
+			public const String WEB_PICTURES_SUBFOLDER = WEBROOT_SUBFOLDER + "m\\pictures\\";
 			
 			public static String DEFAULT_AUTO_DEV_NAME = "-AUTO BY KEYWORDS-";
             public static String DEFAULT_AUTO_DEV_ID = "-1";
@@ -134,7 +135,8 @@ namespace MultiZonePlayer
             public static String[] PARAM_WEBSERVER_PORT_EXT = new String[] { "PARAM_WEBSERVER_PORT_EXT", "12345" };
             public static String[] PARAM_WEBSERVER_PORT_EXT_SAFE = new String[] { "PARAM_WEBSERVER_PORT_EXT_SAFE", "12347" };
             public static String[] PARAM_WEBSERVER_PORT_INT = new String[] { "PARAM_WEBSERVER_PORT_INT", "888" };
-            public static String[] PARAM_ISPY_PORT = new String[] { "PARAM_ISPY_PORT", "8080" };
+			public static String[] PARAM_ISPY_URL = new String[] { "PARAM_ISPY_URL", "http://localhost" };
+			public static String[] PARAM_ISPY_PORT = new String[] { "PARAM_ISPY_PORT", "8080" };
             public static String[] PARAM_ISPY_PASS = new String[] { "PARAM_ISPY_PASS", "poi" };
             public static String[] PARAM_ISPY_PROCNAME = new String[] { "PARAM_ISPY_PROCNAME", "ispy" };
             public static String[] PARAM_ISPY_OTHERPROC = new String[] { "PARAM_ISPY_OTHERPROC", "ffmpeg" };
@@ -212,7 +214,7 @@ namespace MultiZonePlayer
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
 			public static String DATETIME_FULL_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
+			public static String DATETIME_FULL_FORMAT_FOR_FILE = "yyyy-MM-dd_HH-mm-ss";
 
             public static Object[] PARAMS = new Object[]
             {
@@ -242,6 +244,7 @@ namespace MultiZonePlayer
                 PARAM_KEYBOARD_DEVICE_IDENTIFIER,
                 //PARAM_WEBSERVER_PORT_EXT,
 				PARAM_WEBSERVER_PORT_INT,
+				PARAM_ISPY_URL,
                 PARAM_ISPY_PASS,
                 PARAM_ISPY_PORT,
                 PARAM_ISPY_PROCNAME,

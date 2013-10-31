@@ -366,6 +366,9 @@ namespace MultiZonePlayer
 													if (value.ToString().Contains(typeof(MultiZonePlayer.Singleton).ToString()))
 														value = ((List<Singleton>)value)[Convert.ToInt32(parameters[0])];
 													else
+														if (value.ToString().Contains(typeof(MultiZonePlayer.PictureSnapshot).ToString()))
+															value = ((List<PictureSnapshot>)value)[Convert.ToInt32(parameters[0])];
+														else
 									//"System.Collections.Generic.List`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
