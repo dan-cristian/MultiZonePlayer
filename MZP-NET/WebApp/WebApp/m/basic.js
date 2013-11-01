@@ -11,6 +11,10 @@ function reload() {
 function reload(url) {
 	window.open(url, "_self");
 }
+function ajaxConfirmCall(targetDiv, url, forceReload) {
+	if (confirm("Confirm running action " + url))
+		ajaxCall(targetDiv, url, forceReload);
+}
 function ajaxCall(targetDiv,url,forceReload) {
 	var xmlhttp;
 	if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari

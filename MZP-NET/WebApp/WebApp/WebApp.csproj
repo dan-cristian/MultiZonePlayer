@@ -112,7 +112,7 @@
     <Content Include="m\zone-pictures.html" />
     <Content Include="m\info.html" />
     <Content Include="m\zone-video-select.html" />
-    <Content Include="m\default.html" />
+    <Content Include="default.html" />
     <Content Include="m\alarm.html" />
     <Content Include="m\buttons.png" />
     <Content Include="m\cam.html" />

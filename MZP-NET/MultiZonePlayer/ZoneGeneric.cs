@@ -904,7 +904,8 @@ namespace MultiZonePlayer
 			try {
 				url = IniFile.PARAM_ISPY_URL[1] + ":" + IniFile.PARAM_ISPY_PORT[1]
 					+ "/livefeed?oid=" + m_zoneDetails.CameraId + "&r=" + ReflectionInterface.Instance.Random;
-				string filename = m_zoneDetails.ZoneName + "-" + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT_FOR_FILE) + ".jpg";
+				string filename = m_zoneDetails.ZoneId + "_"+ m_zoneDetails.ZoneName + "_" + source + "_" 
+					+ DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT_FOR_FILE) + ".jpg";
 				fullfilepath = IniFile.CurrentPath() + IniFile.WEB_PICTURES_SUBFOLDER + filename;
 				
 				if (Utilities.DownloadRemoteImageFile(url, fullfilepath)) {
@@ -960,6 +961,9 @@ namespace MultiZonePlayer
 						" closed due to inactivity, activity=" + m_zoneDetails.ActivityType.ToString() + " lastcmd=" + m_zoneDetails.LastLocalCommandDateTime);
                     if (m_zoneForm != null) m_zoneForm.CloseFormSafe();
                 }
+
+				if (m_zoneDetails.HasTemperatureSensor && m_zoneDetails.TemperatureAge.TotalMinutes > 5)
+					Alert.CreateAlert("Lost contact with temp sensor", m_zoneDetails, false);
 
                 if (m_zoneForm != null) m_zoneForm.RefreshState();
             }

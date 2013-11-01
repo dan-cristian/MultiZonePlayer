@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using fastJSON;
+using System.IO;
 
 namespace MultiZonePlayer {
 
@@ -438,7 +439,6 @@ namespace MultiZonePlayer {
 
 			foreach (int id in zoneValues.Keys) {
 				zone = new ZoneDetails(id, zoneValues[id].ToString());
-
 				m_zoneList.Add(zone);
 			}
 
@@ -451,6 +451,7 @@ namespace MultiZonePlayer {
 			String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
 			try {
 				if (json != "") {
+					MLog.Log(this, "Loading state for zone=" + ZoneName);
 					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
 					Description = zonestorage.Description;
 					ZoneName = zonestorage.ZoneName;
@@ -514,7 +515,10 @@ namespace MultiZonePlayer {
 					TemperatureMinAlarm = zonestorage.TemperatureMinAlarm;
 					Color = zonestorage.Color;
 					//Temperature = "1";
+					LoadPicturesFromDisk();
 				}
+				else
+					MLog.Log(this, "Ini state NOT FOUND for zone=" + ZoneName);
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, "Unable to load zone");
@@ -537,7 +541,27 @@ namespace MultiZonePlayer {
 			MZPState.Instance.WDIO.SetPinTypes(this);
 		}
 
-
+		private void LoadPicturesFromDisk() {
+			String dir = IniFile.CurrentPath() + IniFile.WEB_PICTURES_SUBFOLDER;
+			PictureSnapshot pict;
+			String[] files =Directory.GetFiles(dir, ZoneId+"*.jpg");
+			//MLog.Log(this, "Loading " + files.Length + " pictures for zone " + ZoneName + " from dir=" + dir);
+			foreach (string fileName in files) {
+				pict = new PictureSnapshot();
+				pict.FileName = Path.GetFileName(fileName);
+				pict.ThumbFileName = Path.GetFileNameWithoutExtension(fileName) + ".png";
+				pict.DateTimeTaken = File.GetCreationTime(fileName);
+				
+				if (fileName.Contains(EventSource.Alarm.ToString()))
+					pict.EventSource = EventSource.Alarm;
+				else if (fileName.Contains(EventSource.Cam.ToString()))
+					pict.EventSource = EventSource.Cam;
+				else if (fileName.Contains(EventSource.Closure.ToString()))
+					pict.EventSource = EventSource.Closure;
+				else pict.EventSource = EventSource.Undefined;
+				PictureList.Add(pict);
+			}
+		}
 
 		public bool HasOutputDeviceAvailable() {
 			return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords) != "";

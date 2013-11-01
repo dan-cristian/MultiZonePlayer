@@ -380,7 +380,7 @@ namespace MultiZonePlayer
 			String requestURL = context.Request.RawUrl;
 			String[] contentAtoms = requestURL.Split('?');//('/');
 
-			localFile = contentAtoms[0];
+			localFile = contentAtoms[0].Replace("%20", " ");
 			if (localFile.Equals("") || localFile.Equals("/")) 
 				localFile = IniFile.PARAM_WEB_DEFAULT_PAGE[1];
 

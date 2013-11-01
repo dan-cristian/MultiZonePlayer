@@ -22,11 +22,11 @@
 	<button class="PressedTrue" onclick="window.open('alerts.html','_self')">Alerts [#S.ActiveAlertList.Count#]</button>
 	<%%>
 	<button onclick="window.open('alarm.html','_self')">Alarm #SystemAlarm.AreaState#</button>
-	<br />
-	<button onclick="ajaxCall('result','cmd.html?command=macro&singleparamvalue=door', true)">Open Door</button>
-	<button onclick="ajaxCall('result','cmd.html?command=macro&singleparamvalue=gate', true)">Toggle Gate</button>
-	<br /><a href="slide.html">Slide</a>&nbsp;
-	<a href="Info.html">Info</a>
+	<br /><br />
+	<a href="slide.html">Slide</a>&nbsp;&nbsp;&nbsp;<a href="Info.html">Info</a>
+	<br /><br />
+	<button onclick="ajaxConfirmCall('result','cmd.html?command=macro&singleparamvalue=door', true)">Open Door</button>
+	<button onclick="ajaxConfirmCall('result','cmd.html?command=macro&singleparamvalue=gate', true)">Toggle Gate</button>
 	<div id="result"></div>
 <!--/td></tr></table-->
 

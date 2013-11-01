@@ -1438,12 +1438,12 @@ namespace MultiZonePlayer
 					switch(alert.Flags[i])
 					{
 						case NotificationFlags.NotifyUserAfterXSeconds:
-							{
-								flagVar = Convert.ToInt16(alert.FlagVars[i]);
-								if (alert.LastOccurence.Subtract(alert.FirstOccurence).TotalSeconds >= flagVar && alert.LastSendOK == DateTime.MinValue)
-									alerts.Add(alert);
-								break;
-							}
+						{
+							flagVar = Convert.ToInt16(alert.FlagVars[i]);
+							if (alert.LastOccurence.Subtract(alert.FirstOccurence).TotalSeconds >= flagVar && alert.LastSendOK == DateTime.MinValue)
+								alerts.Add(alert);
+							break;
+						}
 						case NotificationFlags.NotifyUserAfterXMinutes:
 						{
 							flagVar = Convert.ToInt16(alert.FlagVars[i]);
@@ -1490,13 +1490,12 @@ namespace MultiZonePlayer
         Modem,
         Web,
         Keyboard,
-        RawInput
+        RawInput,
+		Undefined
     }
 
     public class MZPEvent
     {
-        
-
         public enum EventType
         {
             Security,

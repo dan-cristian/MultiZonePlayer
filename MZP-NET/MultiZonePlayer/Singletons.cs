@@ -184,10 +184,12 @@ namespace MultiZonePlayer {
 			return m_userList.Find(x => x.Id == id);
 		}
 		public static User GetUserByBT(String BTAddress) {
-			return m_userList.Find(x => x.PhoneBTAddress == BTAddress);
+			BTAddress = BTAddress.ToUpper();
+			return m_userList.Find(x => x.PhoneBTAddress!=null && x.PhoneBTAddress.ToUpper() == BTAddress);
 		}
 		public static User GetUserByWifi(String WifiAddress) {
-			return m_userList.Find(x => x.WifiMACAddress == WifiAddress);
+			WifiAddress = WifiAddress.ToUpper();
+			return m_userList.Find(x => x.WifiMACAddress !=null && x.WifiMACAddress.ToUpper() == WifiAddress);
 		}
 		public static void Add(User user) {
 			m_userList.Add(user);
@@ -422,17 +424,23 @@ namespace MultiZonePlayer {
 		public static void CheckWifi() {
 			User user;
 			try {
-				WebPostRequest post = new WebPostRequest(IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL[1], null);
-				post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
-				post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
-				String json = post.GetResponse();
-				String token = json.Find("stok=", "/");
-				string logoutReq = IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_LOGOUT_URL[1];
-				logoutReq = logoutReq.Replace("#TOKEN#", token);
-				post = new WebPostRequest(logoutReq, null);
-				post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
-				post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
-				String logout = post.GetResponse();
+				String url = IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL_CUSTOM[1];
+				//WebPostRequest post = new WebPostRequest(IniFile.PARAM_ROUTER_HOST[1] 
+					//+ IniFile.PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL[1], null);
+				//post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
+				//post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
+				
+				//String json = post.GetResponse().ToUpper();
+				System.Net.WebClient client = new System.Net.WebClient();
+                String json= client.DownloadString(url).ToUpper();
+
+				//String token = json.Find("stok=", "/");
+				//string logoutReq = IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_LOGOUT_URL[1];
+				//logoutReq = logoutReq.Replace("#TOKEN#", token);
+				//post = new WebPostRequest(logoutReq, null);
+				//post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
+				//post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
+				//String logout = post.GetResponse();
 				/*UserPresence.OpenWrtWifiAssociations[] wrt = fastJSON.JSON.Instance.ToObject<UserPresence.OpenWrtWifiAssociations[]>(json);
 				if (wrt[0].assoclist != null) {
 					foreach (UserPresence.OpenWrtWifiAssociations.AssocList assoc in wrt[0].assoclist){

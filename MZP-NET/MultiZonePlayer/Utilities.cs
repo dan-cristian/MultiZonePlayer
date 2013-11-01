@@ -1006,32 +1006,37 @@ namespace MultiZonePlayer
 
         public static void Log(Exception e, Object o, String text)
         {
-			var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod(); 
+			string callingMethod = "";
+			var stack = new System.Diagnostics.StackTrace(1, false);
+			for (int i = 0; i < Math.Min(5, stack.GetFrames().Length); i++)
+				callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
 			if (o == null)
 				o = "null";
             if (e!=null)
-                Log(e, e.StackTrace + "|" + text + "method: "+ callingMethod.Name +" sender:" + o.ToString());
+                Log(e, e.StackTrace + "|" + text + "method: "+ callingMethod +" sender:" + o.ToString());
             else
-                Log(e, text + " sender:" + o.ToString(), callingMethod);
+                Log(e, text + " sender:" + o.ToString(), stack);
         }
 
-        public static void Log(Object e, String text, params MethodBase[] callers)
+        public static void Log(Object e, String text, params StackTrace[] stackList)
         {
             try
             {
-				MethodBase callingMethod;
+				String callingMethod="";
+				StackTrace stack;
 
-				if (callers == null || callers.Length==0)
-					callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
+				if (stackList != null && stackList.Length > 0) 
+					stack = stackList[1];
 				else
-					callingMethod = callers[1];
-
+					stack = new System.Diagnostics.StackTrace(1, false);
+				for (int i=0;i<Math.Min(5, stack.GetFrames().Length);i++)
+					callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
                 if (e != null)
                 {
 					if (e.GetType().ToString().ToLower().Contains("exception"))
-						text += " err=" + ((Exception)e).Message + " method: "+ callingMethod.Name+" stack=" + ((Exception)e).StackTrace;
+						text += " err=" + ((Exception)e).Message + " method: "+ callingMethod+" stack=" + ((Exception)e).StackTrace;
 					else
-						text += " method: "+callingMethod.Name+" sender=" + e.ToString();
+						text += " method: "+callingMethod+" sender=" + e.ToString();
                 }
             }
             catch (Exception)
@@ -1146,7 +1151,7 @@ namespace MultiZonePlayer
 
 		public static void Assert(Boolean condition, String message) {
 			if (condition == false) {
-				var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
+				var callingMethod = new System.Diagnostics.StackTrace(1, false);
 				Log(null, "Error, ASSERTION Failed: " + message, callingMethod);
 			}
 		}
