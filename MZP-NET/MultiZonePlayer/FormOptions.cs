@@ -120,7 +120,7 @@ namespace MultiZonePlayer
 
         private void DisplayZones()
         {
-            foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
             {
                 dgvZones.Rows.Add(zone.ZoneId, zone.ZoneName, zone.OutputKeywords, zone.OutputDeviceUserSelected, 
                     zone.PowerIndex, zone.DefaultVolumePercent, zone.CameraId, zone.AlarmZoneId, zone.AlarmAreaId, zone.ParentZoneId,
@@ -158,7 +158,7 @@ namespace MultiZonePlayer
                     if (zone == null)
                     {
                         zone = new ZoneDetails();
-                        MZPState.Instance.ZoneDetails.Add(zone);
+                        ZoneDetails.ZoneDetailsList.Add(zone);
                     }
 					//if (zone.ClosureOpenCloseRelay == null) 
 					//	zone.ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
@@ -182,7 +182,7 @@ namespace MultiZonePlayer
 					zone.PowerType = (dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString();
 					zone.Type = (ZoneType)Enum.Parse(typeof(ZoneType),(dgvZones.Rows[r].Cells[Zones_Type.Name].Value ?? "Undefined").ToString());
 					zone.CronSchedule = (dgvZones.Rows[r].Cells[Zones_HeatSchedule.Name].Value ?? "").ToString();
-					zone.SaveStateToIni();
+					zone.SaveToIni();
                 }
             }
 
@@ -194,7 +194,7 @@ namespace MultiZonePlayer
                     ZoneDetails zone = ZoneDetails.GetZoneById(Convert.ToInt16(zoneId));
                     zone.DisplayConnection = dgvDisplay.Rows[r].Cells[Display_ConnectionName.Name].Value.ToString();
                     zone.DisplayType = dgvDisplay.Rows[r].Cells[Display_Type.Name].Value.ToString();
-                    zone.SaveStateToIni();
+                    zone.SaveToIni();
                 }
             }
         }
@@ -350,7 +350,7 @@ namespace MultiZonePlayer
 						user.Code = userCode;
 					}
 				}
-				User.SaveToIni();
+				User.StaticInstance.SaveToIni();
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "error save users");
@@ -359,7 +359,7 @@ namespace MultiZonePlayer
 
         private void GUILoadUsers()
         {
-            foreach (User user in User.UserList)
+            foreach (User user in User.StaticInstance.ValueList)
             {
                 dgvUsers.Rows.Add(user.Id, user.Name, user.Code);
             }
@@ -371,7 +371,7 @@ namespace MultiZonePlayer
             bool loop;
             int r;
 
-            for (int i = 0; i < User.UserList.Count; i++)
+            for (int i = 0; i < User.StaticInstance.ValueList.Count; i++)
             {
                 r = 0;
                 loop = true;

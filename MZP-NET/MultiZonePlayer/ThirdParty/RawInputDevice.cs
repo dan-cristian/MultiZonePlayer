@@ -253,7 +253,7 @@ namespace MultiZonePlayer
         #region Variables and event handling
         
         /// <summary>
-        /// List of keyboard devices. Key: the device handle
+        /// ValueList of keyboard devices. Key: the device handle
         /// Value: the device info class
         /// </summary>
         private static Hashtable deviceList = new Hashtable();

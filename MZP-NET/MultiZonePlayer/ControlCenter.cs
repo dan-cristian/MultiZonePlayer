@@ -144,17 +144,17 @@ namespace MultiZonePlayer
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
 						MZPState.Instance.TickSlow();
-						foreach (ZoneDetails details in MZPState.Instance.ZoneDetails)
+						foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList)
 						{
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
 
-							List<ZoneDetails> zonesWithPower = MZPState.Instance.ZoneDetails.FindAll(x =>
+							List<ZoneDetails> zonesWithPower = ZoneDetails.ZoneDetailsList.FindAll(x =>
 								x.RequirePower && x.PowerIndex == details.PowerIndex);
 							if (zonesWithPower.Count==0 && details.LastLocalCommandAgeInSeconds>120)
 							{
 								if (MZPState.Instance.PowerControlIsOn(details.ZoneId))
 								{
-									MLog.Log(this, "No m_zoneList require power on index " + details.PowerIndex
+									MLog.Log(this, "No m_valueList require power on index " + details.PowerIndex
 										+ ", powering off zone=" + details.ZoneName);
 									MZPState.Instance.PowerControlOff(details.ZoneId);
 								}
@@ -186,7 +186,7 @@ namespace MultiZonePlayer
                 //txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
                 txAlarm.Text = MZPState.Instance.SystemAlarm.IsMonitoringActive + ":" + MZPState.Instance.SystemAlarm.AreaState.ToString();
 				//txtGPIO.Text = MZPState.Instance.Gpio.State;
-                foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+                foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
                 {
                     if (zone.IsActive)
                     {
@@ -235,7 +235,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-                MLog.Log(ex, "Error close all m_zoneList");
+                MLog.Log(ex, "Error close all m_valueList");
             }
         }
 
@@ -443,7 +443,7 @@ namespace MultiZonePlayer
             }
             catch (Exception ex)
             {
-				MLog.Log(ex, "Err closing m_zoneList");
+				MLog.Log(ex, "Err closing m_valueList");
             }
         }
 

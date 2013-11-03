@@ -61,11 +61,11 @@ public class MZPState
 	private OneWire m_oneWire;
 
 	public UserPresence UserPresence {
-		get { return UserPresence.Instance; }
+		get { return MultiZonePlayer.UserPresence.Instance; }
 	}
 
 	public User User {
-		get { return User.Instance; }
+		get { return (User)MultiZonePlayer.User.StaticInstance;}
 	}
 
 	public OneWire OneWire
@@ -127,7 +127,7 @@ public class MZPState
                 
 		String deviceName;
 		RFXDeviceDefinition.LoadFromIni();
-        MLog.Log(this, "Loading m_zoneList from ini");
+        MLog.Log(this, "Loading m_valueList from ini");
         MultiZonePlayer.ZoneDetails.LoadFromIni();
 		User.LoadFromIni();
 		m_moodMusicList = new List<MoodMusic>();
@@ -291,9 +291,9 @@ public class MZPState
 				msg.Close();
 			}
 			m_cron.stop();
-			foreach (ZoneDetails zone in ZoneDetails)
+			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
 			{
-				zone.SaveStateToIni();
+				zone.SaveToIni();
 			}
 			foreach (IMessenger mes in m_messengerList)
 			{
@@ -339,35 +339,46 @@ public class MZPState
     {
         get { return m_sysState != null; }
     }
-    public static MZPState Instance
-    {
-        get
-        {
+    public static MZPState Instance    {
+        get        {
             return m_sysState;
         }
     }
 
-    public List<ZoneDetails> ZoneDetails
+    public ZoneDetails ZoneDetails
     {
-        get{return MultiZonePlayer.ZoneDetails.ZoneList;}
+		get { return MultiZonePlayer.ZoneDetails.StaticInstance;}//.ValueList.Select(x => (ZoneDetails)x).ToList(); }
     }
 
-	public List<ZoneDetails> ZonesWithType(ZoneType type)
-	{
-		return ZoneDetails.FindAll(x => x.Type == type);
-		//return ZoneList.List(type, "=");
+	public List<ZoneDetails> ZoneDetailsList {
+		get { return MultiZonePlayer.ZoneDetails.ZoneDetailsList; }
 	}
+
+	public static List<ZoneDetails> ZonesWithType(ZoneType type) {
+		return ZoneDetails.ZoneDetailsList.FindAll(x => x.Type == type);
+		//return ValueList.ValueList(type, "=");
+	}
+
 	/*
-	public class ZoneList {
-		public static List<ZoneDetails> List(ZoneType value, String operation) {
-			//List<ZoneDetails> m_zoneList;
-			return MZPState.Instance.ZoneDetails.FindAll(x => x.Type == value);
+	public class ValueList {
+		public static ValueList<ZoneDetails> ValueList(ZoneType value, String operation) {
+			//ValueList<ZoneDetails> m_valueList;
+			return ZoneDetails.ZoneDetailsList.FindAll(x => x.Type == value);
 		}
 
 	}*/
 
-	public List<String> GetEditableFieldList(String className)
-	{
+	public List<String> GetSingletonValueList(String className) {
+		System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
+			System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
+		Object p = handle.Unwrap();
+		Type t = p.GetType();
+
+		Singleton sg = (Singleton)p;
+		return sg.Instance.ValueList.Select(x=>x.Id.ToString()).ToList();
+		//TODO
+	}
+	public List<String> GetEditableFieldList(String className){
 		System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
 			System.Reflection.Assembly.GetExecutingAssembly().GetName().Name+"."+className);
 		Object p = handle.Unwrap();
@@ -396,7 +407,7 @@ public class MZPState
 	public ZoneDetails ZoneWithType(ZoneType type, int index)
 	{
 		List<ZoneDetails> zones;
-		zones = ZoneDetails.FindAll(x => x.Type == type);
+		zones = ZoneDetails.ZoneDetailsList.FindAll(x => x.Type == type);
 		if (index < zones.Count)
 			return zones[index];
 		else
@@ -405,7 +416,7 @@ public class MZPState
 	public List<String> ZoneTypesAvailable
 	{
 		get {
-			return ZoneDetails.Select(x => x.Type.ToString()).Distinct().ToList();
+			return ZoneDetails.ZoneDetailsList.Select(x => x.Type.ToString()).Distinct().ToList();
 		}
 	}
 	public String ZoneTypesAvailableByIndex(int i)
@@ -414,7 +425,7 @@ public class MZPState
 	}
 	public int ZonesCount
 	{
-		get { return ZoneDetails.Count; }
+		get { return ZoneDetails.ZoneDetailsList.Count; }
 	}
 
     public ZoneEvents ZoneEvents
@@ -424,7 +435,7 @@ public class MZPState
 
 	
 	public List<User> UserList {
-		get { return MultiZonePlayer.User.UserList; }
+		get { return User.StaticInstance.ValueList.Select(x=>(User)x).ToList(); }
 	}
 	public List<UserPresence> UserPresenceList{
 		get { return MultiZonePlayer.UserPresence.PresenceList; }
@@ -455,7 +466,7 @@ public class MZPState
 	public ZoneDetails GetZoneIdByContainsName(String zoneName)
 	{
 		if (zoneName != null)
-			return ZoneDetails.Find(item => item.ZoneName.Contains(zoneName));
+			return ZoneDetails.ZoneDetailsList.Find(item => item.ZoneName.Contains(zoneName));
 		else
 			return null;
 	}
@@ -546,7 +557,7 @@ public class MZPState
 	{
 		//m_powerControlDenkovi.PowerOff();
 		//m_powerControlNumato.PowerOff();
-		foreach (ZoneDetails zone in this.ZoneDetails)
+		foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
 		{
 			if ((zone.ActivityType != GlobalCommands.xbmc) || (!zone.IsActive))
 			{
@@ -575,7 +586,7 @@ public class MZPState
     {
         get{return m_isFollowMeMusic;}
     }
-    /*public List<String> SystemOutputDeviceNames
+    /*public ValueList<String> SystemOutputDeviceNames
     {
         get{return m_systemOutputDeviceNames;}
     }*/
@@ -598,7 +609,7 @@ public class MZPState
 	{
 		get{
 			bool move = false;
-			move = ZoneDetails.Find(x => x.HasRecentMove || x.HasImmediateMove) != null;
+			move = ZoneDetails.ZoneDetailsList.Find(x => x.HasRecentMove || x.HasImmediateMove) != null;
 			return move;
 		}
 	}
@@ -627,7 +638,7 @@ public class MZPState
 	}
 	public bool IsZoneActive(int zoneId)
 	{
-		ZoneDetails zone = ZoneDetails.Find(item => item.ZoneId == zoneId);
+		ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(item => item.ZoneId == zoneId);
 		if (zone != null)
 			return zone.IsActive;
 		else return false; ;
@@ -687,7 +698,7 @@ public class MZPState
 	}
 
 	public List<Singleton> PerformanceList {
-		get { return Performance.List; }
+		get { return Performance.StaticInstance.ValueList; }
 	}
     public void InitRemotes()
     {
@@ -771,7 +782,7 @@ public class MZPState
 
     public int GetZoneIdByAlarmZoneId(int alarmZoneId)
     {
-        ZoneDetails zone = ZoneDetails.Find(x => x.AlarmZoneId.Equals(alarmZoneId));
+		ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.AlarmZoneId.Equals(alarmZoneId));
         if (zone != null)
             return zone.ZoneId;
         else
@@ -780,7 +791,7 @@ public class MZPState
 
     public int GetZoneIdByCamZoneId(int camId)
     {
-		ZoneDetails zone = ZoneDetails.Find(x => x.CameraId.Equals(camId.ToString()));
+		ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.CameraId.Equals(camId.ToString()));
         if (zone != null)
             return zone.ZoneId;
         else
@@ -793,7 +804,7 @@ public class MZPState
     {
         get
         {
-            ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
+			ZoneDetails zone = ZoneDetails.ZoneDetailsList.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
                 (x.ActivityType.Equals(GlobalCommands.music) 
 				|| x.ActivityType.Equals(GlobalCommands.streammp3)
                 || x.ActivityType.Equals(GlobalCommands.tv) 
@@ -806,7 +817,7 @@ public class MZPState
             }
             else
             {
-                zone = ZoneDetails.OrderByDescending(x => x.LastAlarmMovementDateTime).ToList().Find(x => x.HasSpeakers);
+				zone = ZoneDetails.ZoneDetailsList.OrderByDescending(x => x.LastAlarmMovementDateTime).ToList().Find(x => x.HasSpeakers);
                 if (zone != null)
                 {
                     MLog.Log(this, "Found most recent zone with speakers id=" + zone.ZoneId);
@@ -822,7 +833,7 @@ public class MZPState
 	public ZoneGeneric GetFirstZoneMusic()
 	{
 		ZoneGeneric zone = null;
-		ZoneDetails zonedetails = ZoneDetails.OrderBy(x => x.LastLocalCommandDateTime).ToList().Find(x =>
+		ZoneDetails zonedetails = ZoneDetails.ZoneDetailsList.OrderBy(x => x.LastLocalCommandDateTime).ToList().Find(x =>
                 (x.ActivityType.Equals(GlobalCommands.music) && x.IsActive));
 		if (zonedetails != null)
 			zone = ActiveZones.Find(x => x.GetZoneId() == zonedetails.ZoneId);
@@ -831,7 +842,7 @@ public class MZPState
 
     public int GetActiveChildZone(int parentZoneId)
     {
-        ZoneDetails zone = ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList()
+		ZoneDetails zone = ZoneDetails.ZoneDetailsList.OrderByDescending(x => x.LastLocalCommandDateTime).ToList()
 			.Find(x => (x.ParentZoneId==parentZoneId)&&x.IsActive);
         if (zone != null)
         {
@@ -890,7 +901,7 @@ public class MZPState
 			+ " "+DateTime.Now.ToLongTimeString();
 		result +=  "\r\n" + MZPState.Instance.SystemAlarm.AreaState;
 		result += "\r\nPower Failed=" + MZPState.Instance.IsPowerFailure;
-		foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+		foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
 		{
 			result += "\r\n" + zone.SummaryStatus;
 		}
@@ -927,7 +938,7 @@ public class MZPState
                 }
 
                 DateTime lastCamEvent = m_initMZPStateDateTime;
-				foreach (ZoneDetails zone in ZoneDetails)
+				foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
                 {
                     if (zone.HasMotionSensor && zone.HasCamera)
                     {
@@ -954,7 +965,7 @@ public class MZPState
     {
         
             List<ZoneDetails> openZones;
-			openZones = ZoneDetails.FindAll(x => x.HasMotionSensor && (x.HasRecentMove || x.HasImmediateMove));
+			openZones = ZoneDetails.ZoneDetailsList.FindAll(x => x.HasMotionSensor && (x.HasRecentMove || x.HasImmediateMove));
 
             if (openZones.Count == 0)
             {
@@ -1047,7 +1058,7 @@ public class MZPState
 			if (excludeSource && mzpevent.ZoneDetails != null)
 				zonesToNotify.RemoveAll(x => x.ZoneId == mzpevent.ZoneDetails.ZoneId);
 
-			MLog.Log(this, "NotifyEvent to m_zoneList count=" + zonesToNotify.Count);
+			MLog.Log(this, "NotifyEvent to m_valueList count=" + zonesToNotify.Count);
 
 			ValueList vals = new ValueList();
 			vals.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
@@ -1064,6 +1075,10 @@ public class MZPState
 		}
 	}
 
+	public CommandResult ExecuteMacro(string macroName) {
+		MacroEntry entry = m_macroList.Find(x => x.Name == macroName);
+		return ExecuteMacro(entry.Id);
+	}
 	public CommandResult ExecuteMacro(int macroId)
 	{
 		CommandResult cmdresult = new CommandResult();
@@ -1121,7 +1136,7 @@ public class MZPState
     {
         String dt = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
         String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2);
-        foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+        foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
         {
             if ((zone.WakeTime.Length > 0) && (zone.WakeTime.CompareTo(dt) == 0) && zone.WakeWeekDay.Contains(weekday))
             {
@@ -1170,7 +1185,7 @@ public class MZPState
 		{
 			String cronText="";
 
-			foreach (ZoneDetails zone in ZoneDetails)
+			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
 			{
 				if (zone.CronSchedule != "")
 					cronText += zone.CronSchedule+"\n";
@@ -1217,7 +1232,7 @@ public class MZPState
     public void CheckForExternalZoneEvents()
     {
         Display display;
-        foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+        foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
         {
             if (!zone.IsActive)
             {
@@ -1374,6 +1389,10 @@ public class MZPState
 		}
 
 	}
+	private void CleanTempFiles() {
+		Utilities.DeleteFilesOlderThan(IniFile.CurrentPath() + IniFile.WEB_PICTURES_SUBFOLDER, "*.*", 3);
+		Utilities.DeleteFilesOlderThan(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER, "*.*", 1);
+	}
 
 	public void TickFast()
 	{
@@ -1383,7 +1402,9 @@ public class MZPState
 
     public void TickSlow()
     {
-		if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds > Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1])) {
+		if (DateTime.Now.Subtract(m_initMZPStateDateTime).Duration().TotalSeconds 
+			> Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1])) {
+			//delayed check, after complete boot
 			if (MZPState.Instance == null) return;
 			HealthCheckiSpy();
 			if (MZPState.Instance == null) return;
@@ -1395,7 +1416,7 @@ public class MZPState
 			if (MZPState.Instance == null) return;
 			HealthCheckMessengers();
 		}
-		Utilities.DeleteFilesOlderThan(IniFile.CurrentPath() + IniFile.WEB_PICTURES_SUBFOLDER, "*.*", 3);
+		CleanTempFiles();
 		if (MZPState.Instance == null) return;
 		CheckForWakeTimers();
 		if (MZPState.Instance == null) return;

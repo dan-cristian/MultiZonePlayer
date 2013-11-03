@@ -9,11 +9,8 @@ using System.IO;
 
 namespace MultiZonePlayer {
 
-	public class ZoneDetails {
-		private static List<ZoneDetails> m_zoneList = new List<ZoneDetails>();
-
-		
-
+	public class ZoneDetails : Singleton{
+		//private static List<ZoneDetails> m_valueList = new List<ZoneDetails>();
 		public int ZoneId = 0;
 		[Description("Edit")]
 		public String Description;
@@ -106,6 +103,7 @@ namespace MultiZonePlayer {
 		public DateTime LastClosureEventDateTime = DateTime.MinValue;
 		public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 		public DateTime LastNotifyZoneEventTriggered;
+
 		protected const double DEFAULT_TEMP_HUM = -1000;
 
 		protected double m_temperature = DEFAULT_TEMP_HUM, m_humidity = DEFAULT_TEMP_HUM;
@@ -113,7 +111,7 @@ namespace MultiZonePlayer {
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 		// not serializable, hidden from json
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
-
+		protected static List<Singleton> m_valueList = new List<Singleton>();
 
 		public ZoneDetails() {
 			//ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
@@ -126,7 +124,19 @@ namespace MultiZonePlayer {
 			ActivityType = GlobalCommands.nul;
 			LoadStateFromIni();
 		}
-
+		public static ZoneDetails StaticInstance {
+			get {
+				if (m_valueList != null && m_valueList.Count > 0)
+					return (ZoneDetails)m_valueList[0];
+				else return new ZoneDetails();
+			}
+		}
+		public override List<Singleton> ValueList{
+			get { return m_valueList; }
+		}
+		public override Singleton Instance {
+			get { return ZoneDetails.StaticInstance; }
+		}
 		public override string ToString() {
 			return "ID=" + ZoneId + ";Name=" + ZoneName;
 		}
@@ -306,7 +316,7 @@ namespace MultiZonePlayer {
 		}
 		public Boolean ContainsDisplay {
 			get {
-				return MZPState.Instance.ZoneDetails.Find(x => x.ParentZoneId == ZoneId && x.HasDisplay) != null
+				return ZoneDetails.ZoneDetailsList.Find(x => x.ParentZoneId == ZoneId && x.HasDisplay) != null
 					   || HasDisplay;
 			}
 		}
@@ -335,13 +345,13 @@ namespace MultiZonePlayer {
 
 		public int ChildZonesCount {
 			get {
-				List<ZoneDetails> childs = MZPState.Instance.ZoneDetails.FindAll(x => x.ParentZoneId == ZoneId);
+				List<ZoneDetails> childs = ZoneDetails.ZoneDetailsList.FindAll(x => x.ParentZoneId == ZoneId);
 				return childs != null ? childs.Count : 0;
 			}
 		}
 
 		public ZoneDetails ChildZone(int index) {
-			List<ZoneDetails> childs = MZPState.Instance.ZoneDetails.FindAll(x => x.ParentZoneId == ZoneId);
+			List<ZoneDetails> childs = ZoneDetails.ZoneDetailsList.FindAll(x => x.ParentZoneId == ZoneId);
 			return childs != null && index < childs.Count ? childs[index] : null;
 		}
 
@@ -439,11 +449,11 @@ namespace MultiZonePlayer {
 
 			foreach (int id in zoneValues.Keys) {
 				zone = new ZoneDetails(id, zoneValues[id].ToString());
-				m_zoneList.Add(zone);
+				m_valueList.Add(zone);
 			}
 
-			m_zoneList.Sort(delegate(ZoneDetails a1, ZoneDetails a2) {
-				return a1.ZoneId.CompareTo(a2.ZoneId);
+			m_valueList.Sort(delegate(Singleton a1, Singleton a2) {
+				return ((ZoneDetails)a1).ZoneId.CompareTo(((ZoneDetails)a2).ZoneId);
 			});
 		}
 
@@ -528,7 +538,7 @@ namespace MultiZonePlayer {
 		}
 
 
-		public void SaveStateToIni() {
+		public override void SaveToIni() {
 			MLog.Log(this, "Saving state to ini zone=" + ZoneName);
 			//remove fields that generate serialisation problems
 			this.Meta = null;
@@ -643,7 +653,7 @@ namespace MultiZonePlayer {
 
 		public void Close() {
 			ZoneClose();
-			SaveStateToIni();
+			SaveToIni();
 		}
 
 		public int GetDefaultVolume() {
@@ -695,44 +705,48 @@ namespace MultiZonePlayer {
 			get { return m_pictureList; }
 		}
 		#region statics
-		public static List<ZoneDetails> ZoneList {
-			get { return ZoneDetails.m_zoneList; }
-		}
+		/*public static List<ZoneDetails> ValueList {
+			get { return ZoneDetails.ValueList.Select(x=>(ZoneDetails)x).ToList(); }
+		}*/
 
+		public static List<ZoneDetails> ZoneDetailsList {
+			get { return m_valueList.Select(x => (ZoneDetails)x).ToList(); }
+		}
 		public static ZoneDetails GetZoneById(int zoneId) {
-			return m_zoneList.Find(item => item.ZoneId == zoneId);
+			return (ZoneDetails)m_valueList.Find(item => ((ZoneDetails)item).ZoneId == zoneId);
 		}
 
 		public static TimeSpan LastMovementAge_Min {
 			get {
-				return MZPState.Instance.ZoneDetails.Min(x => x.LastMovementAge);
+				return ZoneDetailsList.Min(x => x.LastMovementAge);
 			}
 		}
 		public static Boolean HasImmediateMove_Once {
 			get {
-				return MZPState.Instance.ZoneDetails.Find(x => x.HasImmediateMove) != null;
+				return ZoneDetailsList.Find(x => x.HasImmediateMove) != null;
 			}
 		}
 		public static Boolean HasRecentMove_Once {
 			get {
-				return MZPState.Instance.ZoneDetails.Find(x => x.HasRecentMove) != null;
+				return ZoneDetailsList.Find(x => x.HasRecentMove) != null;
 			}
 		}
 		public static List<ZoneDetails> HasImmediateMove_All {
 			get {
-				return MZPState.Instance.ZoneDetails.FindAll(x => x.HasImmediateMove);
+				return ZoneDetailsList.FindAll(x => x.HasImmediateMove);
 			}
 		}
 		public static List<ZoneDetails> HasRecentMove_All {
 			get {
-				return MZPState.Instance.ZoneDetails.FindAll(x => x.HasRecentMove);
+				return ZoneDetailsList.FindAll(x => x.HasRecentMove);
 			}
 		}
 
+		
 		public static List<ZoneDetails> ZoneWithPotentialUserPresence_All {
 			get {
-				return m_zoneList.FindAll(x => x.HasSpeakers 
-					&& (x.IsActive || x.HasImmediateMove || x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
+				return ZoneDetailsList.FindAll(x => x.HasSpeakers && (x.IsActive || x.HasImmediateMove
+					|| x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
 					.OrderByDescending(x => x.IsActive).ThenByDescending(x => x.HasImmediateMove)
 					.ThenBy(x => x.LastLocalCommandAgeInSeconds).ToList();
 			}

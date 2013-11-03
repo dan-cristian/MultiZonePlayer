@@ -369,7 +369,7 @@ namespace MultiZonePlayer
 														if (value.ToString().Contains(typeof(MultiZonePlayer.PictureSnapshot).ToString()))
 															value = ((List<PictureSnapshot>)value)[Convert.ToInt32(parameters[0])];
 														else
-									//"System.Collections.Generic.List`1[System.String]"
+									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
 										value = new Exception();
@@ -482,7 +482,27 @@ namespace MultiZonePlayer
 			return value;
 		}
 
-		
+		public static Boolean SetFieldValue(ref Object fieldInstance, String fieldName, string value) {
+			System.Reflection.FieldInfo fieldInfo = null;
+			Type paramType;
+
+			fieldInfo = fieldInstance.GetType().GetField(fieldName);
+			if (fieldInfo != null) {
+				object obj;
+				paramType = fieldInfo.FieldType;
+				if (paramType.Name == "List`1") {
+					obj = "NONE";
+					MLog.Log(null, "Unsuported set operation");
+				}
+				else
+					obj = Convert.ChangeType(value, paramType);
+				
+				fieldInfo.SetValue(fieldInstance, obj);
+				return true;
+			}
+			else 
+				return false;
+		}
 	}
 
 	public static class Rules
@@ -673,7 +693,7 @@ namespace MultiZonePlayer
 			get
 			{
 				String res = "";
-				var zones = MZPState.Instance.ZoneDetails.OrderByDescending(x => x.LastMovementDate).ToList();
+				var zones = ZoneDetails.ZoneDetailsList.OrderByDescending(x => x.LastMovementDate).ToList();
 
 				foreach (ZoneDetails zone in zones)
 				{
@@ -743,9 +763,9 @@ namespace MultiZonePlayer
 		{
 			int zoneId;
 			if (Int32.TryParse(zoneIdentifier, out zoneId))
-				return MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneId)));
+				return ZoneDetails.ZoneDetailsList.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneId)));
 			else
-				return MZPState.Instance.ZoneDetails.Find(x => x.ZoneName.Equals(zoneIdentifier));
+				return ZoneDetails.ZoneDetailsList.Find(x => x.ZoneName.Equals(zoneIdentifier));
 		}
 
 		public ZoneDetails FirstActiveZone
@@ -755,7 +775,7 @@ namespace MultiZonePlayer
 				List<ZoneDetails> zones;
 				ZoneDetails zone;
 
-				zones = MZPState.Instance.ZoneDetails.OrderByDescending(x => x.LastLocalCommandDateTime).ToList();
+				zones = ZoneDetails.ZoneDetailsList.OrderByDescending(x => x.LastLocalCommandDateTime).ToList();
 				zone = zones.Find(x => x.IsActive == true && (x.ActivityType.Equals(GlobalCommands.music) || x.ActivityType.Equals(GlobalCommands.streammp3)));
 				return zone;
 				/*String zonetype = zone!=null?zone.ActivityType.ToString():"status";//return status page if no active zone
@@ -779,7 +799,7 @@ namespace MultiZonePlayer
 
 		public String ZoneMoveStatusAsColor(String zoneid)
 		{
-			ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
+			ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
 			String color = "Transparent";
 			if (zone != null)
 			{
@@ -797,7 +817,7 @@ namespace MultiZonePlayer
 
 		public String GetZoneStatusAsColor(String zoneid, String activity)
 		{
-			ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
+			ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.ZoneId.Equals(Convert.ToInt16(zoneid)));
 			String color = "inherit";
 			if ((zone != null) && (zone.ActivityType.ToString().Equals(activity.ToLower())))
 			{
@@ -859,10 +879,11 @@ namespace MultiZonePlayer
 								end = atoms[4];
 								cond = atoms[5];
 
-								int forstart, forend;
+								int forstart=0, forend=0;
 								string filter;
 								forstart = Convert.ToInt16(start);
-								forend = Convert.ToInt16(end);
+								if (!Int32.TryParse(end, out forend))
+									MLog.Log(null, "Error detectin FOR end loop, val="+end);
 								String generated;
 
 								switch (oper)

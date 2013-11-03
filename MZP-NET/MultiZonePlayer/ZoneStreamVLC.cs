@@ -55,12 +55,12 @@ namespace MultiZonePlayer
             if (IniFile.PARAM_VLC_AUDIOOUT[1].Equals("directx"))
             {
                 VlcContext.StartupOptions.AddOption("--aout=directx");
-                VlcContext.StartupOptions.AddOption("--directx-audio-device=" + MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(m_zoneDetails.ZoneId)).OutputDeviceDirectXName);
+                VlcContext.StartupOptions.AddOption("--directx-audio-device=" + ZoneDetails.ZoneDetailsList.Find(x => x.ZoneId.Equals(m_zoneDetails.ZoneId)).OutputDeviceDirectXName);
             }
             else
             {
                 VlcContext.StartupOptions.AddOption("--aout=waveout");
-                VlcContext.StartupOptions.AddOption("--waveout-audio-device=" + MZPState.Instance.ZoneDetails.Find(x => x.ZoneId.Equals(m_zoneDetails.ZoneId)).OutputDeviceNameWaveVLC);
+                VlcContext.StartupOptions.AddOption("--waveout-audio-device=" + ZoneDetails.ZoneDetailsList.Find(x => x.ZoneId.Equals(m_zoneDetails.ZoneId)).OutputDeviceNameWaveVLC);
             }
             
             VlcContext.Initialize();

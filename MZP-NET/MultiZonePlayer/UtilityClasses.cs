@@ -188,7 +188,7 @@ namespace MultiZonePlayer
 		id, iscontactmade,
 		name, text, field,
 		type,zoneidlist,
-		
+		classname,index,
 		r//random no
 	}
 	public class CommandSyntax
@@ -258,6 +258,7 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.powertoggle,		GlobalParams.zoneid),
 			new CommandSyntax(GlobalCommands.doorring,			GlobalParams.zoneid),
 			new CommandSyntax(GlobalCommands.doorentry,			GlobalParams.zoneid),
+			new CommandSyntax(GlobalCommands.setfield,			GlobalParams.id, GlobalParams.field, GlobalParams.text, GlobalParams.classname),
 
 			/*
             genrelist,
@@ -388,7 +389,7 @@ namespace MultiZonePlayer
 
 		/*public ValueList(String firstParamValue)
             {
-                Values = new List<String>();
+                Values = new ValueList<String>();
                 Values.Add(firstParamValue);
             }*/
 
@@ -580,6 +581,7 @@ namespace MultiZonePlayer
 	public class MacroEntry
 	{
 		public int Id;
+		public String Name;
 		public String RepeatMonth;
 		public String RepeatWeekDay;
 		public String RepeatTime;
@@ -754,7 +756,7 @@ namespace MultiZonePlayer
         public String NumericCode;//two numeric chars
         public int Index;
         public List<String> Genres;
-        //public List<String> Albums;
+        //public ValueList<String> Albums;
         public List<String> Authors;
         public List<int> Ratings;
         public List<int> AgeInWeeks;
@@ -1053,12 +1055,12 @@ namespace MultiZonePlayer
 			{
 				string commandString = ResponseFormatPattern.Replace("-", "");
 				string result = "", name, value,key;
-				string[] atoms;
+				string[] defs;
 				foreach (string s in nameValuePair)
 				{
-					atoms = s.Split('=');
-					name = atoms[0].ToLower();
-					value = atoms[1].ToLower();
+					defs = s.Split('=');
+					name = defs[0].ToLower();
+					value = defs[1].ToLower();
 					
 					key = FieldDef.Find(x=>x.Name==name).Key;
 					if (key != null)
@@ -1172,7 +1174,7 @@ namespace MultiZonePlayer
             String deviceName, devDisplayName;
             ControlDevice dev;
 			p_list.Clear();
-			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
             {
                 zoneId = zone.ZoneId;//(int)enumerator.Key;
                 int r = 0;
@@ -1368,8 +1370,13 @@ namespace MultiZonePlayer
 			UserAcknowledged = false;
 		}
 
+		public static Alert CreateAlert(String cause) {
+			return CreateAlert(cause, null, false);
+		}
+
 		public static Alert CreateAlert(String cause, ZoneDetails zone, Boolean dismissPrevAlert, params Object[] flagVars)
 		{
+			//MLog.Log(null, "ALERT: "+cause);
 			var callingFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
 			String uniqueId = "Native-" + callingFrame.GetNativeOffset() + "-IL-" + callingFrame.GetILOffset();
 			Alert alert = m_alertList.Find(x => x.UniqueId == uniqueId && !x.Archived);

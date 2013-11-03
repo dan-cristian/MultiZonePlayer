@@ -28,7 +28,7 @@ namespace MultiZonePlayer
 		private int m_reinitTries=0;
         agsXMPP.XmppClientConnection objXmpp;
         String m_user, m_password;
-        //List<String> m_rosterList;
+        //ValueList<String> m_rosterList;
         List<agsXMPP.protocol.client.Presence> m_presenceList;
 		private ValueList m_lastCommand = null;
 
@@ -148,7 +148,7 @@ namespace MultiZonePlayer
 
         void OnRosterStart(object sender)
         {
-            m_rosterList = new List<string>();
+            m_rosterList = new ValueList<string>();
         }*/
 
 

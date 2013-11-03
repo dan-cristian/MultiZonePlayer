@@ -7,6 +7,11 @@
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
 <body style="text-align:left" onload="refresh(30000)">
+<%for;i;0;++;#S.User.ValueList.Count#;%>
+<button class="Small" onclick="window.open('zone-param.html?classname=User&index=#S.User.ValueList.?,%i.Index#&id=#S.User.ValueList.?,%i.Id#&source=users','_self')">
+#S.User.ValueList.?,%i.Name#</button>
+<%%>
+<br />
 <table style="border-width:1px;border-color:Black;border-style:inset">
 <tr class="Header"><td>Users at Home</td><td>User</td><td>Date</td></tr>
 <%for;i;0;++;#S.UserIsNearList.Count#;%>

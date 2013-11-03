@@ -1008,7 +1008,7 @@ namespace MultiZonePlayer
         {
 			string callingMethod = "";
 			var stack = new System.Diagnostics.StackTrace(1, false);
-			for (int i = 0; i < Math.Min(5, stack.GetFrames().Length); i++)
+			for (int i = 0; i < Math.Min(7, stack.GetFrames().Length); i++)
 				callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
 			if (o == null)
 				o = "null";
@@ -1029,7 +1029,7 @@ namespace MultiZonePlayer
 					stack = stackList[1];
 				else
 					stack = new System.Diagnostics.StackTrace(1, false);
-				for (int i=0;i<Math.Min(5, stack.GetFrames().Length);i++)
+				for (int i=0;i<Math.Min(7, stack.GetFrames().Length);i++)
 					callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
                 if (e != null)
                 {

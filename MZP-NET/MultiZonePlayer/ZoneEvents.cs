@@ -22,7 +22,7 @@ namespace MultiZonePlayer
         public void AddCamAlert(ValueList vals)
         {
             String camId = vals.GetValue(GlobalParams.oid);
-            ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.CameraId.Equals(camId));
+            ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.CameraId.Equals(camId));
             
             //MLog.Log(this, message);
             if (zone != null)
@@ -69,7 +69,7 @@ namespace MultiZonePlayer
         public void ToggleAlertStatus(ValueList vals)
         {
             int zoneId = Convert.ToInt16(vals.GetValue(GlobalParams.zoneid));
-            ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.ZoneId == zoneId);
+            ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.ZoneId == zoneId);
             zone.CameraAlertActive = !zone.CameraAlertActive;
         }
 

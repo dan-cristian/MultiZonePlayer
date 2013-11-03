@@ -823,7 +823,7 @@ namespace FTD2XX_NET
 
 		// Device type identifiers for FT_GetDeviceInfoDetail and FT_GetDeviceInfo
 		/// <summary>
-		/// List of FTDI device types
+		/// ValueList of FTDI device types
 		/// </summary>
 		public enum FT_DEVICE
 		{

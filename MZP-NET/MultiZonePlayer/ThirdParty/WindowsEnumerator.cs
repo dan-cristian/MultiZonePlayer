@@ -61,7 +61,7 @@ namespace MultiZonePlayer
         /// <summary>
         /// Get all top-level window information
         /// </summary>
-        /// <returns>List of window information objects</returns>
+        /// <returns>ValueList of window information objects</returns>
         public List<ApiWindow> GetTopLevelWindows()
         {
             EnumWindows(EnumWindowProc, 0);
@@ -80,7 +80,7 @@ namespace MultiZonePlayer
         /// <summary>
         /// Get all child windows for the specific windows handle (hwnd).
         /// </summary>
-        /// <returns>List of child windows for parent window</returns>
+        /// <returns>ValueList of child windows for parent window</returns>
         public List<ApiWindow> GetChildWindows(Int32 hwnd)
         {
 

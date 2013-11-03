@@ -8,6 +8,7 @@
 </head>
 <body style="text-align:left">
 <button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
+<br />
 <table>
 <%for;i;0;++;#S.OneWire.DeviceList.Count#;%>
 <tr><td>
@@ -16,7 +17,7 @@
 <%%>
 <%for;i;0;++;#S.ZoneTypesAvailable.Count#;%>
 	<button class="Small" onclick="window.open('zone-type.html?type=#S.ZoneTypesAvailableByIndex,%i#','_self')">#S.ZoneTypesAvailableByIndex,%i#</button>
-	<%%>
+<%%>
 </table>
 <table style="border-width:1px;border-color:Black;border-style:inset">
 <tr class="Header">

@@ -581,7 +581,7 @@ namespace MultiZonePlayer
                                     //comPort.Close();
                                 }*/
 								th = new Thread(() => _callback(msg));
-								th.Name = "Serial Received " + comPort.PortName + " Exec";
+								th.Name = "Serial Received " + comPort.PortName + " Exec-" + DateTime.Now.ToString(IniFile.DATETIME_MINSECMILI_FORMAT);
 								th.Start();
                                 //_callback(msg);
                             }
@@ -607,7 +607,7 @@ namespace MultiZonePlayer
 									MLog.LogModem(String.Format("{0} {1}   READ [{2}] len={3}\r\n", DateTime.Now.ToString(), comPort.PortName, msgDisplay, msg.Length));
 
 								th = new Thread(() => _callback(msg));
-								th.Name = "Serial Received " + comPort.PortName + " Exec";
+								th.Name = "Serial Received " + comPort.PortName + " Exec-" + DateTime.Now.ToString(IniFile.DATETIME_MINSECMILI_FORMAT);
 								th.Start();
 								//_callback(msg);
 							}
@@ -633,7 +633,7 @@ namespace MultiZonePlayer
 												comPort.PortName, msgDisplay, atom.Length));
 
 										th = new Thread(() => _callback(atom));
-										th.Name = "Serial Received " + comPort.PortName + " Exec";
+										th.Name = "Serial Received " + comPort.PortName + " Exec-" + DateTime.Now.ToString(IniFile.DATETIME_MINSECMILI_FORMAT);
 										th.Start();
 										//_callback(atom);
 									}

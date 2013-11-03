@@ -171,9 +171,9 @@ namespace MultiZonePlayer
 			SimpleGraph form2 = new SimpleGraph();
 			form2.MdiParent = this;
 			form2.Show();
-			Alert.CreateAlert("A new alert", MZPState.Instance.ZoneDetails[0], false,
+			Alert.CreateAlert("A new alert", ZoneDetails.ZoneDetailsList[0], false,
 				Alert.NotificationFlags.NeedsImmediateUserAck, 1, Alert.NotificationFlags.NotifyUserAfterXMinutes, 30);
-			form2.ShowTempGraph(12, MZPState.Instance.ZoneDetails);
+			form2.ShowTempGraph(12, ZoneDetails.ZoneDetailsList);
 			Alert.GetAlertsToSend();
 		}
     }

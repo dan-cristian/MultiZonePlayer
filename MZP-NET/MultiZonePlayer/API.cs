@@ -130,14 +130,15 @@ namespace MultiZonePlayer
         {
             //Metadata.ValueList resvalue;
             CommandResult cmdresult = new CommandResult();
-            String cmdName;
+            String cmdName, temp;
             String detailedStatus="";
-			int remoteid, macroid;
+			int remoteid, macroid,zoneId, id;
 
             try
             {
                 //MZPState.Instance.PowerControl.ResumeFromPowerSaving();
-                String zoneId = vals.GetValue(GlobalParams.zoneid);
+				if (!Int32.TryParse(vals.GetValue(GlobalParams.zoneid), out zoneId))
+					zoneId = -1;
                 cmdName = vals.GetValue(GlobalParams.command);
 				cmdresult.Command = cmdName;
 				if (cmdName != GlobalCommands.closure.ToString() 
@@ -156,7 +157,7 @@ namespace MultiZonePlayer
                         MLog.Log(null, cmdresult.ErrorMessage);
                     }
 					cmdresult.Result = ResultEnum.OK;
-                    //global commands are processed here, zone based commands are delegated to m_zoneList
+                    //global commands are processed here, zone based commands are delegated to m_valueList
                     switch (apicmd)
                     {
                         case GlobalCommands.help:
@@ -321,8 +322,8 @@ namespace MultiZonePlayer
 							macroid = MZPState.Instance.GetMacroIdByShortcut(shortcut, "");
 							if (macroid == -1)
 							{
-								string id = vals.GetValue(GlobalParams.id);
-								macroid = Convert.ToInt16(id);
+								temp = vals.GetValue(GlobalParams.id);
+								macroid = Convert.ToInt16(temp);
 							}
 							if (macroid != -1)
 							{
@@ -361,7 +362,33 @@ namespace MultiZonePlayer
 							//MZPState.Instance.ZoneEvents.DismissAlert(vals);
 							Alert.DismissAlert(aid);
 							break;
-						
+						case GlobalCommands.setfield:
+							string classname = vals.GetValue(GlobalParams.classname);
+							string field = vals.GetValue(GlobalParams.field);
+							string text = vals.GetValue(GlobalParams.text);
+							string valId = vals.GetValue(GlobalParams.id);
+							if (!Int32.TryParse(valId, out id))
+								MLog.Log(null, "Error, ID parse not ok for id="+valId);
+							
+							Object fieldObj=null;
+							switch (classname) {
+								case "ZoneDetails":
+									fieldObj = ZoneDetails.GetZoneById(id);
+									break;
+								case "User":
+									fieldObj = User.GetUser(id);
+									break;
+							}
+							if (Reflect.SetFieldValue(ref fieldObj, field, text)) {
+								((Singleton)fieldObj).SaveToIni();
+								cmdresult.OutputMessage += "Field " + field + " set to " + text;
+							}
+							else {
+								cmdresult.OutputMessage += "Error setting value, not found field=" + field + " value=" + text;
+								MLog.Log(null, cmdresult.OutputMessage);
+							}
+							
+							break;
                         default:
                             DoZoneCommand(apicmd, vals, ref cmdresult);
                             break;
@@ -472,7 +499,7 @@ namespace MultiZonePlayer
 				ZoneDetails zonedetails;
 				if (zonename != null)
 				{
-					zonedetails = MZPState.Instance.ZoneDetails.Find(x =>
+					zonedetails = ZoneDetails.ZoneDetailsList.Find(x =>
 						x.ZoneName.ToLower().Contains(zonename.ToLower()));
 					if (zonedetails != null) zoneId = zonedetails.ZoneId;
 				}
@@ -513,7 +540,7 @@ namespace MultiZonePlayer
             srv.IsServerOn = true;
             if (MZPState.Instance != null)
             {
-                srv.ZoneDetails = MZPState.Instance.ZoneDetails.ToArray();
+                srv.ZoneDetails = ZoneDetails.ZoneDetailsList.ToArray();
                 srv.CamAlertList = MZPState.Instance.ZoneEvents.CamAlertList;
             }
             cmdres.ServerStatus = srv;

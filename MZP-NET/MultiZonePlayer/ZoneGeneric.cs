@@ -9,85 +9,69 @@ namespace MultiZonePlayer
 {
     public class ZoneGeneric : IPlayEvent
     {
-
         private User m_zoneUser = null;
-
-        public User ZoneUser
-        {
-            get { return m_zoneUser; }
-            set { m_zoneUser = value; }
-        }
         private String m_currentCmd = null;
-
-        public String CurrentCmd
-        {
-            get { return m_currentCmd; }
-            set { m_currentCmd = value; }
-        }
         private int m_sourceZoneId;
         private int m_inactiveCyclesCount = 0;
-
-        public int InactiveCyclesCount
-        {
-            get { return m_inactiveCyclesCount; }
-            set { m_inactiveCyclesCount = value; }
-        }
         private IZoneActivity m_mainZoneActivity;
-
-        public IZoneActivity MainZoneActivity
-        {
-            get { return m_mainZoneActivity; }
-            set { m_mainZoneActivity = value; }
-        }
         private String m_controlDevice = null;
-
-        public String ControlDevice
-        {
-            get { return m_controlDevice; }
-            set { m_controlDevice = value; }
-        }
         private ZoneDetails m_zoneDetails;
         private List<ZoneDetails> m_clonedZones;
         private static int m_recIndex = 0;
         private ZonesForm m_zoneForm;
-
-        public ZoneDetails ZoneDetails
-        {
+		private DateTime m_lastContactMade = DateTime.MinValue, m_lastContactReleased = DateTime.MinValue;
+		/// <summary>
+		/// Pattern is x-x-xx- where x is a press longer than 1 second and - is a press less than 1 second
+		/// </summary>
+		private String m_closurePatern = "";
+		public User ZoneUser {
+			get { return m_zoneUser; }
+			set { m_zoneUser = value; }
+		}
+		public String CurrentCmd {
+			get { return m_currentCmd; }
+			set { m_currentCmd = value; }
+		}
+		public int InactiveCyclesCount {
+			get { return m_inactiveCyclesCount; }
+			set { m_inactiveCyclesCount = value; }
+		}
+		public IZoneActivity MainZoneActivity {
+			get { return m_mainZoneActivity; }
+			set { m_mainZoneActivity = value; }
+		}
+		public String ControlDevice {
+			get { return m_controlDevice; }
+			set { m_controlDevice = value; }
+		}
+        public ZoneDetails ZoneDetails{
             get { return m_zoneDetails; }
         }
 
-        public ZonesForm ZoneForm
-        {
+        public ZonesForm ZoneForm {
             get { return m_zoneForm; }
             set { m_zoneForm = value; }
         }
 
-        public ZoneGeneric(int zoneId)
-        {
+        public ZoneGeneric(int zoneId)  {
             m_zoneDetails = ZoneDetails.GetZoneById(zoneId);
             this.m_sourceZoneId = zoneId;
-
 			m_clonedZones = new List<ZoneDetails>();
-
             //default user - all
             m_zoneUser = new User(0,"all","000");//SystemState.iniUserList["000"] as User;
             LoadZoneIni();
         }
 
-        public void CloseZone()
-        {
-            try
-			{
+        public void CloseZone()    {
+            try		{
 				MLog.Log(null, "Closing zone " + m_zoneDetails.ZoneId + ", activity=" + m_mainZoneActivity);
-				if (m_mainZoneActivity != null)
-				{
+				if (m_mainZoneActivity != null)		{
 					m_mainZoneActivity.Close();
 				}
 				m_zoneDetails.Close();
 				MZPState.Instance.ActiveZones.Remove(this);
 			}
-            catch (Exception ex)
-            {
+            catch (Exception ex)     {
                 MLog.Log(ex, "Error closing generic zone " + m_zoneDetails.ZoneName);
             }
         }
@@ -95,8 +79,7 @@ namespace MultiZonePlayer
         private void StopRemoveClonedZones()
         {
 			ZoneGeneric zone;
-            foreach (ZoneDetails izone in m_clonedZones)
-            {
+            foreach (ZoneDetails izone in m_clonedZones)    {
 				zone = MZPState.Instance.ActiveZones.Find(x => x.ZoneDetails.ZoneId == izone.ZoneId);
 				if (zone!=null && zone.MainZoneActivity != null) 
 					zone.MainZoneActivity.Stop();
@@ -233,8 +216,8 @@ namespace MultiZonePlayer
             {
                 #region commands without activity
                 case GlobalCommands.cameraevent://video camera event
-					RecordMoveEvent(MoveTypeEnum.Camera);
-					
+					ZoneOpenActions();
+					m_zoneDetails.MovementAlert = true;
 					MZPState.Instance.ZoneEvents.AddCamAlert(vals);
                     String camId = vals.GetValue(GlobalParams.oid);
                     string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
@@ -262,7 +245,8 @@ namespace MultiZonePlayer
                     MZPState.Instance.ZoneEvents.ToggleAlertStatus(vals);
                     break;
                 case GlobalCommands.alarmevent://alarm sensor event
-					RecordMoveEvent(MoveTypeEnum.Alarm);
+					ZoneOpenActions();
+					m_zoneDetails.MovementAlert = true;
 					String zonestate = vals.GetValue(GlobalParams.status);
                     m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());
                     DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(GlobalParams.datetime));
@@ -348,8 +332,27 @@ namespace MultiZonePlayer
 					}
 					break;
 				case GlobalCommands.closure:
-					ClosureEvent(vals.GetValue(GlobalParams.id),
-						vals.GetValue(GlobalParams.iscontactmade).ToLower()=="true");
+					Boolean contactMade = vals.GetValue(GlobalParams.iscontactmade).ToLower()=="true";
+					double contactMadeDuration, contactReleasedDuration;
+					if (contactMade) {
+						contactReleasedDuration = DateTime.Now.Subtract(m_lastContactReleased).TotalSeconds;
+						m_lastContactMade = DateTime.Now;
+					}
+					else {
+						contactMadeDuration = DateTime.Now.Subtract(m_lastContactMade).TotalSeconds;
+						m_lastContactReleased = DateTime.Now;
+						if (contactMadeDuration > 1)
+							m_closurePatern += "x";
+						else m_closurePatern += "-";
+					}
+					MLog.Log(this, "Closure Patern="+m_closurePatern + " on zone " + m_zoneDetails.ZoneName);
+					ClosureEvent(vals.GetValue(GlobalParams.id), contactMade);
+					User user = User.UserList.Find(x => x.GetMacroNameByPattern(m_closurePatern, m_zoneDetails.ZoneId) != null);
+					if (user != null) {
+						String macro = user.GetMacroNameByPattern(m_closurePatern, m_zoneDetails.ZoneId);
+						MLog.Log(this, "User " + user.Name + " executed macro from closure " + macro);
+						MZPState.Instance.ExecuteMacro(macro);
+					}
 					if (m_zoneDetails.HasCamera) SaveCurrentPicture(EventSource.Closure);
 					break;
 				case GlobalCommands.closurearm:
@@ -358,39 +361,24 @@ namespace MultiZonePlayer
 					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " closure armed status=" + m_zoneDetails.IsClosureArmed;
 					break;
                 case GlobalCommands.notifyuser:
-					bool needsPower = m_zoneDetails.RequirePower;
-					m_zoneDetails.RequirePower = true;
-					if (!MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId))
-					{
-						MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
-						System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
+					if (m_zoneDetails.HasSpeakers) {
+						bool needsPower = m_zoneDetails.RequirePower;
+						m_zoneDetails.RequirePower = true;
+						if (!MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId)) {
+							MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+							System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
+						}
+						string sourcezoneid = vals.GetValue(GlobalParams.sourcezoneid);
+						string file = IniFile.CurrentPath() + IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1].Replace("x", sourcezoneid);
+						if (!System.IO.File.Exists(file))
+							file = IniFile.CurrentPath() + IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1];
+						DCPlayer tempPlay = new DCPlayer(this, file, m_zoneDetails.GetDefaultNotifyUserVolume());
+						//System.Threading.Thread.Sleep(4000);//ensure we can hear this
+						m_zoneDetails.RequirePower = needsPower;
 					}
-					string sourcezoneid = vals.GetValue(GlobalParams.sourcezoneid);
-					string file = IniFile.CurrentPath()+ IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1].Replace("x",sourcezoneid);
-					if (!System.IO.File.Exists(file))
-						file = IniFile.CurrentPath()+IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1];
-					DCPlayer tempPlay = new DCPlayer(this, file, m_zoneDetails.GetDefaultNotifyUserVolume());
-					//System.Threading.Thread.Sleep(4000);//ensure we can hear this
-					m_zoneDetails.RequirePower = needsPower;
+					else { MLog.Log(this, "Error, notify user on zone without speakers="+m_zoneDetails.ZoneName); }
 					break;
-				case GlobalCommands.setfield:
-					string field = vals.GetValue(GlobalParams.field);
-					string text = vals.GetValue(GlobalParams.text);
-					System.Reflection.FieldInfo fieldInfo = m_zoneDetails.GetType().GetField(field);
-					if (fieldInfo != null)
-					{
-						Type paramType = fieldInfo.FieldType;
-						object obj = Convert.ChangeType(text, paramType);
-						fieldInfo.SetValue(m_zoneDetails, obj);
-						m_zoneDetails.SaveStateToIni();
-						cmdresult.OutputMessage += "Field " + field + " set to " + text;
-					}
-					else
-					{
-						cmdresult.OutputMessage +="Error setting value, not found field=" + field + " value=" + text;
-						MLog.Log(this, cmdresult.OutputMessage);
-					}
-					break;
+				
 				case GlobalCommands.generategraph:
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
 					SimpleGraph graph = new SimpleGraph();
@@ -824,8 +812,11 @@ namespace MultiZonePlayer
 				m_zoneDetails.RelayState = EnumRelayState.ContactClosed;
 			else
 				m_zoneDetails.RelayState = EnumRelayState.ContactOpen;
-
-			RecordMoveEvent(MoveTypeEnum.Closure);
+			m_zoneDetails.MovementAlert = true;
+			ZoneOpenActions();
+			m_zoneDetails.ClosureCounts++;
+			m_zoneDetails.LastClosureEventDateTime = DateTime.Now;
+			
 
 			string message = "Closure contact state " + key + " is " + isContactMade 
 				+ " on zone " + m_zoneDetails.ZoneName;
@@ -877,28 +868,6 @@ namespace MultiZonePlayer
 			 */
 		}
 
-		private void RecordMoveEvent(MoveTypeEnum moveType)
-		{
-			ZoneOpenActions();
-
-			switch (moveType)
-			{
-				case MoveTypeEnum.Closure:
-					m_zoneDetails.ClosureCounts++;
-					m_zoneDetails.LastClosureEventDateTime = DateTime.Now;
-					break;
-				case MoveTypeEnum.Camera:
-					break;
-				case MoveTypeEnum.Alarm:
-					break;
-				default:
-					MLog.Log(this, "Warning unknown move event");
-					break;
-			}
-
-			m_zoneDetails.MovementAlert = true;
-		}
-
 		private String SaveCurrentPicture(EventSource source) {
 			string url="",fullfilepath="";
 			try {
@@ -926,14 +895,10 @@ namespace MultiZonePlayer
 		}
         public void TickFast()
         {
-            try
-            {
-                if (m_mainZoneActivity != null)
-                {
+            try           {
+                if (m_mainZoneActivity != null)    {
                     if (!m_mainZoneActivity.IsActive())
-                    {
                         m_inactiveCyclesCount++;
-                    }
                     m_mainZoneActivity.Tick();
                     m_zoneDetails.Position = MainZoneActivity.Position;
                     m_zoneDetails.PositionPercent = MainZoneActivity.PositionPercent;
@@ -943,6 +908,11 @@ namespace MultiZonePlayer
                 else
                     m_inactiveCyclesCount++;
 
+				if (DateTime.Now.Subtract(m_zoneDetails.LastClosureEventDateTime).TotalSeconds > 4) {
+					if (m_closurePatern != "") MLog.Log(this, "reseting closure pattern "
+						+m_closurePatern+" on zone " + m_zoneDetails.ZoneName);
+					m_closurePatern = "";
+				}
                 CheckForSleep();
 
                 if (m_inactiveCyclesCount > IniFile.ZONE_INACTIVITY_MAX_CYCLES)

@@ -228,12 +228,6 @@ namespace MultiZonePlayer
 				MLog.Log(this, "No " + IniFile.PARAM_RELAY_DEVICE_NAME[1] + " found in " + count + " devices");
         }
 
-        private void ResetBoard()
-        {
-            MZPState.Instance.LogEvent(EventSource.System, "Relay Action freezed, recovery needed", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Error, null);
-			Reinitialise();
-        }
-
         protected override void Open()
         {
 			if (!m_usb8Relay.IsOpen)
@@ -252,8 +246,8 @@ namespace MultiZonePlayer
 					}
 					else
 					{
-						MLog.Log(this, "Open failed, status = " + status);
-						Reinitialise();
+						Alert.CreateAlert("Denkovi Open failed, status = " + status);
+						//Reinitialise();
 					}
 					LogDebugInfo();
 				}
@@ -367,9 +361,9 @@ namespace MultiZonePlayer
 
 				if (!ev.WaitOne(3000))
 				{
-					MLog.Log(this, "Running async power on ERROR");
+					Alert.CreateAlert("Denkovi Running async power on ERROR");
 					th.Abort();
-					Reinitialise();
+					//Reinitialise();
 				}
             }
         }
@@ -398,9 +392,9 @@ namespace MultiZonePlayer
             th.Start();
             if (!ev.WaitOne(3000))
 			{
-				MLog.Log(this,"Running async power off ALL ERROR");
 				th.Abort();
-				Reinitialise();
+				Alert.CreateAlert("Denkovi Running async power off ALL ERROR", null, false);
+				//Reinitialise();
 			};
         }
 
@@ -416,9 +410,9 @@ namespace MultiZonePlayer
                 th.Start();
 				if (!ev.WaitOne(3000))
 				{
-					MLog.Log(this, "Running async power off ERROR");
+					Alert.CreateAlert("Running async power off ERROR");
 					th.Abort();
-					Reinitialise();
+					//Reinitialise();
 				}
             }
         }
@@ -549,7 +543,7 @@ namespace MultiZonePlayer
             //int[] result;
             List<int> res=new List<int>();
             
-            foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+            foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
             {
                 if (zone.ZoneId == zoneId && zone.PowerIndex>0)
                     res.Add(zone.PowerIndex);

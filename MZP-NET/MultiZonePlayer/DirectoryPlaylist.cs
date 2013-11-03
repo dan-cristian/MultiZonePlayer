@@ -108,7 +108,7 @@ namespace MultiZonePlayer
 				//if the Songs in the Same Directory , the playList will Contain the name only
 				//if the Songs in SubDirectory in the same directory of the playlist ,it will contain the directory name\song name
 				//else it will contain the full address 
-				//We Will use an Array List as it doesn't has an initial length
+				//We Will use an Array ValueList as it doesn't has an initial length
 				System.Collections.ArrayList address = new System.Collections.ArrayList();
 
 				//Read the M3u File from this array
@@ -154,7 +154,7 @@ namespace MultiZonePlayer
 			//if the Songs in the Same Directory , the playList will Contain the name only
 			//if the Songs in SubDirectory in the same directory of the playlist ,it will contain the directory name\song name
 			//else it will contain the full address 
-			//We Will use an Array List as it doesn't has an initial length
+			//We Will use an Array ValueList as it doesn't has an initial length
 			//System.Collections.ArrayList address = new System.Collections.ArrayList();
 
 			//Read the M3u File from this array
@@ -932,7 +932,7 @@ namespace MultiZonePlayer
         
 
 		// Attribute1=value;Attr2=value;...
-		public List<MediaItem> GetMusicPlaylistByCriteria(String searchCriteria)
+		public ValueList<MediaItem> GetMusicPlaylistByCriteria(String searchCriteria)
 		{
 			MLog.Log(null,"Get files by criteria=" + searchCriteria);
 			Hashtable attribs = Utilities.ParseStringForKeyAndValue(searchCriteria, ';');

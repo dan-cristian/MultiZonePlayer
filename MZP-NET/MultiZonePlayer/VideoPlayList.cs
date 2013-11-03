@@ -18,7 +18,7 @@ namespace MultiZonePlayer
     public partial class VideoPlayList : Form
     {
         private VideoCollection m_playlist;
-        //private List<VideoInfo> m_videoPlayList;
+        //private ValueList<VideoInfo> m_videoPlayList;
         //private ZoneVideoApp m_parentZone;
 
         public VideoPlayList()
@@ -30,7 +30,7 @@ namespace MultiZonePlayer
         private void VideoPlayList_Load(object sender, EventArgs e)
         {
             m_playlist = MediaLibrary.AllVideoFiles;
-           // m_videoPlayList = new List<VideoInfo>();
+           // m_videoPlayList = new ValueList<VideoInfo>();
             /*
             VideoItem videoInfo;
 

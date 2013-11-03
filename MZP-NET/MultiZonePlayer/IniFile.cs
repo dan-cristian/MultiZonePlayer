@@ -212,6 +212,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ROUTER_USER_NAME = new String[] { "PARAM_ROUTER_USER_NAME", "root", "User name for router" };
 			public static String[] PARAM_ROUTER_USER_PASS = new String[] { "PARAM_ROUTER_USER_PASS", "abcd1234", "router pass" };
 
+			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
 			public static String DATETIME_FULL_FORMAT = "yyyy-MM-dd HH:mm:ss";

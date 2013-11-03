@@ -375,7 +375,7 @@ namespace MultiZonePlayer
 				m_zoneIdMap[i] = -1;
 				m_lastState += STATE_CONTACT_NOTMADE;
 			}
-			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails) {
+			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
 				SetPinTypes(zone);
 			}
 		}
@@ -517,7 +517,7 @@ namespace MultiZonePlayer
 			}
 			string pin;
 			int startindex, end, pinindex;
-			foreach (ZoneDetails zone in MZPState.Instance.ZoneDetails)
+			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
 			{
 				startindex = zone.ClosureIdList.IndexOf(GPIO_ATTRIB_INI_NAME);
 				if (startindex != -1)
@@ -735,7 +735,7 @@ namespace MultiZonePlayer
                 while (containers.hasMoreElements())
                 {
                     element = (OneWireContainer)containers.nextElement();
-					ZoneDetails zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+					ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
 					String zonename = zone!=null?zone.ZoneName:"ZONE NOT ASSOCIATED";
 					MLog.Log(this, "OneWire device found zone="+zonename+", addr=" + element.getAddressAsString()
                         + " name=" + element.getName() + " altname="+ element.getAlternateNames() +" speed="+element.getMaxSpeed()+" desc=" + element.getDescription()) ;
@@ -822,7 +822,7 @@ namespace MultiZonePlayer
 				int elementCount = 0, errCount=0;
 				while (MZPState.Instance != null && containers.hasMoreElements()){
 					element = (OneWireContainer)containers.nextElement();
-					zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+					zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
 					if (!ProcessElement(zone, element))
 						errCount++;
 					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
@@ -830,8 +830,8 @@ namespace MultiZonePlayer
 				}
 				Performance.Create("OneWire slow lookup for elements count=" + elementCount + " took "
 					+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount="+errCount, true,
-					Singleton.SingletonFlags.IsError, errCount,
-					Singleton.SingletonFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
+					Performance.PerformanceFlags.IsError, errCount,
+					Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
 				adapter.endExclusive();
 			}
 		}
@@ -859,7 +859,7 @@ namespace MultiZonePlayer
 				int elementCount = 0, errCount=0;
 				while (MZPState.Instance != null && containers.hasMoreElements()) {
 					element = (OneWireContainer)containers.nextElement();
-					zone = MZPState.Instance.ZoneDetails.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+					zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
 					if (!ProcessElement(zone, element))
 						errCount++;
 					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
@@ -868,8 +868,8 @@ namespace MultiZonePlayer
 
 				Performance.Create("OneWire fast lookup for elements count=" + elementCount + " took "
 					+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, false,
-					Singleton.SingletonFlags.IsError, errCount, 
-					Singleton.SingletonFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
+					Performance.PerformanceFlags.IsError, errCount, 
+					Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
 				adapter.endExclusive();
 			}
 		}
@@ -931,7 +931,7 @@ namespace MultiZonePlayer
 				}
 				catch (Exception ex) {
 					String err = "Err reading OneWire zone=" + zone.ZoneName + " err=" + ex.Message;
-					Performance.Create(err, true, Performance.SingletonFlags.IsError, 1);
+					Performance.Create(err, true, Performance.PerformanceFlags.IsError, 1);
 					MLog.Log(this, err);
 					result = false;
 				}
