@@ -250,7 +250,8 @@ namespace MultiZonePlayer
 				RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
 				if (dev != null)
 				{
-					MLog.Log(this, "RFX result for response:[" + origResponse + "] is " + dev.DisplayValues());
+					MLog.Log(this, "RFX result in zoneid="+dev.ZoneId
+						+" for response:[" + origResponse + "] is " + dev.DisplayValues());
 					if (dev.ZoneId != -1)
 					{
 						ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
@@ -913,7 +914,7 @@ namespace MultiZonePlayer
 
 							if (level || activity) {
 								zone.ClosureCounts++;
-								//MLog.Log(null, "BINGO "+zone.ZoneName+"CLOSURES=" + zone.ClosureCounts);
+								MLog.Log(null, "BINGO "+zone.ZoneName+"CLOSURES=" + zone.ClosureCounts);
 							}
 							//swd.setLatchState(0, true, false, state);
 
@@ -1553,7 +1554,7 @@ namespace MultiZonePlayer
 					//MLog.Log(null, "Active BT device detected " + device.ToString());
 					devices.Add(device);
 				}
-				MLog.Log(null, "Discovery result="+canConnect+" on " + device.DeviceName + " took " 
+				MLog.Log(null, "Discovery result="+canConnect+" on " + device.DeviceName + " " + device.Address+ " took " 
 					+ Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(startDisc)));
 			}
 			return devices;

@@ -135,7 +135,10 @@ namespace MultiZonePlayer
 						foreach (ZoneGeneric zone in activeZoneClone)
 						{
 							if (MZPState.Instance == null) break;
-							zone.TickFast();
+							if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
+								zone.TickSlow();
+							else
+								zone.TickFast();
 						}
 						MZPState.Instance.TickFast();
 					}

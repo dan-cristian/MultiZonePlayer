@@ -39,7 +39,7 @@ namespace MultiZonePlayer {
 		public ZoneType Type = ZoneType.Undefined;
 		public String OutputDeviceNameWaveVLC;
 		public int WavedeviceIndex;
-		public Boolean HasCamera = false;
+		//public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
 		[Description("Edit")]
 		public int AlarmZoneId = -1;
@@ -162,7 +162,9 @@ namespace MultiZonePlayer {
 				}
 			}
 		}
-
+		public Boolean HasCamera {
+			get { return CameraId != ""; }
+		}
 		public Boolean MovementAlert {
 			get { return m_movementAlert; }
 			set {
@@ -471,7 +473,7 @@ namespace MultiZonePlayer {
 					DefaultVolumePercent = zonestorage.DefaultVolumePercent;
 
 					CameraId = zonestorage.CameraId;
-					if (CameraId != "") HasCamera = true;
+					//if (CameraId != "") HasCamera = true;
 					AlarmZoneId = zonestorage.AlarmZoneId;
 					if (AlarmZoneId != -1) HasMotionSensor = true;
 					AlarmAreaId = zonestorage.AlarmAreaId;

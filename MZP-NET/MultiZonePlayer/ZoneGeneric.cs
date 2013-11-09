@@ -893,6 +893,10 @@ namespace MultiZonePlayer
 			}
 			return "";
 		}
+		public void TickSlow() {
+			if (m_zoneDetails.HasTemperatureSensor && m_zoneDetails.TemperatureAge.TotalMinutes > 5)
+				Alert.CreateAlert("Lost contact with temp sensor", m_zoneDetails, false);
+		}
         public void TickFast()
         {
             try           {
@@ -932,8 +936,7 @@ namespace MultiZonePlayer
                     if (m_zoneForm != null) m_zoneForm.CloseFormSafe();
                 }
 
-				if (m_zoneDetails.HasTemperatureSensor && m_zoneDetails.TemperatureAge.TotalMinutes > 5)
-					Alert.CreateAlert("Lost contact with temp sensor", m_zoneDetails, false);
+				
 
                 if (m_zoneForm != null) m_zoneForm.RefreshState();
             }
