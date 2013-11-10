@@ -8,7 +8,7 @@
 </head>
 <body style="text-align:center">
 
-<form id="schedule" action="?zoneid=%_zoneid" method="post">
+<form id="schedule" action="?id=%_zoneid&zoneid=%_zoneid&classname=%_classname&index=%_index&source=%_source" method="post">
 <input name="command" type="hidden" value="setfield"/>
 <input name="field" type="hidden" value="CronSchedule"/>
 Schedule (#Zones,%_zoneid.CronSchedule#)<br />
@@ -16,6 +16,6 @@ Schedule (#Zones,%_zoneid.CronSchedule#)<br />
 <input id="Submit1" type="submit" value="Set Schedule" />
 </form>
 <br />
-<button onclick="window.open('start.html', '_self')">Back</button>
+<button onclick="window.open('%_source.html?zoneid=%_id', '_self')">Back</button>
 </body>
 </html>

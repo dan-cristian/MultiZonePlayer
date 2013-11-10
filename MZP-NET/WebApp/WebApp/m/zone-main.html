@@ -16,7 +16,8 @@
 <button class="TV#Zones,%_zoneid.ActivityType#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
 <%%>
 <%if;#Zones,%_zoneid.HasCamera#%>
-<button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid', false)">Camera</button>
+<button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid&size=', false)">Cam Pict</button>
+<button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-video.html?zoneid=%_zoneid', false)">Cam Video</button>
 <button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#</button>
 <button onclick="window.open('zone-pictures.html?zoneid=%_zoneid', '_self')">Pictures</button>
 <%%>
@@ -47,7 +48,7 @@
 		onclick="window.open('zone-main.html?zoneid=#Zones,%_zoneid.ChildZone,%i.ZoneId#','_self')">#Zones,%_zoneid.ChildZone,%i.ZoneName#</button>
 <%%><br />
 <hr />
-<button onclick="window.open('zone-sched.html?zoneid=%_zoneid', '_self')">Sched</button>
+<button onclick="window.open('zone-sched.html?id=%_zoneid&zoneid=%_zoneid&classname=ZoneDetails&index=#Zones,%_zoneid.Index#&source=zone-main', '_self')">Sched</button>
 <button onclick="window.open('zone-param.html?id=%_zoneid&classname=ZoneDetails&index=#Zones,%_zoneid.Index#&source=zone-main', '_self')">Params</button>
 <button onclick="window.open('zone-macro.html?zoneid=%_zoneid', '_self')">Macros</button>
 <button onclick="window.open('start.html', '_self')">Back</button>

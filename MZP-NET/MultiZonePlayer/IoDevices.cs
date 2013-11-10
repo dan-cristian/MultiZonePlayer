@@ -660,6 +660,7 @@ namespace MultiZonePlayer
 		const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
 		const string ONEWIRE_PHOTODEV_NAME = "DS2406";
 		double TEMP_DEFAULT = 85;
+		private DateTime m_lastOKRead = DateTime.Now;
 
 		public List<Device> DeviceList {
 			get { return m_deviceList; }
@@ -710,6 +711,7 @@ namespace MultiZonePlayer
                 {
                     adapter = null;
                     adapter = OneWireAccessProvider.getDefaultAdapter();
+					m_lastOKRead = DateTime.Now;
                 }
                 catch (Exception ex)
                 {
@@ -806,6 +808,12 @@ namespace MultiZonePlayer
 		}
 
 		public void TickSlow(){
+
+			if (DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
+				Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
+				Reinitialise();
+			}
+
 			if (adapter != null){
 				int family = 0x28;
 				// get exclusive use of adapter
@@ -878,6 +886,7 @@ namespace MultiZonePlayer
 		private Boolean ProcessElement(ZoneDetails zone, OneWireContainer element) {
 			sbyte[] state; Boolean result = true;
 			TemperatureContainer temp; double tempVal;
+			m_lastOKRead = DateTime.Now;
 			if (zone != null) {
 				try {
 					switch (element.getName()) {

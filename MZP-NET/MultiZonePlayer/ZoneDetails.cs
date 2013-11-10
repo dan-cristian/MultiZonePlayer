@@ -201,6 +201,9 @@ namespace MultiZonePlayer {
 				return dates[0];
 			}
 		}
+		public string LastCamAlertAgeAsTimeSpan {
+			get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastCamAlertDateTime)); }
+		}
 
 		public TimeSpan LastMovementAge {
 			get { return DateTime.Now.Subtract(LastMovementDate); }

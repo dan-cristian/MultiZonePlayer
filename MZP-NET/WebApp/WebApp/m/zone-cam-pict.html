@@ -1,2 +1,5 @@
-﻿<img src="http://#R.DVRServerPort#/livefeed?oid=#Zones,%_zoneid.CameraId#&amp;r=#R.Random#;" id="Img%_zoneid"
+﻿<img src="http://#R.DVRServerPort#/livefeed?oid=#Zones,%_zoneid.CameraId#&amp;r=#R.Random#;&%_size" id="Img%_zoneid"
  title="#Zones,%_zoneid.ZoneName#" alt="#Zones,%_zoneid.ZoneName#"/>
+<br />
+<button class="Small" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid&size=full', false)">Full</button>
+<br />[cam alert #Zones,%_zoneid.LastCamAlertAgeAsTimeSpan# ago]
