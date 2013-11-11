@@ -815,71 +815,94 @@ namespace MultiZonePlayer
 			}
 
 			if (adapter != null){
-				int family = 0x28;
-				// get exclusive use of adapter
-				adapter.beginExclusive(true);
-				// clear any previous search restrictions
-				adapter.setSearchAllDevices();
-				//adapter.targetAllFamilies();
-				adapter.targetFamily(family);
-				adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
-				java.util.Enumeration containers = adapter.getAllDeviceContainers();
-				OneWireContainer element;
-				ZoneDetails zone;
-				m_deviceList.RemoveAll(x=>x.Family==family);
-				DateTime start = DateTime.Now;
-				int elementCount = 0, errCount=0;
-				while (MZPState.Instance != null && containers.hasMoreElements()){
-					element = (OneWireContainer)containers.nextElement();
-					zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
-					if (!ProcessElement(zone, element))
-						errCount++;
-					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
-					elementCount++;
+				try {
+					int family = 0x28;
+					// get exclusive use of adapter
+					adapter.beginExclusive(true);
+					// clear any previous search restrictions
+					adapter.setSearchAllDevices();
+					//adapter.targetAllFamilies();
+					adapter.targetFamily(family);
+					try {
+						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+					}
+					catch (Exception) {
+						MLog.Log(this, "Error setting regular speed on tickslow, flexing");
+						adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
+					}
+					java.util.Enumeration containers = adapter.getAllDeviceContainers();
+					OneWireContainer element;
+					ZoneDetails zone;
+					m_deviceList.RemoveAll(x => x.Family == family);
+					DateTime start = DateTime.Now;
+					int elementCount = 0, errCount = 0;
+					while (MZPState.Instance != null && containers.hasMoreElements()) {
+						element = (OneWireContainer)containers.nextElement();
+						zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+						if (!ProcessElement(zone, element))
+							errCount++;
+						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+						elementCount++;
+					}
+					Performance.Create("OneWire slow lookup for elements count=" + elementCount + " took "
+						+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, true,
+						Performance.PerformanceFlags.IsError, errCount,
+						Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
+					adapter.endExclusive();
 				}
-				Performance.Create("OneWire slow lookup for elements count=" + elementCount + " took "
-					+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount="+errCount, true,
-					Performance.PerformanceFlags.IsError, errCount,
-					Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
-				adapter.endExclusive();
+				catch (Exception ex) {
+					MLog.Log(this, "Error tick slow err=" + ex.Message);
+				}
 			}
 		}
 
 		public void TickFast() {
 			if (adapter != null) {
-				int family = 0x12;
-				// get exclusive use of adapter
-				adapter.beginExclusive(true);
-				// clear any previous search restrictions
-				adapter.setSearchAllDevices();
-				adapter.targetFamily(family);
-				//adapter.targetAllFamilies();
-				/*if (adapter.canHyperdrive())
-					adapter.setSpeed(DSPortAdapter.SPEED_HYPERDRIVE);
-				else if (adapter.canOverdrive())
-					adapter.setSpeed(DSPortAdapter.SPEED_OVERDRIVE);
-				else*/
-					adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
-				java.util.Enumeration containers = adapter.getAllDeviceContainers();
-				OneWireContainer element;
-				ZoneDetails zone;
-				m_deviceList.RemoveAll(x => x.Family == family);
-				DateTime start = DateTime.Now;
-				int elementCount = 0, errCount=0;
-				while (MZPState.Instance != null && containers.hasMoreElements()) {
-					element = (OneWireContainer)containers.nextElement();
-					zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
-					if (!ProcessElement(zone, element))
-						errCount++;
-					m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
-					elementCount++;
-				}
+				try {
+					int family = 0x12;
+					// get exclusive use of adapter
+					adapter.beginExclusive(true);
+					// clear any previous search restrictions
+					adapter.setSearchAllDevices();
+					adapter.targetFamily(family);
+					//adapter.targetAllFamilies();
+					/*if (adapter.canHyperdrive())
+						adapter.setSpeed(DSPortAdapter.SPEED_HYPERDRIVE);
+					else if (adapter.canOverdrive())
+						adapter.setSpeed(DSPortAdapter.SPEED_OVERDRIVE);
+					else*/
+					
+					try {
+						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+					}
+					catch (Exception) {
+						MLog.Log(this, "Error setting regular speed on tickfast, flexing");
+						adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
+					}
+					java.util.Enumeration containers = adapter.getAllDeviceContainers();
+					OneWireContainer element;
+					ZoneDetails zone;
+					m_deviceList.RemoveAll(x => x.Family == family);
+					DateTime start = DateTime.Now;
+					int elementCount = 0, errCount = 0;
+					while (MZPState.Instance != null && containers.hasMoreElements()) {
+						element = (OneWireContainer)containers.nextElement();
+						zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+						if (!ProcessElement(zone, element))
+							errCount++;
+						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+						elementCount++;
+					}
 
-				Performance.Create("OneWire fast lookup for elements count=" + elementCount + " took "
-					+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, false,
-					Performance.PerformanceFlags.IsError, errCount, 
-					Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
-				adapter.endExclusive();
+					Performance.Create("OneWire fast lookup for elements count=" + elementCount + " took "
+						+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, false,
+						Performance.PerformanceFlags.IsError, errCount,
+						Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
+					adapter.endExclusive();
+				}
+				catch (Exception ex) {
+					MLog.Log(this, "Error tick fast err="+ex.Message);
+				}
 			}
 		}
 
