@@ -12,6 +12,7 @@ namespace MultiZonePlayer
 		private System.ComponentModel.IContainer components = null;
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
+		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
 		private List<Tuple<int, DateTime, int, String>> m_eventHistoryList;
 
 		public SimpleGraph()
@@ -50,11 +51,7 @@ namespace MultiZonePlayer
 
 		public void ShowTempHumGraph(int zoneId, int ageHours)
 		{
-			chart1.Series.Clear();
-			chart1.Titles.Clear();
-			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
-			chart1.Titles.Add("Temperature & Humidity @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT));
+			PrepareGraph("Temperature & Humidity @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			List<Tuple<int, DateTime,double>> tempValues = m_tempHistoryList.FindAll(x=>x.Item1==zoneId && DateTime.Now.Subtract(x.Item2).TotalHours<=ageHours);
 			if (tempValues.Count > 0)
 			{
@@ -93,32 +90,75 @@ namespace MultiZonePlayer
 					series2.Points.AddXY(point.Item2, point.Item3);
 				}
 			}
-			//Tuple<int, DateTime, double> min = tempValues.Find(x => x.Item3 == 0);
 			double minT;
 			minT = tempValues.Count>0? tempValues.Min(x => x.Item3):0;
 			double minY = tempValues.Count>0 ? minT : double.MaxValue;
 			minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
-
 			chart1.ChartAreas[0].AxisY.Minimum = minY;
-			//DateTime lastValue = tempValues[tempValues.Count-1].Item2
-			//CustomLabel monthLabel = new CustomLabel(startOffset, endOffset, monthName, 1,     LabelMarkStyle.Box);
-			//chart1.ChartAreas[0].AxisX.CustomLabels.Add(;
 			chart1.ChartAreas[0].RecalculateAxesScale();
-			
 			chart1.Invalidate();
 			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER 
 				+ "temp-hum-" + zoneId + "-"+ageHours+".gif", ChartImageFormat.Gif);
+		}
+		private void PrepareGraph(String title, int period) {
+			chart1.Series.Clear();
+			chart1.Titles.Clear();
+			this.chart1.Legends[0].Docking = Docking.Bottom;
+			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(period);
+			chart1.Titles.Add(title);
+
+		}
+
+		public void ShowVoltageGraph(int zoneId, int ageHours) {
+			try {
+				System.Drawing.Color[] colors = new System.Drawing.Color[5];
+				colors[0] = System.Drawing.Color.Orange;
+				colors[1] = System.Drawing.Color.Red;
+				colors[2] = System.Drawing.Color.Blue;
+				colors[3] = System.Drawing.Color.Purple;
+				colors[4] = System.Drawing.Color.Green;
+				PrepareGraph("Voltage @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
+				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
+				double minY = double.MaxValue, maxY = double.MinValue;
+				for (int index = 1; index <= maxIndex; index++) {
+					List<Tuple<int, DateTime, double, int>> tempValues = m_voltageHistoryList.FindAll(
+						x => x.Item1 == zoneId
+						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == index);
+					if (tempValues.Count > 0) {
+						series[index] = new System.Windows.Forms.DataVisualization.Charting.Series {
+							Name = "Voltage" + index,
+							Color = colors[index],
+							IsVisibleInLegend = true,
+							IsXValueIndexed = false,
+							ChartType = SeriesChartType.StepLine,
+							BorderWidth = 1,
+							MarkerSize = 3
+						};
+						this.chart1.Series.Add(series[index]);
+						foreach (var point in tempValues) {
+							series[index].Points.AddXY(point.Item2, point.Item3);
+							minY = Math.Min(minY, tempValues.Min(x => x.Item3));
+							maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+						}
+					}
+				}
+				chart1.ChartAreas[0].AxisY.Maximum= maxY;
+				chart1.ChartAreas[0].AxisY.Minimum= minY;
+				chart1.ChartAreas[0].RecalculateAxesScale();
+				chart1.Invalidate();
+				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+					+ "voltage-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+			}
+			catch (Exception ex) {
+				MLog.Log(ex, this, "Err gen voltage graph");
+			}
 		}
 
 		public void ShowTempGraph(int ageHours, List<ZoneDetails> zones)
 		{
 			double lastMinY=double.MaxValue, minY=double.MaxValue;
-			chart1.Series.Clear();
-			chart1.Titles.Clear();
-			//chart1.BackColor = System.Drawing.Color.Transparent;
-			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
-			chart1.Titles.Add("Temperature @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT));
+			PrepareGraph("Temperature @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			String color;
 			foreach (ZoneDetails zone in zones)
 			{
@@ -161,11 +201,7 @@ namespace MultiZonePlayer
 		}
 		public void ShowEventGraph(int zoneId, int ageHours)
 		{
-			chart1.Series.Clear();
-			chart1.Titles.Clear();
-			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(ageHours);
-			chart1.Titles.Add("Events @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT));
+			PrepareGraph("Events @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues, powerValues;
 
 			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 
@@ -303,18 +339,17 @@ namespace MultiZonePlayer
 			this.ResumeLayout(false);
 		}
 
-		private void LoadHistory()
-		{
+		private void LoadHistory(){
 			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String>>();
+			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int>>();
 
 			//GET TEMP and HUM from storage
 			string[] allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath()+ IniFile.CSV_TEMPERATURE_HUMIDITY);
 			var query = from line in allLines
 						let data = line.Split(',')
-						select new
-						{
+						select new {
 							ZoneName = data[0],
 							Type = data[1],
 							Date = Convert.ToDateTime(data[2]),
@@ -322,10 +357,8 @@ namespace MultiZonePlayer
 							ZoneId = Convert.ToInt16(data[4])
 						};
 
-			foreach (var line in query)
-			{
-				switch (line.Type)
-				{
+			foreach (var line in query)	{
+				switch (line.Type) {
 					case Constants.CAPABILITY_TEMP:
 						m_tempHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
 						break;
@@ -335,12 +368,30 @@ namespace MultiZonePlayer
 				}
 			}
 
+			allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_VOLTAGE);
+			var query1 = from line in allLines
+						let data = line.Split(',')
+						select new {
+							ZoneName = data[0],
+							Type = data[1],
+							Date = Convert.ToDateTime(data[2]),
+							Value = Convert.ToDouble(data[3]),
+							ZoneId = Convert.ToInt16(data[4]),
+							VoltageIndex = Convert.ToInt16(data[5])
+						};
+			foreach (var line in query1) {
+				switch (line.Type) {
+					case Constants.CAPABILITY_VOLTAGE:
+						m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int>(line.ZoneId, line.Date, line.Value, line.VoltageIndex));
+						break;
+				}
+			}
+
 			//GET closures from storage
 			allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_CLOSURES);
 			var query2 = from line in allLines
 						let data = line.Split(',')
-						select new
-						{
+						select new {
 							ZoneName = data[0],
 							Key = data[1],
 							Date = Convert.ToDateTime(data[2]),
@@ -349,8 +400,7 @@ namespace MultiZonePlayer
 							EventType = data[5]
 						};
 
-			foreach (var line in query2)
-			{
+			foreach (var line in query2) {
 				m_eventHistoryList.Add(new Tuple<int, DateTime, int, String>(line.ZoneId, line.Date, line.State, line.EventType));
 			}
 		}

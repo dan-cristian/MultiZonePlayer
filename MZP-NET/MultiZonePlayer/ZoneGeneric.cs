@@ -384,6 +384,7 @@ namespace MultiZonePlayer
 					SimpleGraph graph = new SimpleGraph();
 					graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
 					graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours);
+					graph.ShowVoltageGraph(m_zoneDetails.ZoneId, ageHours);
 					break;
 				case GlobalCommands.doorring:
 					List<ZoneDetails> zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;

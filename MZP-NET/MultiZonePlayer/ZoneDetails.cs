@@ -30,6 +30,8 @@ namespace MultiZonePlayer {
 		public String WakeWeekDay = "";
 		[Description("Edit")]
 		public String CameraId = "";
+		[Description("Edit")]
+		public String CameraResolution = "";
 		public Boolean HasSpeakers = false;
 		[Description("Edit")]
 		public int DefaultVolumePercent;
@@ -104,6 +106,7 @@ namespace MultiZonePlayer {
 		public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
 		public DateTime LastNotifyZoneEventTriggered;
 
+		private double[] m_voltage = new double[5];
 		protected const double DEFAULT_TEMP_HUM = -1000;
 
 		protected double m_temperature = DEFAULT_TEMP_HUM, m_humidity = DEFAULT_TEMP_HUM;
@@ -463,8 +466,8 @@ namespace MultiZonePlayer {
 		}
 
 		public void LoadStateFromIni() {
-			String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
 			try {
+				String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
 				if (json != "") {
 					MLog.Log(this, "Loading state for zone=" + ZoneName);
 					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
@@ -476,6 +479,7 @@ namespace MultiZonePlayer {
 					DefaultVolumePercent = zonestorage.DefaultVolumePercent;
 
 					CameraId = zonestorage.CameraId;
+					CameraResolution = zonestorage.CameraResolution;
 					//if (CameraId != "") HasCamera = true;
 					AlarmZoneId = zonestorage.AlarmZoneId;
 					if (AlarmZoneId != -1) HasMotionSensor = true;
@@ -536,10 +540,9 @@ namespace MultiZonePlayer {
 					MLog.Log(this, "Ini state NOT FOUND for zone=" + ZoneName);
 			}
 			catch (Exception ex) {
-				MLog.Log(ex, "Unable to load zone");
-				throw new Exception("ZoneLoad Exception", ex);
+				MLog.Log(ex, "Unable to load zone id="+ ZoneId +" message "+ ex.Message +" STACK=" + ex.StackTrace);
+				throw new Exception("ZoneLoad Exception zoneid="+ZoneId, ex);
 			}
-
 		}
 
 
@@ -708,6 +711,19 @@ namespace MultiZonePlayer {
 
 		public List<PictureSnapshot> PictureList {
 			get { return m_pictureList; }
+		}
+
+		public void SetVoltage(int voltageIndex, double value) {
+			double lastVal;
+			lastVal = m_voltage[voltageIndex];
+			if (lastVal != value) {
+				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName,
+						Constants.CAPABILITY_VOLTAGE,
+						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), 
+						value.ToString(), ZoneId.ToString(), voltageIndex.ToString());
+				m_voltage[voltageIndex] = value;
+			}
+			
 		}
 		#region statics
 		/*public static List<ZoneDetails> ValueList {

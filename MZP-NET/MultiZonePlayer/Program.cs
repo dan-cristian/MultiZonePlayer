@@ -41,7 +41,9 @@ namespace MultiZonePlayer
             catch (Exception ex)
             {
                 MLog.Log(ex, "Fatal Exception");
-				MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+				MessageBox.Show(ex.Message + "\n" + ex.StackTrace );
+				if (ex.InnerException != null)
+					MessageBox.Show(ex.InnerException.Message + "\n" + ex.InnerException.StackTrace);
                 if (MZPState.Instance != null)
                     MZPState.Instance.Shutdown();
                 

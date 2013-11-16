@@ -109,6 +109,7 @@
     <Content Include="m\alerts.html" />
     <Content Include="m\auth.html" />
     <Content Include="m\basic.js" />
+    <Content Include="m\zone-graph-voltage.html" />
     <Content Include="m\zone-cam-video.html" />
     <Content Include="m\zone-pictures.html" />
     <Content Include="m\info.html" />

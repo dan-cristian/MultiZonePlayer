@@ -24,7 +24,7 @@ namespace MultiZonePlayer {
 			}
 		}*/
 		[Description("Edit")]
-		public String UniqueIdentifier;
+		public String UniqueIdentifier="";
 		public int Id;
 
 		public Singleton() { }

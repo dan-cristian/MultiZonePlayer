@@ -659,6 +659,7 @@ namespace MultiZonePlayer
 		const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
 		const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
 		const string ONEWIRE_PHOTODEV_NAME = "DS2406";
+		const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
 		double TEMP_DEFAULT = 85;
 		private DateTime m_lastOKRead = DateTime.Now;
 
@@ -741,16 +742,9 @@ namespace MultiZonePlayer
 					ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
 					String zonename = zone!=null?zone.ZoneName:"ZONE NOT ASSOCIATED";
 					MLog.Log(this, "OneWire device found zone="+zonename+", addr=" + element.getAddressAsString()
-                        + " name=" + element.getName() + " altname="+ element.getAlternateNames() +" speed="+element.getMaxSpeed()+" desc=" + element.getDescription()) ;
-
-					//does not work
-					/*if (element.getName() == "DS18B20")
-					{
-						temp = (TemperatureContainer)element;
-						state = temp.readDevice();
-						temp.setTemperatureResolution(temp.getTemperatureResolutions()[1],state);
-						temp.writeDevice(state);
-					}*/
+                        + " name=" + element.getName() + " altname="+ element.getAlternateNames() 
+						+" speed="+element.getMaxSpeed()
+						+" desc=" + element.getDescription()) ;
                 }
                 adapter.endExclusive();
 
@@ -807,103 +801,62 @@ namespace MultiZonePlayer
 			MLog.Log(this, "1-Wire network exception occurred: " + dexc.exception);
 		}
 
+		//Family codes http://owfs.sourceforge.net/family.html
+		private void ProcessFamily(int family, Boolean verboseLog) {
+			if (adapter != null) {
+				try {
+					// get exclusive use of adapter
+					adapter.beginExclusive(true);
+					// clear any previous search restrictions
+					adapter.setSearchAllDevices();
+					//adapter.targetAllFamilies();
+					adapter.targetFamily(family);
+					try {
+						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+					}
+					catch (Exception) {
+						MLog.Log(this, "Error setting regular speed on family="+family+", flexing");
+						adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
+					}
+					java.util.Enumeration containers = adapter.getAllDeviceContainers();
+					OneWireContainer element;
+					ZoneDetails zone;
+					m_deviceList.RemoveAll(x => x.Family == family);
+					DateTime start = DateTime.Now;
+					int elementCount = 0, errCount = 0;
+					while (MZPState.Instance != null && containers.hasMoreElements()) {
+						element = (OneWireContainer)containers.nextElement();
+						zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+						if (!ProcessElement(zone, element))
+							errCount++;
+						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+						elementCount++;
+					}
+					Performance.Create("OneWire lookup family="+family+" for elements count=" + elementCount + " took "
+						+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, verboseLog,
+						Performance.PerformanceFlags.IsError, errCount,
+						Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
+					adapter.endExclusive();
+				}
+				catch (Exception ex) {
+					MLog.Log(this, "Error process family="+family+" err=" + ex.Message);
+				}
+			}
+		}
+
 		public void TickSlow(){
 
 			if (DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
 				Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
 				Reinitialise();
 			}
-
-			if (adapter != null){
-				try {
-					int family = 0x28;
-					// get exclusive use of adapter
-					adapter.beginExclusive(true);
-					// clear any previous search restrictions
-					adapter.setSearchAllDevices();
-					//adapter.targetAllFamilies();
-					adapter.targetFamily(family);
-					try {
-						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
-					}
-					catch (Exception) {
-						MLog.Log(this, "Error setting regular speed on tickslow, flexing");
-						adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
-					}
-					java.util.Enumeration containers = adapter.getAllDeviceContainers();
-					OneWireContainer element;
-					ZoneDetails zone;
-					m_deviceList.RemoveAll(x => x.Family == family);
-					DateTime start = DateTime.Now;
-					int elementCount = 0, errCount = 0;
-					while (MZPState.Instance != null && containers.hasMoreElements()) {
-						element = (OneWireContainer)containers.nextElement();
-						zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
-						if (!ProcessElement(zone, element))
-							errCount++;
-						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
-						elementCount++;
-					}
-					Performance.Create("OneWire slow lookup for elements count=" + elementCount + " took "
-						+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, true,
-						Performance.PerformanceFlags.IsError, errCount,
-						Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
-					adapter.endExclusive();
-				}
-				catch (Exception ex) {
-					MLog.Log(this, "Error tick slow err=" + ex.Message);
-				}
-			}
+			
+			ProcessFamily(0x28, true);
+			ProcessFamily(0x26, true);
 		}
 
 		public void TickFast() {
-			if (adapter != null) {
-				try {
-					int family = 0x12;
-					// get exclusive use of adapter
-					adapter.beginExclusive(true);
-					// clear any previous search restrictions
-					adapter.setSearchAllDevices();
-					adapter.targetFamily(family);
-					//adapter.targetAllFamilies();
-					/*if (adapter.canHyperdrive())
-						adapter.setSpeed(DSPortAdapter.SPEED_HYPERDRIVE);
-					else if (adapter.canOverdrive())
-						adapter.setSpeed(DSPortAdapter.SPEED_OVERDRIVE);
-					else*/
-					
-					try {
-						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
-					}
-					catch (Exception) {
-						MLog.Log(this, "Error setting regular speed on tickfast, flexing");
-						adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
-					}
-					java.util.Enumeration containers = adapter.getAllDeviceContainers();
-					OneWireContainer element;
-					ZoneDetails zone;
-					m_deviceList.RemoveAll(x => x.Family == family);
-					DateTime start = DateTime.Now;
-					int elementCount = 0, errCount = 0;
-					while (MZPState.Instance != null && containers.hasMoreElements()) {
-						element = (OneWireContainer)containers.nextElement();
-						zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
-						if (!ProcessElement(zone, element))
-							errCount++;
-						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
-						elementCount++;
-					}
-
-					Performance.Create("OneWire fast lookup for elements count=" + elementCount + " took "
-						+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, false,
-						Performance.PerformanceFlags.IsError, errCount,
-						Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
-					adapter.endExclusive();
-				}
-				catch (Exception ex) {
-					MLog.Log(this, "Error tick fast err="+ex.Message);
-				}
-			}
+			ProcessFamily(0x12, false);
 		}
 
 		private Boolean ProcessElement(ZoneDetails zone, OneWireContainer element) {
@@ -959,6 +912,37 @@ namespace MultiZonePlayer
 							//int ilevel = o05.(0, state);
 							//MLog.Log(null, "ilevel=" + level + "latch=" + latch + " sensed=" + sensed);
 							break;
+						case ONEWIRE_SMARTBATDEV_NAME:
+							ADContainer adc = (ADContainer)element;
+							int maxNumChan = adc.getNumberADChannels();
+							// array to determine whether a specific channel has been selected
+							Boolean[] channel = new Boolean[maxNumChan];
+							state = adc.readDevice();
+							for (int i = 0; i < maxNumChan; i++)
+							{
+								// clear all channel selection
+								channel [i] = true;
+
+								if (adc.hasADAlarms())
+								{
+									MLog.Log(this, "Has ALARM capability");
+									/*/ disable alarms
+									adc.setADAlarmEnable(i, ADContainer.ALARM_LOW, false,
+															state);
+									adc.setADAlarmEnable(i, ADContainer.ALARM_HIGH,
+															false, state);
+									 */
+								}
+							}
+							double[] voltage;
+							getVoltage(adc, channel, out voltage);
+							for (int i = 0; i < voltage.Length; i++) {
+								zone.SetVoltage(i, voltage[i]);
+							}
+							break;
+						default:
+							MLog.Log(this, "Unknown onewire device "+ element.getName());
+							break;
 					}
 
 				}
@@ -977,6 +961,40 @@ namespace MultiZonePlayer
 				}
 			}
 			return result;
+		}
+		// read A/D from device
+		private static void getVoltage (ADContainer adc, Boolean[] channel, out double[] curVoltage)
+		{
+			sbyte[]   state;
+			curVoltage = new double [channel.Length];
+			state = adc.readDevice();
+			if (adc.canADMultiChannelRead())
+			{
+				// do all channels together
+				adc.doADConvert(channel, state);
+				curVoltage = adc.getADVoltage(state);
+			}
+			else
+			{
+				// do one channel at a time;
+				for (int i = 0; i < channel.Length; i++)
+				{
+					if (channel [i])
+					{
+						adc.doADConvert(i, state);
+						curVoltage [i] = adc.getADVoltage(i, state);
+					}
+				}
+			}
+
+			for (int i = 0; i < channel.Length; i++)
+			{
+			if (channel [i])   // show value up to 2 decimal places
+				MLog.Log(null, " Channel " + i + " = "
+								+ (( int ) (curVoltage [i] * 10000)) / 10000.0
+								+ "V");
+			}
+      
 		}
 
 		public void Close()

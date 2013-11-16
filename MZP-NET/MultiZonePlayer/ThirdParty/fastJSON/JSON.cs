@@ -41,7 +41,7 @@ namespace fastJSON
         /// </summary>
         public bool UsingGlobalTypes = true;
         /// <summary>
-        /// ** work in progress
+        /// Ignore case when processing json and deserializing 
         /// </summary>
         public bool IgnoreCaseOnDeserialize = false;
         /// <summary>
@@ -56,6 +56,10 @@ namespace fastJSON
         /// Use escaped unicode i.e. \uXXXX format for non ASCII characters (default = True)
         /// </summary>
         public bool UseEscapedUnicode = true;
+        /// <summary>
+        /// Output string key dictionaries as "k"/"v" format (default = False) 
+        /// </summary>
+        public bool KVStyleStringDictionary = false;
 
         public void FixValues()
         {
@@ -337,7 +341,10 @@ namespace fastJSON
                     d.Flags |= myPropInfoFlags.CanWrite;
                     d.setter = Reflection.CreateSetMethod(type, p);
                     d.getter = Reflection.CreateGetMethod(type, p);
-                    sd.Add(p.Name, d);
+                    if (_params.IgnoreCaseOnDeserialize)
+                        sd.Add(p.Name.ToLower(), d);
+                    else
+                        sd.Add(p.Name, d);
                 }
                 FieldInfo[] fi = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
                 foreach (FieldInfo f in fi)
@@ -345,7 +352,10 @@ namespace fastJSON
                     myPropInfo d = CreateMyProp(f.FieldType, f.Name);
                     d.setter = Reflection.CreateSetField(type, f);
                     d.getter = Reflection.CreateGetField(type, f);
-                    sd.Add(f.Name, d);
+                    if (_params.IgnoreCaseOnDeserialize)
+                        sd.Add(f.Name.ToLower(), d);
+                    else
+                        sd.Add(f.Name, d);
                 }
 
                 _propertycache.Add(typename, sd);
@@ -554,57 +564,51 @@ namespace fastJSON
                     if (v != null)
                     {
                         object oset = null;
-						try
-						{
-							switch (pi.Type)
-							{
-								case myPropInfoType.Int: oset = (int)((long)v); break;
-								case myPropInfoType.Long: oset = (long)v; break;
-								case myPropInfoType.String: oset = (string)v; break;
-								case myPropInfoType.Bool: oset = (bool)v; break;
-								case myPropInfoType.DateTime: oset = CreateDateTime((string)v); break;
-								case myPropInfoType.Enum: oset = CreateEnum(pi.pt, (string)v); break;
-								case myPropInfoType.Guid: oset = CreateGuid((string)v); break;
 
-								case myPropInfoType.Array:
-									if (!pi.IsValueType)
-										oset = CreateArray((List<object>)v, pi.pt, pi.bt, globaltypes);
-									// what about 'else'?
-									break;
-								case myPropInfoType.ByteArray: oset = Convert.FromBase64String((string)v); break;
+                        switch (pi.Type)
+                        {
+                            case myPropInfoType.Int: oset = (int)((long)v); break;
+                            case myPropInfoType.Long: oset = (long)v; break;
+                            case myPropInfoType.String: oset = (string)v; break;
+                            case myPropInfoType.Bool: oset = (bool)v; break;
+                            case myPropInfoType.DateTime: oset = CreateDateTime((string)v); break;
+                            case myPropInfoType.Enum: oset = CreateEnum(pi.pt, (string)v); break;
+                            case myPropInfoType.Guid: oset = CreateGuid((string)v); break;
+
+                            case myPropInfoType.Array:
+                                if (!pi.IsValueType)
+                                    oset = CreateArray((List<object>)v, pi.pt, pi.bt, globaltypes);
+                                // what about 'else'?
+                                break;
+                            case myPropInfoType.ByteArray: oset = Convert.FromBase64String((string)v); break;
 #if !SILVERLIGHT
-								case myPropInfoType.DataSet: oset = CreateDataset((Dictionary<string, object>)v, globaltypes); break;
-								case myPropInfoType.DataTable: oset = this.CreateDataTable((Dictionary<string, object>)v, globaltypes); break;
-								case myPropInfoType.Hashtable: // same case as Dictionary
+                            case myPropInfoType.DataSet: oset = CreateDataset((Dictionary<string, object>)v, globaltypes); break;
+                            case myPropInfoType.DataTable: oset = this.CreateDataTable((Dictionary<string, object>)v, globaltypes); break;
+                            case myPropInfoType.Hashtable: // same case as Dictionary
 #endif
-								case myPropInfoType.Dictionary: oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
-								case myPropInfoType.StringDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
+                            case myPropInfoType.Dictionary: oset = CreateDictionary((List<object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
+                            case myPropInfoType.StringDictionary: oset = CreateStringKeyDictionary((Dictionary<string, object>)v, pi.pt, pi.GenericTypes, globaltypes); break;
 
-								case myPropInfoType.Custom: oset = CreateCustom((string)v, pi.pt); break;
-								default:
-									{
-										if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
-											oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
+                            case myPropInfoType.Custom: oset = CreateCustom((string)v, pi.pt); break;
+                            default:
+                                {
+                                    if (pi.IsGenericType && pi.IsValueType == false && v is List<object>)
+                                        oset = CreateGenericList((List<object>)v, pi.pt, pi.bt, globaltypes);
 
-										else if (pi.IsClass && v is Dictionary<string, object>)
-											oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, pi.getter(o));
+                                    else if (pi.IsClass && v is Dictionary<string, object>)
+                                        oset = ParseDictionary((Dictionary<string, object>)v, globaltypes, pi.pt, pi.getter(o));
 
-										else if (v is List<object>)
-											oset = CreateArray((List<object>)v, pi.pt, typeof(object), globaltypes);
+                                    else if (v is List<object>)
+                                        oset = CreateArray((List<object>)v, pi.pt, typeof(object), globaltypes);
 
-										else if (pi.IsValueType)
-											oset = ChangeType(v, pi.changeType);
+                                    else if (pi.IsValueType)
+                                        oset = ChangeType(v, pi.changeType);
 
-										else
-											oset = v;
-									}
-									break;
-							}
-						}
-						catch (Exception ex)
-						{
-							throw new Exception("Error JSON Field="+name+" val="+v, ex);
-						}
+                                    else
+                                        oset = v;
+                                }
+                                break;
+                        }
 
                         o = pi.setter(o, oset);
                     }

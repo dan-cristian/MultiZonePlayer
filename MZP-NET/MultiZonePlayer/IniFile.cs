@@ -25,6 +25,7 @@ namespace MultiZonePlayer
 			public const String RULES_FILE = "\\rules.ini";
 			public const String CSV_TEMPERATURE_HUMIDITY = "\\temp-hum.csv";
 			public const String CSV_CLOSURES = "\\closures.csv";
+			public const String CSV_VOLTAGE = "\\voltage.csv";
 			public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";
             public const String LOG_MODEM_FILE = "\\MultiZonePlayerModem.log";

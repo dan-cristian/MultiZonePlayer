@@ -39,9 +39,11 @@
 	onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid', true)">Power</button>
 <button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#</button>
 <%%>
+<button class="Small" onclick="ajaxCall('voltage','zone-graph-voltage.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">Volt</button>
 <div id="camera"></div>
 <div id="temp-hum"></div>
 <div id="event"></div>
+<div id="voltage"></div>
 <%if;"#Zones,%_zoneid.ChildZonesCount#"!="0"%><hr/><%%>
 <%for;i;0;++;#Zones,%_zoneid.ChildZonesCount#;%>
 <button class="Action#Zones,%_zoneid.ChildZone,%i.HasAction# Activity#Zones,%_zoneid.ChildZone,%i.ActivityType#" 
