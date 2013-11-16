@@ -989,10 +989,10 @@ namespace MultiZonePlayer
 
 			for (int i = 0; i < channel.Length; i++)
 			{
-			if (channel [i])   // show value up to 2 decimal places
-				MLog.Log(null, " Channel " + i + " = "
-								+ (( int ) (curVoltage [i] * 10000)) / 10000.0
-								+ "V");
+			//if (channel [i])   // show value up to 2 decimal places
+				//MLog.Log(null, " Channel " + i + " = "
+				//				+ (( int ) (curVoltage [i] * 10000)) / 10000.0
+				//				+ "V");
 			}
       
 		}

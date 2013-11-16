@@ -110,7 +110,7 @@ namespace MultiZonePlayer {
 		protected const double DEFAULT_TEMP_HUM = -1000;
 
 		protected double m_temperature = DEFAULT_TEMP_HUM, m_humidity = DEFAULT_TEMP_HUM;
-		protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
+		//protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 		// not serializable, hidden from json
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
@@ -267,7 +267,7 @@ namespace MultiZonePlayer {
 		public Boolean HasPastActivity {
 			get {
 				double span = DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes;
-				return (HasPastMove || (span > m_intervalRecent && span <= m_intervalPast));
+				return (HasPastMove && (span > m_intervalRecent && span <= m_intervalPast));
 			}
 		}
 
@@ -389,6 +389,13 @@ namespace MultiZonePlayer {
 		public double Temperature {
 			get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
 			set {
+				if (Temperature != value) {
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
+						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString());
+					Rules.ExecuteRule(this, "temp=" + value);
+					//m_temperatureLast = m_temperature;
+				}
+
 				m_temperature = value;
 				m_lastTempSet = DateTime.Now;
 
@@ -404,12 +411,7 @@ namespace MultiZonePlayer {
 							Alert.NotificationFlags.NotifyUserAfterXHours, 1);
 					}
 
-				if (m_temperature != m_temperatureLast) {
-					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
-						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Temperature.ToString(), ZoneId.ToString());
-					Rules.ExecuteRule(this, "temp=" + m_temperature);
-					m_temperatureLast = m_temperature;
-				}
+				
 			}
 		}
 
@@ -428,15 +430,13 @@ namespace MultiZonePlayer {
 		public double Humidity {
 			get { return m_humidity; }
 			set {
+				if (Humidity != value) {
+					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
+						Constants.CAPABILITY_HUM, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString());
+					Rules.ExecuteRule(this, "humid=" + value);
+				}
 				m_humidity = value;
 				m_lastHumSet = DateTime.Now;
-
-				if (m_humidity != m_humidityLast) {
-					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
-						Constants.CAPABILITY_HUM, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), Humidity.ToString(), ZoneId.ToString());
-					Rules.ExecuteRule(this, "humid=" + m_humidity);
-					m_humidityLast = m_humidity;
-				}
 			}
 		}
 

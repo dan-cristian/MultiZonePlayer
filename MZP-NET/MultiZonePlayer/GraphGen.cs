@@ -121,7 +121,7 @@ namespace MultiZonePlayer
 				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
 				double minY = double.MaxValue, maxY = double.MinValue;
-				for (int index = 1; index <= maxIndex; index++) {
+				for (int index = 2; index <= maxIndex; index++) {
 					List<Tuple<int, DateTime, double, int>> tempValues = m_voltageHistoryList.FindAll(
 						x => x.Item1 == zoneId
 						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == index);
