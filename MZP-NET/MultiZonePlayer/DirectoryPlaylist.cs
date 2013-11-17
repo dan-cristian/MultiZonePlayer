@@ -1225,6 +1225,20 @@ namespace MultiZonePlayer
 			}
 		}
 
+		public void ForceNextPicture(){
+			if (m_currentPictureIndex + 1 < m_autoIterateItems.Count)
+				m_currentPictureIndex++;
+			else
+				m_currentPictureIndex = 0;
+		}
+
+		public void ForcePreviousPicture() {
+			if (m_currentPictureIndex == 0)
+				m_currentPictureIndex = m_autoIterateItems.Count;
+			else
+				m_currentPictureIndex--;
+		}
+
 		private void NextPicture()
 		{
 			if (m_autoIterateItems != null && m_autoIterateItems.Count > 0)

@@ -134,6 +134,8 @@ namespace MultiZonePlayer
 		remotepoweroff,
 		remoteadjustdim,
 		getpicture,
+		nextpicture,
+		previouspicture,
 		macro,
 		rfxcmd,
 		r,//repeat last command

@@ -109,6 +109,8 @@
     <Content Include="m\alerts.html" />
     <Content Include="m\auth.html" />
     <Content Include="m\basic.js" />
+    <Content Include="m\JSONViewer.html" />
+    <Content Include="m\leap.js" />
     <Content Include="m\zone-graph-voltage.html" />
     <Content Include="m\zone-cam-video.html" />
     <Content Include="m\zone-pictures.html" />
@@ -120,7 +122,6 @@
     <Content Include="m\cam.html" />
     <Content Include="m\cmd.html" />
     <Content Include="m\gate.html" />
-    <Content Include="m\gui.js" />
     <Content Include="m\mic.html" />
     <Content Include="m\mobile.css" />
     <Content Include="m\monitor.html" />

@@ -1,1 +1,10 @@
-﻿<img style="width:175px" src="tmp/temp-hum-all-24.gif?r=#R.Random#;"/>
+﻿<%if;"#S.UserIsNearList.Count#"!="0"%>
+<span style="background-color:Lime;color:Red">@Home [#S.UserIsNearSummary#]</span>
+<%%>
+<%for;i;0;++;#S.ZonesWithType,Heat.Count#;%>
+<div class="Visible#S.ZoneWithType,Heat,%i.IsPowerOn#">
+<span style="background-color:Yellow;color:Red">#S.ZoneWithType,Heat,%i.ZoneName#</span></div>
+<%%>
+<p>#Zones,23.ZoneName# #Zones,23.Temperature#° #Zones,23.TemperatureAgeAsTimeSpan#</p>
+<p>#Zones,7.ZoneName# #Zones,7.Temperature#° #Zones,7.TemperatureAgeAsTimeSpan#</p>
+<img style="width:175px" src="tmp/temp-hum-all-24.gif?r=#R.Random#;"/>

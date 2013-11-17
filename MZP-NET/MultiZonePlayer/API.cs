@@ -298,6 +298,14 @@ namespace MultiZonePlayer
 							
 							//result = JsonResult(Metadata.ResultEnum.OK, , null);
 							break;
+						case GlobalCommands.nextpicture:
+							MediaLibrary.AllPictureFiles.ForceNextPicture();
+							cmdresult.OutputMessage = "next picture set";
+							break;
+						case GlobalCommands.previouspicture:
+							MediaLibrary.AllPictureFiles.ForcePreviousPicture();
+							cmdresult.OutputMessage = "next picture set";
+							break;
 						case GlobalCommands.remotepoweron:
 							remoteid=Convert.ToInt16(vals.GetValue(GlobalParams.remoteid));
 							cmdresult.OutputMessage = RemotePowerControl.SwitchOn(remoteid);

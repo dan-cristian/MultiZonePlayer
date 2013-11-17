@@ -8,13 +8,16 @@
       Slideshow
     </title>
     <link href="mobile.css" rel="stylesheet" type="text/css" />
-    <script type="text/JavaScript" src="utilities.js"></script> 
+    <script type="text/JavaScript" src="basic.js"></script>
+	<script type="text/JavaScript" src="leap.js"></script>
+	<script type="text/JavaScript" src="utilities.js"></script> 
 	<script type="text/javascript" src="jquery-2.0.3.min.js"></script>
 
 	<script type="text/javascript">
 		var refreshCamCount = 0;
 		var refreshPictureCount = 0;
 		var refreshGraphCount = 0;
+		
 		var auto_refresh_media = setInterval(
 		function () {
 			loadMedia();
@@ -43,6 +46,8 @@
 		}
 
 		function loadGraph() {
+			if (!isPresenceOn) return;
+
 			if (Math.ceil(refreshGraphCount / 2) == refreshGraphCount / 2) {
 				$('#graph').load('snip-graph.html?command=generatefullgraph&interval=24&zoneidlist=2,1,4&' + 'r=' + Math.random());
 				setTimeout(function () {
@@ -115,12 +120,29 @@
 			$('#picturedetails').load('snip-picturedetails.html?' + 'r=' + Math.random());
 			refreshPictureCount++;
 		}
-		
+
+		function presenceOn() {
+			userPresent = true; loadGraph();
+		}
+
+		function presenceOff() {
+			userPresent = false; hideDiv('graph'); hideDiv('xgraph');
+		}
+
+		function next() {
+			ajaxCall('', 'cmd.html?command=nextpicture', false);
+			reload();
+		}
+		function previous() {
+			ajaxCall('', 'cmd.html?command=previouspicture', false);
+		}
+
 		function onLoad() {
 			loadMedia();
 			loadCams();
 			loadPicture();
 			loadGraph();
+			init();
 		}
 </script>
 
@@ -134,6 +156,11 @@
 	<div style="position:absolute;top:0;left:0;">
 		<table style="width:130px">
 		<tr><td style="color:White">
+		<a href="#" onclick="previous()">Left</a>
+		<a href="#" onclick="next()">Right</a>
+		<a href="#" onclick="presenceOn()">Show</a>
+		<a href="#" onclick="presenceOff()">Hide</a>
+		<div id="connection"></div><div id="leap"></div>
 		<div id="time"></div>
 		<div id="graph" style="display:none"></div>
 		<div id="xgraph" style="display:none"></div>

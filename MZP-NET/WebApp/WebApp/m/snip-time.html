@@ -1,15 +1,6 @@
 ﻿<br /><b>#ServerTime#</b><br />
-<p>#Zones,23.ZoneName# #Zones,23.Temperature#° #Zones,23.TemperatureAgeAsTimeSpan#</p>
-<p>#Zones,7.ZoneName# #Zones,7.Temperature#° #Zones,7.TemperatureAgeAsTimeSpan#</p>
-<%if;"#S.UserIsNearList.Count#"!="0"%>
-<span style="background-color:Lime;color:Red">@Home [#S.UserIsNearSummary#]</span>
-<%%>
 <%if;"#S.ActiveAlertList.Count#"!="0"%>
 <span style="background-color:Red;color:Lime">Alerts [#S.ActiveAlertList.Count#]</span>
-<%%>
-<%for;i;0;++;#S.ZonesWithType,Heat.Count#;%>
-<div class="Visible#S.ZoneWithType,Heat,%i.IsPowerOn#">
-<span style="background-color:Yellow;color:Red">#S.ZoneWithType,Heat,%i.ZoneName#</span></div>
 <%%>
 <%for;i;0;++;#S.ZonesWithType,Closure.Count#;%>
 <div class="Visible#S.ZoneWithType,Closure,%i.IsClosureContactMade#">
