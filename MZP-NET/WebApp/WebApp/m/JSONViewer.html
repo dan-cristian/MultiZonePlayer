@@ -23,7 +23,7 @@ if ((typeof(WebSocket) == 'undefined') &&
 // Create the socket with event handlers
 function init() {
   // Create and open the socket
-  ws = new WebSocket("ws://localhost:6437/");
+  ws = new WebSocket("ws://server:6437/");
 
   // On successful connection
   ws.onopen = function(event) {
@@ -44,13 +44,6 @@ function init() {
   			//document.getElementById("gest").innerHTML += obj.gestures[0].type +';';
   		}
 
-  		if (obj.gestures != null && obj.gestures.length > 0) {
-  			if (obj.gestures[0].state == "stop")
-  				document.getElementById("gest").innerHTML += obj.gestures[0].type
-				+ '-' + obj.gestures[0].state + ':' + obj.gestures[0].duration + ';';
-  			if (obj.gestures[0].duration > 999999)
-  				document.getElementById("gest").innerHTML += '.';
-  		}
   		if (obj.hands != null) {
   			document.getElementById("hand").innerHTML = obj.hands.length + ';';
   		}

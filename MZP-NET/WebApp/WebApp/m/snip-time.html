@@ -1,8 +1,8 @@
 ﻿<br /><b>#ServerTime#</b><br />
 <%if;"#S.ActiveAlertList.Count#"!="0"%>
-<span style="background-color:Red;color:Lime">Alerts [#S.ActiveAlertList.Count#]</span>
+<span style="background-color:Red;color:Lime"><a href="alerts.html">Alerts [#S.ActiveAlertList.Count#]</a></span>
 <%%>
 <%for;i;0;++;#S.ZonesWithType,Closure.Count#;%>
 <div class="Visible#S.ZoneWithType,Closure,%i.IsClosureContactMade#">
 <span style="background-color:Red;color:White">#S.ZoneWithType,Closure,%i.ZoneName# #S.ZoneWithType,Closure,%i.LastMovementAgeAsTimeSpan#</span></div>
-<%%>
+<%%> 

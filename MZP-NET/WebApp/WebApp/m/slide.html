@@ -3,10 +3,8 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8;" />
     <meta name="robots" content="index, follow, noodp" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>
-      Slideshow
-    </title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+    <title>Slideshow</title>
     <link href="mobile.css" rel="stylesheet" type="text/css" />
     <script type="text/JavaScript" src="basic.js"></script>
 	<script type="text/JavaScript" src="leap.js"></script>
@@ -122,7 +120,7 @@
 		}
 
 		function presenceOn() {
-			userPresent = true; loadGraph();
+			userPresent = true; //loadGraph();
 		}
 
 		function presenceOff() {
@@ -138,11 +136,11 @@
 		}
 
 		function onLoad() {
+			init();
 			loadMedia();
 			loadCams();
 			loadPicture();
 			loadGraph();
-			init();
 		}
 </script>
 
@@ -158,9 +156,11 @@
 		<tr><td style="color:White">
 		<a href="#" onclick="previous()">Left</a>
 		<a href="#" onclick="next()">Right</a>
-		<a href="#" onclick="presenceOn()">Show</a>
-		<a href="#" onclick="presenceOff()">Hide</a>
-		<div id="connection"></div><div id="leap"></div>
+		<a href="#" onclick="isPresenceOn = true;presenceSince = new Date();presenceOn();">Show</a>
+		<a href="#" onclick="isPresenceOn = false;presenceOff();">Hide</a>
+		<div id="connection"></div><div id="counter"></div>
+		<div id="leap1"></div><div id="leap2"></div><div id="leap3"></div>
+		<div id="msg"></div>
 		<div id="time"></div>
 		<div id="graph" style="display:none"></div>
 		<div id="xgraph" style="display:none"></div>
