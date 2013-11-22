@@ -47,8 +47,8 @@ namespace MultiZonePlayer
         // Top-level windows.
         // Child windows.
         // Get the window class.
-        // Test if the window is visible--only get visible ones.
-        // Test if the window's parent--only get the one's without parents.
+        // TestCond if the window is visible--only get visible ones.
+        // TestCond if the window's parent--only get the one's without parents.
         // Get window text length signature.
         // Get window text signature.
 

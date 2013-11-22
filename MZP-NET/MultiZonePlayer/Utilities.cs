@@ -373,8 +373,8 @@ namespace MultiZonePlayer
                 MLog.Log(null,"null ini");
             }
 
-            StringBuilder temp = new StringBuilder(2048);
-            int i = Utilities.GetPrivateProfileString(Section, Key, "", temp, 2048, path);
+            StringBuilder temp = new StringBuilder(16384);
+			int i = Utilities.GetPrivateProfileString(Section, Key, "", temp, 16384, path);
             return temp.ToString();
         }
 		

@@ -439,7 +439,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(60, 13);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Test Movie";
+            this.label1.Text = "TestCond Movie";
             // 
             // txTestURL
             // 
@@ -455,7 +455,7 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(230, 23);
             this.button2.TabIndex = 5;
-            this.button2.Text = "Run Test";
+            this.button2.Text = "Run TestCond";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button1_Click_1);
             // 

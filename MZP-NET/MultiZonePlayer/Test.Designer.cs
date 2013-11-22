@@ -201,7 +201,7 @@
 			this.chart1.TabIndex = 12;
 			this.chart1.Text = "chart1";
 			// 
-			// Test
+			// TestCond
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -221,8 +221,8 @@
 			this.Controls.Add(this.txt);
 			this.Controls.Add(this.button1);
 			this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.Name = "Test";
-			this.Text = "Test";
+			this.Name = "TestCond";
+			this.Text = "TestCond";
 			((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();

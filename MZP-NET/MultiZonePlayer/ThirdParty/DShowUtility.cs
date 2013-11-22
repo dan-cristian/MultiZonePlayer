@@ -232,7 +232,7 @@ namespace MultiZonePlayer
             {
                 graphBuilder = (IGraphBuilder)new FilterGraph();
                 ioFilter = (IBaseFilter)Marshal.BindToMoniker(ioDeviceName);
-                hr = graphBuilder.AddFilter(ioFilter, "Test Input Output Renderer");
+                hr = graphBuilder.AddFilter(ioFilter, "TestCond Input Output Renderer");
                 DsError.ThrowExceptionForHR(hr);
 
                 graphBuilder.Abort();

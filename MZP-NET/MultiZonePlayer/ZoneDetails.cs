@@ -103,8 +103,9 @@ namespace MultiZonePlayer {
 		public DateTime LastCamAlertDateTime = DateTime.Now;
 		public DateTime LastLocalCommandDateTime = DateTime.MinValue;
 		public DateTime LastClosureEventDateTime = DateTime.MinValue;
-		public ZoneNotifyState NotifyZoneEventTriggered = ZoneNotifyState.Closed;
-		public DateTime LastNotifyZoneEventTriggered;
+		private ZoneNotifyState m_notifyZoneEventTriggered = ZoneNotifyState.Closed;
+		
+		public DateTime LastNotifyZoneEventTriggered = DateTime.MinValue;
 
 		private double[] m_voltage = new double[5];
 		protected const double DEFAULT_TEMP_HUM = -1000;
@@ -144,6 +145,11 @@ namespace MultiZonePlayer {
 			return "ID=" + ZoneId + ";Name=" + ZoneName;
 		}
 		#region getters
+
+		public ZoneNotifyState NotifyZoneEventTriggered {
+			get { return m_notifyZoneEventTriggered; }
+			set { m_notifyZoneEventTriggered = value; }
+		}
 
 		public Boolean IsClosureContactMade {
 			get { return m_isClosureContactMade; }
@@ -470,6 +476,8 @@ namespace MultiZonePlayer {
 				String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
 				if (json != "") {
 					MLog.Log(this, "Loading state for zone=" + ZoneName);
+					if (ZoneId == 20)
+						MultiZonePlayer.MZPState.Instance.TestCond = true;
 					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
 					Description = zonestorage.Description;
 					ZoneName = zonestorage.ZoneName;

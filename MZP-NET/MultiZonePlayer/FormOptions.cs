@@ -491,7 +491,7 @@ namespace MultiZonePlayer
 
         private void dgvZones_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (dgvZones.Columns[e.ColumnIndex].HeaderText == "Test")
+            if (dgvZones.Columns[e.ColumnIndex].HeaderText == "TestCond")
             {
                 TestOutputDevice(dgvZones.Rows[e.RowIndex].Cells[OutputDevice.Name].Value.ToString(), 
                     dgvZones.Rows[e.RowIndex].Cells[Zones_OutputKeywords.Name].Value.ToString(),

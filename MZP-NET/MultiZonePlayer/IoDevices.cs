@@ -119,7 +119,7 @@ namespace MultiZonePlayer
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, "Exception Test GenericModem");
+				MLog.Log(ex, "Exception TestCond GenericModem");
 				return false;
 			}
 		}

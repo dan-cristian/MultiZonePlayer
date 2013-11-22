@@ -260,7 +260,7 @@
 			// 
 			this.testToolStripMenuItem.Name = "testToolStripMenuItem";
 			this.testToolStripMenuItem.Size = new System.Drawing.Size(50, 22);
-			this.testToolStripMenuItem.Text = "Test";
+			this.testToolStripMenuItem.Text = "TestCond";
 			this.testToolStripMenuItem.Click += new System.EventHandler(this.testToolStripMenuItem_Click);
 			// 
 			// toolStrip

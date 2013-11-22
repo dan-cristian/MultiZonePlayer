@@ -54,6 +54,7 @@ public class MZPState
 	private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 	private WDIO m_wdio;
+	public Boolean TestCond = false;
 
 	public WDIO WDIO {
 		get { return m_wdio; }

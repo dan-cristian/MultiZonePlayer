@@ -36,7 +36,7 @@ namespace MultiZonePlayer
             public const String TEMP_EXTENSION = ".temp.wav";
             public const String BEEP_OK_FILE_NAME = "\\BeepOK.wav";
             public const String BEEP_ERROR_FILE_NAME = "\\BeepError.wav";
-            public const String TEST_FILE_NAME = "\\Test.mp3";
+            public const String TEST_FILE_NAME = "\\TestCond.mp3";
 			public const String WEBROOT_SUBFOLDER = "\\webroot\\";
 			public const String WEB_TMP_IMG_SUBFOLDER = WEBROOT_SUBFOLDER+ "m\\tmp\\";
 			public const String WEB_PICTURES_SUBFOLDER = WEBROOT_SUBFOLDER + "m\\pictures\\";
