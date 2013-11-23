@@ -35,12 +35,13 @@
 		}, 60000);
 
 		function loadMedia() {
+			var url = 'snip-media.html';
 			$('#time').load('snip-time.html?' + 'r=' + Math.random());
-			$('#media1').load('snip-media.html?zoneid=1' + '&r=' + Math.random());
-			$('#media2').load('snip-media.html?zoneid=2' + '&r=' + Math.random());
-			$('#media3').load('snip-media.html?zoneid=3' + '&r=' + Math.random());
-			$('#media4').load('snip-media.html?zoneid=4' + '&r=' + Math.random());
-			$('#media5').load('snip-media.html?zoneid=5' + '&r=' + Math.random());
+			$('#media1').load(url + '?zoneid=1' + '&r=' + Math.random());
+			$('#media2').load(url + '?zoneid=2' + '&r=' + Math.random());
+			$('#media3').load(url + '?zoneid=3' + '&r=' + Math.random());
+			$('#media4').load(url + '?zoneid=4' + '&r=' + Math.random());
+			$('#media5').load(url + '?zoneid=5' + '&r=' + Math.random());
 		}
 
 		function loadGraph() {
@@ -63,13 +64,12 @@
 			refreshGraphCount++;
 		}
 		function loadCams() {
-			
+			var url = 'snip-cam.html';
 			if (Math.ceil(refreshCamCount / 2) == refreshCamCount / 2) {
-				
-				$('#cam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
-				$('#cam12').load('snip-cam.html?zoneid=12' + '&r=' + Math.random());
-				$('#cam6').load('snip-cam.html?zoneid=6' + '&r=' + Math.random());
-				$('#cam0').load('snip-cam.html?zoneid=0' + '&r=' + Math.random());
+				$('#cam7').load(url+'?zoneid=7' + '&r=' + Math.random());
+				$('#cam12').load(url + '?zoneid=12' + '&r=' + Math.random());
+				$('#cam6').load(url + '?zoneid=6' + '&r=' + Math.random());
+				$('#cam0').load(url + '?zoneid=0' + '&r=' + Math.random());
 
 				setTimeout(function () {
 					$('#xcamset').hide();
@@ -77,10 +77,10 @@
 				}, 2000);
 			}
 			else {
-				$('#xcam7').load('snip-cam.html?zoneid=7' + '&r=' + Math.random());
-				$('#xcam12').load('snip-cam.html?zoneid=12' + '&r=' + Math.random());
-				$('#xcam6').load('snip-cam.html?zoneid=6' + '&r=' + Math.random());
-				$('#xcam0').load('snip-cam.html?zoneid=0' + '&r=' + Math.random());
+				$('#xcam7').load(url + '?zoneid=7' + '&r=' + Math.random());
+				$('#xcam12').load(url + '?zoneid=12' + '&r=' + Math.random());
+				$('#xcam6').load(url + '?zoneid=6' + '&r=' + Math.random());
+				$('#xcam0').load(url + '?zoneid=0' + '&r=' + Math.random());
 
 				setTimeout(function () {
 					$('#camset').hide();

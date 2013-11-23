@@ -1,6 +1,4 @@
-﻿<div style="display:#Zones,%_zoneid.HasNotifyMoveAsDiv#;width:50%;">
-<#Zones,%_zoneid.HasNotifyMoveAsVideo# controls>
-<source src="http://#R.DVRServerPort#/mjpegfeed?oid=#Zones,%_zoneid.CameraId#&amp;r=#HTMLRandom#;" type="image/jpeg">
- Video tag not supported
- </video>
-</div>
+﻿<%if;#Zones,%_zoneid.HasNotifyMove#%>
+<img src="http://#R.DVRServerPort#/mjpegfeed?oid=#Zones,%_zoneid.CameraId#&amp;r=#R.Random#;" 
+style="width:50%;" id="ImgCamera%_zoneid" alt="ImgCamera%_zoneid"/>
+<%%>

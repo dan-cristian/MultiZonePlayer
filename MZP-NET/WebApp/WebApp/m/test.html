@@ -1,0 +1,9 @@
+﻿<!DOCTYPE html><html lang="en">  <head id="Head1">  <script type="text/JavaScript" src="basic.js"></script>
+	<script type="text/JavaScript" src="leap.js"></script>
+	<script type="text/JavaScript" src="utilities.js"></script> 
+	<script type="text/javascript" src="jquery-2.0.3.min.js"></script>	<script type="text/javascript">	var TIMEOUT = 5000;
+	var refreshInterval = setInterval(function () {
+		$('img#camera').attr('src', 'http://#R.DVRServerPort#/livefeed?oid=#Zones,0.CameraId#&amp;r=#R.Random#;&full');
+	}, TIMEOUT);	</script>  </head>  <BODY> <img src='' id='camera' />
+
+  </BODY></html>
