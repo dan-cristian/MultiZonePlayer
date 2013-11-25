@@ -822,7 +822,7 @@ namespace MultiZonePlayer
 			MLog.Log(this, message);
 			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key,
 				DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), m_zoneDetails.RelayState.ToString(), 
-				m_zoneDetails.ZoneId.ToString(),Constants.EVENT_TYPE_CLOSURE);
+				m_zoneDetails.ZoneId.ToString(),Constants.EVENT_TYPE_CLOSURE, key);
 
 			if (isContactMade) {
 				if (m_zoneDetails.IsArmed || 

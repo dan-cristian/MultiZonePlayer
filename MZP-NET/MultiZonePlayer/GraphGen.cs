@@ -13,11 +13,18 @@ namespace MultiZonePlayer
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
 		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
-		private List<Tuple<int, DateTime, int, String>> m_eventHistoryList;
+		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
+		System.Drawing.Color[] m_colors = new System.Drawing.Color[5];
+				
 
 		public SimpleGraph()
 		{
 			InitializeComponent();
+			m_colors[0] = System.Drawing.Color.Orange;
+			m_colors[1] = System.Drawing.Color.Red;
+			m_colors[2] = System.Drawing.Color.Blue;
+			m_colors[3] = System.Drawing.Color.Purple;
+			m_colors[4] = System.Drawing.Color.Green;
 			LoadHistory();
 		}
 
@@ -31,7 +38,7 @@ namespace MultiZonePlayer
 			m_humHistoryList.Add(reading);
 		}
 
-		public void AddEventReading(Tuple<int, DateTime, int, String> reading)
+		public void AddEventReading(Tuple<int, DateTime, int, String, String> reading)
 		{
 			m_eventHistoryList.Add(reading);
 		}
@@ -111,12 +118,7 @@ namespace MultiZonePlayer
 
 		public void ShowVoltageGraph(int zoneId, int ageHours) {
 			try {
-				System.Drawing.Color[] colors = new System.Drawing.Color[5];
-				colors[0] = System.Drawing.Color.Orange;
-				colors[1] = System.Drawing.Color.Red;
-				colors[2] = System.Drawing.Color.Blue;
-				colors[3] = System.Drawing.Color.Purple;
-				colors[4] = System.Drawing.Color.Green;
+				
 				PrepareGraph("Voltage @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
@@ -128,7 +130,7 @@ namespace MultiZonePlayer
 					if (tempValues.Count > 0) {
 						series[index] = new System.Windows.Forms.DataVisualization.Charting.Series {
 							Name = "Voltage" + index,
-							Color = colors[index],
+							Color = m_colors[index],
 							IsVisibleInLegend = true,
 							IsXValueIndexed = false,
 							ChartType = SeriesChartType.StepLine,
@@ -202,10 +204,10 @@ namespace MultiZonePlayer
 		public void ShowEventGraph(int zoneId, int ageHours)
 		{
 			PrepareGraph("Events @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-			List<Tuple<int, DateTime, int, String>> closureValues, sensorValues, camValues, powerValues;
+			List<Tuple<int, DateTime, int, String, String>> closureValues, sensorValues, camValues, powerValues;
 
-			closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 
-				&& x.Item4==Constants.EVENT_TYPE_CLOSURE);
+			List<String> distinctClosureIdentifiers = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+				&& x.Item4 == Constants.EVENT_TYPE_CLOSURE).Select(y => y.Item5).Distinct().ToList();
 			sensorValues =  m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 
 				&& x.Item4==Constants.EVENT_TYPE_SENSORALERT && x.Item3!=0);
 			camValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
@@ -213,25 +215,25 @@ namespace MultiZonePlayer
 			powerValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
 				&& x.Item4 == Constants.EVENT_TYPE_POWER);
 
-			if (closureValues.Count > 0)
-			{
-				var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
-				{
-					Name = "Closure",
-					Color = System.Drawing.Color.Red,
-					IsVisibleInLegend = true,
-					IsXValueIndexed = false,
-					ChartType = SeriesChartType.StepLine,
-					MarkerSize = 6,
-					BorderWidth = 1
-				};
-				this.chart1.Series.Add(series1);
-				foreach (var point in closureValues)
-				{
-					series1.Points.AddXY(point.Item2, point.Item3);
+			foreach (String closureIdentifier in distinctClosureIdentifiers) {
+				closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+					&& x.Item4 == Constants.EVENT_TYPE_CLOSURE && x.Item5 == closureIdentifier);
+				if (closureValues.Count > 0) {
+					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+						Name = "Closure " + closureIdentifier,
+						Color = m_colors[new Random().Next(m_colors.Length-1)],//System.Drawing.Color.Red,
+						IsVisibleInLegend = true,
+						IsXValueIndexed = false,
+						ChartType = SeriesChartType.StepLine,
+						MarkerSize = 6,
+						BorderWidth = 1
+					};
+					this.chart1.Series.Add(series1);
+					foreach (var point in closureValues) {
+						series1.Points.AddXY(point.Item2, point.Item3);
+					}
 				}
 			}
-
 			if (sensorValues.Count > 0)
 			{
 				var series2 = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -342,7 +344,7 @@ namespace MultiZonePlayer
 		private void LoadHistory(){
 			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
-			m_eventHistoryList = new List<Tuple<int, DateTime, int, String>>();
+			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
 			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int>>();
 
 			//GET TEMP and HUM from storage
@@ -397,11 +399,12 @@ namespace MultiZonePlayer
 							Date = Convert.ToDateTime(data[2]),
 							State = GetStateValue(data[3]),
 							ZoneId = Convert.ToInt16(data[4]),
-							EventType = data[5]
+							EventType = data[5],
+							Identifier = data.Length>6?data[6]:"Main"
 						};
 
 			foreach (var line in query2) {
-				m_eventHistoryList.Add(new Tuple<int, DateTime, int, String>(line.ZoneId, line.Date, line.State, line.EventType));
+				m_eventHistoryList.Add(new Tuple<int, DateTime, int, String, String>(line.ZoneId, line.Date, line.State, line.EventType, line.Identifier));
 			}
 		}
 

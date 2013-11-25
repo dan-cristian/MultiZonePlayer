@@ -923,7 +923,7 @@ namespace MultiZonePlayer
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
 								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-								val.Add(GlobalParams.id, "SensorA");
+								val.Add(GlobalParams.id, "Sensor A");
 								val.Add(GlobalParams.iscontactmade, ((levelA == false)||(levelB == false)).ToString());//normal close
 								API.DoCommand(val);
 							}
@@ -937,7 +937,7 @@ namespace MultiZonePlayer
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
 								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-								val.Add(GlobalParams.id, "SensorB");
+								val.Add(GlobalParams.id, "Sensor B");
 								val.Add(GlobalParams.iscontactmade, ((levelA == false) || (levelB == false)).ToString());//normal close
 								API.DoCommand(val);
 							}
