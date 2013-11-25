@@ -157,7 +157,6 @@ namespace MultiZonePlayer
 		public virtual void Tick()
 		{
 			//not implemented
-
 		}
     }
 

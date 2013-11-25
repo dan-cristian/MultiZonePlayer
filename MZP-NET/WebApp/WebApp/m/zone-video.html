@@ -14,15 +14,15 @@
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=volumeup&zoneid=%_zoneid', true)"><b>+</b></button>
 <button class="Caption">#Zones,%_zoneid.VolumeLevel#</button>
 <meter value="#Zones,%_zoneid.PositionPercent#" min="0" max="100">#Zones,%_zoneid.ZoneState#</meter>
-<br />
-<button class="Small" onclick="ajaxCall('result','cmd.html?command=up&zoneid=%_zoneid', true)"><b>^</b></button>
-<br />
-<button class="Small" onclick="ajaxCall('result','cmd.html?command=left&zoneid=%_zoneid', true)"><b><</b></button>
-<button class="Small" onclick="ajaxCall('result','cmd.html?command=enter&zoneid=%_zoneid', true)"><b>OK</b></button>
-<button class="Small" onclick="ajaxCall('result','cmd.html?command=right&zoneid=%_zoneid', true)"><b>></b></button>
-<br />
-<button class="Small" onclick="ajaxCall('result','cmd.html?command=down&zoneid=%_zoneid', true)"><b>v</b></button>
-<hr />
+<br /><br />
+<button onclick="ajaxCall('result','cmd.html?command=up&zoneid=%_zoneid', true)"><b>^</b></button>
+<br /><br />
+<button onclick="ajaxCall('result','cmd.html?command=left&zoneid=%_zoneid', true)"><b><</b></button>
+<button onclick="ajaxCall('result','cmd.html?command=enter&zoneid=%_zoneid', true)"><b>OK</b></button>
+<button onclick="ajaxCall('result','cmd.html?command=right&zoneid=%_zoneid', true)"><b>></b></button>
+<br /><br />
+<button onclick="ajaxCall('result','cmd.html?command=down&zoneid=%_zoneid', true)"><b>v</b></button>
+<hr /><br />
 <p><acronym title="Title">#Zones,%_zoneid.Title#</acronym> | <acronym title="Author">#Zones,%_zoneid.Author#</acronym>
 <hr />
 <button onclick="window.open('zone-video-select.html?zoneid=%_zoneid', '_self')">Select</button>

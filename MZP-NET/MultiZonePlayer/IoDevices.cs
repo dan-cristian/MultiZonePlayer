@@ -662,6 +662,7 @@ namespace MultiZonePlayer
 		const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
 		double TEMP_DEFAULT = 85;
 		private DateTime m_lastOKRead = DateTime.Now;
+		private Dictionary<string, string> m_deviceAttributes = new Dictionary<string, string>();
 
 		public List<Device> DeviceList {
 			get { return m_deviceList; }
@@ -739,7 +740,7 @@ namespace MultiZonePlayer
                 while (containers.hasMoreElements())
                 {
                     element = (OneWireContainer)containers.nextElement();
-					ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+					ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
 					String zonename = zone!=null?zone.ZoneName:"ZONE NOT ASSOCIATED";
 					MLog.Log(this, "OneWire device found zone="+zonename+", addr=" + element.getAddressAsString()
                         + " name=" + element.getName() + " altname="+ element.getAlternateNames() 
@@ -826,7 +827,7 @@ namespace MultiZonePlayer
 					int elementCount = 0, errCount = 0;
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer)containers.nextElement();
-						zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower() == element.getAddressAsString().ToLower());
+						zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
 						if (!ProcessElement(zone, element))
 							errCount++;
 						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
@@ -875,32 +876,83 @@ namespace MultiZonePlayer
 								zone.Temperature = Math.Round(tempVal, 2);
 							else
 								MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
+							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
+							zone.HasOneWireTemperatureSensor = true;
 							break;
 						case ONEWIRE_PHOTODEV_NAME:
 							SwitchContainer swd = (SwitchContainer)element;
 							state = swd.readDevice();
-							bool latch = swd.getLatchState(0, state);
-							bool level = swd.getLevel(0, state);
-							bool activity = swd.getSensedActivity(0, state);
+							bool latchA = swd.getLatchState(0, state);
+							bool lastLevelA, levelA = swd.getLevel(0, state);
+							bool activityA = swd.getSensedActivity(0, state);
+							bool latchB = swd.getLatchState(1, state);
+							bool lastLevelB, levelB = swd.getLevel(1, state);
+							bool activityB = swd.getSensedActivity(1, state);
 							bool high = swd.isHighSideSwitch();
 							bool alarm = element.isAlarming();
+							ValueList val;
 
-							if (activity) {
+							if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelA"))
+								lastLevelA = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelA"]);
+							else
+								lastLevelA = levelA;
+							if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelB"))
+								lastLevelB = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelB"]);
+							else
+								lastLevelB = levelB;
+							m_deviceAttributes[element.getAddressAsString() + "LevelA"] = levelA.ToString();
+							m_deviceAttributes[element.getAddressAsString() + "LevelB"] = levelB.ToString();
+
+							if (activityA || activityB || levelA || levelB) {
 								swd.clearActivity();
 								swd.writeDevice(state);
 								swd.readDevice();
 							}
 
-							if (level) {
+							/*if (levelA || levelB) {
 								swd.clearActivity();
 								swd.writeDevice(state);
 								swd.readDevice();
+							}*/
+							if (lastLevelA != levelA || activityA) {
+								MLog.Log(this, "Event closure change A on " + zone.ZoneName 
+									+ " count=" + zone.ClosureCounts + " level=" + levelA
+									+ " lastlevel="+lastLevelA);
+								if (!activityB)
+									Alert.CreateAlert("No Activity A on level change");
+								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+								val.Add(GlobalParams.id, "SensorA");
+								val.Add(GlobalParams.iscontactmade, ((levelA == false)||(levelB == false)).ToString());//normal close
+								API.DoCommand(val);
 							}
 
-							if (level || activity) {
+							if (lastLevelB != levelB || activityB) {
+								MLog.Log(this, "Event closure change B on " + zone.ZoneName
+									+ " count=" + zone.ClosureCounts + " level=" + levelB
+									+ " lastlevel=" + lastLevelB);
+								if (!activityB)
+									Alert.CreateAlert("No Activity B on level change");
+								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+								val.Add(GlobalParams.id, "SensorB");
+								val.Add(GlobalParams.iscontactmade, ((levelA == false) || (levelB == false)).ToString());//normal close
+								API.DoCommand(val);
+							}
+
+							/*
+							if (levelA || activityA) {
 								zone.ClosureCounts++;
-								MLog.Log(null, "BINGO "+zone.ZoneName+"CLOSURES=" + zone.ClosureCounts);
+								MLog.Log(this, "Event closure A on "+zone.ZoneName+" count=" + zone.ClosureCounts);
 							}
+
+							if (levelB || activityB) {
+								zone.ClosureCounts++;
+								MLog.Log(this, "Event closure B on " + zone.ZoneName + " count=" + zone.ClosureCounts);
+							}*/
+							zone.HasOneWireIODevice = true;
 							//swd.setLatchState(0, true, false, state);
 
 							//MLog.Log(null, "\n\nLEVEL=" + level + "  latch=" + latch + " activity=" + activity
@@ -939,6 +991,7 @@ namespace MultiZonePlayer
 							for (int i = 0; i < voltage.Length; i++) {
 								zone.SetVoltage(i, voltage[i]);
 							}
+							zone.HasOneWireVoltageSensor = true;
 							break;
 						default:
 							MLog.Log(this, "Unknown onewire device "+ element.getName());
@@ -1158,11 +1211,9 @@ namespace MultiZonePlayer
 		}
 	}
 
-	public class Monitor
-	{
+	public class Monitor {
 		[StructLayout(LayoutKind.Sequential)]
-        public struct DISPLAY_DEVICE
-        {
+        public struct DISPLAY_DEVICE{
             public int cb;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
             public string DeviceName;
@@ -1174,8 +1225,7 @@ namespace MultiZonePlayer
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst=128)]
             public string DeviceKey;
  
-            public DISPLAY_DEVICE(int flags)
-            {
+            public DISPLAY_DEVICE(int flags) {
                 cb = 0;
                 StateFlags = flags;
                 DeviceName = new string((char)32, 32);
@@ -1187,8 +1237,7 @@ namespace MultiZonePlayer
         }
  
         [StructLayout(LayoutKind.Sequential)]
-        public struct DEVMODE
-        {
+        public struct DEVMODE {
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
             public string dmDeviceName;
             public short dmSpecVersion;
@@ -1227,11 +1276,16 @@ namespace MultiZonePlayer
 		{
 			MLog.Log(null, "Refreshing screen");
 			EnumDevices();
-			for (int i = 0; i < System.Windows.Forms.Screen.AllScreens.Length;i++ )
-			{
+			for (int i = 0; i < System.Windows.Forms.Screen.AllScreens.Length;i++ ) {
 				//if (!MainDevice(i))
 				{
 					DEVMODE current = EnumModes(i);
+					if (current.dmPelsHeight == 1080) {
+						if (current.dmDisplayFrequency == 59)
+							current.dmDisplayFrequency = 60;
+						else
+							current.dmDisplayFrequency = 59;
+					}
 					ChangeDisplaySettings(ref current, 0);
 					MLog.Log(null, "Screen refreshed, device=" + current.dmDeviceName 
 						+ " freq=" + current.dmDisplayFrequency
@@ -1240,8 +1294,7 @@ namespace MultiZonePlayer
 			}
 		}
 
-        private void listDevices_SelectedIndexChanged(
-            object sender, EventArgs e)
+        private void listDevices_SelectedIndexChanged(object sender, EventArgs e)
         {
             int devNum = listDevicesIndex;
             bool isMain = MainDevice(devNum);
@@ -1249,8 +1302,7 @@ namespace MultiZonePlayer
             EnumModes(devNum);
         }
  
-        private void btnSet_Click(object sender, EventArgs e)
-        { //set selected display mode
+        private void btnSet_Click(object sender, EventArgs e) { //set selected display mode
             int devNum = listDevicesIndex;
             int modeNum = listSettingsIndex;
             DEVMODE d = GetDevmode(devNum, modeNum);

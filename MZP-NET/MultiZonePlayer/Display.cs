@@ -21,6 +21,7 @@ namespace MultiZonePlayer
             get { return m_zoneDetails; }
             
         }
+		
 
         public enum DisplayTypeEnum
         {
@@ -33,7 +34,20 @@ namespace MultiZonePlayer
             set;
         }
 
-        
+		public virtual Boolean IsOnCached {
+			get;
+			set;
+		}
+
+		//for various displays
+		public virtual int DisplayOffCount {
+			get;
+			set;
+		}
+		public virtual InputTypeEnum InputTypeCached {
+			get;
+			set;
+		}
         public abstract InputTypeEnum InputType
         {
             get;
@@ -80,9 +94,12 @@ namespace MultiZonePlayer
         private int DISPLAY_ID=0;
         private string m_input, m_connection;
         private bool m_isOnValue = false;
+		private InputTypeEnum m_inputType = InputTypeEnum.Unknown;
         private int m_volumeLevel = -1;
         private int m_stdtimeout = 4000;
-        
+		private DateTime m_lastTVResponsive = DateTime.MinValue;
+		private DateTime m_lastTVPowerOn = DateTime.MinValue;
+		private int m_displayOffCount = -1;
 
         public DisplayLGTV(String connection, ZoneDetails p_zoneDetails)
         {
@@ -96,7 +113,10 @@ namespace MultiZonePlayer
         {
             Disconnect();
         }
-
+		public override int DisplayOffCount 
+		{
+			get { return m_displayOffCount; }
+		}
 		public void Reinitialise()
 		{
 			Initialise("9600", "None", "One", "8", m_connection, CommunicationManager.TransmissionType.Text);
@@ -126,10 +146,12 @@ namespace MultiZonePlayer
             if (result.Contains("ok"))
             {
                 result = result.Substring(result.IndexOf("ok") + 2, 2);
+				m_lastTVResponsive = DateTime.Now;
             }
             else
             {
-				m_isOnValue = false;
+				//m_isOnValue = false;
+				m_displayOffCount++;
 				//TODO might be a blocker when tv is off
 				//Reinitialise();
             }
@@ -153,10 +175,8 @@ namespace MultiZonePlayer
             if (Enum.IsDefined(typeof(InputCodesEnum), inputEnumCode))
             {
                 currentInput = (InputCodesEnum)Enum.Parse(typeof(InputCodesEnum), inputEnumCode);
-                foreach (InputCodesEnum en in Enum.GetValues(typeof(InputCodesEnum)))
-                {
-                    if (found)
-                    {
+                foreach (InputCodesEnum en in Enum.GetValues(typeof(InputCodesEnum))){
+                    if (found){
                         nextInput = en;
                         break;
                     }
@@ -209,11 +229,20 @@ namespace MultiZonePlayer
             }
         }
 
+		public override InputTypeEnum InputTypeCached {
+			get {
+				return m_inputType;
+			}
+		}
         public override InputTypeEnum InputType
         {
             get
             {
-                return InputTypeNative;
+				InputTypeEnum result = InputTypeNative;
+				if (result != m_inputType)
+					MLog.Log(this, "Display TV Input changed to " + result);
+				m_inputType = result;
+                return result;
             }
             set
             {
@@ -238,18 +267,31 @@ namespace MultiZonePlayer
             { return m_input; }
         }
 
+		public override bool IsOnCached {
+			get { return m_isOnValue; }
+		}
+
         public override Boolean IsOn
         {
             get
             {
-                return GetCommandStatus(DisplayLGTV.LGCommandsEnum.POWER_ka) == "01";
+				Boolean result = GetCommandStatus(DisplayLGTV.LGCommandsEnum.POWER_ka) == "01";
+				if (m_isOnValue != result)
+					MLog.Log(this, "TV state changed now On is " + result);
+				if (result)
+					m_lastTVPowerOn = DateTime.Now;
+				else
+					m_displayOffCount++;
+				m_isOnValue = result;
+                return result;
             }
             set
             {
                 String cmdval = value ? "01" : "00";
                 String isOnValue;
-                if (SendCommandCheckResult(DisplayLGTV.LGCommandsEnum.POWER_ka, cmdval, out isOnValue))
-                    m_isOnValue = isOnValue=="01";
+                //if (
+					SendCommandCheckResult(DisplayLGTV.LGCommandsEnum.POWER_ka, cmdval, out isOnValue);
+                    //m_isOnValue = isOnValue=="01";
             }
         }
 
@@ -288,6 +330,5 @@ namespace MultiZonePlayer
                 SendCommand(DisplayLGTV.LGCommandsEnum.VOLUMEMUTE_ke, "01");
             }
         }
-
     }
 }

@@ -18,14 +18,11 @@ namespace MultiZonePlayer
         private Boolean m_isOn;
         DisplayLGTV m_tv;
 
-        public DisplayLGTV.InputTypeEnum InputType
-        {
+        public DisplayLGTV.InputTypeEnum InputType{
             get { return m_inputType; }
-            
         }
 
-        public ZoneDisplayLG(ZoneDetails p_zoneDetails)
-        {
+        public ZoneDisplayLG(ZoneDetails p_zoneDetails){
             m_zoneDetails = p_zoneDetails;
 
             m_display = MZPState.Instance.DisplayList.Find(x => x.Connection.Equals(p_zoneDetails.DisplayConnection));
@@ -39,14 +36,12 @@ namespace MultiZonePlayer
             CacheCurrentState();
         }
 
-        public override void Stop()
-        {
+        public override void Stop(){
             base.Stop();
             m_tv.IsOn = false;
         }
 
-        public override void Play()
-        {
+        public override void Play(){
             base.Play();
             m_tv.IsOn = true;
         }
@@ -89,11 +84,11 @@ namespace MultiZonePlayer
         {
             if (!m_tv.IsBusy)
             {
-                m_inputType = m_tv.InputTypeNative;
+                m_inputType = m_tv.InputTypeCached;
                 m_input = m_tv.InputCached;
                 m_zoneDetails.VolumeLevel = m_tv.VolumeLevel;
                 m_zoneDetails.Title = InputType + " ("+ m_input + ")";
-                m_isOn = m_tv.IsOn;
+                m_isOn = m_tv.IsOnCached;
             }
         }
 
@@ -116,8 +111,6 @@ namespace MultiZonePlayer
 
         public override void Tick()
         {
-            base.Tick();
-
             // SLOW TICK
             if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 45)
             {
@@ -142,7 +135,7 @@ namespace MultiZonePlayer
                     m_zoneDetails.ZoneState = ZoneState.NotStarted;
                     m_zoneDetails.IsActive = false;
                     m_zoneDetails.RequirePower = false;
-                    MLog.Log(this, "DisplayTV is off");
+                    MLog.Log(this, "Zone Display has TV off");
                 }
             }
         }

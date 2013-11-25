@@ -13,7 +13,7 @@
 <button class="Radio#Zones,%_zoneid.ActivityType#" onclick="window.open('streammp3.html?command=radio&zoneid=%_zoneid','_self')">Radio</button>
 <%%>
 <%if;#Zones,%_zoneid.HasDisplay#%>
-<button class="TV#Zones,%_zoneid.ActivityType#" onclick="window.open('tv.html?zoneid=%_zoneid','_self')">TV</button>
+<button class="TV#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-tv.html?zoneid=%_zoneid','_self')">TV</button>
 <%%>
 <%if;#Zones,%_zoneid.HasCamera#%>
 <button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid&size=', false)">Cam Pict</button>
@@ -39,7 +39,7 @@
 	onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid', true)">Power</button>
 <button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">#</button>
 <%%>
-<button class="Small" onclick="ajaxCall('voltage','zone-graph-voltage.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">Volt</button>
+<%if;#Zones,%_zoneid.HasOneWireVoltageSensor#%><button class="Small" onclick="ajaxCall('voltage','zone-graph-voltage.html?command=generategraph&zoneid=%_zoneid&interval=48', false)">Voltage</button><%%>
 <div id="camera"></div>
 <div id="temp-hum"></div>
 <div id="event"></div>

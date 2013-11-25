@@ -815,9 +815,7 @@ namespace MultiZonePlayer
 				m_zoneDetails.RelayState = EnumRelayState.ContactOpen;
 			m_zoneDetails.MovementAlert = true;
 			ZoneOpenActions();
-			m_zoneDetails.ClosureCounts++;
 			m_zoneDetails.LastClosureEventDateTime = DateTime.Now;
-			
 
 			string message = "Closure contact state " + key + " is " + isContactMade 
 				+ " on zone " + m_zoneDetails.ZoneName;

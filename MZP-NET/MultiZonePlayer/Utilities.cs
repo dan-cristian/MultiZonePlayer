@@ -1034,7 +1034,11 @@ namespace MultiZonePlayer
                 if (e != null)
                 {
 					if (e.GetType().ToString().ToLower().Contains("exception"))
-						text += " err=" + ((Exception)e).Message + " method: "+ callingMethod+" stack=" + ((Exception)e).StackTrace;
+						text += " err=" + ((Exception)e).Message + " method: "
+							+ callingMethod
+							+ " errline="+stack.GetFrame(0).GetFileLineNumber()
+							+ " errcol=" + stack.GetFrame(0).GetFileColumnNumber();
+						//+" stack=" + ((Exception)e).StackTrace.to
 					else
 						text += " method: "+callingMethod+" sender=" + e.ToString();
                 }

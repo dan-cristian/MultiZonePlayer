@@ -9,9 +9,7 @@ namespace MultiZonePlayer
 {
     public class ZoneExternalPlayerBase :ZoneBase
     {
-
         protected Display m_display;
-
     }
 
     public class ZonePlayerXBMC:ZoneExternalPlayerBase, INavigableUI
@@ -22,9 +20,10 @@ namespace MultiZonePlayer
         //private String STATUS_URL = "/jsonrpc?UpdateState";
         private String CMD_URL = "/jsonrpc?SendRemoteKey";
 		private String GET_URL = "/jsonrpc?";
-		private bool m_bringToForegroundOnce = false;
+		//private bool m_bringToForegroundOnce = false;
 		private bool m_isXBMCProcessOn, m_isXBMCPlayerRunning;
-		private Display m_display;
+		//private Display m_display;
+		private int m_displayOffCount = 0;
 
         public class XBMCLimits
         {
@@ -92,17 +91,20 @@ namespace MultiZonePlayer
 			{
 				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1],
 					System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.AboveNormal);
+				int i = 0;//wait for xbmc to launch
+				do { System.Threading.Thread.Sleep(100); i++; }
+				while (GetXBMCHandle() == IntPtr.Zero && i < 100);
+				MLog.Log(this, "XBMC launched iteration="+i);
 			}
 			FixDisplay();
-			
         }
 
 		private void FixDisplay()
 		{
 			m_display = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == m_zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
-			if (m_display != null)
+			if (m_zoneDetails.ZoneState!=ZoneState.NotInitialised && m_display != null)
 			{
-				if (!m_display.IsOn)
+				if (!m_display.IsOnCached)
 				{
 					MLog.Log(this, "XBMC initialising display TV, was OFF");
 					m_display.IsOn = true;
@@ -111,14 +113,28 @@ namespace MultiZonePlayer
 				}
 				//else
 				//	MLog.Log(this, "Display is ON already for XBMC");
-				if (m_display.InputType != Display.InputTypeEnum.HDMI)
+				if (m_display.InputTypeCached != Display.InputTypeEnum.HDMI)
 				{
 					MLog.Log(this, "XBMC set input to HDMI");
 					m_display.InputType = Display.InputTypeEnum.HDMI;
+					System.Threading.Thread.Sleep(4000);
 					Monitor.RefreshFrequencySecondary();
 				}
-				//else
-				//	MLog.Log(this, "Display is set to HDMI already for XBMC");
+
+				if (Utilities.GetForegroundWindow() != GetXBMCHandle())//(!m_bringToForegroundOnce) 
+					{
+					MLog.Log(this, "Sending XMBC to foreground, previous foreground win="
+						+ Utilities.GetForegroundWindow() + " xmbc=" + GetXBMCHandle());
+					MoveToSecondScreen();
+					Utilities.SetForegroundWindow(GetXBMCHandle());
+					//m_bringToForegroundOnce = true;
+				}
+
+				if (m_display.IsOnCached && m_displayOffCount != m_display.DisplayOffCount) {
+					MLog.Log(this, "Tv restart detected, change hz to force display adapter refresh");
+					m_displayOffCount = m_display.DisplayOffCount;
+					Monitor.RefreshFrequencySecondary();
+				}
 			}
 			else
 				MLog.Log(this, "No display found for XBMC, CHECK!, zonename=" + m_zoneDetails.ZoneName);
@@ -229,14 +245,16 @@ namespace MultiZonePlayer
             return res;
         }
 
+		#region cmd simple commands
 		public override void Close()
 		{
 			base.Close();
-			if (!m_isXBMCProcessOn || !m_isXBMCPlayerRunning)
-			{
+			if (!m_isXBMCProcessOn || !m_isXBMCPlayerRunning) {
 				MLog.Log(this, "Closing XBMC, process=" + m_isXBMCProcessOn + " player=" + m_isXBMCPlayerRunning);
 				PostURLCmdMessage("Application.Quit");
 			}
+			else
+				MLog.Log(this, "Ignoring XBMC Close, process=" + m_isXBMCProcessOn + " player=" + m_isXBMCPlayerRunning);
 		}
 
         public override void Play()
@@ -308,12 +326,12 @@ namespace MultiZonePlayer
         {
             PostURLCmdMessage("Input.Back");
         }
+		#endregion
 
 		private void MoveToSecondScreen()
 		{
 			Screen[] sc = Screen.AllScreens;
-			if (sc.Length > 1)
-			{
+			if (sc.Length > 1) {
 				MLog.Log(null, "Multiple screens detected, count=" + sc.Length);
 				foreach (Screen scr in sc)
 				{
@@ -340,8 +358,7 @@ namespace MultiZonePlayer
             XBMCResponse resp;
             XBMCSimpleResponse sresp;
 
-            if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
-            {
+            if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1])) {
 				m_isXBMCProcessOn = false;
                 Close();
             }
@@ -349,26 +366,10 @@ namespace MultiZonePlayer
             {
 				m_isXBMCProcessOn = true;
                 String result = PostURLMessage(GET_URL, "Player.GetActivePlayers");
-                try
-                {
-					if (Utilities.GetForegroundWindow() != GetXBMCHandle())//(!m_bringToForegroundOnce)
-					{
-						MLog.Log(this, "Sending XMBC to foreground, previous foregradoun win="
-							+Utilities.GetForegroundWindow()+" xmbc="+GetXBMCHandle());
-						int i = 0;//wait for xbmc to launch
-						do { System.Threading.Thread.Sleep(100); i++; } 
-						while (GetXBMCHandle() == IntPtr.Zero && i < 50);
-						MoveToSecondScreen();
-						Utilities.SetForegroundWindow(GetXBMCHandle());
-						Monitor.RefreshFrequencySecondary();
-						m_bringToForegroundOnce = true;
-					}
-
+                try{
                     sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
-					if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1)
-					{
-						if (m_zoneDetails.ZoneState.Equals(ZoneState.NotStarted))
-						{
+					if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1) {
+						if (m_zoneDetails.ZoneState.Equals(ZoneState.NotStarted)) {
 							MLog.Log(this, "XBMC has active player");
 							base.Play();
 							//Play();
@@ -376,15 +377,13 @@ namespace MultiZonePlayer
 						m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
 						result = PostURLMessage(GET_URL, "Application.GetProperties", "properties", @"[""volume""]");
 						resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-						if (resp.result != null)
-						{
+						if (resp.result != null) {
 							SetVolumeLevel(resp.result.volume);
 						}
 
 						result = PostURLMessage(GET_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
 						resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-						if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0)
-						{
+						if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0) {
 							m_isXBMCPlayerRunning = true;
 							m_zoneDetails.Title = resp.result.items[0].label;
 							m_zoneDetails.Author = "xbmc";
@@ -395,22 +394,19 @@ namespace MultiZonePlayer
 							if (!MZPState.Instance.IsWinloadLoading)
 								Utilities.SetForegroundWindow(GetXBMCHandle());
 						}
-						else
-						{
+						else {
 							if (m_zoneDetails.IsActive)
 								m_zoneDetails.ZoneStop();
 							m_isXBMCPlayerRunning = false;
 						}
 					}
-					else
-					{
+					else {
 						if (m_zoneDetails.IsActive)
 							m_zoneDetails.ZoneStop();
 						m_isXBMCPlayerRunning = false;
 					}
                 }
-                catch (Exception ex)
-                {
+                catch (Exception ex) {
                     MLog.Log(this, "Unable to json parse XBMC response " + result + " err="+ex.Message);
                 }
             }
@@ -418,24 +414,10 @@ namespace MultiZonePlayer
 
         public override void Tick()
         {
-            base.Tick();
-            //slower tick
-
-            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 10)
-            {
-				if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
-				{
-					FixDisplay();
-				}
-
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 10) {
+				FixDisplay();
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;
-
-                /*if (m_zoneDetails.IsActive && !MZPState.Instance.PowerControlIsOn(m_zoneDetails.ParentZoneId))
-                {
-                    MLog.Log(this, "Powering on parent zone id " + m_zoneDetails.ParentZoneId + " for XBMC child " + m_zoneDetails.ZoneName);
-                    MZPState.Instance.PowerControlOn(m_zoneDetails.ParentZoneId);
-                }*/
             }
         }
     }

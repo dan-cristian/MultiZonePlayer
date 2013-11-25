@@ -200,6 +200,13 @@ public class MZPState
 		bt.Name = "Bluetooth discovery service";
 		bt.Start();
 
+		//adding displays
+		foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+			if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString())) {
+				m_displayList.Add(new DisplayLGTV(zone.DisplayConnection, zone));
+			}
+		}
+
         LogEvent(EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative, null);
 				
     }
@@ -1232,24 +1239,19 @@ public class MZPState
 
     public void CheckForExternalZoneEvents()
     {
-        Display display;
-        foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
-        {
-            if (!zone.IsActive)
-            {
-                if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString()))
-                {
-                    display = m_displayList.Find(x => x.Connection.Equals(zone.DisplayConnection));
-                    if (display == null)
-                    {
-                        display = new DisplayLGTV(zone.DisplayConnection, zone);
-                        m_displayList.Add(display);
-                    }
+		foreach (Display display in m_displayList) {
+			//refresh display properties via direct read
+			bool disp = display.IsOn;
+			Display.InputTypeEnum input = display.InputType;
+		}
 
-                    if (display.GetType().Equals(typeof(DisplayLGTV)))
-                    {
-                        if (((DisplayLGTV)display).IsOn)
-                        {
+        foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList){
+            if (!zone.IsActive){
+                if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString())){
+					Display display = m_displayList.Find(x => x.Connection.Equals(zone.DisplayConnection));
+
+                    if (display.GetType().Equals(typeof(DisplayLGTV))){
+                        if (((DisplayLGTV)display).IsOnCached){
                             ValueList val = new ValueList(GlobalParams.command,
                                 GlobalCommands.tv.ToString(), CommandSources.system);
                             val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
@@ -1258,10 +1260,8 @@ public class MZPState
                     }
                 }
 
-                if (zone.DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString()))
-                {
-                    if (Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
-                    {
+                if (zone.DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString())){
+                    if (Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1])){
                         ValueList val = new ValueList(GlobalParams.command,
                                 GlobalCommands.xbmc.ToString(), CommandSources.system);
                         val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
@@ -1277,12 +1277,9 @@ public class MZPState
 		string cause;
         MLog.LogEvent(mzpevent);
 
-		if (mzpevent.ZoneDetails != null)
-		{
-			if (mzpevent.ZoneDetails.IsArmed)
-			{
+		if (mzpevent.ZoneDetails != null){
+			if (mzpevent.ZoneDetails.IsArmed){
 				cause = "Event detected on armed zone "+mzpevent.ZoneDetails.ZoneName;
-						
 				NotifyEventToUsers(mzpevent, cause, true, true);
 			}
 
@@ -1301,8 +1298,7 @@ public class MZPState
 				cause = "Event detected on armed area";
 				NotifyEventToUsers(mzpevent, cause, false, true);
 			}
-			else
-			{
+			else{
 				/*  MLog.Log(this, "Ignoring alarm event on " + mzpevent.ZoneDetails.ZoneName + " movementalert=" + mzpevent.ZoneDetails.MovementAlert
 						+ " zonealarmareaid=" + mzpevent.ZoneDetails.AlarmAreaId + " systemareaid=" + MZPState.Instance.SystemAlarm.AreaId
 						+ " areastate=" + MZPState.Instance.SystemAlarm.AreaState);
@@ -1417,6 +1413,8 @@ public class MZPState
 			if (MZPState.Instance == null) return;
 			HealthCheckMessengers();
 		}
+		if (MZPState.Instance == null) return;
+		CheckForExternalZoneEvents();
 		CleanTempFiles();
 		if (MZPState.Instance == null) return;
 		CheckForWakeTimers();
@@ -1433,8 +1431,7 @@ public class MZPState
 		m_powerControlNumato.timerPowerSaving_Tick();
 		if (MZPState.Instance == null) return;
 		m_oneWire.TickSlow();
-		if (MZPState.Instance == null) return;
-		CheckForExternalZoneEvents();
+		
 		
 		if (MZPState.Instance == null) return;
 		if (MediaLibrary.AllAudioFiles != null)

@@ -68,6 +68,8 @@ namespace MultiZonePlayer {
 		
 		[Description("Edit")]
 		public String TemperatureDeviceId;
+		//[Description("Edit")]
+		//public String OtherOneWireDeviceIdList;//separated by ;
 
 		[Description("Edit")]
 		public double TemperatureMaxAlarm = 1000;
@@ -116,6 +118,7 @@ namespace MultiZonePlayer {
 		// not serializable, hidden from json
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
 		protected static List<Singleton> m_valueList = new List<Singleton>();
+		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false;
 
 		public ZoneDetails() {
 			//ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
@@ -154,7 +157,8 @@ namespace MultiZonePlayer {
 		public Boolean IsClosureContactMade {
 			get { return m_isClosureContactMade; }
 			set {
-				m_isClosureContactMade = value; 
+				m_isClosureContactMade = value;
+				ClosureCounts++;
 				if (m_isClosureContactMade != m_isClosureContactMadeLast) {
 					Rules.ExecuteRule(this, "isclosurecontact=" + m_isClosureContactMade);
 					m_isClosureContactMadeLast= m_isClosureContactMade;
@@ -313,12 +317,28 @@ namespace MultiZonePlayer {
 			}
 		}
 		public Boolean HasClosures {
-			get { return ClosureIdList != ""; }
+			get { return ClosureIdList != "" || HasOneWireIODevice; }
 		}
+
+		public Boolean HasOneWireTemperatureSensor {
+			get { return m_hasOneWireTempSensor; }
+			set { m_hasOneWireTempSensor = value; }
+		}
+
+		public Boolean HasOneWireIODevice {
+			get { return m_hasOneWireIODevice; }
+			set { m_hasOneWireIODevice = value; }
+		}
+
+		public Boolean HasOneWireVoltageSensor {
+			get { return m_hasOneWireVoltageSensor; }
+			set { m_hasOneWireVoltageSensor = value; }
+		}
+
 		public Boolean HasTemperatureSensor {
 			get {
 				RFXDeviceDefinition.RFXDevice device = RFXDeviceDefinition.GetDevice(ZoneId);
-				return (TemperatureDeviceId != "" ||
+				return (HasOneWireTemperatureSensor ||
 						(device != null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum));
 			}
 		}
