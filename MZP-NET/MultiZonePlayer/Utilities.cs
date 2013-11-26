@@ -983,12 +983,10 @@ namespace MultiZonePlayer
 			string inientry;
 			string[] keywords;
 			int line = 0;
-			do
-			{
+			do {
 				inientry = Utilities.IniReadValue(IniFile.SCHEDULER_SECTION_LOG,
 					line.ToString(), IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
-				if (inientry != "")
-				{
+				if (inientry != "") {
 					keywords = inientry.Split(',');
 					foreach (string key in keywords)
 						m_keywords.Add(key.ToLower());
@@ -1007,15 +1005,22 @@ namespace MultiZonePlayer
         public static void Log(Exception e, Object o, String text)
         {
 			string callingMethod = "";
-			var stack = new System.Diagnostics.StackTrace(1, false);
-			for (int i = 0; i < Math.Min(7, stack.GetFrames().Length); i++)
-				callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
-			if (o == null)
-				o = "null";
-            if (e!=null)
-                Log(e, e.StackTrace + "|" + text + "method: "+ callingMethod +" sender:" + o.ToString());
-            else
-                Log(e, text + " sender:" + o.ToString(), stack);
+			try {
+				var stack = new System.Diagnostics.StackTrace(1, false);
+				if (stack != null) {
+					for (int i = 0; i < Math.Min(7, stack.GetFrames().Length); i++)
+						callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
+					if (o == null)
+						o = "null";
+					if (e != null)
+						Log(e, e.StackTrace + "|" + text + "method: " + callingMethod + " sender:" + o.ToString());
+					else
+						Log(e, text + " sender:" + o.ToString(), stack);
+				}
+			}
+			catch (Exception ex) {
+				Utilities.AppendToGenericLogFile(ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System);
+			}
         }
 
         public static void Log(Object e, String text, params StackTrace[] stackList)
@@ -1043,8 +1048,9 @@ namespace MultiZonePlayer
 						text += " method: "+callingMethod+" sender=" + e.ToString();
                 }
             }
-            catch (Exception)
-            { }
+            catch (Exception ex) {
+				Utilities.AppendToGenericLogFile(ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System); 
+			}
             try
             {
 				if (m_keywords!=null && m_keywords.Contains("all")
@@ -1059,8 +1065,9 @@ namespace MultiZonePlayer
 					Utilities.AppendToGenericLogFile("DROPPED: "+System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);
             }
-            catch (Exception)
-            { }
+            catch (Exception ex){
+				Utilities.AppendToGenericLogFile(ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System);
+			}
         }
 
         public static void LogEvent(MZPEvent mzpevent)

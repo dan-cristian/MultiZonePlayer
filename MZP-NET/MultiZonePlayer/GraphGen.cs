@@ -14,17 +14,22 @@ namespace MultiZonePlayer
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
 		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
-		System.Drawing.Color[] m_colors = new System.Drawing.Color[5];
+		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
 				
 
 		public SimpleGraph()
 		{
 			InitializeComponent();
-			m_colors[0] = System.Drawing.Color.Orange;
-			m_colors[1] = System.Drawing.Color.Red;
-			m_colors[2] = System.Drawing.Color.Blue;
-			m_colors[3] = System.Drawing.Color.Purple;
-			m_colors[4] = System.Drawing.Color.Green;
+			m_colors[0] = System.Drawing.Color.Orchid;
+			m_colors[1] = System.Drawing.Color.DarkRed;
+			m_colors[2] = System.Drawing.Color.Aquamarine;
+			m_colors[3] = System.Drawing.Color.GreenYellow;
+			m_colors[4] = System.Drawing.Color.Olive;
+			m_colors[5] = System.Drawing.Color.HotPink;
+			m_colors[6] = System.Drawing.Color.Khaki;
+			m_colors[7] = System.Drawing.Color.PaleVioletRed;
+			m_colors[8] = System.Drawing.Color.LightSalmon;
+			m_colors[9] = System.Drawing.Color.MediumSlateBlue;
 			LoadHistory();
 		}
 
@@ -214,14 +219,15 @@ namespace MultiZonePlayer
 				&& x.Item4 == Constants.EVENT_TYPE_CAMALERT && x.Item3 != 0);
 			powerValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
 				&& x.Item4 == Constants.EVENT_TYPE_POWER);
-
+			int i = 0;
+			Random r = new Random();
 			foreach (String closureIdentifier in distinctClosureIdentifiers) {
 				closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
 					&& x.Item4 == Constants.EVENT_TYPE_CLOSURE && x.Item5 == closureIdentifier);
 				if (closureValues.Count > 0) {
 					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
 						Name = "Closure " + closureIdentifier,
-						Color = m_colors[new Random().Next(m_colors.Length-1)],//System.Drawing.Color.Red,
+						Color = m_colors[r.Next(m_colors.Length-1)],//System.Drawing.Color.Red,
 						IsVisibleInLegend = true,
 						IsXValueIndexed = false,
 						ChartType = SeriesChartType.StepLine,
@@ -230,9 +236,10 @@ namespace MultiZonePlayer
 					};
 					this.chart1.Series.Add(series1);
 					foreach (var point in closureValues) {
-						series1.Points.AddXY(point.Item2, point.Item3);
+						series1.Points.AddXY(point.Item2, point.Item3 !=0 ? point.Item3 + i/2:0);//add i to avoid line overlapp
 					}
 				}
+				i++;
 			}
 			if (sensorValues.Count > 0)
 			{
