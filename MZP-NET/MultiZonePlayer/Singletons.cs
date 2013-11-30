@@ -4,6 +4,7 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using System.ComponentModel;
+using System.Net;
 
 namespace MultiZonePlayer {
 	
@@ -173,6 +174,7 @@ namespace MultiZonePlayer {
 		public UserRole Role;
 		public DateTime NearbyPresentSince;
 		public UserPresence.PresenceType NearbyPresenceType;
+		public String Location;
 		[Description("Edit")]
 		/// <summary>
 		/// format is [pattern]:macroname:zoneid;repeat same format
@@ -235,8 +237,8 @@ namespace MultiZonePlayer {
 			return (User)m_valueList.Find(x => x.Id == id);
 		}
 		public static User GetUserByBT(String BTAddress) {
-			BTAddress = BTAddress.ToUpper();
-			return (User)m_valueList.Find(x => ((User)x).PhoneBTAddress != null && ((User)x).PhoneBTAddress.ToUpper() == BTAddress);
+			BTAddress = BTAddress.ToUpper().Replace(":","");
+			return (User)m_valueList.Find(x => ((User)x).PhoneBTAddress != null && ((User)x).PhoneBTAddress.ToUpper().Replace(":", "") == BTAddress);
 		}
 		public static User GetUserByWifi(String WifiAddress) {
 			WifiAddress = WifiAddress.ToUpper();
@@ -280,8 +282,8 @@ namespace MultiZonePlayer {
 		public DateTime LastMessengerActiveDate;
 		public PresenceType Type;
 		public int BTLostContactCount = 0, WifiLostContactCount = 0;
-		private static List<Bluetooth.Device> m_lastBTDeviceList = new List<Bluetooth.Device>();
-		private static List<String> m_lastWifiAddressList = new List<string>();
+		private static List<String> m_lastBTDeviceList = new List<String>();
+		private static List<String> m_lastWifiAddressList = new List<String>();
 		public enum PresenceType {
 			Bluetooth,
 			Messenger,
@@ -371,12 +373,13 @@ namespace MultiZonePlayer {
 			}
 			Type = presenceType;
 		}
-		public static void AddPresence(User user, PresenceType type) {
+		public static void AddPresence(User user, PresenceType type, DateTime presenceDate, String location) {
 			UserPresence up = m_presenceList.Find(x => x.User == user && x.Type == type);
 			if (up == null) {
-				user.NearbyPresentSince = DateTime.Now;
+				user.NearbyPresentSince = presenceDate;
 				user.NearbyPresenceType = type;
-				MLog.Log(null, "NEW " + type + " DEVICE FOUND User: " + user.Name);
+				user.Location = location;
+				MLog.Log(null, "NEW " + type + " DEVICE FOUND User: " + user.Name + " location="+location);
 				switch (type) {
 					case PresenceType.Bluetooth:
 						m_presenceList.Add(new UserPresence(user, PresenceType.Bluetooth));
@@ -424,55 +427,99 @@ namespace MultiZonePlayer {
 
 			return left;
 		}
-		public static void UpdatePresence(User user, PresenceType type) {
+		public static void UpdatePresence(User user, PresenceType type, DateTime presenceDate, String location) {
 			UserPresence up = m_presenceList.Find(x => x.User == user && x.Type == type);
 			MLog.Assert(up != null, "presence cannot be null at update " + type);
 			switch (type) {
 				case PresenceType.Bluetooth:
-					up.LastBTActiveDate = DateTime.Now;
-					up.BTLostContactCount = 0;
+					if (up.LastBTActiveDate < presenceDate) {
+						up.LastBTActiveDate = presenceDate;
+						up.BTLostContactCount = 0;
+						up.User.Location = location;
+					}
 					break;
 				case PresenceType.Wifi:
-					up.LastWifiActiveDate = DateTime.Now;
-					up.WifiLostContactCount = 0;
+					if (up.LastWifiActiveDate < presenceDate) {
+						up.LastWifiActiveDate = presenceDate;
+						up.WifiLostContactCount = 0;
+						up.User.Location = location;
+					}
 					break;
 			}
 
 		}
-
-		public static void CheckBluetooth() {
+		private static void UpdateBTDevices(List<String> currentList, DateTime presenceDate, String location) {
 			User user;
-			List<Bluetooth.Device> currentList, newList, leftList, existingList;
+			List<String> newList, leftList, existingList;
 			try {
-				currentList = Bluetooth.DiscoverDevices();
 				newList = currentList.Except(m_lastBTDeviceList).ToList();
 				leftList = m_lastBTDeviceList.Except(currentList).ToList();
 				existingList = m_lastBTDeviceList.Intersect(currentList).ToList();
 
-				foreach (Bluetooth.Device dev in newList) {
-					user = User.GetUserByBT(dev.Address.ToString());
+				foreach (String dev in newList) {
+					user = User.GetUserByBT(dev);
 					if (user != null)
-						UserPresence.AddPresence(user, PresenceType.Bluetooth);
+						UserPresence.AddPresence(user, PresenceType.Bluetooth, presenceDate, location);
 					else
-						MLog.Log(null, "Unknown user with Bluetooth device=" + dev.DeviceName + " Addr=" + dev.Address);
+						MLog.Log(null, "Unknown user with Bluetooth device addr=" + dev);
 					m_lastBTDeviceList.Add(dev);
 				}
-				foreach (Bluetooth.Device dev in leftList) {
-					user = User.GetUserByBT(dev.Address.ToString());
-					if (user != null && UserPresence.RemovePresence(User.GetUserByBT(dev.Address.ToString()), PresenceType.Bluetooth))
+				foreach (String dev in leftList) {
+					user = User.GetUserByBT(dev);
+					if (user != null && UserPresence.RemovePresence(User.GetUserByBT(dev), PresenceType.Bluetooth))
 						m_lastBTDeviceList.Remove(dev);
 				}
-				foreach (Bluetooth.Device dev in existingList) {
-					user = User.GetUserByBT(dev.Address.ToString());
+				foreach (String dev in existingList) {
+					user = User.GetUserByBT(dev);
 					if (user != null)
-						UserPresence.UpdatePresence(User.GetUserByBT(dev.Address.ToString()), PresenceType.Bluetooth);
+						UserPresence.UpdatePresence(User.GetUserByBT(dev), PresenceType.Bluetooth, presenceDate, location);
 				}
 			}
 			catch (Exception ex) {
-				MLog.Log(null, "Check Bluetooth error " + ex.Message);
+				MLog.Log(null, "Update Bluetooth error " + ex.Message);
+			}
+		}
+		public static void CheckLocalBluetooth() {
+			try {
+				List<String> currentList = Bluetooth.DiscoverDevices().Select(x => x.Address.ToString()).ToList();
+				UpdateBTDevices(currentList, DateTime.Now, "Main Home");
+			}
+			catch (Exception ex) {
+				MLog.Log(null, "CheckLocal Bluetooth error " + ex.Message);
 			}
 		}
 
+		public static void CheckRemoteBluetooth() {
+			try {
+				WebClient web = new WebClient();
+				DateTime presenceDate;
+				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
+				foreach (String url in urllist) {
+					try {
+						String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_BT_STATUS_FILE[1]);
+						String[] btlist = webdata.Split('\r');
+						var query1 = from line in btlist
+									 let data = line.Split(',')
+									 select new {
+										 BTAddress = data[0],
+										 Date = data[1]
+									 };
+						List<String> currentList = query1.Select(x=>x.BTAddress).ToList();
+						if (query1.ToList().Count > 0)
+							presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
+						else
+							presenceDate = DateTime.Now;
+						UpdateBTDevices(currentList, presenceDate, url);
+					}
+					catch (Exception e) {
+						MLog.Log(null, "Download remote BT file for url="+url+" error=" + e.Message);
+					}
+				}
+			}
+			catch (Exception ex) {
+				MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
+			}
+		}
 		public static void CheckWifi() {
 			User user;
 			try {
@@ -516,7 +563,7 @@ namespace MultiZonePlayer {
 				foreach (String dev in newList) {
 					user = User.GetUserByWifi(dev);
 					if (user != null)
-						UserPresence.AddPresence(user, PresenceType.Wifi);
+						UserPresence.AddPresence(user, PresenceType.Wifi, DateTime.Now, "Main Home");
 					else
 						MLog.Log(null, "Unknown user with Wifi addr=" + dev);
 					m_lastWifiAddressList.Add(dev);
@@ -529,7 +576,7 @@ namespace MultiZonePlayer {
 				foreach (String dev in existingList) {
 					user = User.GetUserByBT(dev);
 					if (user != null)
-						UserPresence.UpdatePresence(User.GetUserByWifi(dev), PresenceType.Wifi);
+						UserPresence.UpdatePresence(User.GetUserByWifi(dev), PresenceType.Wifi, DateTime.Now, "Main Home");
 				}
 			}
 			catch (Exception ex) {

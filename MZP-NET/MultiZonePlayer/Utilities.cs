@@ -402,34 +402,32 @@ namespace MultiZonePlayer
 
         public static void AppendToGenericLogFile(String text, EventSource logType)
         {
-            StreamWriter str;
-            switch (logType)
-            {
-                case EventSource.System:
-                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_GENERAL_FILE);
-                    break;
-                case EventSource.Modem:
-                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_MODEM_FILE);
-                    break;
-                case EventSource.Web:
-                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_WEB_FILE);
-                    break;
-                case EventSource.Keyboard:
-                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_KEY_FILE);
-                    break;
-                case EventSource.RawInput:
-                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_RAWINPUT_FILE);
-                    break;
-                default:
-                    str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_EVENTS_FILE);
-                    break;
-            }
-
-            
-                
-            
-                str.Write(text);
-                str.Close();
+			try {
+				StreamWriter str;
+				switch (logType) {
+					case EventSource.System:
+						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_GENERAL_FILE);
+						break;
+					case EventSource.Modem:
+						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_MODEM_FILE);
+						break;
+					case EventSource.Web:
+						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_WEB_FILE);
+						break;
+					case EventSource.Keyboard:
+						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_KEY_FILE);
+						break;
+					case EventSource.RawInput:
+						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_RAWINPUT_FILE);
+						break;
+					default:
+						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_EVENTS_FILE);
+						break;
+				}
+				str.Write(text);
+				str.Close();
+			}
+			catch (Exception ex) { }
             
         }
 

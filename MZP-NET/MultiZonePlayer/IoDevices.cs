@@ -918,8 +918,8 @@ namespace MultiZonePlayer
 								MLog.Log(this, "Event closure change A on " + zone.ZoneName 
 									+ " count=" + zone.ClosureCounts + " level=" + levelA
 									+ " lastlevel="+lastLevelA);
-								if (!activityB)
-									Alert.CreateAlert("No Activity A on level change");
+								//if (!activityB)
+								//	Alert.CreateAlert("No Activity A on level change");
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
 								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
@@ -932,8 +932,8 @@ namespace MultiZonePlayer
 								MLog.Log(this, "Event closure change B on " + zone.ZoneName
 									+ " count=" + zone.ClosureCounts + " level=" + levelB
 									+ " lastlevel=" + lastLevelB);
-								if (!activityB)
-									Alert.CreateAlert("No Activity B on level change");
+								//if (!activityB)
+								//	Alert.CreateAlert("No Activity B on level change");
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
 								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
@@ -1699,7 +1699,8 @@ namespace MultiZonePlayer
 		public static void StartDiscovery() {
 			MLog.Log(null, "BT Discovery started");
 			while (MZPState.Instance != null) {
-				UserPresence.CheckBluetooth();
+				UserPresence.CheckLocalBluetooth();
+				UserPresence.CheckRemoteBluetooth();
 				for (int i = 0; i < 60; i++) {
 					Thread.Sleep(1000);
 					if (MZPState.Instance == null)

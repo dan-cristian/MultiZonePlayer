@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
+using System.Net;
 
 namespace MzpMonitor {
 	public class SysTrayApp : Form {
@@ -17,6 +18,7 @@ namespace MzpMonitor {
 		public bool IsShuttingDown = false;
 		public string MZPProcName = "MultiZonePlayer";
 		public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
+		private WebClient m_webclient = new WebClient();
 
 		public SysTrayApp() {
 			// Create a simple tray menu with only one item.
@@ -69,16 +71,36 @@ namespace MzpMonitor {
 			do {
 				if (!IsProcAlive(MZPProcName)) {
 					AppendToGenericLogFile("MZP Monitor detected MZP not running, restarting");
-					System.Diagnostics.Process proc = RunProcessWait(CurrentPath() + "\\" + MZPProcName + ".exe",
-								System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.Normal);
-					AppendToGenericLogFile("MZP proc restarted");
+					RestartMZP();
 				}
-				Thread.Sleep(10000);
+				else {
+					if (!URLGetOK()) {
+						AppendToGenericLogFile("MZP Monitor detected MZP not answering to HTTP status, restarting");
+						RestartMZP();
+					}
+				}
+				Thread.Sleep(60000);
 			}
 			while (!IsShuttingDown);
 			AppendToGenericLogFile("MZP Monitor closed");
 		}
+		public bool URLGetOK() {
+			String data;
+			try {
+				data = m_webclient.DownloadString("http://localhost/cmd?command=status");
+				if (data != null && data.Contains("Out="))
+					return true;
+				else
+					return false;
+			}
+			catch (Exception) { return false; }
+		}
 
+		private void RestartMZP() {
+			System.Diagnostics.Process proc = RunProcessWait(CurrentPath() + "\\" + MZPProcName + ".exe",
+						System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.Normal);
+			AppendToGenericLogFile("MZP proc restarted");
+		}
 		public static bool IsProcAlive(String procName)
         {
             Process[] proc;
@@ -130,11 +152,13 @@ namespace MzpMonitor {
 			return extProc;
 		}
 		public static void AppendToGenericLogFile(String text) {
-			StreamWriter str;
-			str = File.AppendText(CurrentPath() + LOG_GENERAL_FILE);
-			str.Write(text);
-			str.Close();
-
+			try {
+				StreamWriter str;
+				str = File.AppendText(CurrentPath() + LOG_GENERAL_FILE);
+				str.Write(text);
+				str.Close();
+			}
+			catch (Exception) { }
 		}
 
 		public static void Log(String text) {

@@ -335,19 +335,22 @@ namespace MultiZonePlayer
 
         private void GUISaveUsers()
         {
+			Object userObj;
             String userId;
             String userName;
             String userCode;
 			try {
 				for (int r = 0; r < dgvUsers.Rows.Count; r++) {
-					userId = dgvUsers.Rows[r].Cells[UserId.Name].Value.ToString();
-					userName = dgvUsers.Rows[r].Cells[UserName.Name].Value.ToString();
-					userCode = dgvUsers.Rows[r].Cells[UserCode.Name].Value.ToString();
-
-					if (userId != null && userCode != null) {
-						User user = User.GetUser(Convert.ToInt16(userId));
-						user.Name = userName;
-						user.Code = userCode;
+					userObj = dgvUsers.Rows[r].Cells[UserId.Name].Value;
+					if (userObj != null) {
+						userId = dgvUsers.Rows[r].Cells[UserId.Name].Value.ToString();
+						userName = dgvUsers.Rows[r].Cells[UserName.Name].Value.ToString();
+						userCode = dgvUsers.Rows[r].Cells[UserCode.Name].Value.ToString();
+						if (userId != null && userCode != null) {
+							User user = User.GetUser(Convert.ToInt16(userId));
+							user.Name = userName;
+							user.Code = userCode;
+						}
 					}
 				}
 				User.StaticInstance.SaveToIni();

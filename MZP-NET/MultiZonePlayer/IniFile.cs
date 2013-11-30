@@ -213,6 +213,9 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ROUTER_USER_NAME = new String[] { "PARAM_ROUTER_USER_NAME", "root", "User name for router" };
 			public static String[] PARAM_ROUTER_USER_PASS = new String[] { "PARAM_ROUTER_USER_PASS", "abcd1234", "router pass" };
 
+			public static String[] PARAM_REMOTE_SERVER_LIST = new String[] { "PARAM_REMOTE_SERVER_LIST", "http://192.168.0.110/,http://192.168.0.111/", "URL list of remote servers (PIs) comma separated" };
+			public static String[] PARAM_REMOTE_SERVER_BT_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_BT_STATUS_FILE", "btstat.txt", "file name with BT status" };
+
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
@@ -302,7 +305,9 @@ namespace MultiZonePlayer
 				PARAM_ROUTER_HOST,
 				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL,
 				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL_CUSTOM,
-				PARAM_ROUTER_LOGOUT_URL
+				PARAM_ROUTER_LOGOUT_URL,
+				PARAM_REMOTE_SERVER_LIST,
+				PARAM_REMOTE_SERVER_BT_STATUS_FILE
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;

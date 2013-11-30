@@ -311,7 +311,7 @@ namespace MultiZonePlayer
 						contentType = CONTENT_HTML;
 
 					if (cmdResult != null)
-						cmdResultText = "Out=" + cmdResult.OutputMessage;
+						cmdResultText = cmdResult.ToString();
 					else
 						cmdResultText = "Null output";
 					WriteResponse(contentType, cmdResultText, response, binaryData);

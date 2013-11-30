@@ -13,11 +13,12 @@
 <%%>
 <br />
 <table style="border-width:1px;border-color:Black;border-style:inset">
-<tr class="Header"><td>Users at Home</td><td>User</td><td>Date</td></tr>
+<tr class="Header"><td>Users at Home</td><td>User</td><td>Date</td><td>Location</td></tr>
 <%for;i;0;++;#S.UserIsNearList.Count#;%>
 <tr><td><button class="Small" onclick="window.open('?command=nul&id=#S.UserIsNearList.?,%i.Id#','_self')">?</button></td>
 <td>#S.UserIsNearList.?,%i.Name#</td>
-<td>since #S.UserIsNearList.?,%i.NearbyPresentAgeAsTimeSpan#</td></tr>
+<td>since #S.UserIsNearList.?,%i.NearbyPresentAgeAsTimeSpan#</td>
+<td>#S.UserIsNearList.?,%i.Location#</td></tr>
 <%%>
 </table><br />
 <table style="border-width:1px;border-color:Black;border-style:inset">

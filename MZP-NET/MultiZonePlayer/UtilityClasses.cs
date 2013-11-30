@@ -151,7 +151,8 @@ namespace MultiZonePlayer
 		generategraph,
 		generatefullgraph,
 		doorring,
-		doorentry
+		doorentry,
+		userlist
 	}
 	public enum GlobalParams
 	{
@@ -261,7 +262,7 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.doorring,			GlobalParams.zoneid),
 			new CommandSyntax(GlobalCommands.doorentry,			GlobalParams.zoneid),
 			new CommandSyntax(GlobalCommands.setfield,			GlobalParams.id, GlobalParams.field, GlobalParams.text, GlobalParams.classname),
-
+			new CommandSyntax(GlobalCommands.userlist,			GlobalParams.field),
 			/*
             genrelist,
             setgenrelist,
@@ -355,7 +356,7 @@ namespace MultiZonePlayer
 
 		public override String ToString()
 		{
-			string result = "Out=" + OutputMessage;
+			string result = OutputMessage;
 			if (ErrorMessage != "") result += " Err=" + ErrorMessage;
 			if (ValueList != null) result += " "+ValuesToString();
 			return result;

@@ -397,6 +397,22 @@ namespace MultiZonePlayer
 							}
 							
 							break;
+						case GlobalCommands.userlist:
+							field = vals.GetValue(GlobalParams.field);
+							string val1="";
+							foreach (User user in User.UserList) {
+								switch (field) {
+									case "PhoneBTAddress":
+										val1 = user.PhoneBTAddress;
+										break;
+									case "WifiMACAddress":
+										val1 = user.WifiMACAddress;
+										break;
+								}
+								if (val1!= null && val1.Trim() != "")
+									cmdresult.OutputMessage += val1 + "\n";
+							}
+							break;
                         default:
                             DoZoneCommand(apicmd, vals, ref cmdresult);
                             break;
