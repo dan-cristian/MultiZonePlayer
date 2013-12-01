@@ -33,7 +33,7 @@ public class MZPState
     private static BasePowerControl m_powerControlDenkovi, m_powerControlNumato;
     private Hashtable m_zoneInputDeviceNames = null;
     private Hashtable m_playListOLD = null;//list with all songs from current playlist
-    
+    public Boolean IsShuttingDown=false;
     private List<MoodMusic> m_moodMusicList;
 	private Cron m_cron;
     private MultiZonePlayer.Tail m_Tail;
@@ -55,6 +55,7 @@ public class MZPState
 	private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 	private WDIO m_wdio;
 	public Boolean TestCond = false;
+	private SysLog m_syslog;
 
 	public WDIO WDIO {
 		get { return m_wdio; }
@@ -200,6 +201,11 @@ public class MZPState
 		bt.Name = "Bluetooth discovery service";
 		bt.Start();
 
+		m_syslog = new SysLog();
+		Thread sl = new Thread(() => m_syslog.Start());
+		sl.Name = "Syslog";
+		sl.Start();
+
 		//adding displays
 		foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
 			if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString())) {
@@ -283,6 +289,7 @@ public class MZPState
     {
 		try
 		{
+			IsShuttingDown = true;
 			foreach (string file in Directory.GetFiles(IniFile.CurrentPath(), "*" + IniFile.TEMP_EXTENSION))
 			{
 				File.Delete(file);
@@ -290,6 +297,7 @@ public class MZPState
 			PowerControlOff();
 			WebServer.Shutdown();
 			m_Tail.Stop();
+			m_syslog.Stop();
 			foreach (Display disp in m_displayList)
 			{
 				disp.Disconnect();
@@ -311,8 +319,7 @@ public class MZPState
 			m_sysState = null;
 		}
 		catch (Exception)
-		{
-		}
+		{		}
 		finally
 		{
 			m_sysState = null;
@@ -1375,7 +1382,7 @@ public class MZPState
 		UserPresence.CheckWifi();
 		Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
 		Utilities.InternetGetConnectedState(ref istate, 0);
-		MLog.Log(this, "Internet Connection state is " + istate);
+		//MLog.Log(this, "Internet Connection state is " + istate);
 
 		if (UserPresence.UserIsNearList.Count == 0
 			&& !SystemAlarm.IsArmed

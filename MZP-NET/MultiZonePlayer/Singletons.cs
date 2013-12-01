@@ -373,26 +373,34 @@ namespace MultiZonePlayer {
 			}
 			Type = presenceType;
 		}
-		public static void AddPresence(User user, PresenceType type, DateTime presenceDate, String location) {
-			UserPresence up = m_presenceList.Find(x => x.User == user && x.Type == type);
-			if (up == null) {
-				user.NearbyPresentSince = presenceDate;
-				user.NearbyPresenceType = type;
-				user.Location = location;
-				MLog.Log(null, "NEW " + type + " DEVICE FOUND User: " + user.Name + " location="+location);
-				switch (type) {
-					case PresenceType.Bluetooth:
-						m_presenceList.Add(new UserPresence(user, PresenceType.Bluetooth));
-						break;
-					case PresenceType.Wifi:
-						m_presenceList.Add(new UserPresence(user, PresenceType.Wifi));
-						break;
-				}
-
-				Rules.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
+		public static Boolean AddPresence(User user, PresenceType type, DateTime presenceDate, String location) {
+			bool added = false;
+			if (presenceDate==null || DateTime.Now.Subtract(presenceDate).TotalMinutes > 10) {
+				MLog.Log(null, "Ignoring obsolete presence message user=" + user.Name 
+					+ " from " + location + " at "+presenceDate);
 			}
-			else
-				MLog.Log(null, "Error, unexpected user presence found adding usr=" + user);
+			else {
+				UserPresence up = m_presenceList.Find(x => x.User == user && x.Type == type);
+				if (up == null) {
+					user.NearbyPresentSince = presenceDate;
+					user.NearbyPresenceType = type;
+					user.Location = location;
+					MLog.Log(null, "NEW " + type + " DEVICE FOUND User: " + user.Name + " location=" + location);
+					switch (type) {
+						case PresenceType.Bluetooth:
+							m_presenceList.Add(new UserPresence(user, PresenceType.Bluetooth));
+							break;
+						case PresenceType.Wifi:
+							m_presenceList.Add(new UserPresence(user, PresenceType.Wifi));
+							break;
+					}
+					added = true;
+					Rules.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
+				}
+				else
+					MLog.Log(null, "Error, unexpected user presence found adding usr=" + user);
+			}
+			return added;
 		}
 		//returns true if presence was removed/user left
 		public static bool RemovePresence(User user, PresenceType type) {
@@ -411,7 +419,7 @@ namespace MultiZonePlayer {
 					lostCount = up.WifiLostContactCount;
 					break;
 			}
-			if (lostCount > 4) {
+			if (lostCount > 5) {
 				m_presenceList.Remove(up);
 				if (user.NearbyPresenceType == type) {
 					user.NearbyPresentSince = DateTime.MaxValue;
@@ -459,10 +467,10 @@ namespace MultiZonePlayer {
 				foreach (String dev in newList) {
 					user = User.GetUserByBT(dev);
 					if (user != null)
-						UserPresence.AddPresence(user, PresenceType.Bluetooth, presenceDate, location);
+						if (UserPresence.AddPresence(user, PresenceType.Bluetooth, presenceDate, location))
+							m_lastBTDeviceList.Add(dev);
 					else
 						MLog.Log(null, "Unknown user with Bluetooth device addr=" + dev);
-					m_lastBTDeviceList.Add(dev);
 				}
 				foreach (String dev in leftList) {
 					user = User.GetUserByBT(dev);
@@ -486,6 +494,7 @@ namespace MultiZonePlayer {
 			}
 			catch (Exception ex) {
 				MLog.Log(null, "CheckLocal Bluetooth error " + ex.Message);
+				UpdateBTDevices(new List<string>(), DateTime.Now, "Main Home");
 			}
 		}
 
@@ -497,11 +506,11 @@ namespace MultiZonePlayer {
 				foreach (String url in urllist) {
 					try {
 						String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_BT_STATUS_FILE[1]);
-						String[] btlist = webdata.Split('\r');
+						String[] btlist = webdata.Split(new char[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
 						var query1 = from line in btlist
 									 let data = line.Split(',')
 									 select new {
-										 BTAddress = data[0],
+										 BTAddress = data[0].Split(' ')[0],
 										 Date = data[1]
 									 };
 						List<String> currentList = query1.Select(x=>x.BTAddress).ToList();

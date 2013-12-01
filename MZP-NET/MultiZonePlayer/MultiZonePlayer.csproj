@@ -264,6 +264,7 @@
     <Compile Include="RemotePiPi.cs" />
     <Compile Include="ThirdParty\SpecialServices.cs" />
     <Compile Include="ThirdParty\StreamRatingTagger.cs" />
+    <Compile Include="ThirdParty\SysLog.cs" />
     <Compile Include="ThirdParty\Tail.cs" />
     <Compile Include="ThirdParty\TextParser.cs" />
     <Compile Include="ThirdParty\USBEnumerator.cs" />

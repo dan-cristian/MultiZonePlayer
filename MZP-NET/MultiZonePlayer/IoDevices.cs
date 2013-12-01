@@ -237,7 +237,7 @@ namespace MultiZonePlayer
 		private string GetStatus()
 		{
 			string status = WriteCommand(CMD_GETSTATUS, 1, 1000);
-			MLog.Log(this, "RFX status is " + status);
+			//MLog.Log(this, "RFX status is " + status);
 			return status;
 		}
 
@@ -852,8 +852,8 @@ namespace MultiZonePlayer
 				Reinitialise();
 			}
 			
-			ProcessFamily(0x28, true);
-			ProcessFamily(0x26, true);
+			ProcessFamily(0x28, false);
+			ProcessFamily(0x26, false);
 		}
 
 		public void TickFast() {

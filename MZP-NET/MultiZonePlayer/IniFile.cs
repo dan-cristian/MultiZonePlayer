@@ -26,6 +26,7 @@ namespace MultiZonePlayer
 			public const String CSV_TEMPERATURE_HUMIDITY = "\\temp-hum.csv";
 			public const String CSV_CLOSURES = "\\closures.csv";
 			public const String CSV_VOLTAGE = "\\voltage.csv";
+			public const String SYSLOG_FILE = "syslog.csv";
 			public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";
             public const String LOG_MODEM_FILE = "\\MultiZonePlayerModem.log";
@@ -386,7 +387,7 @@ namespace MultiZonePlayer
             public static String CurrentPath()
             {
                 //return Directory.GetCurrentDirectory();
-                return Directory.GetParent(Application.ExecutablePath).FullName;
+                return Directory.GetParent(Application.ExecutablePath).FullName+"\\";
             }
 
             public static Hashtable LoadAllIniEntriesByKey(String sectionName)
