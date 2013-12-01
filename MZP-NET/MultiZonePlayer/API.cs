@@ -399,18 +399,33 @@ namespace MultiZonePlayer
 							break;
 						case GlobalCommands.userlist:
 							field = vals.GetValue(GlobalParams.field);
-							string val1="";
+							string line,val1;
+							string[] fields = field.Split(',');
 							foreach (User user in User.UserList) {
-								switch (field) {
-									case "PhoneBTAddress":
-										val1 = user.PhoneBTAddress;
-										break;
-									case "WifiMACAddress":
-										val1 = user.WifiMACAddress;
-										break;
+								line = ""; val1 = "";
+								foreach (String fld in fields) {
+									switch (fld) {
+										case "PhoneBTAddress":
+											val1 = user.PhoneBTAddress;
+											break;
+										case "WifiMACAddress":
+											val1 = user.WifiMACAddress;
+											break;
+										case "Name":
+											val1 = user.Name;
+											break;
+										case "Email":
+											val1 = user.Email;
+											break;
+									}
+
+									if (val1 != null && val1.Trim() != "") {
+										if (line != "") line += "\t";
+										line += val1;
+									}
 								}
-								if (val1!= null && val1.Trim() != "")
-									cmdresult.OutputMessage += val1 + "\n";
+								if (line != "")
+									cmdresult.OutputMessage += line + "\n";
 							}
 							break;
                         default:
