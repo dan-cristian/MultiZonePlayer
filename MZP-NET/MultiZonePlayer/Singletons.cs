@@ -398,7 +398,7 @@ namespace MultiZonePlayer {
 					Rules.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
 				}
 				else
-					MLog.Log(null, "Error, unexpected user presence found adding usr=" + user);
+					MLog.Log(null, "Warning, Ignoring user presence when adding usr=" + user);
 			}
 			return added;
 		}
@@ -500,6 +500,9 @@ namespace MultiZonePlayer {
 
 		public static void CheckRemoteBluetooth() {
 			try {
+				//based on custom script loopforbt.sh:
+				//68:ED:43:08:10:40 Dan,2013-12-04 23:01:28
+				//
 				WebClient web = new WebClient();
 				DateTime presenceDate;
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
@@ -529,8 +532,35 @@ namespace MultiZonePlayer {
 				MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
 			}
 		}
-		public static void CheckWifi() {
+
+		private static void UpdateWifiDevices(List<String> currentList, DateTime presenceDate, String location) {
 			User user;
+			List<String> newList, leftList, existingList;
+			newList = currentList.Except(m_lastWifiAddressList).ToList();
+			leftList = m_lastWifiAddressList.Except(currentList).ToList();
+			existingList = m_lastWifiAddressList.Intersect(currentList).ToList();
+
+			foreach (String dev in newList) {
+				user = User.GetUserByWifi(dev);
+				if (user != null &&	UserPresence.AddPresence(user, PresenceType.Wifi, presenceDate, location))
+					m_lastWifiAddressList.Add(dev.ToUpper());
+				else
+					MLog.Log(null, "Unknown user with Wifi addr=" + dev);
+				
+			}
+			foreach (String dev in leftList) {
+				user = User.GetUserByWifi(dev);
+				if (user != null && UserPresence.RemovePresence(User.GetUserByWifi(dev), PresenceType.Wifi))
+					m_lastWifiAddressList.Remove(dev.ToUpper());
+			}
+			foreach (String dev in existingList) {
+				user = User.GetUserByWifi(dev);
+				if (user != null)
+					UserPresence.UpdatePresence(User.GetUserByWifi(dev), PresenceType.Wifi, presenceDate, location);
+			}
+		}
+
+		public static void CheckLocalWifi() {
 			try {
 				String url = IniFile.PARAM_ROUTER_HOST[1] + IniFile.PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL_CUSTOM[1];
 				//WebPostRequest post = new WebPostRequest(IniFile.PARAM_ROUTER_HOST[1] 
@@ -558,38 +588,70 @@ namespace MultiZonePlayer {
 				String regex = "([0-9A-F]{2}[:-]){5}([0-9A-F]{2})";
 
 				System.Text.RegularExpressions.MatchCollection match = System.Text.RegularExpressions.Regex.Matches(json, regex);
-				List<String> currentList, newList, leftList, existingList;
+				List<String> currentList;
 				currentList = new List<string>();
 				if (match.Count > 0) {
 					foreach (System.Text.RegularExpressions.Match mat in match) {
 						currentList.Add(mat.Groups[0].Value);
 					}
 				}
-				newList = currentList.Except(m_lastWifiAddressList).ToList();
-				leftList = m_lastWifiAddressList.Except(currentList).ToList();
-				existingList = m_lastWifiAddressList.Intersect(currentList).ToList();
+				UpdateWifiDevices(currentList, DateTime.Now, "Main Home");
+			}
+			catch (Exception ex) {
+				MLog.Log(null, "CheckLocalWifi Main error " + ex.Message);
+			}
+		}
 
-				foreach (String dev in newList) {
-					user = User.GetUserByWifi(dev);
-					if (user != null)
-						UserPresence.AddPresence(user, PresenceType.Wifi, DateTime.Now, "Main Home");
-					else
-						MLog.Log(null, "Unknown user with Wifi addr=" + dev);
-					m_lastWifiAddressList.Add(dev);
-				}
-				foreach (String dev in leftList) {
-					user = User.GetUserByWifi(dev);
-					if (user != null && UserPresence.RemovePresence(User.GetUserByWifi(dev), PresenceType.Wifi))
-						m_lastWifiAddressList.Remove(dev);
-				}
-				foreach (String dev in existingList) {
-					user = User.GetUserByBT(dev);
-					if (user != null)
-						UserPresence.UpdatePresence(User.GetUserByWifi(dev), PresenceType.Wifi, DateTime.Now, "Main Home");
+		public static void CheckRemoteWifi() {
+			try {
+				// based on linux iwevent output format
+				//Waiting for Wireless Events from interfaces...
+				//20:51:28.014276   wlan0    Expired node:00:13:02:40:68:56
+				//20:51:34.973318   wlan0    Registered node:00:13:02:40:68:56
+				//
+				List<String> addedIncrement, removedIncrement;
+				WebClient web = new WebClient();
+				//DateTime presenceDate;
+				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
+				foreach (String url in urllist) {
+					try {
+						String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_WIFI_STATUS_FILE[1]);
+						String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+						var query1 = from line in btlist
+									 let data = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+									 select new {
+										 Time = data[0],
+										 Interface = data[1],
+										 Action = data[2],
+										 Address = data[3].SplitTwo("node:")[data[3].SplitTwo("node:").Length-1]
+									 };
+						
+						addedIncrement = query1.ToList().FindAll(x => x.Action == "Registered")
+								.OrderByDescending(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
+						removedIncrement = query1.ToList().FindAll(x => x.Action == "Expired")
+								.OrderBy(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
+
+						List<String> currentList;
+						if (addedIncrement != null)
+							currentList = addedIncrement.Except(removedIncrement).ToList();
+						else
+							currentList = new List<String>();
+						UpdateWifiDevices(currentList, DateTime.Now, url);
+						/*List<String> currentList = query1.Select(x => x.BTAddress).ToList();
+						if (query1.ToList().Count > 0)
+							presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
+						else
+							presenceDate = DateTime.Now;
+						UpdateBTDevices(currentList, presenceDate, url);
+						 */
+					}
+					catch (Exception e) {
+						MLog.Log(null, "Download remote BT file for url=" + url + " error=" + e.Message);
+					}
 				}
 			}
 			catch (Exception ex) {
-				MLog.Log(null, "CheckWifi error " + ex.Message);
+				MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
 			}
 		}
 	}

@@ -197,9 +197,10 @@ public class MZPState
 		cron.Name = "Cron Service";
 		cron.Start();
 
-		Thread bt = new Thread(() => Bluetooth.StartDiscovery());
+		/*Thread bt = new Thread(() => Bluetooth.StartDiscovery());
 		bt.Name = "Bluetooth discovery service";
 		bt.Start();
+		*/
 
 		m_syslog = new SysLog();
 		Thread sl = new Thread(() => m_syslog.Start());
@@ -1379,7 +1380,11 @@ public class MZPState
 	}
 
 	public void CheckPresence() {
-		UserPresence.CheckWifi();
+		UserPresence.CheckLocalWifi();
+		UserPresence.CheckRemoteWifi();
+		UserPresence.CheckLocalBluetooth();
+		UserPresence.CheckRemoteBluetooth();
+
 		Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
 		Utilities.InternetGetConnectedState(ref istate, 0);
 		//MLog.Log(this, "Internet Connection state is " + istate);

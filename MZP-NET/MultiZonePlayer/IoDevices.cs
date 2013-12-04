@@ -1695,20 +1695,6 @@ namespace MultiZonePlayer
 				return false;
 			}*/
 		}
-
-		public static void StartDiscovery() {
-			MLog.Log(null, "BT Discovery started");
-			while (MZPState.Instance != null) {
-				UserPresence.CheckLocalBluetooth();
-				UserPresence.CheckRemoteBluetooth();
-				for (int i = 0; i < 60; i++) {
-					Thread.Sleep(1000);
-					if (MZPState.Instance == null)
-						return;
-				}
-			}
-			MLog.Log(null, "BT Discovery ended");
-		}
 	}
 
 }

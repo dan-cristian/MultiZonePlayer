@@ -216,6 +216,7 @@ namespace MultiZonePlayer
 
 			public static String[] PARAM_REMOTE_SERVER_LIST = new String[] { "PARAM_REMOTE_SERVER_LIST", "http://192.168.0.110/,http://192.168.0.111/", "URL list of remote servers (PIs) comma separated" };
 			public static String[] PARAM_REMOTE_SERVER_BT_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_BT_STATUS_FILE", "btstat.txt", "file name with BT status" };
+			public static String[] PARAM_REMOTE_SERVER_WIFI_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_WIFI_STATUS_FILE", "wifi.txt", "file name with wifi status" };
 
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
@@ -308,7 +309,8 @@ namespace MultiZonePlayer
 				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL_CUSTOM,
 				PARAM_ROUTER_LOGOUT_URL,
 				PARAM_REMOTE_SERVER_LIST,
-				PARAM_REMOTE_SERVER_BT_STATUS_FILE
+				PARAM_REMOTE_SERVER_BT_STATUS_FILE,
+				PARAM_REMOTE_SERVER_WIFI_STATUS_FILE
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;
