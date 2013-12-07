@@ -227,19 +227,22 @@ namespace MultiZonePlayer
         delegate void DelegateCloseFormSafe();
         public void CloseFormSafe()
         {
+			MLog.Log(this, "Trying to close form");
             if (this.InvokeRequired)
             {
+				MLog.Log(this, "Trying to close form - invoking delegate");
                 DelegateCloseFormSafe dlg = new DelegateCloseFormSafe(CloseFormSafe);
                 this.BeginInvoke(dlg);
                 return;
             }
-
+			MLog.Log(this, "Trying to close form - closing now");
             Close();
         }
 
         private void ZonesForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            m_zone.CloseZone();
+			MLog.Log(this, "Closing form");
+			m_zone.CloseZone();
             controlCenter.CloseZone(m_zoneDetails.ZoneId);
         }
 

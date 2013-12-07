@@ -1656,8 +1656,8 @@ namespace MultiZonePlayer
 					//MLog.Log(null, "Active BT device detected " + device.ToString());
 					devices.Add(device);
 				}
-				MLog.Log(null, "Discovery result="+canConnect+" on " + device.DeviceName + " " + device.Address+ " took " 
-					+ Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(startDisc)));
+				//MLog.Log(null, "Discovery result="+canConnect+" on " + device.DeviceName + " " + device.Address+ " took " 
+				//	+ Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(startDisc)));
 			}
 			return devices;
 		}

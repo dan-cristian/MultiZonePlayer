@@ -430,8 +430,8 @@ namespace MultiZonePlayer {
 				MLog.Log(null, "DEVICE " + type + " LEFT user: " + user.Name);
 				Rules.ExecuteRule(up, "User left on " + type + " user=" + user.Name);
 			}
-			else
-				MLog.Log(null, "DEVICE " + type + " lost contact count= " + lostCount + " user=" + user.Name);
+			//else
+			//	MLog.Log(null, "DEVICE " + type + " lost contact count= " + lostCount + " user=" + user.Name);
 
 			return left;
 		}
@@ -469,8 +469,8 @@ namespace MultiZonePlayer {
 					if (user != null)
 						if (UserPresence.AddPresence(user, PresenceType.Bluetooth, presenceDate, location))
 							m_lastBTDeviceList.Add(dev);
-					else
-						MLog.Log(null, "Unknown user with Bluetooth device addr=" + dev);
+					//else
+					//	MLog.Log(null, "Unknown user with Bluetooth device addr=" + dev);
 				}
 				foreach (String dev in leftList) {
 					user = User.GetUserByBT(dev);

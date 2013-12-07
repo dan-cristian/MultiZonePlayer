@@ -261,7 +261,8 @@ namespace MultiZonePlayer
                 SaveStateIni();
                 //dcPlay.StopClip();
                 m_dcPlay.CloseClip();
-				m_zoneDetails.ZoneStop();
+				m_zoneDetails.ZoneClose();
+				//m_zoneDetails.ZoneStop();
                 m_isGuideMode = false;
             }
 

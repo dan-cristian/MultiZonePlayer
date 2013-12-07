@@ -153,7 +153,7 @@ namespace MultiZonePlayer
 
 							List<ZoneDetails> zonesWithPower = ZoneDetails.ZoneDetailsList.FindAll(x =>
 								x.RequirePower && x.PowerIndex == details.PowerIndex);
-							if (zonesWithPower.Count==0 && details.LastLocalCommandAgeInSeconds>120)
+							if (zonesWithPower.Count==0 && details.LastLocalCommandAgeInSeconds>60)
 							{
 								if (MZPState.Instance.PowerControlIsOn(details.ZoneId))
 								{
