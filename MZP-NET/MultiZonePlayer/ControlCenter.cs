@@ -121,25 +121,27 @@ namespace MultiZonePlayer
         {
             Thread.Sleep(Convert.ToInt16(IniFile.PARAM_BOOT_TIME_SECONDS[1]) * 1000);
             Array activeZoneClone;
-			do
-            {
-                try
-                {
-					Application.DoEvents();
+			String debug="";
+			do {
+                try  {
+					//Application.DoEvents();
                     Thread.Sleep(IniFile.ZONE_TICK_FAST_SLEEP);
                     // FAST TICK
                     RefreshState();
-					if (MZPState.Instance != null)
-					{
+					if (MZPState.Instance != null)	{
+						debug = "";
 						activeZoneClone = MZPState.Instance.ActiveZones.ToArray();
-						foreach (ZoneGeneric zone in activeZoneClone)
-						{
+						foreach (ZoneGeneric zone in activeZoneClone)	{
+							debug += zone.ZoneDetails.ZoneName + "-";
 							if (MZPState.Instance == null) break;
-							if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
+							if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30) {
 								zone.TickSlow();
-							else
-								zone.TickFast();
+								debug += "slow;";
+							}
+							zone.TickFast();
+							debug += "fast;";
 						}
+						//MLog.Log(this, "TICK: " + debug);
 						MZPState.Instance.TickFast();
 					}
                     // SLOW TICK
@@ -147,18 +149,16 @@ namespace MultiZonePlayer
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
 						MZPState.Instance.TickSlow();
-						foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList)
-						{
+						foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList){
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
-
 							List<ZoneDetails> zonesWithPower = ZoneDetails.ZoneDetailsList.FindAll(x =>
-								x.RequirePower && x.PowerIndex == details.PowerIndex);
-							if (zonesWithPower.Count==0 && details.LastLocalCommandAgeInSeconds>60)
+								(x.IsActive ||x.RequirePower) && x.PowerIndex == details.PowerIndex);
+							if (zonesWithPower.Count==0 && !details.IsActive)
 							{
 								if (MZPState.Instance.PowerControlIsOn(details.ZoneId))
 								{
-									MLog.Log(this, "No m_valueList require power on index " + details.PowerIndex
-										+ ", powering off zone=" + details.ZoneName);
+									MLog.Log(this, "No power required on index " + details.PowerIndex
+										+ ", powering off inactive zone=" + details.ZoneName);
 									MZPState.Instance.PowerControlOff(details.ZoneId);
 								}
 							}

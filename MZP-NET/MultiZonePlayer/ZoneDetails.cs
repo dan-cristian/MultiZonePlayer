@@ -14,7 +14,7 @@ namespace MultiZonePlayer {
 		public int ZoneId = 0;
 		[Description("Edit")]
 		public String Description;
-		public Boolean IsActive = false;
+		//public Boolean IsActive = false;
 		//public int MinutesUntilSleep = -1;
 		[Description("Edit")]
 		public String SleepHourMin = "";//format HH:MM
@@ -165,6 +165,15 @@ namespace MultiZonePlayer {
 				}
 			}
 		}
+
+		public Boolean IsActive {
+			get { 
+				return ZoneState==MultiZonePlayer.ZoneState.Running 
+					|| LastLocalCommandAgeInSeconds<120; 
+			}
+		}
+
+
 		public ZoneState ZoneState {
 			get { return m_zoneState; }
 			set {
@@ -583,8 +592,8 @@ namespace MultiZonePlayer {
 			String json = JSON.Instance.ToJSON(this, param);
 			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
 			
-			//update dependencies if fields have changed
-			MZPState.Instance.WDIO.SetPinTypes(this);
+			//update dependencies if fields have changed - not a good ideea as triggers activity change
+			//MZPState.Instance.WDIO.SetPinTypes(this);
 		}
 
 		private void LoadPicturesFromDisk() {
@@ -727,7 +736,7 @@ namespace MultiZonePlayer {
 
 		public void ZoneClose() {
 			ZoneStop();
-			IsActive = false;
+			//IsActive = false;
 			ActivityType = GlobalCommands.nul;
 			ZoneState = ZoneState.NotInitialised;
 

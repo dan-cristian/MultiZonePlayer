@@ -94,6 +94,15 @@ namespace MultiZonePlayer
 		}
 	}
 
+	public class MyWebClient : WebClient {
+		public int Timeout = 500;
+		protected override WebRequest GetWebRequest(Uri uri) {
+			WebRequest w = base.GetWebRequest(uri);
+			w.Timeout = Timeout;
+			return w;
+		}
+	}
+
     public class Utilities
     {
         [DllImport("user32.dll")]
@@ -408,6 +417,9 @@ namespace MultiZonePlayer
 					case EventSource.System:
 						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_GENERAL_FILE);
 						break;
+					case EventSource.SystemDropped:
+						str = File.AppendText(IniFile.CurrentPath() + "dropped." + IniFile.LOG_GENERAL_FILE);
+						break;
 					case EventSource.Modem:
 						str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_MODEM_FILE);
 						break;
@@ -449,6 +461,7 @@ namespace MultiZonePlayer
 				}
 			}
 		}
+
 
 		public static bool DownloadRemoteImageFile(string uri, string fileName) {
 			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
@@ -1052,16 +1065,17 @@ namespace MultiZonePlayer
             try
             {
 				if (m_keywords!=null && m_keywords.Contains("all")
-					|| m_keywords.Contains(e.ToString().ToLower())//sender
+					|| (e!=null && m_keywords.Contains(e.ToString().ToLower()))//sender
 					|| m_keywords.Contains(Thread.CurrentThread.Name.ToLower())//thread
-					|| e.GetType().ToString().ToLower().Contains("exception") || text.ToLower().Contains("error"))//any error
+					|| (e!=null && e.GetType().ToString().ToLower().Contains("exception")) 
+					|| text.ToLower().Contains("error"))//any error
 				{
 					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);
 				}
 				else
 					Utilities.AppendToGenericLogFile("DROPPED: "+System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
-						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);
+						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.SystemDropped);
             }
             catch (Exception ex){
 				Utilities.AppendToGenericLogFile(ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System);

@@ -193,7 +193,7 @@ namespace MultiZonePlayer
 						MLog.Log(this, "Playing file" + CurrentItem.SourceURL + " playcount=" + CurrentItem.PlayCount + " vol="+m_dcPlay.GetVolumeLevel());
                         //init amp power if needed
 						m_zoneDetails.RequirePower = true;
-						m_zoneDetails.IsActive = true;
+						//m_zoneDetails.IsActive = true;
                         MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 						int loop = 0;
 						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50)
@@ -205,7 +205,7 @@ namespace MultiZonePlayer
 						if (loop >= 50)
 						{
 							MLog.Log(this, "Error, NO device available for zone " + m_zoneDetails.ZoneName);
-							m_zoneDetails.IsActive = false;
+							//m_zoneDetails.IsActive = false;
 						}
 						else
 						{
@@ -261,8 +261,8 @@ namespace MultiZonePlayer
                 SaveStateIni();
                 //dcPlay.StopClip();
                 m_dcPlay.CloseClip();
-				m_zoneDetails.ZoneClose();
-				//m_zoneDetails.ZoneStop();
+				//m_zoneDetails.ZoneClose();
+				m_zoneDetails.ZoneStop();
                 m_isGuideMode = false;
             }
 

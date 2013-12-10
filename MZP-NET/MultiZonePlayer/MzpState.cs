@@ -197,10 +197,14 @@ public class MZPState
 		cron.Name = "Cron Service";
 		cron.Start();
 
-		/*Thread bt = new Thread(() => Bluetooth.StartDiscovery());
+		m_oneWire = new OneWire();
+		Thread onew = new Thread(() => m_oneWire.LoopRead());
+		onew.Name = "Onewire Service";
+		onew.Start();
+
+		Thread bt = new Thread(() => Bluetooth.StartDiscovery());
 		bt.Name = "Bluetooth discovery service";
 		bt.Start();
-		*/
 
 		m_syslog = new SysLog();
 		Thread sl = new Thread(() => m_syslog.Start());
@@ -222,7 +226,6 @@ public class MZPState
 	{
 		m_messengerList = new List<IMessenger>();
 		m_wdio = new WDIO();//new GPIO();
-		m_oneWire = new OneWire();
 		m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERPASS[1]));
 		if (SMSEnabled)
 			m_messengerList.Add(new SMS());
@@ -1380,10 +1383,19 @@ public class MZPState
 	}
 
 	public void CheckPresence() {
+		DateTime startDisc = DateTime.Now;
+
 		UserPresence.CheckLocalWifi();
+		Performance.Create("Check Local Wifi", false, "",
+				Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
+		startDisc = DateTime.Now;
 		UserPresence.CheckRemoteWifi();
-		UserPresence.CheckLocalBluetooth();
+		Performance.Create("Check Remote Wifi", false, "",
+				Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
+		startDisc = DateTime.Now;
 		UserPresence.CheckRemoteBluetooth();
+		Performance.Create("Check Remote BT", false, "",
+				Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
 
 		Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
 		Utilities.InternetGetConnectedState(ref istate, 0);
@@ -1396,7 +1408,6 @@ public class MZPState
 				Alert.CreateAlert("Safe Area not armed when all family members are out", null, false, 
 					Alert.NotificationFlags.NeedsImmediateUserAck, 120);
 		}
-
 	}
 	private void CleanTempFiles() {
 		Utilities.DeleteFilesOlderThan(IniFile.CurrentPath() + IniFile.WEB_PICTURES_SUBFOLDER, "*.*", 3);
@@ -1406,7 +1417,6 @@ public class MZPState
 	public void TickFast()
 	{
 		CheckAlerts();
-		m_oneWire.TickFast();
 	}
 
     public void TickSlow()
@@ -1441,10 +1451,6 @@ public class MZPState
 		if (MZPState.Instance == null) return;
 		m_powerControlDenkovi.timerPowerSaving_Tick();
 		m_powerControlNumato.timerPowerSaving_Tick();
-		if (MZPState.Instance == null) return;
-		m_oneWire.TickSlow();
-		
-		
 		if (MZPState.Instance == null) return;
 		if (MediaLibrary.AllAudioFiles != null)
 			MediaLibrary.AllAudioFiles.SaveUpdatedItems();

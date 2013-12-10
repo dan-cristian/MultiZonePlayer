@@ -97,7 +97,7 @@ namespace MultiZonePlayer
 
                 m_mainZoneActivity = new ZoneMusic(this);
                 m_zoneDetails.ActivityType = GlobalCommands.music;
-                m_zoneDetails.IsActive = true;
+                //m_zoneDetails.IsActive = true;
                 
                 AddClonedZone(m_mainZoneActivity.ZoneDetails);
                 
@@ -119,7 +119,7 @@ namespace MultiZonePlayer
             else
 				m_mainZoneActivity = new ZoneMusicClone(this, MZPState.Instance.GetFirstZoneMusic());
             m_zoneDetails.ActivityType = GlobalCommands.musicclone;
-            m_zoneDetails.IsActive = true;
+            //m_zoneDetails.IsActive = true;
         }
 
         private void InitZoneRadio()
@@ -130,7 +130,7 @@ namespace MultiZonePlayer
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs["0"];
             m_mainZoneActivity = new ZoneRadio(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted());
             m_zoneDetails.ActivityType = GlobalCommands.radio;
-            m_zoneDetails.IsActive = true;
+            //m_zoneDetails.IsActive = true;
             m_mainZoneActivity.Play();
         }
 
@@ -140,7 +140,7 @@ namespace MultiZonePlayer
             //ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
             m_mainZoneActivity = new ZoneStreamVLC(m_zoneDetails);
             m_zoneDetails.ActivityType = GlobalCommands.streammp3;
-            m_zoneDetails.IsActive = true;
+            //m_zoneDetails.IsActive = true;
             //m_mainZoneActivity.Play();
         }
 
@@ -151,7 +151,7 @@ namespace MultiZonePlayer
             String inDevice = (String)MZPState.Instance.zoneDefaultInputs[m_zoneDetails.ZoneId];
             m_mainZoneActivity = new ZoneMic(this, inDevice, m_zoneDetails.OutputDeviceAutoCompleted());
             m_zoneDetails.ActivityType = GlobalCommands.microphone;
-            m_zoneDetails.IsActive = true;
+            //m_zoneDetails.IsActive = true;
         }
 
         private void InitZoneVideoApp()
@@ -161,7 +161,7 @@ namespace MultiZonePlayer
             //m_mainZoneActivity = new ZoneVideoVlc(this);
             m_mainZoneActivity = new ZoneVideoMPC(this);
             m_zoneDetails.ActivityType = GlobalCommands.video;
-            m_zoneDetails.IsActive = true;
+           // m_zoneDetails.IsActive = true;
         }
 
         private void InitZoneDisplayTV()
@@ -172,7 +172,7 @@ namespace MultiZonePlayer
             m_mainZoneActivity = new ZoneDisplayLG(this.ZoneDetails);
 			m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
             m_zoneDetails.ActivityType = GlobalCommands.tv;
-            m_zoneDetails.IsActive = true;
+            //m_zoneDetails.IsActive = true;
         }
 
         private void InitZonePlayerXBMC()
@@ -184,7 +184,7 @@ namespace MultiZonePlayer
 			{
 				m_mainZoneActivity = new ZonePlayerXBMC(this.ZoneDetails);
 				m_zoneDetails.ActivityType = GlobalCommands.xbmc;
-				m_zoneDetails.IsActive = true;
+				//m_zoneDetails.IsActive = true;
 			}
 			else
 				MLog.Log(this, "no display connection details, zone not initialised " + m_zoneDetails.ZoneName);
@@ -924,9 +924,9 @@ namespace MultiZonePlayer
 						m_zoneForm.CloseFormSafe();
                 }
 
-                //close if no recent activity detected on an active zone
+                //close if no recent activity detected on an active zone, except tv & video
                 if (m_zoneDetails.HasPastActivity && m_zoneDetails.IsActive 
-					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.nul)
+					//&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.nul)
 					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.xbmc)
 					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.tv))
                 {

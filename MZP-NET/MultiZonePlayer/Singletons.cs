@@ -104,10 +104,11 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public static Singleton Create(String message, Boolean showInLog, params Object[] flagVars) {
+		public static Singleton Create(String message, Boolean showInLog, String Id, params Object[] flagVars) {
 			var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
 			var callingFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
-			String uniqueId = callingMethod.Name + "-" + callingFrame.GetNativeOffset() + "-" + callingFrame.GetILOffset();
+			String uniqueId = callingMethod.Name + "-" + callingFrame.GetNativeOffset() 
+				+ "-" + callingFrame.GetILOffset() + Id;
 			Performance element = (Performance)m_valueList.Find(x => x.UniqueIdentifier == uniqueId);
 			if (element == null) {
 				element = new Performance(uniqueId, message, flagVars);
@@ -487,6 +488,7 @@ namespace MultiZonePlayer {
 				MLog.Log(null, "Update Bluetooth error " + ex.Message);
 			}
 		}
+
 		public static void CheckLocalBluetooth() {
 			try {
 				List<String> currentList = Bluetooth.DiscoverDevices().Select(x => x.Address.ToString()).ToList();
@@ -503,7 +505,7 @@ namespace MultiZonePlayer {
 				//based on custom script loopforbt.sh:
 				//68:ED:43:08:10:40 Dan,2013-12-04 23:01:28
 				//
-				WebClient web = new WebClient();
+				MyWebClient web = new MyWebClient();
 				DateTime presenceDate;
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
 				foreach (String url in urllist) {
@@ -610,7 +612,7 @@ namespace MultiZonePlayer {
 				//20:51:34.973318   wlan0    Registered node:00:13:02:40:68:56
 				//
 				List<String> addedIncrement, removedIncrement;
-				WebClient web = new WebClient();
+				MyWebClient web = new MyWebClient();
 				//DateTime presenceDate;
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
 				foreach (String url in urllist) {

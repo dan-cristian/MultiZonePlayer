@@ -1496,6 +1496,7 @@ namespace MultiZonePlayer
         GUI,
         Cam,
         System,
+		SystemDropped,
         Environment,
         Modem,
         Web,

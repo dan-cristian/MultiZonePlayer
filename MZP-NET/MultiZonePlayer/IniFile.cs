@@ -27,7 +27,7 @@ namespace MultiZonePlayer
 			public const String CSV_CLOSURES = "\\closures.csv";
 			public const String CSV_VOLTAGE = "\\voltage.csv";
 			public const String SYSLOG_FILE = "syslog.csv";
-			public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
+			public const String LOG_GENERAL_FILE = "MultiZonePlayer.log";
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";
             public const String LOG_MODEM_FILE = "\\MultiZonePlayerModem.log";
             public const String LOG_WEB_FILE = "\\MultiZonePlayerWeb.log";
@@ -100,6 +100,7 @@ namespace MultiZonePlayer
 
             public  const int VOLUME_STEP = 250;
             public  const int ZONE_TICK_FAST_SLEEP = 500;
+			public const int ZONE_TICK_SLOW_SLEEP = 30000;
             public  const int ZONE_INACTIVITY_MAX_CYCLES = 120;
             public  const int POWERSAVING_CYCLE_DURATION = 10000;
             public  const int POWERSAVING_MAX_CYCLES = 60;
@@ -190,7 +191,7 @@ namespace MultiZonePlayer
 
             public static String[] PARAM_XBMC_PROCESS_NAME = new String[] { "PARAM_XBMC_PROCESS_NAME", "XBMC" };
             public static String[] PARAM_XBMC_APP_PATH = new String[] { "PARAM_XBMC_APP_PATH", "c:\\Program Files (x86)\\XBMC\\XBMC.exe" };
-            public static String[] PARAM_BOOT_TIME_SECONDS = new String[] { "PARAM_BOOT_TIME_SECONDS", "60" };
+            public static String[] PARAM_BOOT_TIME_SECONDS = new String[] { "PARAM_BOOT_TIME_SECONDS", "30" };
 
 			public static String[] PARAM_LASTFM_API_KEY = new String[] { "PARAM_LASTFM_API_KEY", "9d320007e2d23c9571f466030c7f2ddc" };
 			public static String[] PARAM_LASTFM_SECRET_KEY = new String[] { "PARAM_LASTFM_SECRET_KEY", "812f830d23965715878d5cd1390ada1a" };
@@ -214,7 +215,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ROUTER_USER_NAME = new String[] { "PARAM_ROUTER_USER_NAME", "root", "User name for router" };
 			public static String[] PARAM_ROUTER_USER_PASS = new String[] { "PARAM_ROUTER_USER_PASS", "abcd1234", "router pass" };
 
-			public static String[] PARAM_REMOTE_SERVER_LIST = new String[] { "PARAM_REMOTE_SERVER_LIST", "http://192.168.0.110/,http://192.168.0.111/", "URL list of remote servers (PIs) comma separated" };
+			public static String[] PARAM_REMOTE_SERVER_LIST = new String[] { "PARAM_REMOTE_SERVER_LIST", "http://192.168.0.110/", "URL list of remote servers (PIs) comma separated" };
 			public static String[] PARAM_REMOTE_SERVER_BT_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_BT_STATUS_FILE", "btstat.txt", "file name with BT status" };
 			public static String[] PARAM_REMOTE_SERVER_WIFI_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_WIFI_STATUS_FILE", "wifi.txt", "file name with wifi status" };
 

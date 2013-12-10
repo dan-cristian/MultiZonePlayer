@@ -551,8 +551,8 @@ namespace MultiZonePlayer
                 {
 					if (Thread.CurrentThread != null && 
 						(Thread.CurrentThread.Name == null ||
-						!Thread.CurrentThread.Name.StartsWith("Serial Data")))
-						Thread.CurrentThread.Name = "Serial Received " + comPort.PortName;
+						!Thread.CurrentThread.Name.StartsWith("Serial Received")))
+							Thread.CurrentThread.Name = "Serial Received " + comPort.PortName;
 					Thread th;
 					
 					//determine the mode the user selected (binary/string)

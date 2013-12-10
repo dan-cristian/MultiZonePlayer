@@ -835,6 +835,7 @@ namespace MultiZonePlayer
 					}
 					Performance.Create("OneWire lookup family="+family+" for elements count=" + elementCount + " took "
 						+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, verboseLog,
+						family.ToString(),
 						Performance.PerformanceFlags.IsError, errCount,
 						Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
 					adapter.endExclusive();
@@ -845,19 +846,23 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public void TickSlow(){
-
-			if (DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
-				Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
-				Reinitialise();
+		public void LoopRead(){
+			int i = 0;
+			while (MZPState.Instance != null) {
+				if (i > IniFile.ZONE_TICK_SLOW_SLEEP/IniFile.ZONE_TICK_FAST_SLEEP) {//slow tick
+					i = 0;
+					if (DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
+						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
+						Reinitialise();
+					}
+					ProcessFamily(0x28, false);
+					ProcessFamily(0x26, false);
+				}
+				ProcessFamily(0x12, false);
+				i++;
+				Thread.Sleep(IniFile.ZONE_TICK_FAST_SLEEP);
 			}
-			
-			ProcessFamily(0x28, false);
-			ProcessFamily(0x26, false);
-		}
-
-		public void TickFast() {
-			ProcessFamily(0x12, false);
+			MLog.Log(this, "OneWire LoopRead exit");
 		}
 
 		private Boolean ProcessElement(ZoneDetails zone, OneWireContainer element) {
@@ -1001,7 +1006,7 @@ namespace MultiZonePlayer
 				}
 				catch (Exception ex) {
 					String err = "Err reading OneWire zone=" + zone.ZoneName + " err=" + ex.Message;
-					Performance.Create(err, true, Performance.PerformanceFlags.IsError, 1);
+					Performance.Create(err, true, "",Performance.PerformanceFlags.IsError, 1);
 					MLog.Log(this, err);
 					result = false;
 				}
@@ -1009,7 +1014,7 @@ namespace MultiZonePlayer
 			else {
 				if (element.getName() != ONEWIRE_CONTROLLER_NAME) {
 					String err = "UNNALOCATED OneWire device addr=" + element.getAddressAsString() + " name=" + element.getName() + " desc=" + element.getDescription();
-					Performance.Create(err, true);
+					Performance.Create(err, true, "");
 					MLog.Log(this, err);
 				}
 			}
@@ -1635,6 +1640,15 @@ namespace MultiZonePlayer
 			}
 		}
 
+		//separate thread as discovery takes long time
+		public static void StartDiscovery() {
+			while (MZPState.Instance != null) {
+				UserPresence.CheckLocalBluetooth();
+				Thread.Sleep(IniFile.ZONE_TICK_SLOW_SLEEP);
+			}
+			MLog.Log(null, "BT StartDiscovery exit");
+		}
+
 		public static List<Device> DiscoverDevices()
 		{
 			BluetoothClient bc = new BluetoothClient();
@@ -1642,6 +1656,7 @@ namespace MultiZonePlayer
 			DateTime startDisc; Boolean canConnect;
 			BluetoothDeviceInfo[] array = bc.DiscoverDevices(15, true, true, true);//bc.DiscoverDevices();
 			int count = array.Length;
+			startDisc = DateTime.Now;
 			for (int i = 0; i < count; i++)
 			{
 				Device device = new Device(array[i]);
@@ -1649,7 +1664,7 @@ namespace MultiZonePlayer
 					MLog.Log(null, "BT discovery interrupted");
 					return devices;
 				}
-				startDisc = DateTime.Now;
+				
 				canConnect = CanConnect(device);
 				if (canConnect)
 				{
@@ -1659,6 +1674,8 @@ namespace MultiZonePlayer
 				//MLog.Log(null, "Discovery result="+canConnect+" on " + device.DeviceName + " " + device.Address+ " took " 
 				//	+ Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(startDisc)));
 			}
+			Performance.Create("Bluetooth local discovery", false, "",
+				Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
 			return devices;
 		}
 

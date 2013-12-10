@@ -84,7 +84,7 @@ namespace MultiZonePlayer
 		public virtual void Play()
 		{
 			m_zoneDetails.ZoneState = ZoneState.Running;
-			m_zoneDetails.IsActive = true;
+			//m_zoneDetails.IsActive = true;
 
 		}
 		public virtual void Pause()
