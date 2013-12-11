@@ -918,17 +918,18 @@ namespace MultiZonePlayer
 				}
                 CheckForSleep();
 
-                if (m_inactiveCyclesCount > IniFile.ZONE_INACTIVITY_MAX_CYCLES)
+                /*if (m_inactiveCyclesCount > IniFile.ZONE_INACTIVITY_MAX_CYCLES)
                 {
                     if (m_zoneForm != null) 
 						m_zoneForm.CloseFormSafe();
-                }
+                }*/
 
                 //close if no recent activity detected on an active zone, except tv & video
                 if (m_zoneDetails.HasPastActivity && m_zoneDetails.IsActive 
 					//&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.nul)
 					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.xbmc)
-					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.tv))
+					&& !m_zoneDetails.ActivityType.Equals(GlobalCommands.tv)
+					&& !m_zoneDetails.Type.Equals(ZoneType.Heat))
                 {
                     MLog.Log(this, "Zone " + m_zoneDetails.ZoneName +
 						" closed due to inactivity, activity=" + m_zoneDetails.ActivityType.ToString() + " lastcmd=" + m_zoneDetails.LastLocalCommandDateTime);
