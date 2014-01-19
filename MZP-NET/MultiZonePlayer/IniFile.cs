@@ -72,7 +72,7 @@ namespace MultiZonePlayer
 			
             public const String DEFAULT_EXT_PLAYLIST = ".m3u";
             public const String POPM_CREATOR_NAME = "MZP";
-            public static String[] MUSIC_EXTENSION = new String[] { "mp3", "wav", "flac" };
+            public static String[] MUSIC_EXTENSION = new String[] { "mp3", "wav", "flac", "wma" };
 			public static String[] PICTURE_EXTENSION = new String[] { "jpg", "bmp", "png" };
 #if DEBUG
             public static String[] VIDEO_EXTENSION = new String[] {"mp4" };

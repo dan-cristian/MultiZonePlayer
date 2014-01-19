@@ -17,8 +17,8 @@ namespace MzpMonitor {
 		private ContextMenu trayMenu;
 		public bool IsShuttingDown = false;
 		public string MZPProcName = "MultiZonePlayer";
-		public const String LOG_GENERAL_FILE = "\\MultiZonePlayer.log";
-		private WebClient m_webclient = new WebClient();
+		public const String LOG_GENERAL_FILE = "\\MultiZonePlayerMonitor.log";
+		private MyWebClient m_webclient = new MyWebClient();
 
 		public SysTrayApp() {
 			// Create a simple tray menu with only one item.
@@ -79,7 +79,7 @@ namespace MzpMonitor {
 						RestartMZP();
 					}
 				}
-				Thread.Sleep(60000);
+				Thread.Sleep(120000);
 			}
 			while (!IsShuttingDown);
 			AppendToGenericLogFile("MZP Monitor closed");
@@ -88,7 +88,7 @@ namespace MzpMonitor {
 			String data;
 			try {
 				data = m_webclient.DownloadString("http://localhost/cmd?command=status");
-				if (data != null && data.Contains("Out="))
+				if (data != null && data.Contains("Status at"))
 					return true;
 				else
 					return false;
@@ -97,6 +97,10 @@ namespace MzpMonitor {
 		}
 
 		private void RestartMZP() {
+			AppendToGenericLogFile("Killing MZP proc");
+			Process[] procList = Process.GetProcessesByName(MZPProcName);
+			if (procList!=null && procList.Length>0)
+				procList[0].Kill();
 			System.Diagnostics.Process proc = RunProcessWait(CurrentPath() + "\\" + MZPProcName + ".exe",
 						System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.Normal);
 			AppendToGenericLogFile("MZP proc restarted");
@@ -155,6 +159,7 @@ namespace MzpMonitor {
 			try {
 				StreamWriter str;
 				str = File.AppendText(CurrentPath() + LOG_GENERAL_FILE);
+				text = System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff ") + text + "\n";
 				str.Write(text);
 				str.Close();
 			}
@@ -171,5 +176,14 @@ namespace MzpMonitor {
                 return Directory.GetParent(Application.ExecutablePath).FullName;
             }
 		
+	}
+
+	public class MyWebClient : WebClient {
+		public int Timeout = 10000;
+		protected override WebRequest GetWebRequest(Uri uri) {
+			WebRequest w = base.GetWebRequest(uri);
+			w.Timeout = Timeout;
+			return w;
+		}
 	}
 }

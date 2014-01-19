@@ -240,6 +240,15 @@ namespace MultiZonePlayer
 			return false;
 		}
 
+		public static List<GlobalCommands> UserCommands = new List<GlobalCommands>(){
+			GlobalCommands.play, GlobalCommands.stop,
+			GlobalCommands.chup, GlobalCommands.chdown,
+ 			GlobalCommands.volumedown, GlobalCommands.volumeup,
+  			GlobalCommands.next, GlobalCommands.previous,
+  			GlobalCommands.music, GlobalCommands.video, GlobalCommands.xbmc, GlobalCommands.streammp3,
+   			GlobalCommands.doorring, GlobalCommands.enter 
+		};
+		
 		public static List<CommandSyntax> SystemCommands = new List<CommandSyntax>(){
 			new CommandSyntax(GlobalCommands.alarmarm,          GlobalParams.areaid),
 			new CommandSyntax(GlobalCommands.alarmdisarm,       GlobalParams.areaid),
@@ -304,7 +313,7 @@ namespace MultiZonePlayer
 		};
 	}
 
-
+	
 
 	public class CommandResult
 	{

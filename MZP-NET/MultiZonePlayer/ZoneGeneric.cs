@@ -207,11 +207,10 @@ namespace MultiZonePlayer
             //reset inactivity counter
             m_inactiveCyclesCount = -1;
 
-            m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
+			if (CommandSyntax.UserCommands.Contains(cmdRemote))
+				m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
 
             String date,weekday,action;
-
-            
             switch (cmdRemote)
             {
                 #region commands without activity
@@ -390,6 +389,7 @@ namespace MultiZonePlayer
 					List<ZoneDetails> zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;
 					//int sourcezoneid = Convert.ToInt16(vals.GetValue(GlobalParams.sourcezoneid));
 					Alert.CreateAlert("Entry Door Ring", m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 120);
+					if (m_zoneDetails.HasCamera) SaveCurrentPicture(EventSource.Closure);
 					ValueList val1 = new ValueList();
 					val1.Add(GlobalParams.command, GlobalCommands.notifyuser.ToString());
 					foreach (ZoneDetails zone in zonesToNotify) {
