@@ -52,8 +52,8 @@ namespace MultiZonePlayer
 		public static string Substring(this string text, string startDelimiter, string endDelimiter)
 		{
 			int startPos = text.IndexOf(startDelimiter);
-			int endPos = text.IndexOf(endDelimiter);
-
+			int endPos = text.IndexOf(endDelimiter, Math.Max(0, startPos));
+			
 			if (startPos >= 0 && endPos >= 0)
 				return text.Substring(startPos + startDelimiter.Length, 
 					endPos - (startPos + startDelimiter.Length));

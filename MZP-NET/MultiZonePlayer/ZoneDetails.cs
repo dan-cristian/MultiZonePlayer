@@ -167,12 +167,17 @@ namespace MultiZonePlayer {
 		}
 
 		public Boolean IsActive {
-			get { 
-				return ZoneState==MultiZonePlayer.ZoneState.Running 
-					|| LastLocalCommandAgeInSeconds<120; 
+			get {
+				return ZoneState == MultiZonePlayer.ZoneState.Running;
+					//|| LastLocalCommandAgeInSeconds<120; 
 			}
 		}
 
+		public Boolean IsIdle {
+			get {
+				return IsActive || LastLocalCommandAgeInSeconds<120; 
+			}
+		}
 
 		public ZoneState ZoneState {
 			get { return m_zoneState; }
@@ -504,7 +509,7 @@ namespace MultiZonePlayer {
 			try {
 				String json = IniFile.LoadIniEntryByKey(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString());
 				if (json != "") {
-					MLog.Log(this, "Loading state for zone=" + ZoneName);
+					MLog.Log(this, "Loading state for zone=" + ZoneId);
 					if (ZoneId == 20)
 						MultiZonePlayer.MZPState.Instance.TestCond = true;
 					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);

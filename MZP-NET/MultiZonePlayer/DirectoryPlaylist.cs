@@ -264,6 +264,8 @@ namespace MultiZonePlayer
 		public Boolean IsFavorite = false;
 		public LastFmMeta Meta;
 		private TagLib.File m_tagFile = null;
+		private Boolean SaveRatingInComment = false;
+		private Boolean SavePlayCountInComment = false;
 
 		public AudioItem()
 		{
@@ -304,7 +306,8 @@ namespace MultiZonePlayer
 
 		public override bool RetrieveMediaItemValues()
 		{
-			int p_rating = 0, p_playcount = 0;
+			int p_rating = -1, p_playcount = -1;
+			String parameter;
 			bool result = false;
 			try
 			{
@@ -313,7 +316,39 @@ namespace MultiZonePlayer
 				//{
 				//	if (tg.MimeType.Contains(IniFile.MUSIC_EXTENSION[i]))
 				//	{
+				Comment = tg.Tag.Comment == null ? "" : tg.Tag.Comment;
 				Banshee.Streaming.StreamRatingTagger.GetRatingAndPlayCount(tg, ref p_rating, ref p_playcount);
+				
+				if (p_rating == -1) {
+					SaveRatingInComment = true;
+					if (Comment.Contains(IniFile.MEDIA_TAG_RATING)) {
+						parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ";");
+						if (!int.TryParse(parameter, out p_rating)) {
+							p_rating = 0;
+							MLog.Log(this, "Error reading rating value from comment=" + Comment + " on file=" + SourceURL);
+						}
+					}
+					else {
+						Comment += IniFile.MEDIA_TAG_RATING + "0;";
+						this.SetRating(0);
+					}
+				}
+				if (p_playcount == -1) {
+					SavePlayCountInComment = true;
+					if (Comment.Contains(IniFile.MEDIA_TAG_PLAYCOUNT)) {
+						parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ";");
+						if (!int.TryParse(parameter, out p_playcount)) {
+							p_playcount = 0;
+							MLog.Log(this, "Error reading PlayCount value from comment=" + Comment + " on file=" + SourceURL);
+						}
+					}
+					else {
+						Comment += IniFile.MEDIA_TAG_PLAYCOUNT + "0;";
+						this.SetPlayCount(0);
+						
+					}
+				}
+
 				Title = tg.Tag.Title;
 				Title = Title ?? SourceURL.Substring(Math.Max(0, SourceURL.Length - 35)).Replace("\\", "/");
 				Title = Utilities.SanitiseInternationalTrimUpper(Title);
@@ -341,7 +376,7 @@ namespace MultiZonePlayer
 				Year = tg.Tag.Year.ToString();
 				MediaType = "audio";
 				Created = Utilities.GetFileInfo(SourceURL).CreationTime;
-				Comment = tg.Tag.Comment == null ? "" : tg.Tag.Comment;
+				
 
 				if (Meta != null)
 				{
@@ -382,8 +417,17 @@ namespace MultiZonePlayer
 
 		public override void SaveItem()
 		{
+			String parameter;
 			m_tagFile = TagLib.File.Create(SourceURL);
 			Banshee.Streaming.StreamRatingTagger.StoreRatingAndPlayCount(Rating, PlayCount, m_tagFile);
+			if (SaveRatingInComment) {
+				parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ";");
+				Comment = Comment.Replace(IniFile.MEDIA_TAG_RATING + parameter, IniFile.MEDIA_TAG_RATING + Rating);
+			}
+			if (SavePlayCountInComment) {
+				parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ";");
+				Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYCOUNT + parameter, IniFile.MEDIA_TAG_PLAYCOUNT + PlayCount);
+			}
 			m_tagFile.Tag.Comment = Comment;
 
 			try
@@ -396,10 +440,10 @@ namespace MultiZonePlayer
 				m_requireSave = false;
 				MLog.Log(this, "Corrupt file, not saving, " + SourceURL);
 			}
-			catch (IOException)
+			catch (IOException ex)
 			{
 				m_requireSave = true;
-				//MLog.Log(this, "Unable to save tag for " + SourceURL);
+				MLog.Log(this, "Unable to save tag for " + SourceURL + " ex="+ex.Message);
 			}
 		}
 	}

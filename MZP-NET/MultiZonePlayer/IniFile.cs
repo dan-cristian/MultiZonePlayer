@@ -96,6 +96,9 @@ namespace MultiZonePlayer
             public  const String VIDEO_INFO_IMDB_FIND_URL = "http://www.imdb.com/search/title?title=";
             public const String MEDIA_TAG_LIBRARY_ID = "MZPADDED:";
             public const String MEDIA_TAG_FAVORITE = "MZPFAVORITE:";
+			public const String MEDIA_TAG_RATING = "MZPRATING:";
+			public const String MEDIA_TAG_PLAYCOUNT = "MZPPLAYCOUNT:";
+
             public const String PLAYLIST_DEFAULT = "default";
 
             public  const int VOLUME_STEP = 250;

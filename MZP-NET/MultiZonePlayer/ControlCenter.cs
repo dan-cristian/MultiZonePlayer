@@ -152,7 +152,7 @@ namespace MultiZonePlayer
 						foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList){
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
 							List<ZoneDetails> zonesWithPower = ZoneDetails.ZoneDetailsList.FindAll(x =>
-								(x.IsActive ||x.RequirePower) && 
+								(x.IsIdle ||x.RequirePower) && 
 								(x.PowerType==details.PowerType &&  x.PowerIndex == details.PowerIndex));
 							if (zonesWithPower.Count==0 && !details.IsActive)
 							{
