@@ -15,9 +15,9 @@ namespace MultiZonePlayer
 		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
 		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
-				
 
-		public SimpleGraph()
+
+		public SimpleGraph(bool needTempHum, bool needClosure, bool needVoltage)
 		{
 			InitializeComponent();
 			m_colors[0] = System.Drawing.Color.Orchid;
@@ -30,7 +30,7 @@ namespace MultiZonePlayer
 			m_colors[7] = System.Drawing.Color.PaleVioletRed;
 			m_colors[8] = System.Drawing.Color.LightSalmon;
 			m_colors[9] = System.Drawing.Color.MediumSlateBlue;
-			LoadHistory();
+			LoadHistory(needTempHum, needClosure, needVoltage);
 		}
 
 		public void AddTemperatureReading(Tuple<int, DateTime, double> reading)
@@ -348,70 +348,82 @@ namespace MultiZonePlayer
 			this.ResumeLayout(false);
 		}
 
-		private void LoadHistory(){
+		private void LoadHistory(bool needTempHum, bool needClosure, bool needVoltage){
 			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
 			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int>>();
+			string[] allLines;
 
-			//GET TEMP and HUM from storage
-			string[] allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath()+ IniFile.CSV_TEMPERATURE_HUMIDITY);
-			var query = from line in allLines
-						let data = line.Split(',')
-						select new {
-							ZoneName = data[0],
-							Type = data[1],
-							Date = Convert.ToDateTime(data[2]),
-							Value = Convert.ToDouble(data[3]),
-							ZoneId = Convert.ToInt16(data[4])
-						};
-
-			foreach (var line in query)	{
-				switch (line.Type) {
-					case Constants.CAPABILITY_TEMP:
-						m_tempHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
-						break;
-					case Constants.CAPABILITY_HUM:
-						m_humHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
-						break;
+			if (needTempHum) {
+				MLog.Log(this, "Start reading TEMP/HUM from csv files");
+				//GET TEMP and HUM from storage
+				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_TEMPERATURE_HUMIDITY);
+				var query = from line in allLines
+							let data = line.Split(',')
+							select new {
+								ZoneName = data[0],
+								Type = data[1],
+								Date = Convert.ToDateTime(data[2]),
+								Value = Convert.ToDouble(data[3]),
+								ZoneId = Convert.ToInt16(data[4])
+							};
+				MLog.Log(this, "Processing TEMP/HUM");
+				foreach (var line in query) {
+					switch (line.Type) {
+						case Constants.CAPABILITY_TEMP:
+							m_tempHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
+							break;
+						case Constants.CAPABILITY_HUM:
+							m_humHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
+							break;
+					}
 				}
+				MLog.Log(this, "End reading TEMP/HUM from csv files");
 			}
-
-			allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_VOLTAGE);
-			var query1 = from line in allLines
-						let data = line.Split(',')
-						select new {
-							ZoneName = data[0],
-							Type = data[1],
-							Date = Convert.ToDateTime(data[2]),
-							Value = Convert.ToDouble(data[3]),
-							ZoneId = Convert.ToInt16(data[4]),
-							VoltageIndex = Convert.ToInt16(data[5])
-						};
-			foreach (var line in query1) {
-				switch (line.Type) {
-					case Constants.CAPABILITY_VOLTAGE:
-						m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int>(line.ZoneId, line.Date, line.Value, line.VoltageIndex));
-						break;
+			if (needVoltage) {
+				MLog.Log(this, "START reading Voltage");
+				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_VOLTAGE);
+				var query1 = from line in allLines
+							 let data = line.Split(',')
+							 select new {
+								 ZoneName = data[0],
+								 Type = data[1],
+								 Date = Convert.ToDateTime(data[2]),
+								 Value = Convert.ToDouble(data[3]),
+								 ZoneId = Convert.ToInt16(data[4]),
+								 VoltageIndex = Convert.ToInt16(data[5])
+							 };
+				MLog.Log(this, "Processing Voltage");
+				foreach (var line in query1) {
+					switch (line.Type) {
+						case Constants.CAPABILITY_VOLTAGE:
+							m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int>(line.ZoneId, line.Date, line.Value, line.VoltageIndex));
+							break;
+					}
 				}
+				MLog.Log(this, "End reading Voltage");
 			}
-
-			//GET closures from storage
-			allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_CLOSURES);
-			var query2 = from line in allLines
-						let data = line.Split(',')
-						select new {
-							ZoneName = data[0],
-							Key = data[1],
-							Date = Convert.ToDateTime(data[2]),
-							State = GetStateValue(data[3]),
-							ZoneId = Convert.ToInt16(data[4]),
-							EventType = data[5],
-							Identifier = data.Length>6?data[6]:"Main"
-						};
-
-			foreach (var line in query2) {
-				m_eventHistoryList.Add(new Tuple<int, DateTime, int, String, String>(line.ZoneId, line.Date, line.State, line.EventType, line.Identifier));
+			if (needClosure) {
+				MLog.Log(this, "START reading Closures");
+				//GET closures from storage
+				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_CLOSURES);
+				var query2 = from line in allLines
+							 let data = line.Split(',')
+							 select new {
+								 ZoneName = data[0],
+								 Key = data[1],
+								 Date = Convert.ToDateTime(data[2]),
+								 State = GetStateValue(data[3]),
+								 ZoneId = Convert.ToInt16(data[4]),
+								 EventType = data[5],
+								 Identifier = data.Length > 6 ? data[6] : "Main"
+							 };
+				MLog.Log(this, "Processing Closures");
+				foreach (var line in query2) {
+					m_eventHistoryList.Add(new Tuple<int, DateTime, int, String, String>(line.ZoneId, line.Date, line.State, line.EventType, line.Identifier));
+				}
+				MLog.Log(this, "End reading Closures");
 			}
 		}
 

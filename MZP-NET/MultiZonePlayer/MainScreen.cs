@@ -164,11 +164,11 @@ namespace MultiZonePlayer
 
 		private void chartToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			SimpleGraph form = new SimpleGraph();
+			SimpleGraph form = new SimpleGraph(true, true, true);
 			form.MdiParent = this;
 			form.Show();
 			form.ShowEventGraph(19,24);
-			SimpleGraph form2 = new SimpleGraph();
+			SimpleGraph form2 = new SimpleGraph(true, true, true);
 			form2.MdiParent = this;
 			form2.Show();
 			Alert.CreateAlert("A new alert", ZoneDetails.ZoneDetailsList[0], false,

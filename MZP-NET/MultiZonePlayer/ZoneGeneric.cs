@@ -380,10 +380,11 @@ namespace MultiZonePlayer
 				
 				case GlobalCommands.generategraph:
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
-					SimpleGraph graph = new SimpleGraph();
-					graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
-					graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours);
-					graph.ShowVoltageGraph(m_zoneDetails.ZoneId, ageHours);
+					string type = vals.GetValue(GlobalParams.type).ToLower();
+					SimpleGraph graph = new SimpleGraph(type=="temphum", type=="closure", type=="voltage");
+					if (type=="temphum") graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
+					if (type == "closure")	graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours);
+					if (type=="voltage") graph.ShowVoltageGraph(m_zoneDetails.ZoneId, ageHours);
 					break;
 				case GlobalCommands.doorring:
 					List<ZoneDetails> zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;

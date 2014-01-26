@@ -355,7 +355,7 @@ namespace MultiZonePlayer
 						case GlobalCommands.generatefullgraph:
 							int _zoneid;
 							int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
-							SimpleGraph graph = new SimpleGraph();
+							SimpleGraph graph = new SimpleGraph(true, true, true);
 							string[] zones = vals.GetValue(GlobalParams.zoneidlist).Split(',');
 							List<ZoneDetails> zoneList = new List<ZoneDetails>();
 							foreach (string _zone in zones)
