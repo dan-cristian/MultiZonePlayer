@@ -214,7 +214,7 @@ namespace MultiZonePlayer {
 							 + Title
 							 + (Temperature != DEFAULT_TEMP_HUM ? " " + Temperature + "C" : "")
 							 + (Humidity != DEFAULT_TEMP_HUM ? " " + Humidity + "%" : "")
-							 + (IsPowerOn ? " PowerIsOn" : "");
+							 + (IsPowerOn ? " POWERON" : "");
 				return val;
 			}
 		}
@@ -737,6 +737,7 @@ namespace MultiZonePlayer {
 			SourceURL = null;
 			RequirePower = false;
 			ZoneState = ZoneState.NotStarted;
+			//ActivityType = GlobalCommands.nul;
 		}
 
 		public void ZoneClose() {
