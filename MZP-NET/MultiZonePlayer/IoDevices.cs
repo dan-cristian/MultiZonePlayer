@@ -660,6 +660,7 @@ namespace MultiZonePlayer
 		const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
 		const string ONEWIRE_PHOTODEV_NAME = "DS2406";
 		const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
+		const string ONEWIRE_COUNTER_NAME = "DS2423";
 		double TEMP_DEFAULT = 85;
 		private DateTime m_lastOKRead = DateTime.Now;
 		private Dictionary<string, string> m_deviceAttributes = new Dictionary<string, string>();
@@ -855,10 +856,11 @@ namespace MultiZonePlayer
 						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
 						Reinitialise();
 					}
-					ProcessFamily(0x28, false);
-					ProcessFamily(0x26, false);
+					ProcessFamily(0x28, false);//DS18B20
+					ProcessFamily(0x26, false);//DS2438, Smart Battery Monitor
+					ProcessFamily(0x1D, false);//DS2423
 				}
-				ProcessFamily(0x12, false);
+				ProcessFamily(0x12, false);//DS2406 or DS2407
 				i++;
 				Thread.Sleep(IniFile.ZONE_TICK_FAST_SLEEP);
 			}
@@ -997,6 +999,13 @@ namespace MultiZonePlayer
 								zone.SetVoltage(i, voltage[i]);
 							}
 							zone.HasOneWireVoltageSensor = true;
+							break;
+						case ONEWIRE_COUNTER_NAME:
+							OneWireContainer1D counter = (OneWireContainer1D)element;
+							MLog.Log(this, "Counter 14="+counter.readCounter(14));
+							MLog.Log(this, "Counter 15=" + counter.readCounter(15));
+							MLog.Log(this, "Counter 12="+counter.readCounter(12));
+							MLog.Log(this, "Counter 13=" + counter.readCounter(13));
 							break;
 						default:
 							MLog.Log(this, "Unknown onewire device "+ element.getName());

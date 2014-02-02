@@ -826,7 +826,7 @@ public class MZPState
 			ZoneDetails zone = ZoneDetails.ZoneDetailsList.OrderByDescending(x => x.LastLocalCommandDateTime).ToList().Find(x =>
                 (x.ActivityType.Equals(GlobalCommands.music) 
 				|| x.ActivityType.Equals(GlobalCommands.streammp3)
-                || x.ActivityType.Equals(GlobalCommands.tv) 
+                //|| x.ActivityType.Equals(GlobalCommands.tv) 
 				|| x.ActivityType.Equals(GlobalCommands.xbmc)) 
                 && x.IsActive);
             if (zone != null)
