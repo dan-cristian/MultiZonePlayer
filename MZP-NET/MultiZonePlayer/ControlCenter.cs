@@ -155,7 +155,7 @@ namespace MultiZonePlayer
 								(x.IsIdle ||x.RequirePower) &&
 								(x.PowerType == details.PowerType && x.PowerIndex == details.PowerIndex) &&
 								(x.ZoneId != details.ZoneId));
-							if (zonesWithPower.Count==0 && !details.IsActive)
+							if (zonesWithPower.Count==0 && !details.IsActive && !details.RequirePower)
 							{
 								if (MZPState.Instance.PowerControlIsOn(details.ZoneId))
 								{
