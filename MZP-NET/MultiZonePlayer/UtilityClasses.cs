@@ -152,7 +152,10 @@ namespace MultiZonePlayer
 		generatefullgraph,
 		doorring,
 		doorentry,
-		userlist
+		userlist,
+		reloadlibrarymusic,
+		reloadlibraryvideo,
+		reloadlibrarypictures
 	}
 	public enum GlobalParams
 	{

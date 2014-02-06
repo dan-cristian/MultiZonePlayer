@@ -1374,40 +1374,45 @@ namespace MultiZonePlayer
 		private static VideoCollection m_videoFiles;
 		private static PicturesCollection m_pictureFiles;
 
-		public static bool IsInitialised
-		{
+		public static bool IsInitialised{
 			get { return m_isMusicInitialised && m_isPicturesInitialised && m_isVideosInitialised; }
 		}
 
-		public static void InitialiseLibrary()
-		{
-			MLog.Log(null, "MediaLibrary Init started");
-			Thread thmu = new Thread(() => MediaLibrary.InitialiseMusic());
-			thmu.Name = "MediaLibrary Music";
-			thmu.Start();
+		public static void InitialiseLibrary(){
 
+			InitialiseMusic();
 			Application.DoEvents();
-
-			Thread thpi = new Thread(() => MediaLibrary.InitialisePictures());
-			thpi.Name = "MediaLibrary Pictures";
-			thpi.Start();
-
+			InitialisePictures();
 			Application.DoEvents();
-
-			Thread thmo = new Thread(() => MediaLibrary.InitialiseVideos());
-			thmo.Name = "MediaLibrary Movies";
-			thmo.Start();
+			InitialiseVideos();
 			MLog.Log(null, "MediaLibrary Init ended, async process running");
 		}
 
-		public static void InitialiseMusic()
-		{
+		public static void InitialiseMusic() {
+			MLog.Log(null, "MediaLibrary Init started");
+			Thread thmu = new Thread(() => MediaLibrary.InitialiseMusicWorker());
+			thmu.Name = "MediaLibrary Music";
+			thmu.Start();
+		}
+
+		public static void InitialisePictures() {
+			Thread thpi = new Thread(() => MediaLibrary.InitialisePicturesWorker());
+			thpi.Name = "MediaLibrary Pictures";
+			thpi.Start();
+		}
+
+		public static void InitialiseVideos(){
+			Thread thmo = new Thread(() => MediaLibrary.InitialiseVideosWorker());
+			thmo.Name = "MediaLibrary Movies";
+			thmo.Start();
+		}
+
+		private static void InitialiseMusicWorker(){
 			m_isMusicInitialised = false;
 			m_musicFiles = new MusicCollection();
 
 			MLog.Log(null, "Loading mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
-			for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
-			{
+			for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++){
 				m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*." + IniFile.MUSIC_EXTENSION[i],
 					System.IO.SearchOption.AllDirectories);
 			}
@@ -1419,7 +1424,7 @@ namespace MultiZonePlayer
 			m_isMusicInitialised = true;
 		}
 
-		public static void InitialisePictures()
+		private static void InitialisePicturesWorker()
 		{
 			m_isPicturesInitialised = false;
 			m_pictureFiles = new PicturesCollection();
@@ -1437,7 +1442,7 @@ namespace MultiZonePlayer
 			m_isPicturesInitialised = true;
 		}
 
-		public static void InitialiseVideos()
+		private static void InitialiseVideosWorker()
 		{
 			m_isVideosInitialised = false;
 			m_videoFiles = new VideoCollection();

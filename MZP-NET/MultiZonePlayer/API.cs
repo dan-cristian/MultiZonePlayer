@@ -428,6 +428,15 @@ namespace MultiZonePlayer
 									cmdresult.OutputMessage += line + "\n";
 							}
 							break;
+						case GlobalCommands.reloadlibrarymusic:
+							MediaLibrary.InitialiseMusic();
+							break;
+						case GlobalCommands.reloadlibrarypictures:
+							MediaLibrary.InitialisePictures();
+							break;
+						case GlobalCommands.reloadlibraryvideo:
+							MediaLibrary.InitialiseVideos();
+							break;
                         default:
                             DoZoneCommand(apicmd, vals, ref cmdresult);
                             break;
