@@ -18,9 +18,9 @@ namespace MultiZonePlayer
         {
 
             public const String INI_FILE = "\\MultiZonePlayer.ini";
-			public const String MEDIA_MUSIC_STORAGE_FILE = "\\MediaMusic.data";
-			public const String MEDIA_VIDEO_STORAGE_FILE = "\\MediaVideo.data";
-			public const String MEDIA_PICTURE_STORAGE_FILE = "\\MediaPicture.data";
+			public const String MEDIA_MUSIC_STORAGE_FILE = "MediaMusic.data";
+			public const String MEDIA_VIDEO_STORAGE_FILE = "MediaVideo.data";
+			public const String MEDIA_PICTURE_STORAGE_FILE = "MediaPicture.data";
 			public const String SCHEDULER_FILE = "\\scheduler.ini";
 			public const String RULES_FILE = "\\rules.ini";
 			public const String CSV_TEMPERATURE_HUMIDITY = "\\temp-hum.csv";

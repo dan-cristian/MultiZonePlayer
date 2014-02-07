@@ -1005,7 +1005,7 @@ public class MZPState
             Boolean ok;
             foreach (IMessenger m in m_messengerList)
             {
-				if (!m.IsFaulty())
+				if (m!= null && !m.IsFaulty())
 				{
 					ok = m.TestConnection();
 					if (!ok)

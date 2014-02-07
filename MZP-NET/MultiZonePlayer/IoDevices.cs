@@ -1651,9 +1651,13 @@ namespace MultiZonePlayer
 
 		//separate thread as discovery takes long time
 		public static void StartDiscovery() {
+			int tick = 500;
 			while (MZPState.Instance != null) {
 				UserPresence.CheckLocalBluetooth();
-				Thread.Sleep(IniFile.ZONE_TICK_SLOW_SLEEP);
+				for (int i = 0; i < IniFile.ZONE_TICK_SLOW_SLEEP / tick; i++) {
+					Thread.Sleep(tick);
+					if (MZPState.Instance == null) break;
+				}
 			}
 			MLog.Log(null, "BT StartDiscovery exit");
 		}

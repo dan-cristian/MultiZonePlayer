@@ -67,12 +67,9 @@ namespace fastJSON
 
                     default:
                         {
-							
+
                             // name
                             string name = ParseString();
-							
-							
-
                             if (_ignorecase)
                                 name = name.ToLower();
 
@@ -151,7 +148,6 @@ namespace fastJSON
 
         private string ParseString()
         {
-			
             ConsumeToken(); // "
 
             s.Length = 0;
@@ -182,8 +178,7 @@ namespace fastJSON
                     continue;
                 }
 
-                if (index == json.Length) 
-					break;
+                if (index == json.Length) break;
 
                 if (runIndex != -1)
                 {

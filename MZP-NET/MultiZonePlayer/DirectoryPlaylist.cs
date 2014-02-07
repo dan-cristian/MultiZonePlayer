@@ -8,20 +8,21 @@ using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using ExifLib;
 using System.Threading;
+using fastJSON;
 
 namespace MultiZonePlayer
 {
 
 	public abstract class PlaylistBase
 	{
-		protected List<String> m_playlistFiles;
+		public List<FileDetail> m_playlistFiles;
 
 		public PlaylistBase()
 		{
-			m_playlistFiles = new List<String>();
+			m_playlistFiles = new List<FileDetail>();
 		}
 
-		public List<String> PlaylistFiles
+		public List<FileDetail> PlaylistFiles
 		{
 			get	{return m_playlistFiles;}
 		}
@@ -29,7 +30,7 @@ namespace MultiZonePlayer
 		public abstract int PendingSaveItemsCount();
 		protected abstract void ProcessFile(FileInfo fi);
 
-		public void AddFiles(String directory, String ext, SearchOption search)
+		public void AddFiles(String directory, String ext, SearchOption search, Boolean lookInCache)
 		{
 			if (Directory.Exists(directory))
 			{
@@ -37,7 +38,8 @@ namespace MultiZonePlayer
 				{
 					DirectoryInfo di = new DirectoryInfo(directory);
 					FileInfo[] rgFiles = di.GetFiles(ext, search);
-
+					int newfiles=0, updatedfiles=0;
+					FileDetail file;
 					MLog.Log(this, "Adding files ext=" + ext + " count=" + rgFiles.Length);
 
 					//m_playlistFiles.Capacity = rgFiles.Length;
@@ -46,16 +48,32 @@ namespace MultiZonePlayer
 
 					foreach (FileInfo fi in rgFiles)
 					{
-						ProcessFile(fi);
-						m_playlistFiles.Add(fi.FullName);
+						if (lookInCache)
+							file = m_playlistFiles.Find(x => x.FilePath == fi.FullName);
+						else
+							file = null;
+						//if new file is found on disk vs cached, load it
+						if (file == null) {
+							newfiles++;
+							ProcessFile(fi);
+							m_playlistFiles.Add(new FileDetail(fi.FullName, fi.LastWriteTime));
+						}
+						else {
+							//if file was modified reload
+								if (file.Modified != fi.LastWriteTime) {
+									updatedfiles++;
+									ProcessFile(fi);
+									file.Modified = fi.LastWriteTime; 
+								}
+						}
 						//Application.DoEvents();
 						if (MZPState.Instance == null)
 						{
-							MLog.Log(this, "Aborting loading files, program is exiting");
+							MLog.Log(this, "Aborting loading media files");
 							break;
 						}
 					}
-					MLog.Log(this, "Adding files completed ext=" + ext);
+					MLog.Log(this, "Adding files completed ext=" + ext + " new="+newfiles + " updated="+updatedfiles);
 				}
 				catch (Exception ex)
 				{
@@ -197,8 +215,19 @@ namespace MultiZonePlayer
 		}
 	}
 */
-	
 
+	public class FileDetail {
+		public String FilePath;
+		public DateTime Modified;
+		//public Boolean NeedsDiskReload = false;
+
+		public FileDetail(){
+		}
+		public FileDetail(String filePath, DateTime modified) {
+			FilePath = filePath;
+			Modified = modified;
+		}
+	}
 	public abstract class MediaItemBase
 	{
 		private static Random rndSeed = new Random();
@@ -215,17 +244,25 @@ namespace MultiZonePlayer
 		public int Index = index++;
 		protected bool m_requireSave = false;
 		public DateTime Created;
+		public DateTime Modified;
 		public String Comment;
 		public DateTime LibraryAddDate;
 		public String Author = "";
 		public String Copyright;
-		public abstract bool RetrieveMediaItemValues();
+		
 		public bool RequireSave
 		{
 			get { return m_requireSave; }
 		}
 
 		public abstract void SaveItem();
+
+		public virtual bool RetrieveMediaItemValues() {
+			FileInfo finfo = Utilities.GetFileInfo(SourceURL);
+			Created = finfo.CreationTime;
+			Modified = finfo.LastWriteTime;
+			return true;
+		}
 
 		public virtual int UpdateRating(int step, int minvalue, int maxvalue)
 		{
@@ -267,12 +304,10 @@ namespace MultiZonePlayer
 		private Boolean SaveRatingInComment = false;
 		private Boolean SavePlayCountInComment = false;
 
-		public AudioItem()
-		{
+		public AudioItem(){
 		}
 
-		public AudioItem(String url, String folder, LastFmMeta meta)
-		{
+		public AudioItem(String url, String folder, LastFmMeta meta){
 			SourceURL = url;
 			SourceContainerURL = folder;
 			Meta = meta;
@@ -311,6 +346,7 @@ namespace MultiZonePlayer
 			bool result = false;
 			try
 			{
+				result = base.RetrieveMediaItemValues();
 				TagLib.File tg = TagLib.File.Create(SourceURL as String);
 				//for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
 				//{
@@ -375,7 +411,7 @@ namespace MultiZonePlayer
 					Album = "Not Set";
 				Year = tg.Tag.Year.ToString();
 				MediaType = "audio";
-				Created = Utilities.GetFileInfo(SourceURL).CreationTime;
+
 				
 
 				if (Meta != null)
@@ -508,6 +544,7 @@ namespace MultiZonePlayer
 					datetime = datetime.Substring(0, "yyyy:dd:hh".Length).Replace(":", "/") + datetime.Substring("yyyy:dd:hh".Length);
 				}
 				*/
+				result = base.RetrieveMediaItemValues();
 				FileStream fs = new FileStream(SourceURL, FileMode.Open);
 				/*
 				
@@ -609,19 +646,20 @@ namespace MultiZonePlayer
 					// Something didn't work!
 					//MLog.Log(this, "Err read image exif file "+this.SourceURL + " er="+ex.Message);
 
-					try
+					/*try
 					{
 						FileInfo fi = new FileInfo(this.SourceURL);
 						if (this.Created.Year == 1)
 						{
 							this.Created = fi.CreationTime;
+							this.Modified = fi.LastWriteTime;
 						}
 					}
 					catch (Exception exx)
 					{
 						MLog.Log(exx, "Error read creationtime " + this.SourceURL);
 					}
-
+					*/
 					if (reader != null)
 						reader.Dispose();
 				}
@@ -695,6 +733,7 @@ namespace MultiZonePlayer
 		{
 			if (SourceURL != "")
 			{
+				base.RetrieveMediaItemValues();
 				String fileFolder;
 				fileFolder = Directory.GetParent(SourceURL).FullName;
 				String infoPath = fileFolder + IniFile.VIDEO_INFO_FILE;
@@ -1032,9 +1071,9 @@ namespace MultiZonePlayer
 
 	public class VideoCollection : PlaylistBase
 	{
-		private List<VideoItem> m_videoPlayList;
-		private Dictionary<String, int> m_actorNames;
-		private Dictionary<String, int> m_GenreList;
+		public List<VideoItem> m_videoPlayList;
+		public Dictionary<String, int> m_actorNames;
+		public Dictionary<String, int> m_GenreList;
 
 		public VideoCollection()
 		{
@@ -1090,19 +1129,33 @@ namespace MultiZonePlayer
 		protected override void ProcessFile(FileInfo fi)
 		{
 			VideoItem vidInfo;
+			FileDetail fileInCache;
+			fileInCache = m_playlistFiles.Find(x => x.FilePath == fi.FullName);
+			if (fileInCache == null) {
+				vidInfo = new VideoItem(fi.FullName);
+				vidInfo.RetrieveMediaItemValues();
+				ParseImdbData(vidInfo);
+				m_videoPlayList.Add(vidInfo);
+			}
+			else {
+				vidInfo = m_videoPlayList.Find(x => x.SourceURL == fi.FullName);
+				if (vidInfo != null) {
+					vidInfo.RetrieveMediaItemValues();
+					ParseImdbData(vidInfo);
+				}
+				else
+					MLog.Log(this, "Unexpected Missing Video file in memory, file=" + fi.FullName);
+			}
+			
+		}
+
+		private void ParseImdbData(VideoItem vidInfo) {
 			String actors, actorName;
-			string file = fi.FullName;
-			//filePath = m_playlist.GetAllFileList()[file].ToString();
-			vidInfo = new VideoItem(file);
-			vidInfo.RetrieveMediaItemValues();
-			m_videoPlayList.Add(vidInfo);
 			//parse actors
 			actors = vidInfo.ImdbActors;
 			int lastIndex = 0;
-			for (int i = 0; i < actors.Length; i++)
-			{
-				if ((actors[i] == ',') || (i == actors.Length - 1))
-				{
+			for (int i = 0; i < actors.Length; i++) {
+				if ((actors[i] == ',') || (i == actors.Length - 1)) {
 					actorName = actors.Substring(lastIndex, i - lastIndex);
 					if (!m_actorNames.Keys.Contains(actorName))
 						m_actorNames.Add(actorName, 1);
@@ -1116,8 +1169,7 @@ namespace MultiZonePlayer
 			List<Object> genres;
 			genres = Utilities.ParseStringForValues(vidInfo.ImdbGenre, ' ', typeof(String));
 			String genre;
-			foreach (Object obj in genres)
-			{
+			foreach (Object obj in genres) {
 				genre = (String)obj;
 				if (!m_GenreList.Keys.Contains(genre))
 					m_GenreList.Add(genre, 1);
@@ -1129,8 +1181,8 @@ namespace MultiZonePlayer
 
 	public class MusicCollection : PlaylistBase
 	{
-		private List<LastFmMeta> m_artistMetaList;
-		protected List<AudioItem> m_playlistItems;
+		public List<LastFmMeta> m_artistMetaList;
+		public List<AudioItem> m_playlistItems;
 
 		public List<LastFmMeta> ArtistMetaList
 		{
@@ -1142,11 +1194,15 @@ namespace MultiZonePlayer
 		{
 			m_artistMetaList = new List<LastFmMeta>();
 			m_playlistItems = new List<AudioItem>();
+			//m_playlistItems = new List<MediaItemBase>();
 		}
 		
 		public List<AudioItem> PlaylistItems
 		{
-			get { return m_playlistItems; }
+			get { 
+				return m_playlistItems;
+				//return new List<AudioItem>(m_playlistItems.Cast<AudioItem>());
+			}
 		}
 
 		public override void SaveUpdatedItems()
@@ -1154,7 +1210,7 @@ namespace MultiZonePlayer
 			if (m_playlistItems != null)
 			{
 				List<AudioItem> clone = m_playlistItems.ToList();
-				foreach (AudioItem ai in clone)
+				foreach (MediaItemBase ai in clone)
 				{
 					if (ai.RequireSave) ai.SaveItem();
 				}
@@ -1173,24 +1229,21 @@ namespace MultiZonePlayer
 			LastFmMeta meta, metaDisk, metaDownload;
 			String metaText;
 			String metaFile;
+			FileDetail fileInCache;
 
-			if (!m_playlistFiles.Contains(fi.FullName))
-			{
+			fileInCache = m_playlistFiles.Find(x=>x.FilePath == fi.FullName);
+			if (fileInCache == null) {
 				dir = fi.Directory;
-				do
-				{
+				do {
 					meta = m_artistMetaList.Find(x => x.URL == dir.FullName);
-					if (meta == null)
-					{
+					if (meta == null) {
 						metaFile = dir.FullName + IniFile.MEDIA_META_FILE_NAME;
-						if (File.Exists(metaFile))
-						{
+						if (File.Exists(metaFile)) {
 							metaText = Utilities.ReadFile(metaFile);
 							metaDisk = fastJSON.JSON.Instance.ToObject<LastFmMeta>(metaText);
 							if (metaDisk.ArtistName == null)
 								metaDisk.ArtistName = dir.Name;
-							if (metaDisk.MainGenre == null || IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1]=="1")
-							{
+							if (metaDisk.MainGenre == null || IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] == "1") {
 								metaDownload = LastFMService.GetArtistMeta(metaDisk.ArtistName);
 								meta = metaDownload;
 								meta.URL = dir.FullName;
@@ -1212,17 +1265,25 @@ namespace MultiZonePlayer
 						break;
 				}
 				while (true);
-				m_playlistFiles.Add(fi.FullName);
+				m_playlistFiles.Add(new FileDetail(fi.FullName, fi.LastWriteTime));
 				item = new AudioItem(fi.FullName, fi.DirectoryName, meta);
 				item.RetrieveMediaItemValues();
 				m_playlistItems.Add(item);
+			}
+			else {
+				item = m_playlistItems.Find(x => x.SourceURL == fi.FullName);
+				if (item != null) {
+					item.RetrieveMediaItemValues();
+				}
+				else
+					MLog.Log(this, "Unexpected Missing Audio file in memory, file="+fi.FullName);
 			}
 		}
 	}
 
 	public class PicturesCollection : PlaylistBase
 	{
-		protected List<MediaImageItem> m_playlistItems;
+		public List<MediaImageItem> m_playlistItems;
 		private List<MediaImageItem> m_autoIterateItems;
 		private DateTime m_autoIterateDate = DateTime.Now;
 		private DateTime m_lastPictureRetrieved = DateTime.Now;
@@ -1251,10 +1312,22 @@ namespace MultiZonePlayer
 		{
 			//throw new NotImplementedException();
 			MediaImageItem item;
+			FileDetail fileInCache;
+			fileInCache = m_playlistFiles.Find(x => x.FilePath == fi.FullName);
 
-			item = new MediaImageItem(fi.FullName, fi.DirectoryName);
-			item.RetrieveMediaItemValues();
-			m_playlistItems.Add(item);
+			if (fileInCache == null) {
+				item = new MediaImageItem(fi.FullName, fi.DirectoryName);
+				item.RetrieveMediaItemValues();
+				m_playlistItems.Add(item);
+			}
+			else {
+				item = m_playlistItems.Find(x => x.SourceURL == fi.FullName);
+				if (item != null) {
+					item.RetrieveMediaItemValues();
+				}
+				else
+					MLog.Log(this, "Unexpected Missing Picture file in memory, file=" + fi.FullName);
+			}
 		}
 
 		public MediaImageItem CurrentIteratePicture
@@ -1374,22 +1447,64 @@ namespace MultiZonePlayer
 		private static VideoCollection m_videoFiles;
 		private static PicturesCollection m_pictureFiles;
 
+		public static Boolean HasMusicCache = false;
+		public static Boolean HasVideoCache = false;
+		public static Boolean HasPictureCache = false;
+
 		public static bool IsInitialised{
 			get { return m_isMusicInitialised && m_isPicturesInitialised && m_isVideosInitialised; }
 		}
 
 		public static void InitialiseLibrary(){
-
+			MLog.Log(null, "MediaLibrary Init started");
+			
+			m_isMusicInitialised = false;
+			if (Utilities.ExistFileRelativeToAppPath(IniFile.MEDIA_MUSIC_STORAGE_FILE)) {
+				HasMusicCache = true;
+				MLog.Log("Music Library loading from cache");
+				String json = Utilities.ReadFileRelativeToAppPath(IniFile.MEDIA_MUSIC_STORAGE_FILE);
+				MusicCollection jsonMusic = JSON.Instance.ToObject<MusicCollection>(json);
+				m_musicFiles = jsonMusic;
+				m_isMusicInitialised = true;
+				MLog.Log("Music Library cache loading done");
+			}
+			else
+				m_musicFiles = new MusicCollection();
 			InitialiseMusic();
 			Application.DoEvents();
+
+			m_isPicturesInitialised = false;
+			if (Utilities.ExistFileRelativeToAppPath(IniFile.MEDIA_PICTURE_STORAGE_FILE)) {
+				HasPictureCache = true;
+				MLog.Log("Pictures Library loading from cache");
+				String json = Utilities.ReadFileRelativeToAppPath(IniFile.MEDIA_PICTURE_STORAGE_FILE);
+				PicturesCollection jsonPict = JSON.Instance.ToObject<PicturesCollection>(json);
+				m_pictureFiles = jsonPict;
+				MLog.Log("Pictures Library loading cache done");
+				m_isPicturesInitialised = true;
+			}
+			else
+				m_pictureFiles = new PicturesCollection();
 			InitialisePictures();
 			Application.DoEvents();
+
+			m_isVideosInitialised = false;
+			if (Utilities.ExistFileRelativeToAppPath(IniFile.MEDIA_VIDEO_STORAGE_FILE)) {
+				HasVideoCache = true;
+				MLog.Log("Video Library loading from cache");
+				String json = Utilities.ReadFileRelativeToAppPath(IniFile.MEDIA_VIDEO_STORAGE_FILE);
+				VideoCollection jsonVideo = JSON.Instance.ToObject<VideoCollection>(json);
+				m_videoFiles = jsonVideo;
+				MLog.Log("Video Library loading cache done");
+				m_isVideosInitialised = true;
+			}
+			else
+				m_videoFiles = new VideoCollection();
 			InitialiseVideos();
 			MLog.Log(null, "MediaLibrary Init ended, async process running");
 		}
 
 		public static void InitialiseMusic() {
-			MLog.Log(null, "MediaLibrary Init started");
 			Thread thmu = new Thread(() => MediaLibrary.InitialiseMusicWorker());
 			thmu.Name = "MediaLibrary Music";
 			thmu.Start();
@@ -1408,56 +1523,46 @@ namespace MultiZonePlayer
 		}
 
 		private static void InitialiseMusicWorker(){
-			m_isMusicInitialised = false;
-			m_musicFiles = new MusicCollection();
-
-			MLog.Log(null, "Loading mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
+			MLog.Log(null, "Music Library refresh started");
+			
+			MLog.Log(null, "Checking mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
 			for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++){
 				m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*." + IniFile.MUSIC_EXTENSION[i],
-					System.IO.SearchOption.AllDirectories);
+					System.IO.SearchOption.AllDirectories, HasMusicCache);
 			}
-
 			//save new items found in library
 			m_musicFiles.SaveUpdatedItems();
 			if (IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] == "1")
 				IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] = "0, last refresh at " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT);
-			m_isMusicInitialised = true;
+			if (MZPState.Instance != null)
+				m_isMusicInitialised = true;
+			MLog.Log(null, "Music Library refresh done");
 		}
 
 		private static void InitialisePicturesWorker()
 		{
-			m_isPicturesInitialised = false;
-			m_pictureFiles = new PicturesCollection();
-
-			MLog.Log(null, "Loading mediaplayer picture files from " + IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1]);
-			for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++)
-			{
+			MLog.Log(null, "Checking mediaplayer picture files from " + IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1]);
+			for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++){
 				m_pictureFiles.AddFiles(IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1], "*." + IniFile.PICTURE_EXTENSION[i],
-					System.IO.SearchOption.AllDirectories);
+					System.IO.SearchOption.AllDirectories, HasPictureCache);
 			}
-
 			//save new items found in library
 			m_pictureFiles.SaveUpdatedItems();
-
-			m_isPicturesInitialised = true;
+			if (MZPState.Instance != null)
+				m_isPicturesInitialised = true;
 		}
 
 		private static void InitialiseVideosWorker()
 		{
-			m_isVideosInitialised = false;
-			m_videoFiles = new VideoCollection();
-
 			MLog.Log(null, "Loading mediaplayer video files from " + IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
-			for (int i = 0; i < IniFile.VIDEO_EXTENSION.Length; i++)
-			{
+			for (int i = 0; i < IniFile.VIDEO_EXTENSION.Length; i++){
 				m_videoFiles.AddFiles(IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1], "*." + IniFile.VIDEO_EXTENSION[i],
-					System.IO.SearchOption.AllDirectories);
+					System.IO.SearchOption.AllDirectories, HasVideoCache);
 			}
-
 			//save new items found in library
 			m_videoFiles.SaveUpdatedItems();
-
-			m_isVideosInitialised = true;
+			if (MZPState.Instance != null)
+				m_isVideosInitialised = true;
 		}
 
 		public static void SaveLibraryToIni()
@@ -1467,21 +1572,36 @@ namespace MultiZonePlayer
 			{
 				if (m_isMusicInitialised)
 				{
-					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+					MLog.Log("Saving music library");
+					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
+					param.UseExtensions = false;
+					param.UseEscapedUnicode = false;
+					param.SerializeNullValues = false;
 					json = fastJSON.JSON.Instance.ToJSON(m_musicFiles, param);
-					Utilities.WriteTextFile(IniFile.MEDIA_MUSIC_STORAGE_FILE, json);
+					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_MUSIC_STORAGE_FILE, json);
+					MLog.Log("Saving music library done");
 				}
 				if (m_isVideosInitialised)
 				{
-					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+					MLog.Log("Saving video library");
+					fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+					param.UseExtensions = false;
+					param.UseEscapedUnicode = false;
+					param.SerializeNullValues = false;
 					json = fastJSON.JSON.Instance.ToJSON(m_videoFiles, param);
-					Utilities.WriteTextFile(IniFile.MEDIA_VIDEO_STORAGE_FILE, json);
+					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_VIDEO_STORAGE_FILE, json);
+					MLog.Log("Saving video library done");
 				}
 				if (m_isPicturesInitialised)
 				{
-					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+					MLog.Log("Saving picture library");
+					fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+					param.UseExtensions = false;
+					param.UseEscapedUnicode = false;
+					param.SerializeNullValues = false;
 					json = fastJSON.JSON.Instance.ToJSON(m_pictureFiles, param);
-					Utilities.WriteTextFile(IniFile.MEDIA_PICTURE_STORAGE_FILE, json);
+					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_PICTURE_STORAGE_FILE, json);
+					MLog.Log("Saving picture library done");
 				}
 			}
 			catch (Exception ex)

@@ -24,11 +24,14 @@ function ajaxCall(targetDiv,url,forceReload) {
 		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
 	}
 	div = document.getElementById(targetDiv);
-	if (div != null) div.innerHTML = "Executing Call:" + url;
+	if (div != null) div.innerHTML = "Calling:" + url;
 	xmlhttp.onreadystatechange = function () {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			if (div !=null) div.innerHTML = xmlhttp.responseText;
-			if (forceReload) reload();
+			if (div != null) div.innerHTML = xmlhttp.responseText;
+			if (forceReload) {
+				reload(document.URL);
+				//if (div != null) div.innerHTML = div.innerHTML + " and reloaded";
+			}
 		}
 	}
 	xmlhttp.open("GET", url, true);

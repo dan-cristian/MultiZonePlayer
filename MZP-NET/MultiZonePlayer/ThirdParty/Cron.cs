@@ -52,14 +52,17 @@ namespace MultiZonePlayer
 			{
 				//readCrontab (Application.StartupPath + "\\cron.tab");
 
-				while (true)
-				{
-					Thread.Sleep (30000); // half a minute
-					try
-					{
+				while (MZPState.Instance != null){
+					try{
 						now = DateTime.Now;
 						checkProcesses(now);
 						doCrontab(now);
+					
+						for (int i = 0; i < 30; i++) {
+							Thread.Sleep(1000); // half a minute
+							if (MZPState.Instance==null)
+								break;
+						}
 					}
 					catch (Exception ex)
 					{

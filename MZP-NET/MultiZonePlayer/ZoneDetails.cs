@@ -593,7 +593,8 @@ namespace MultiZonePlayer {
 			//remove fields that generate serialisation problems
 			this.Meta = null;
 
-			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
+			param.UseExtensions = false;
 			String json = JSON.Instance.ToJSON(this, param);
 			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
 			

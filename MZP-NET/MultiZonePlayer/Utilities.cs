@@ -442,7 +442,9 @@ namespace MultiZonePlayer
 			catch (Exception ex) { }
             
         }
-
+		public static bool ExistFileRelativeToAppPath(String fileName) {
+			return File.Exists(IniFile.CurrentPath() + fileName);
+		}
         public static String ReadFileRelativeToAppPath(String fileName)
         {
             StreamReader str = File.OpenText(IniFile.CurrentPath() + fileName);
@@ -517,6 +519,13 @@ namespace MultiZonePlayer
 			return result;
 		}
 
+		public static String ReadFileRelToAppPath(String fileName) {
+			StreamReader str = File.OpenText(IniFile.CurrentPath() + fileName);
+			String result = str.ReadToEnd();
+			str.Close();
+			return result;
+		}
+
         public static byte[] ReadBinaryFileRelativeToAppPath(String fileName)
         {
             FileStream fs = File.OpenRead(IniFile.CurrentPath() + fileName);
@@ -549,13 +558,14 @@ namespace MultiZonePlayer
             }
         }
 
-		public static void WriteTextFile(String fileName, String data)
+		public static void WriteTextFileRelToAppPath(String fileName, String data)
 		{
 			try
 			{
-				FileStream fs = File.Create(IniFile.CurrentPath() + fileName);
+				File.WriteAllText(IniFile.CurrentPath() + fileName, data);
+				/*FileStream fs = File.Create(IniFile.CurrentPath() + fileName);
 				fs.Write(data.GetBytes(), 0, data.Length);
-				fs.Close();
+				fs.Close();*/
 			}
 			catch (Exception ex)
 			{
@@ -1008,6 +1018,10 @@ namespace MultiZonePlayer
 			MLog.Log(null, "Loaded " + (line - 1) + " log definition lines");
 		}
 
+		public static void Log(String text) {
+			Log(null, text);
+		}
+
         public static void Log(Object o, CommandResult res)
         {
             Log(o, res.ErrorMessage);
@@ -1045,30 +1059,32 @@ namespace MultiZonePlayer
 					stack = stackList[1];
 				else
 					stack = new System.Diagnostics.StackTrace(1, false);
-				for (int i=0;i<Math.Min(7, stack.GetFrames().Length);i++)
-					callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
-                if (e != null)
-                {
-					if (e.GetType().ToString().ToLower().Contains("exception"))
-						text += " err=" + ((Exception)e).Message + " method: "
-							+ callingMethod
-							+ " errline="+stack.GetFrame(0).GetFileLineNumber()
-							+ " errcol=" + stack.GetFrame(0).GetFileColumnNumber();
+				if (stack.GetFrames() != null) {
+					for (int i = 0; i < Math.Min(7, stack.GetFrames().Length); i++)
+						callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
+					if (e != null && stack.GetFrames().Length>0) {
+						if (e.GetType().ToString().ToLower().Contains("exception"))
+							text += " err=" + ((Exception)e).Message + " method: "
+								+ callingMethod
+								+ " errline=" + stack.GetFrame(0).GetFileLineNumber()
+								+ " errcol=" + stack.GetFrame(0).GetFileColumnNumber();
 						//+" stack=" + ((Exception)e).StackTrace.to
-					else
-						text += " method: "+callingMethod+" sender=" + e.ToString();
-                }
+						else
+							text += " method: " + callingMethod + " sender=" + e.ToString();
+					}
+				}
             }
             catch (Exception ex) {
-				Utilities.AppendToGenericLogFile(ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System); 
+				Utilities.AppendToGenericLogFile("1-" + ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System); 
 			}
             try
             {
-				if (m_keywords!=null && m_keywords.Contains("all")
-					|| (e!=null && m_keywords.Contains(e.ToString().ToLower()))//sender
+				if (m_keywords!=null && e!= null && text != null && 
+					(m_keywords.Contains("all")
+					|| (m_keywords.Contains(e.ToString().ToLower()))//sender
 					|| m_keywords.Contains(Thread.CurrentThread.Name.ToLower())//thread
-					|| (e!=null && e.GetType().ToString().ToLower().Contains("exception")) 
-					|| text.ToLower().Contains("error"))//any error
+					|| (e.GetType().ToString().ToLower().Contains("exception")) 
+					|| text.ToLower().Contains("error")))//any error
 				{
 					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);
@@ -1078,7 +1094,7 @@ namespace MultiZonePlayer
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.SystemDropped);
             }
             catch (Exception ex){
-				Utilities.AppendToGenericLogFile(ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System);
+				Utilities.AppendToGenericLogFile("2-"+ex.Message + ex.StackTrace + ex.Source + "\n", EventSource.System);
 			}
         }
 
