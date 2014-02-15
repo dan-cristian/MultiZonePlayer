@@ -8,152 +8,126 @@
  */
 
 using System;
-using System.Collections;
-using System.ComponentModel;
-using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Windows.Forms;
 using DirectShowLib;
-using MultiZonePlayer;
 
-namespace MultiZonePlayer
-{
+namespace MultiZonePlayer {
 	/// <summary>
-	/// Description of Class1.
+	///     Description of Class1.
 	/// </summary>
-	/// 
+	public class AuxPlayer : DCPlayer {
+		private String inputDeviceName;
+		private IBaseFilter inputFilter;
 
-         public class AuxPlayer : DCPlayer
-         {
+		public AuxPlayer()
+			: base() {
+		}
 
-             private String inputDeviceName;
-             private IBaseFilter inputFilter;
-             
-
-             public AuxPlayer()
-                 : base()
-             {
-
-             }
-
-             
-             
-             /*
+		/*
      * Graph creation and destruction methods
      */
 
-             public override void OpenClip(String inputDevice, ZoneGeneric zoneForm)
-             {
-                 try
-                 {
-                     // If no fullfilepath specified by command line, show file open dialog
-                     this.inputDeviceName = inputDevice;
-                     //m_outputDeviceList = new Hashtable();
-                     //m_outputDeviceList.Add(zoneForm.GetZoneId(), outputDevice);
-                     this.zoneForm = zoneForm;
+		public override void OpenClip(String inputDevice, ZoneGeneric zoneForm) {
+			try {
+				// If no fullfilepath specified by command line, show file open dialog
+				inputDeviceName = inputDevice;
+				//m_outputDeviceList = new Hashtable();
+				//m_outputDeviceList.Add(zoneForm.GetZoneId(), outputDevice);
+				this.zoneForm = zoneForm;
 
+				// Reset status variables
+				currentState = ZoneState.NotStarted;
 
-                     // Reset status variables
-                     this.currentState = ZoneState.NotStarted;
+				//this.currentVolume = VolumeFull;
 
-                     //this.currentVolume = VolumeFull;
+				// Start playing the media file
+				PlayMovieInWindow( /*deviceList, deviceIndex, form*/);
+			}
+			catch (Exception ex) {
+				MLog.Log(null, "error openclip aux " + ex.Message + " - " + lastErrorMesg);
+			}
+		}
 
-                     // Start playing the media file
-                     PlayMovieInWindow(/*deviceList, deviceIndex, form*/);
-                 }
-                 catch (Exception ex)
-                 {
-                     MLog.Log(null,"error openclip aux "+ ex.Message + " - " + lastErrorMesg);
-                 }
-             }
+		protected override void PlayMovieInWindow() {
+			int hr = 0;
 
-             protected override void PlayMovieInWindow()
-             {
-                 int hr = 0;
+			graphBuilder = (IGraphBuilder) new FilterGraph();
 
-                 this.graphBuilder = (IGraphBuilder)new FilterGraph();
+			inputFilter = (IBaseFilter) Marshal.BindToMoniker(inputDeviceName);
+			DsError.ThrowExceptionForHR(hr);
 
-                 inputFilter = (IBaseFilter)Marshal.BindToMoniker(inputDeviceName);
-                 DsError.ThrowExceptionForHR(hr);
+			hr = graphBuilder.AddFilter(inputFilter, "Input capture");
+			DsError.ThrowExceptionForHR(hr);
 
-                 hr = this.graphBuilder.AddFilter(inputFilter, "Input capture");
-                 DsError.ThrowExceptionForHR(hr);
+			outputFilter = (IBaseFilter) Marshal.BindToMoniker(
+				zoneForm.GetClonedZones()[0].OutputDeviceAutoCompleted());
 
-                 outputFilter = (IBaseFilter)Marshal.BindToMoniker(
-					 zoneForm.GetClonedZones()[0].OutputDeviceAutoCompleted());
+			hr = graphBuilder.AddFilter(outputFilter, "Out Renderer");
+			DsError.ThrowExceptionForHR(hr);
+			int pinCount;
+			IPin[] pinList;
+			DShowUtility.GetFilterPins(inputFilter, out pinCount, out pinList);
 
-                 hr = this.graphBuilder.AddFilter(outputFilter, "Out Renderer");
-                 DsError.ThrowExceptionForHR(hr);
-                 int pinCount;
-                 IPin[] pinList;
-                 DShowUtility.GetFilterPins(inputFilter, out pinCount, out pinList);
+			hr = graphBuilder.Render(pinList[0]);
+			DsError.ThrowExceptionForHR(hr);
 
-                 hr = this.graphBuilder.Render(pinList[0]);
-                 DsError.ThrowExceptionForHR(hr);
+			// QueryInterface for DirectShow interfaces
+			mediaControl = (IMediaControl) graphBuilder;
+			mediaEventEx = (IMediaEventEx) graphBuilder;
+			mediaSeeking = (IMediaSeeking) graphBuilder;
+			mediaPosition = (IMediaPosition) graphBuilder;
 
-                 // QueryInterface for DirectShow interfaces
-                 this.mediaControl = (IMediaControl)this.graphBuilder;
-                 this.mediaEventEx = (IMediaEventEx)this.graphBuilder;
-                 this.mediaSeeking = (IMediaSeeking)this.graphBuilder;
-                 this.mediaPosition = (IMediaPosition)this.graphBuilder;
+			// Query for video interfaces, which may not be relevant for audio files
+			videoWindow = graphBuilder as IVideoWindow;
+			basicVideo = graphBuilder as IBasicVideo;
 
-                 // Query for video interfaces, which may not be relevant for audio files
-                 this.videoWindow = this.graphBuilder as IVideoWindow;
-                 this.basicVideo = this.graphBuilder as IBasicVideo;
+			// Query for audio interfaces, which may not be relevant for video-only files
+			basicAudio = graphBuilder as IBasicAudio;
 
-                 // Query for audio interfaces, which may not be relevant for video-only files
-                 this.basicAudio = this.graphBuilder as IBasicAudio;
+			// Is this an audio-only file (no video component)?
+			////CheckVisibility();
 
-                 // Is this an audio-only file (no video component)?
-                 ////CheckVisibility();
+			// Have the graph signal event via window callbacks for performance
+			hr = mediaEventEx.SetNotifyWindow(Handle, WMGraphNotify, IntPtr.Zero);
+			DsError.ThrowExceptionForHR(hr);
 
-                 // Have the graph signal event via window callbacks for performance
-                 hr = this.mediaEventEx.SetNotifyWindow(this.Handle, WMGraphNotify, IntPtr.Zero);
-                 DsError.ThrowExceptionForHR(hr);
+			if (!isAudioOnly) {
+				// Setup the video window
+				hr = videoWindow.put_Owner(Handle);
+				DsError.ThrowExceptionForHR(hr);
 
-                 if (!this.isAudioOnly)
-                 {
-                     // Setup the video window
-                     hr = this.videoWindow.put_Owner(this.Handle);
-                     DsError.ThrowExceptionForHR(hr);
+				hr = videoWindow.put_WindowStyle(WindowStyle.Child | WindowStyle.ClipSiblings | WindowStyle.ClipChildren);
+				DsError.ThrowExceptionForHR(hr);
 
-                     hr = this.videoWindow.put_WindowStyle(WindowStyle.Child | WindowStyle.ClipSiblings | WindowStyle.ClipChildren);
-                     DsError.ThrowExceptionForHR(hr);
+				//hr = InitVideoWindow(1, 1);
+				DsError.ThrowExceptionForHR(hr);
 
-                     //hr = InitVideoWindow(1, 1);
-                     DsError.ThrowExceptionForHR(hr);
+				GetFrameStepInterface();
+			}
+			else {
+				// Initialize the default player size and enable playback menu items
+			}
 
-                     GetFrameStepInterface();
-                 }
-                 else
-                 {
-                     // Initialize the default player size and enable playback menu items
-                 }
-
-                 // Complete window initialization
-                 this.isFullScreen = false;
-                 this.currentPlaybackRate = 1.0;
+			// Complete window initialization
+			isFullScreen = false;
+			currentPlaybackRate = 1.0;
 
 #if DEBUG
-      //rot = new DsROTEntry(this.graphBuilder);
+			//rot = new DsROTEntry(this.graphBuilder);
 #endif
 
-                 this.Focus();
+			Focus();
 
-                 // Run the graph to play the media file
-                 hr = this.mediaControl.Run();
-                 DsError.ThrowExceptionForHR(hr);
+			// Run the graph to play the media file
+			hr = mediaControl.Run();
+			DsError.ThrowExceptionForHR(hr);
 
-                 SetVolume(this.currentVolume);
-                 this.currentState = ZoneState.Running;
+			SetVolume(currentVolume);
+			currentState = ZoneState.Running;
+		}
 
-             }
-
-             public override String GetFileName()
-             {
-                 return "n/a, this is auxplayer";
-             }
-         }
-
+		public override String GetFileName() {
+			return "n/a, this is auxplayer";
+		}
+	}
 }

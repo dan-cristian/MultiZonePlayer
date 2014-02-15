@@ -7,44 +7,18 @@
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
-<body>
-<table>
-    <tr>
-            <td><a class="big" href="tv.html?command=play&zoneid=13" title="play">►</a></td>
-            <td><a class="big" href="tv.html?command=stop&zoneid=13" title="stop">■</a></td>
-            <td><a class="big" href="tv.html?command=volumedown&zoneid=13" title="volume down">-</a></td>
-            <td><a class="big" href="tv.html?command=volumeup&zoneid=13" title="volume up">+</a></td>
-            <td><a class="big" href="tv.html?command=next&zoneid=13" title="next">►►</a></td>
-    </tr></table>
-    <table><tr>
-        <td><a class="med" ref="tv.html?zoneid=%_zoneid">#Zones.ZoneState,13#</a></td>
-        <td>Input #Zones.Title,13#</td>
-        <td>Volume #Zones.VolumeLevel,13#</td>
-        <td><a href="tv.html?command=tvsetinput&action=20&zoneid=13">UPC</a></td>
-        <td><a href="tv.html?command=tvsetinput&action=90&zoneid=13">HDMI</a></td>
-    </tr></table>
-    <table><tr>
-            <td><a class="big" href="tv.html?command=play&zoneid=2" title="play">►</a></td>
-            <td><a class="big" href="tv.html?command=pause&zoneid=2" title="pause">&#x258C;&#x258C;</a></td>
-            <td><a class="big" href="tv.html?command=stop&zoneid=2" title="stop">■</a></td>
-            <td><a class="big" href="tv.html?command=volumedown&zoneid=2" title="volume down">▬</a></td>
-            <td><a class="big" href="tv.html?command=volumeup&zoneid=2" title="volume up">+</a></td>
-            <td><a class="big" href="tv.html?command=mute&zoneid=2" title="mute">&#x263C;</a></td>
-    </tr>
-    <tr>
-        <td><a class="big" href="tv.html?command=left&zoneid=2" title="left"><</a></td>
-        <td><a class="big" href="tv.html?command=right&zoneid=2" title="right">></a></td>
-        <td><a class="big" href="tv.html?command=up&zoneid=2" title="up">^</a></td>
-        <td><a class="big" href="tv.html?command=down&zoneid=2" title="down">v</a></td>
-		<td><a class="big" href="tv.html?command=enter&zoneid=2" title="enter">ok</a></td>
-    </tr>
-    </table>
-    <table><tr>
-        <td><a class="med" href="tv.html?zoneid=%_zoneid">#Zones.ZoneState,2#</a></td>
-        <td> #Zones.Title,2#</td>
-        <td>Volume #Zones.VolumeLevel,2#</td>
-    </tr>
-    <tr><td><a href="status.html?zoneid=%_zoneid">Back</a></td></tr>
-</table>
-</body>
+	<body>
+		<button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Running"%>" onclick="ajaxCall('result','cmd.html?command=play&zoneid=%_zoneid', true)"><b>></b></button>
+		<button class="Small" onclick="ajaxCall('result','cmd.html?command=stop&zoneid=%_zoneid', true)">■</button>
+		<button class="Small" onclick="ajaxCall('result','cmd.html?command=volumedown&zoneid=%_zoneid', true)"><b>-</b></button>
+		<button class="Small" onclick="ajaxCall('result','cmd.html?command=volumeup&zoneid=%_zoneid', true)"><b>+</b></button>
+		<button class="Small" onclick="ajaxCall('result','cmd.html?command=next&zoneid=%_zoneid', true)"><b>>></b></button>
+		<br/>
+		<button class="Caption">#Zones,%_zoneid.VolumeLevel#</button>
+		<button class="Caption">#Zones,%_zoneid.Title#</button>
+		<button class="Small" onclick="ajaxCall('result','cmd.html?command=tvsetinput&action=91&zoneid=%_zoneid', true)"><b>UPC</b></button>
+		<button class="Small" onclick="ajaxCall('result','cmd.html?command=tvsetinput&action=90&zoneid=%_zoneid', true)"><b>Movies</b></button>
+		<br/>
+		<button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
+	</body>
 </html>

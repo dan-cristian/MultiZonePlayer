@@ -1079,7 +1079,8 @@ namespace MultiZonePlayer
 			}
             try
             {
-				if (m_keywords!=null && e!= null && text != null && 
+				if (m_keywords!=null && e!= null && text != null && e.GetType() != null 
+					&& Thread.CurrentThread != null && Thread.CurrentThread.Name != null &&
 					(m_keywords.Contains("all")
 					|| (m_keywords.Contains(e.ToString().ToLower()))//sender
 					|| m_keywords.Contains(Thread.CurrentThread.Name.ToLower())//thread

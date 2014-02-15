@@ -110,13 +110,13 @@ namespace MultiZonePlayer
         
         private void loginFailed(object o, agsXMPP.Xml.Dom.Element el)
         {
-            Thread.CurrentThread.Name = "GTalk Event LoggedIn Failed";
+            //Thread.CurrentThread.Name = "GTalk Event LoggedIn Failed";
             MLog.Log(this, "GTalk Messenger NOT authenticated " + el.Value);
         }
 
         private void loggedIn(object o)
         {
-            Thread.CurrentThread.Name = "GTalk Event LoggedIn OK";
+            //Thread.CurrentThread.Name = "GTalk Event LoggedIn OK";
             MLog.Log(this, "GTalk Messenger authenticated OK");
         }
 

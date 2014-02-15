@@ -10,35 +10,28 @@ using ExifLib;
 using System.Threading;
 using fastJSON;
 
-namespace MultiZonePlayer
-{
-
-	public abstract class PlaylistBase
-	{
+namespace MultiZonePlayer {
+	public abstract class PlaylistBase {
 		public List<FileDetail> m_playlistFiles;
 
-		public PlaylistBase()
-		{
+		public PlaylistBase() {
 			m_playlistFiles = new List<FileDetail>();
 		}
 
-		public List<FileDetail> PlaylistFiles
-		{
-			get	{return m_playlistFiles;}
+		public List<FileDetail> PlaylistFiles {
+			get { return m_playlistFiles; }
 		}
+
 		public abstract void SaveUpdatedItems();
 		public abstract int PendingSaveItemsCount();
 		protected abstract void ProcessFile(FileInfo fi);
 
-		public void AddFiles(String directory, String ext, SearchOption search, Boolean lookInCache)
-		{
-			if (Directory.Exists(directory))
-			{
-				try
-				{
+		public void AddFiles(String directory, String ext, SearchOption search, Boolean lookInCache) {
+			if (Directory.Exists(directory)) {
+				try {
 					DirectoryInfo di = new DirectoryInfo(directory);
 					FileInfo[] rgFiles = di.GetFiles(ext, search);
-					int newfiles=0, updatedfiles=0;
+					int newfiles = 0, updatedfiles = 0;
 					FileDetail file;
 					MLog.Log(this, "Adding files ext=" + ext + " count=" + rgFiles.Length);
 
@@ -46,12 +39,13 @@ namespace MultiZonePlayer
 					//m_playlistItems.Capacity = rgFiles.Length;
 					//m_artistMetaList.Capacity = rgFiles.Length / 10;
 
-					foreach (FileInfo fi in rgFiles)
-					{
-						if (lookInCache)
+					foreach (FileInfo fi in rgFiles) {
+						if (lookInCache) {
 							file = m_playlistFiles.Find(x => x.FilePath == fi.FullName);
-						else
+						}
+						else {
 							file = null;
+						}
 						//if new file is found on disk vs cached, load it
 						if (file == null) {
 							newfiles++;
@@ -60,28 +54,27 @@ namespace MultiZonePlayer
 						}
 						else {
 							//if file was modified reload
-								if (file.Modified != fi.LastWriteTime) {
-									updatedfiles++;
-									ProcessFile(fi);
-									file.Modified = fi.LastWriteTime; 
-								}
+							if (file.Modified != fi.LastWriteTime) {
+								updatedfiles++;
+								ProcessFile(fi);
+								file.Modified = fi.LastWriteTime;
+							}
 						}
 						//Application.DoEvents();
-						if (MZPState.Instance == null)
-						{
+						if (MZPState.Instance == null) {
 							MLog.Log(this, "Aborting loading media files");
 							break;
 						}
 					}
-					MLog.Log(this, "Adding files completed ext=" + ext + " new="+newfiles + " updated="+updatedfiles);
+					MLog.Log(this, "Adding files completed ext=" + ext + " new=" + newfiles + " updated=" + updatedfiles);
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					MLog.Log(ex, this, "Error adding files from " + directory + " err=" + ex.Message);
 				}
 			}
-			else
+			else {
 				MLog.Log(this, "Error, directory " + directory + " does not exist");
+			}
 		}
 	}
 
@@ -221,15 +214,16 @@ namespace MultiZonePlayer
 		public DateTime Modified;
 		//public Boolean NeedsDiskReload = false;
 
-		public FileDetail(){
+		public FileDetail() {
 		}
+
 		public FileDetail(String filePath, DateTime modified) {
 			FilePath = filePath;
 			Modified = modified;
 		}
 	}
-	public abstract class MediaItemBase
-	{
+
+	public abstract class MediaItemBase {
 		private static Random rndSeed = new Random();
 		private static int index = 0;
 		protected static int errorMetaCount = 0;
@@ -249,9 +243,8 @@ namespace MultiZonePlayer
 		public DateTime LibraryAddDate;
 		public String Author = "";
 		public String Copyright;
-		
-		public bool RequireSave
-		{
+
+		public bool RequireSave {
 			get { return m_requireSave; }
 		}
 
@@ -264,36 +257,30 @@ namespace MultiZonePlayer
 			return true;
 		}
 
-		public virtual int UpdateRating(int step, int minvalue, int maxvalue)
-		{
+		public virtual int UpdateRating(int step, int minvalue, int maxvalue) {
 			Rating = Math.Max(minvalue, Rating + step);
 			Rating = Math.Min(Rating, maxvalue);
 			m_requireSave = true;
 			return Rating;
 		}
 
-		public virtual void SetRating(int level)
-		{
+		public virtual void SetRating(int level) {
 			Rating = level;
 			m_requireSave = true;
 		}
 
-		public virtual void IncreasePlayCount()
-		{
+		public virtual void IncreasePlayCount() {
 			PlayCount++;
 			m_requireSave = true;
 		}
 
-		public virtual void SetPlayCount(int count)
-		{
+		public virtual void SetPlayCount(int count) {
 			PlayCount = count;
 			m_requireSave = true;
 		}
-
 	}
 
-	public class AudioItem : MediaItemBase
-	{
+	public class AudioItem : MediaItemBase {
 		public String Genre = "";
 		public String ContributingArtist = "";
 		public String Year = "";
@@ -304,48 +291,44 @@ namespace MultiZonePlayer
 		private Boolean SaveRatingInComment = false;
 		private Boolean SavePlayCountInComment = false;
 
-		public AudioItem(){
+		public AudioItem() {
 		}
 
-		public AudioItem(String url, String folder, LastFmMeta meta){
+		public AudioItem(String url, String folder, LastFmMeta meta) {
 			SourceURL = url;
 			SourceContainerURL = folder;
 			Meta = meta;
 		}
 
-		public void SetLibraryAddedComment()
-		{
+		public void SetLibraryAddedComment() {
 			Comment = Comment + IniFile.MEDIA_TAG_LIBRARY_ID + DateTime.Now.ToString("yyyy-MM-dd");
 			m_requireSave = true;
 		}
 
-		public void SetFavorite(bool isFavorite)
-		{
+		public void SetFavorite(bool isFavorite) {
 			string currentIsFavorite;
-			if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE))
-			{
-				currentIsFavorite = Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1);
-				Comment = Comment.Replace(IniFile.MEDIA_TAG_FAVORITE + currentIsFavorite, IniFile.MEDIA_TAG_FAVORITE + (isFavorite ? "1" : "0"));
+			if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE)) {
+				currentIsFavorite =
+					Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1);
+				Comment = Comment.Replace(IniFile.MEDIA_TAG_FAVORITE + currentIsFavorite,
+					IniFile.MEDIA_TAG_FAVORITE + (isFavorite ? "1" : "0"));
 			}
-			else
+			else {
 				Comment = Comment + IniFile.MEDIA_TAG_FAVORITE + (isFavorite ? "1" : "0");
+			}
 			m_requireSave = true;
 		}
 
-
-		public virtual bool IsThatNew(int ageinweeks)
-		{
-			DateTime dt = DateTime.Now.Subtract(new TimeSpan(ageinweeks * 7, 0, 0, 0));
+		public virtual bool IsThatNew(int ageinweeks) {
+			DateTime dt = DateTime.Now.Subtract(new TimeSpan(ageinweeks*7, 0, 0, 0));
 			return LibraryAddDate.CompareTo(dt) > 0;
 		}
 
-		public override bool RetrieveMediaItemValues()
-		{
+		public override bool RetrieveMediaItemValues() {
 			int p_rating = -1, p_playcount = -1;
 			String parameter;
 			bool result = false;
-			try
-			{
+			try {
 				result = base.RetrieveMediaItemValues();
 				TagLib.File tg = TagLib.File.Create(SourceURL as String);
 				//for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++)
@@ -354,7 +337,7 @@ namespace MultiZonePlayer
 				//	{
 				Comment = tg.Tag.Comment == null ? "" : tg.Tag.Comment;
 				Banshee.Streaming.StreamRatingTagger.GetRatingAndPlayCount(tg, ref p_rating, ref p_playcount);
-				
+
 				if (p_rating == -1) {
 					SaveRatingInComment = true;
 					if (Comment.Contains(IniFile.MEDIA_TAG_RATING)) {
@@ -381,7 +364,6 @@ namespace MultiZonePlayer
 					else {
 						Comment += IniFile.MEDIA_TAG_PLAYCOUNT + "0;";
 						this.SetPlayCount(0);
-						
 					}
 				}
 
@@ -389,40 +371,39 @@ namespace MultiZonePlayer
 				Title = Title ?? SourceURL.Substring(Math.Max(0, SourceURL.Length - 35)).Replace("\\", "/");
 				Title = Utilities.SanitiseInternationalTrimUpper(Title);
 				Genre = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstGenre);
-				if (Genre == null || Genre=="") 
+				if (Genre == null || Genre == "") {
 					Genre = "Not Set";
+				}
 				PlayCount = p_playcount;
 				Rating = p_rating;
 				Author = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstAlbumArtist);
-				
-				if ( (Author==null) || (Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
-				{
+
+				if ((Author == null) || (Author == "") || Author.ToLower().Contains("various") ||
+				    Author.ToLower().Contains("unknown")) {
 					Author = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstPerformer);
-					if ((Author==null)|| (Author == "") || Author.ToLower().Contains("various") || Author.ToLower().Contains("unknown"))
-					{
+					if ((Author == null) || (Author == "") || Author.ToLower().Contains("various") ||
+					    Author.ToLower().Contains("unknown")) {
 						Author = Utilities.SanitiseInternationalTrimUpper(tg.Tag.FirstComposer);
 					}
 				}
-				
-				if (Author==null || Author == "") 
+
+				if (Author == null || Author == "") {
 					Author = "Not Set";
+				}
 				Album = Utilities.SanitiseInternationalTrimUpper(tg.Tag.Album);
-				if (Album == null || Album == "") 
+				if (Album == null || Album == "") {
 					Album = "Not Set";
+				}
 				Year = tg.Tag.Year.ToString();
 				MediaType = "audio";
 
-				
-
-				if (Meta != null)
-				{
+				if (Meta != null) {
 					Author = Utilities.SanitiseInternationalTrimUpper(Meta.ArtistName) ?? Author;
 					//Album = Meta.Album ?? Album;
 					Genre = Utilities.SanitiseInternationalTrimUpper(Meta.MainGenre) ?? Genre;
 				}
 
-				if (!Comment.Contains(IniFile.MEDIA_TAG_LIBRARY_ID))
-				{
+				if (!Comment.Contains(IniFile.MEDIA_TAG_LIBRARY_ID)) {
 					//first added to library, reset some fields
 					this.SetRating(0);
 					this.SetPlayCount(0);
@@ -430,29 +411,29 @@ namespace MultiZonePlayer
 					this.SetFavorite(false);
 					LibraryAddDate = Created;
 				}
-				else
-				{
+				else {
 					String librarydate = Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_LIBRARY_ID)
-						+ IniFile.MEDIA_TAG_LIBRARY_ID.Length, "yyyy-mm-dd".Length);
+					                                       + IniFile.MEDIA_TAG_LIBRARY_ID.Length, "yyyy-mm-dd".Length);
 					LibraryAddDate = DateTime.Parse(librarydate);
 
-					if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE))
-						this.IsFavorite = Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1) == "1";
-					else
+					if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE)) {
+						this.IsFavorite =
+							Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1) == "1";
+					}
+					else {
 						this.SetFavorite(false);
+					}
 				}
 				result = true;
 			}
-			catch (Exception)
-			{
+			catch (Exception) {
 				//MLog.Log(ex, "Unable to read tag for file "+ SourceURL);
 				errorMetaCount++;
 			}
 			return result;
 		}
 
-		public override void SaveItem()
-		{
+		public override void SaveItem() {
 			String parameter;
 			m_tagFile = TagLib.File.Create(SourceURL);
 			Banshee.Streaming.StreamRatingTagger.StoreRatingAndPlayCount(Rating, PlayCount, m_tagFile);
@@ -466,60 +447,50 @@ namespace MultiZonePlayer
 			}
 			m_tagFile.Tag.Comment = Comment;
 
-			try
-			{
+			try {
 				m_tagFile.Save();
 				m_requireSave = false;
 			}
-			catch (TagLib.CorruptFileException)
-			{
+			catch (TagLib.CorruptFileException) {
 				m_requireSave = false;
 				MLog.Log(this, "Corrupt file, not saving, " + SourceURL);
 			}
-			catch (IOException ex)
-			{
+			catch (IOException ex) {
 				m_requireSave = true;
-				MLog.Log(this, "Unable to save tag for " + SourceURL + " ex="+ex.Message);
+				MLog.Log(this, "Unable to save tag for " + SourceURL + " ex=" + ex.Message);
 			}
 		}
 	}
-	
-	public class MediaImageItem : MediaItemBase
-	{
+
+	public class MediaImageItem : MediaItemBase {
 		public List<String> Tags = new List<string>();
 		public string CameraModel;
 		public string Location;
 		public string Subject;
 		public List<String> Faces = new List<string>();
-		public String FaceList="";
+		public String FaceList = "";
 
-		public MediaImageItem()
-		{
+		public MediaImageItem() {
 		}
 
-		public MediaImageItem(String url, String folder)
-		{
+		public MediaImageItem(String url, String folder) {
 			SourceURL = url;
 			SourceContainerURL = folder;
 		}
 
-		public override void SaveItem()
-		{
+		public override void SaveItem() {
 			throw new NotImplementedException();
 		}
 
-		public void AddFace(string face)
-		{
+		public void AddFace(string face) {
 			Faces.Add(face);
 			FaceList = "";
 			foreach (string item in Faces)
-				FaceList+= item+ ";";
+				FaceList += item + ";";
 		}
 
-		public String TagList
-		{
-			get
-			{
+		public String TagList {
+			get {
 				string result = "";
 				foreach (string tag in Tags)
 					result += tag + ";";
@@ -527,13 +498,11 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public override bool RetrieveMediaItemValues()
-		{
+		public override bool RetrieveMediaItemValues() {
 			bool result = false;
 			//Goheer.EXIF.EXIFextractor exif;
 			//string datetime;
-			try
-			{
+			try {
 				/*
 				exif = new Goheer.EXIF.EXIFextractor(SourceURL, "", "");
 				this.CameraModel = exif["Equip Model"]!=null?exif["Equip Model"].ToString().Replace("\0", ""):"";
@@ -560,7 +529,7 @@ namespace MultiZonePlayer
 				this.Location = bmp.Location ?? "";
 				this.Subject = bmp.Subject ?? "";
 				*/
-				int length = (int)Math.Min(16384, fs.Length);
+				int length = (int) Math.Min(16384, fs.Length);
 				byte[] content = new byte[length];
 				fs.Position = 0;
 				fs.Read(content, 0, length);
@@ -570,37 +539,30 @@ namespace MultiZonePlayer
 				int start = fileContent.IndexOf("<x:xmpmeta");
 				int end = fileContent.IndexOf("</x:xmpmeta>") + "</x:xmpmeta>".Length;
 
-				if (start > -1)
-				{
+				if (start > -1) {
 					fileContent = fileContent.Substring(start, end - start);
 					MediaImageItem media = this;
 					XMPService.GetProperties(fileContent.Replace(':', '_'), ref media);
 				}
 				ExifReader reader = null;
-				try
-				{
+				try {
 					reader = new ExifReader(SourceURL);
 					// To read a single field, use code like this:
-					
-					if (!reader.GetTagValue<DateTime>(ExifTags.DateTimeOriginal, out this.Created))
-					{
+
+					if (!reader.GetTagValue<DateTime>(ExifTags.DateTimeOriginal, out this.Created)) {
 						reader.GetTagValue<DateTime>(ExifTags.DateTimeDigitized, out this.Created);
 					}
 
-					if (reader.GetTagValue<String>(ExifTags.Model, out this.CameraModel))
-					{
+					if (reader.GetTagValue<String>(ExifTags.Model, out this.CameraModel)) {
 					}
 
-					if (reader.GetTagValue<String>(ExifTags.ImageDescription, out this.Title))
-					{
+					if (reader.GetTagValue<String>(ExifTags.ImageDescription, out this.Title)) {
 					}
 
-					if (reader.GetTagValue<String>(ExifTags.Artist, out this.Author))
-					{
+					if (reader.GetTagValue<String>(ExifTags.Artist, out this.Author)) {
 					}
 
-					if (reader.GetTagValue<String>(ExifTags.Copyright, out this.Copyright))
-					{
+					if (reader.GetTagValue<String>(ExifTags.Copyright, out this.Copyright)) {
 					}
 
 					//if (reader.GetTagValue<String>(ExifTags.Software, out this.Tags[0]))
@@ -641,8 +603,7 @@ namespace MultiZonePlayer
 					props = props.Substring(0, props.Length - 2);
 					 */
 				}
-				catch (Exception)
-				{
+				catch (Exception) {
 					// Something didn't work!
 					//MLog.Log(this, "Err read image exif file "+this.SourceURL + " er="+ex.Message);
 
@@ -660,50 +621,43 @@ namespace MultiZonePlayer
 						MLog.Log(exx, "Error read creationtime " + this.SourceURL);
 					}
 					*/
-					if (reader != null)
+					if (reader != null) {
 						reader.Dispose();
+					}
 				}
-
-
 
 				result = true;
 			}
-			catch (Exception)
-			{
+			catch (Exception) {
 				errorMetaCount++;
 			}
 
 			return result;
 		}
-
 	}
-	public class LastFmMeta
-	{
-		public string URL=null;
+
+	public class LastFmMeta {
+		public string URL = null;
 		public string ArtistURL = null;
 		public string MainGenre = null;
 		public string ArtistName;
 		public List<string> GenreTags;
-		public string ArtistOrigin=null;
+		public string ArtistOrigin = null;
 		public string Album;
 		public List<string> SimilarArtists;
 		public string ImageURL;
-		public string ArtistSummary=null;
-		public string YearFormed=null;
+		public string ArtistSummary = null;
+		public string YearFormed = null;
 
-
-		public LastFmMeta()
-		{
+		public LastFmMeta() {
 		}
 
-		public override string ToString()
-		{
+		public override string ToString() {
 			return String.Format("{0}, {1}", ArtistName, MainGenre);
 		}
 	}
 
-	public class VideoItem : MediaItemBase
-	{
+	public class VideoItem : MediaItemBase {
 		//public String SourceURL;
 		public String ImdbYear = "";
 		public String ImdbGenre = "";
@@ -720,26 +674,21 @@ namespace MultiZonePlayer
 		public String ImdbActors = "";
 		//public bool HasChanged = false;
 
-		public VideoItem()
-		{
+		public VideoItem() {
 		}
 
-		public VideoItem(String p_sourceURL)
-		{
+		public VideoItem(String p_sourceURL) {
 			SourceURL = p_sourceURL;
 		}
 
-		public override bool RetrieveMediaItemValues()
-		{
-			if (SourceURL != "")
-			{
+		public override bool RetrieveMediaItemValues() {
+			if (SourceURL != "") {
 				base.RetrieveMediaItemValues();
 				String fileFolder;
 				fileFolder = Directory.GetParent(SourceURL).FullName;
 				String infoPath = fileFolder + IniFile.VIDEO_INFO_FILE;
 
-				if (File.Exists(infoPath))
-				{
+				if (File.Exists(infoPath)) {
 					ImdbId = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_IMDBID, infoPath);
 					ImdbTitle = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_NAME, infoPath);
 					ImdbYear = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_YEAR, infoPath);
@@ -748,11 +697,11 @@ namespace MultiZonePlayer
 					Seen = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_SEEN, infoPath);
 					ImdbActors = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_ACTORS, infoPath);
 					ImdbImageURL = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_IMAGEURL, infoPath);
-					ImdbDescription = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_DESCRIPTION, infoPath);
+					ImdbDescription = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_DESCRIPTION,
+						infoPath);
 					ImdbRating = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_RATING, infoPath);
 					//result.Resolution = Utilities.IniReadValue(IniFile.VIDEO_INFO_INI_SECTION, IniFile.VIDEO_INFO_INI_RESOLUTION, infoPath);
-					switch (Path.GetExtension(SourceURL))
-					{
+					switch (Path.GetExtension(SourceURL)) {
 						case ".mkv":
 							Resolution = "1080p";
 							break;
@@ -764,28 +713,26 @@ namespace MultiZonePlayer
 							break;
 					}
 
-					if ((ImdbActors == "") && (ImdbDescription != ""))
-					{
+					if ((ImdbActors == "") && (ImdbDescription != "")) {
 						ImdbActors = IMDBParser.GetImdbActorsFromDescription(ImdbDescription);
 					}
 				}
-				else
-				{
+				else {
 					ImdbTitle = SourceURL.Substring(SourceURL.LastIndexOf("\\") + 1);
 				}
 
 				return true;
 			}
-			else
-			{
+			else {
 				MLog.Log(this, "Error no source url set for videoitem");
 				return false;
 			}
 		}
 
-		private static void SaveVideoInfo(VideoItem videoInfo)
-		{
-			if (videoInfo == null) return;
+		private static void SaveVideoInfo(VideoItem videoInfo) {
+			if (videoInfo == null) {
+				return;
+			}
 
 			String fileFolder = Directory.GetParent(videoInfo.SourceURL).FullName;
 			String infoPath = fileFolder + IniFile.VIDEO_INFO_FILE;
@@ -806,8 +753,7 @@ namespace MultiZonePlayer
 			//videoInfo.HasChanged = false;
 		}
 
-		public override void SaveItem()
-		{
+		public override void SaveItem() {
 			SaveVideoInfo(this);
 		}
 	}
@@ -1069,65 +1015,55 @@ namespace MultiZonePlayer
 	}
 */
 
-	public class VideoCollection : PlaylistBase
-	{
+	public class VideoCollection : PlaylistBase {
 		public List<VideoItem> m_videoPlayList;
 		public Dictionary<String, int> m_actorNames;
 		public Dictionary<String, int> m_GenreList;
 
-		public VideoCollection()
-		{
+		public VideoCollection() {
 			m_actorNames = new Dictionary<String, int>();
 			m_GenreList = new Dictionary<String, int>();
 			m_videoPlayList = new List<VideoItem>();
 		}
 
-		public List<VideoItem> GetVideoCollection()
-		{
+		public List<VideoItem> GetVideoCollection() {
 			return m_videoPlayList;
 		}
 
-		public ICollection GetActorNames()
-		{
+		public ICollection GetActorNames() {
 			return m_actorNames.Keys;
 		}
 
-		public IOrderedEnumerable<String> GetActorsByAppearance(int minimuAppeareanceCount)
-		{
+		public IOrderedEnumerable<String> GetActorsByAppearance(int minimuAppeareanceCount) {
 			var actors = from key in m_actorNames.Keys
-						 where m_actorNames[key] >= minimuAppeareanceCount
-						 orderby m_actorNames[key] + key descending
-						 select key;
+				where m_actorNames[key] >= minimuAppeareanceCount
+				orderby m_actorNames[key] + key descending
+				select key;
 			return actors;
 		}
 
-		public IOrderedEnumerable<String> GetGenresByAppearance(int minimuAppeareanceCount)
-		{
+		public IOrderedEnumerable<String> GetGenresByAppearance(int minimuAppeareanceCount) {
 			var genres = from key in m_GenreList.Keys
-						 where m_GenreList[key] >= minimuAppeareanceCount
-						 orderby m_GenreList[key] + key descending
-						 select key;
+				where m_GenreList[key] >= minimuAppeareanceCount
+				orderby m_GenreList[key] + key descending
+				select key;
 			return genres;
 		}
 
-		public VideoItem GetVideoInfo(String filePath)
-		{
+		public VideoItem GetVideoInfo(String filePath) {
 			return m_videoPlayList.Find(delegate(VideoItem info) { return info.SourceURL == filePath; });
 		}
 
-		public override void SaveUpdatedItems()
-		{
+		public override void SaveUpdatedItems() {
 			//throw new NotImplementedException();
 		}
 
-		public override int PendingSaveItemsCount()
-		{
+		public override int PendingSaveItemsCount() {
 			return 0;
 			//throw new NotImplementedException();
 		}
 
-		protected override void ProcessFile(FileInfo fi)
-		{
+		protected override void ProcessFile(FileInfo fi) {
 			VideoItem vidInfo;
 			FileDetail fileInCache;
 			fileInCache = m_playlistFiles.Find(x => x.FilePath == fi.FullName);
@@ -1143,10 +1079,10 @@ namespace MultiZonePlayer
 					vidInfo.RetrieveMediaItemValues();
 					ParseImdbData(vidInfo);
 				}
-				else
+				else {
 					MLog.Log(this, "Unexpected Missing Video file in memory, file=" + fi.FullName);
+				}
 			}
-			
 		}
 
 		private void ParseImdbData(VideoItem vidInfo) {
@@ -1157,73 +1093,70 @@ namespace MultiZonePlayer
 			for (int i = 0; i < actors.Length; i++) {
 				if ((actors[i] == ',') || (i == actors.Length - 1)) {
 					actorName = actors.Substring(lastIndex, i - lastIndex);
-					if (!m_actorNames.Keys.Contains(actorName))
+					if (!m_actorNames.Keys.Contains(actorName)) {
 						m_actorNames.Add(actorName, 1);
-					else
+					}
+					else {
 						m_actorNames[actorName] = m_actorNames[actorName] + 1;
+					}
 					lastIndex = i + 1;
 				}
 			}
 
 			//parse genres
 			List<Object> genres;
-			genres = Utilities.ParseStringForValues(vidInfo.ImdbGenre, ' ', typeof(String));
+			genres = Utilities.ParseStringForValues(vidInfo.ImdbGenre, ' ', typeof (String));
 			String genre;
 			foreach (Object obj in genres) {
-				genre = (String)obj;
-				if (!m_GenreList.Keys.Contains(genre))
+				genre = (String) obj;
+				if (!m_GenreList.Keys.Contains(genre)) {
 					m_GenreList.Add(genre, 1);
-				else
+				}
+				else {
 					m_GenreList[genre] = m_GenreList[genre] + 1;
+				}
 			}
 		}
 	}
 
-	public class MusicCollection : PlaylistBase
-	{
+	public class MusicCollection : PlaylistBase {
 		public List<LastFmMeta> m_artistMetaList;
 		public List<AudioItem> m_playlistItems;
 
-		public List<LastFmMeta> ArtistMetaList
-		{
+		public List<LastFmMeta> ArtistMetaList {
 			get { return m_artistMetaList; }
 		}
 
 		public MusicCollection()
-			: base()
-		{
+			: base() {
 			m_artistMetaList = new List<LastFmMeta>();
 			m_playlistItems = new List<AudioItem>();
 			//m_playlistItems = new List<MediaItemBase>();
 		}
-		
-		public List<AudioItem> PlaylistItems
-		{
-			get { 
+
+		public List<AudioItem> PlaylistItems {
+			get {
 				return m_playlistItems;
 				//return new List<AudioItem>(m_playlistItems.Cast<AudioItem>());
 			}
 		}
 
-		public override void SaveUpdatedItems()
-		{
-			if (m_playlistItems != null)
-			{
+		public override void SaveUpdatedItems() {
+			if (m_playlistItems != null) {
 				List<AudioItem> clone = m_playlistItems.ToList();
-				foreach (MediaItemBase ai in clone)
-				{
-					if (ai.RequireSave) ai.SaveItem();
+				foreach (MediaItemBase ai in clone) {
+					if (ai.RequireSave) {
+						ai.SaveItem();
+					}
 				}
 			}
 		}
 
-		public override int PendingSaveItemsCount()
-		{
+		public override int PendingSaveItemsCount() {
 			return m_playlistItems.Count(m => m.RequireSave);
 		}
 
-		protected override void ProcessFile(FileInfo fi)
-		{
+		protected override void ProcessFile(FileInfo fi) {
 			DirectoryInfo dir;
 			AudioItem item;
 			LastFmMeta meta, metaDisk, metaDownload;
@@ -1231,7 +1164,7 @@ namespace MultiZonePlayer
 			String metaFile;
 			FileDetail fileInCache;
 
-			fileInCache = m_playlistFiles.Find(x=>x.FilePath == fi.FullName);
+			fileInCache = m_playlistFiles.Find(x => x.FilePath == fi.FullName);
 			if (fileInCache == null) {
 				dir = fi.Directory;
 				do {
@@ -1241,30 +1174,35 @@ namespace MultiZonePlayer
 						if (File.Exists(metaFile)) {
 							metaText = Utilities.ReadFile(metaFile);
 							metaDisk = fastJSON.JSON.Instance.ToObject<LastFmMeta>(metaText);
-							if (metaDisk.ArtistName == null)
+							if (metaDisk.ArtistName == null) {
 								metaDisk.ArtistName = dir.Name;
+							}
 							if (metaDisk.MainGenre == null || IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] == "1") {
 								metaDownload = LastFMService.GetArtistMeta(metaDisk.ArtistName);
 								meta = metaDownload;
 								meta.URL = dir.FullName;
-								fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
+								fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+								param.UseExtensions = false;
 								metaText = fastJSON.JSON.Instance.ToJSON(meta, param);
 								System.IO.File.WriteAllText(metaFile, metaText);
 							}
-							else
+							else {
 								meta = metaDisk;
+							}
 							m_artistMetaList.Add(meta);
 							break;
 						}
-						if (dir.Parent != null)
+						if (dir.Parent != null) {
 							dir = dir.Parent;
-						else
+						}
+						else {
 							break;
+						}
 					}
-					else
+					else {
 						break;
-				}
-				while (true);
+					}
+				} while (true);
 				m_playlistFiles.Add(new FileDetail(fi.FullName, fi.LastWriteTime));
 				item = new AudioItem(fi.FullName, fi.DirectoryName, meta);
 				item.RetrieveMediaItemValues();
@@ -1275,14 +1213,14 @@ namespace MultiZonePlayer
 				if (item != null) {
 					item.RetrieveMediaItemValues();
 				}
-				else
-					MLog.Log(this, "Unexpected Missing Audio file in memory, file="+fi.FullName);
+				else {
+					MLog.Log(this, "Unexpected Missing Audio file in memory, file=" + fi.FullName);
+				}
 			}
 		}
 	}
 
-	public class PicturesCollection : PlaylistBase
-	{
+	public class PicturesCollection : PlaylistBase {
 		public List<MediaImageItem> m_playlistItems;
 		private List<MediaImageItem> m_autoIterateItems;
 		private DateTime m_autoIterateDate = DateTime.Now;
@@ -1291,25 +1229,21 @@ namespace MultiZonePlayer
 		private int m_intervalIterateSecs;
 
 		public PicturesCollection()
-			: base()
-		{
+			: base() {
 			m_playlistItems = new List<MediaImageItem>();
 		}
 
-		public override int PendingSaveItemsCount()
-		{
+		public override int PendingSaveItemsCount() {
 			return 0;
 			//throw new NotImplementedException();
 		}
 
-		public override void SaveUpdatedItems()
-		{
+		public override void SaveUpdatedItems() {
 			return;
 			//throw new NotImplementedException();
 		}
 
-		protected override void ProcessFile(FileInfo fi)
-		{
+		protected override void ProcessFile(FileInfo fi) {
 			//throw new NotImplementedException();
 			MediaImageItem item;
 			FileDetail fileInCache;
@@ -1325,120 +1259,123 @@ namespace MultiZonePlayer
 				if (item != null) {
 					item.RetrieveMediaItemValues();
 				}
-				else
+				else {
 					MLog.Log(this, "Unexpected Missing Picture file in memory, file=" + fi.FullName);
+				}
 			}
 		}
 
-		public MediaImageItem CurrentIteratePicture
-		{
-			get
-			{
+		public MediaImageItem CurrentIteratePicture {
+			get {
 				//NextPicture();
-				if (m_autoIterateItems != null && m_autoIterateItems.Count > 0)
+				if (m_autoIterateItems != null && m_autoIterateItems.Count > 0) {
 					return m_autoIterateItems[m_currentPictureIndex];
-				else				
+				}
+				else {
 					return null;
+				}
 			}
 		}
 
-		public void ForceNextPicture(){
-			if (m_currentPictureIndex + 1 < m_autoIterateItems.Count)
+		public void ForceNextPicture() {
+			if (m_currentPictureIndex + 1 < m_autoIterateItems.Count) {
 				m_currentPictureIndex++;
-			else
+			}
+			else {
 				m_currentPictureIndex = 0;
+			}
 		}
 
 		public void ForcePreviousPicture() {
-			if (m_currentPictureIndex == 0)
+			if (m_currentPictureIndex == 0) {
 				m_currentPictureIndex = m_autoIterateItems.Count;
-			else
+			}
+			else {
 				m_currentPictureIndex--;
+			}
 		}
 
-		private void NextPicture()
-		{
-			if (m_autoIterateItems != null && m_autoIterateItems.Count > 0)
-			{
-				if (DateTime.Now.Subtract(m_lastPictureRetrieved).TotalSeconds >= m_intervalIterateSecs)
-				{
-					if (m_currentPictureIndex + 1 < m_autoIterateItems.Count)
+		private void NextPicture() {
+			if (m_autoIterateItems != null && m_autoIterateItems.Count > 0) {
+				if (DateTime.Now.Subtract(m_lastPictureRetrieved).TotalSeconds >= m_intervalIterateSecs) {
+					if (m_currentPictureIndex + 1 < m_autoIterateItems.Count) {
 						m_currentPictureIndex++;
-					else
+					}
+					else {
 						m_currentPictureIndex = 0;
+					}
 					m_lastPictureRetrieved = DateTime.Now;
 				}
 			}
 		}
 
-		public string IteratePicture(int items, int intervalSecs, string face)
-		{
-			
+		public string IteratePicture(int items, int intervalSecs, string face) {
 			DateTime currentDate = DateTime.Now;
 			List<MediaImageItem> imagesFound;
-			int tries= 0;
-			if (m_autoIterateDate.Day != DateTime.Now.Day)
+			int tries = 0;
+			if (m_autoIterateDate.Day != DateTime.Now.Day) {
 				m_autoIterateItems = null;
+			}
 			string compareDate;
-			TimeSpan day = new TimeSpan(1,0,0,0);
+			TimeSpan day = new TimeSpan(1, 0, 0, 0);
 			m_intervalIterateSecs = intervalSecs;
 
-			if (m_autoIterateItems == null || m_autoIterateItems.Count==0)
-			{
-				do
-				{
+			if (m_autoIterateItems == null || m_autoIterateItems.Count == 0) {
+				do {
 					compareDate = currentDate.ToString("dd/MM");
 
 					imagesFound = m_playlistItems.FindAll(x =>
-							(x.Created.ToString("dd/MM") == compareDate)
-							&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1]))
-							.ToList();
+						(x.Created.ToString("dd/MM") == compareDate)
+						&& !x.Tags.Contains(IniFile.PARAM_PICTURE_TAG_IGNORE[1]))
+						.ToList();
 
-					if (imagesFound.Count>0 && face != null)
-					{
-						imagesFound = imagesFound.FindAll(delegate(MediaImageItem item)
-						{
-							if (item.FaceList=="" || item.FaceList==null) return false;
+					if (imagesFound.Count > 0 && face != null) {
+						imagesFound = imagesFound.FindAll(delegate(MediaImageItem item) {
+							if (item.FaceList == "" || item.FaceList == null) {
+								return false;
+							}
 							string[] faceAtoms = face.ToLower().Split(';');
-							foreach (string el in faceAtoms)
-							{
-								if (item.FaceList.ToLower().Contains(el))
+							foreach (string el in faceAtoms) {
+								if (item.FaceList.ToLower().Contains(el)) {
 									return true;
+								}
 							}
 							return false;
 						}).ToList();
 					}
 
-					if (m_autoIterateItems != null)
+					if (m_autoIterateItems != null) {
 						m_autoIterateItems = m_autoIterateItems.Concat(imagesFound).
 							OrderByDescending(y => y.Created.ToString("MM/dd")).Take(items).ToList();
-					else
-						if (imagesFound.Count>0) 
-							m_autoIterateItems = imagesFound;
+					}
+					else if (imagesFound.Count > 0) {
+						m_autoIterateItems = imagesFound;
+					}
 
 					m_autoIterateDate = DateTime.Now;
 					m_currentPictureIndex = -1;
-					if (m_autoIterateItems==null || m_autoIterateItems.Count < items)
+					if (m_autoIterateItems == null || m_autoIterateItems.Count < items) {
 						currentDate = currentDate.Subtract(day);
+					}
 					tries++;
-				}
-				while ((m_autoIterateItems ==null || m_autoIterateItems.Count<items) && tries < 366);
+				} while ((m_autoIterateItems == null || m_autoIterateItems.Count < items) && tries < 366);
 			}
 
 			NextPicture();
 
 			string picture;
-				
-			if (m_autoIterateItems==null || m_autoIterateItems.Count == 0 || m_currentPictureIndex == -1)
+
+			if (m_autoIterateItems == null || m_autoIterateItems.Count == 0 || m_currentPictureIndex == -1) {
 				picture = IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1] + "\\notfound.jpg";
-			else
+			}
+			else {
 				picture = m_autoIterateItems[m_currentPictureIndex].SourceURL;
+			}
 			return picture;
 		}
 	}
 
-	public class MediaLibrary
-	{
+	public class MediaLibrary {
 		private static bool m_isMusicInitialised = false;
 		private static bool m_isPicturesInitialised = false;
 		private static bool m_isVideosInitialised = false;
@@ -1451,13 +1388,13 @@ namespace MultiZonePlayer
 		public static Boolean HasVideoCache = false;
 		public static Boolean HasPictureCache = false;
 
-		public static bool IsInitialised{
+		public static bool IsInitialised {
 			get { return m_isMusicInitialised && m_isPicturesInitialised && m_isVideosInitialised; }
 		}
 
-		public static void InitialiseLibrary(){
+		public static void InitialiseLibrary() {
 			MLog.Log(null, "MediaLibrary Init started");
-			
+
 			m_isMusicInitialised = false;
 			if (Utilities.ExistFileRelativeToAppPath(IniFile.MEDIA_MUSIC_STORAGE_FILE)) {
 				HasMusicCache = true;
@@ -1468,8 +1405,9 @@ namespace MultiZonePlayer
 				m_isMusicInitialised = true;
 				MLog.Log("Music Library cache loading done");
 			}
-			else
+			else {
 				m_musicFiles = new MusicCollection();
+			}
 			InitialiseMusic();
 			Application.DoEvents();
 
@@ -1483,8 +1421,9 @@ namespace MultiZonePlayer
 				MLog.Log("Pictures Library loading cache done");
 				m_isPicturesInitialised = true;
 			}
-			else
+			else {
 				m_pictureFiles = new PicturesCollection();
+			}
 			InitialisePictures();
 			Application.DoEvents();
 
@@ -1498,8 +1437,9 @@ namespace MultiZonePlayer
 				MLog.Log("Video Library loading cache done");
 				m_isVideosInitialised = true;
 			}
-			else
+			else {
 				m_videoFiles = new VideoCollection();
+			}
 			InitialiseVideos();
 			MLog.Log(null, "MediaLibrary Init ended, async process running");
 		}
@@ -1516,64 +1456,64 @@ namespace MultiZonePlayer
 			thpi.Start();
 		}
 
-		public static void InitialiseVideos(){
+		public static void InitialiseVideos() {
 			Thread thmo = new Thread(() => MediaLibrary.InitialiseVideosWorker());
 			thmo.Name = "MediaLibrary Movies";
 			thmo.Start();
 		}
 
-		private static void InitialiseMusicWorker(){
+		private static void InitialiseMusicWorker() {
 			MLog.Log(null, "Music Library refresh started");
-			
+
 			MLog.Log(null, "Checking mediaplayer music files from " + IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1]);
-			for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++){
+			for (int i = 0; i < IniFile.MUSIC_EXTENSION.Length; i++) {
 				m_musicFiles.AddFiles(IniFile.PARAM_MUSIC_STORE_ROOT_PATH[1], "*." + IniFile.MUSIC_EXTENSION[i],
 					System.IO.SearchOption.AllDirectories, HasMusicCache);
 			}
 			//save new items found in library
 			m_musicFiles.SaveUpdatedItems();
-			if (IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] == "1")
-				IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] = "0, last refresh at " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT);
-			if (MZPState.Instance != null)
+			if (IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] == "1") {
+				IniFile.PARAM_LASTFM_FORCE_META_UPDATE[1] = "0, last refresh at " +
+				                                            DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT);
+			}
+			if (MZPState.Instance != null) {
 				m_isMusicInitialised = true;
+			}
 			MLog.Log(null, "Music Library refresh done");
 		}
 
-		private static void InitialisePicturesWorker()
-		{
+		private static void InitialisePicturesWorker() {
 			MLog.Log(null, "Checking mediaplayer picture files from " + IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1]);
-			for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++){
+			for (int i = 0; i < IniFile.PICTURE_EXTENSION.Length; i++) {
 				m_pictureFiles.AddFiles(IniFile.PARAM_PICTURE_STORE_ROOT_PATH[1], "*." + IniFile.PICTURE_EXTENSION[i],
 					System.IO.SearchOption.AllDirectories, HasPictureCache);
 			}
 			//save new items found in library
 			m_pictureFiles.SaveUpdatedItems();
-			if (MZPState.Instance != null)
+			if (MZPState.Instance != null) {
 				m_isPicturesInitialised = true;
+			}
 		}
 
-		private static void InitialiseVideosWorker()
-		{
+		private static void InitialiseVideosWorker() {
 			MLog.Log(null, "Loading mediaplayer video files from " + IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1]);
-			for (int i = 0; i < IniFile.VIDEO_EXTENSION.Length; i++){
+			for (int i = 0; i < IniFile.VIDEO_EXTENSION.Length; i++) {
 				m_videoFiles.AddFiles(IniFile.PARAM_VIDEO_STORE_ROOT_PATH[1], "*." + IniFile.VIDEO_EXTENSION[i],
 					System.IO.SearchOption.AllDirectories, HasVideoCache);
 			}
 			//save new items found in library
 			m_videoFiles.SaveUpdatedItems();
-			if (MZPState.Instance != null)
+			if (MZPState.Instance != null) {
 				m_isVideosInitialised = true;
+			}
 		}
 
-		public static void SaveLibraryToIni()
-		{
+		public static void SaveLibraryToIni() {
 			String json;
-			try
-			{
-				if (m_isMusicInitialised)
-				{
+			try {
+				if (m_isMusicInitialised) {
 					MLog.Log("Saving music library");
-					fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
+					fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 					param.UseExtensions = false;
 					param.UseEscapedUnicode = false;
 					param.SerializeNullValues = false;
@@ -1581,8 +1521,7 @@ namespace MultiZonePlayer
 					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_MUSIC_STORAGE_FILE, json);
 					MLog.Log("Saving music library done");
 				}
-				if (m_isVideosInitialised)
-				{
+				if (m_isVideosInitialised) {
 					MLog.Log("Saving video library");
 					fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 					param.UseExtensions = false;
@@ -1592,8 +1531,7 @@ namespace MultiZonePlayer
 					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_VIDEO_STORAGE_FILE, json);
 					MLog.Log("Saving video library done");
 				}
-				if (m_isPicturesInitialised)
-				{
+				if (m_isPicturesInitialised) {
 					MLog.Log("Saving picture library");
 					fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 					param.UseExtensions = false;
@@ -1604,98 +1542,73 @@ namespace MultiZonePlayer
 					MLog.Log("Saving picture library done");
 				}
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				MLog.Log(ex, "Cannot save media library");
 			}
 		}
 
-		public static MusicCollection AllAudioFiles
-		{
-			get	{return m_musicFiles;}
+		public static MusicCollection AllAudioFiles {
+			get { return m_musicFiles; }
 		}
 
-		public static VideoCollection AllVideoFiles
-		{
-			get	{return m_videoFiles;}
+		public static VideoCollection AllVideoFiles {
+			get { return m_videoFiles; }
 		}
-		public static PicturesCollection AllPictureFiles
-		{
+
+		public static PicturesCollection AllPictureFiles {
 			get { return m_pictureFiles; }
 		}
-		public static List<AudioItem> AudioFilesByGenre(ValueList vals)
-		{
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return vals.ContainsIndexValue(item.Genre, false);
-			});
+
+		public static List<AudioItem> AudioFilesByGenre(ValueList vals) {
+			var items =
+				m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item) { return vals.ContainsIndexValue(item.Genre, false); });
 			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static List<AudioItem> AudioFilesByGenre(string genre)
-		{
+		public static List<AudioItem> AudioFilesByGenre(string genre) {
 			genre = genre.ToLower();
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return item.Genre.ToLower().Contains(genre);
-			});
-			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
-			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
-		}
-		public static List<AudioItem> AudioFilesByArtist(ValueList vals)
-		{
-
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return vals.ContainsIndexValue(item.Author, false);
-			});
+			var items =
+				m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item) { return item.Genre.ToLower().Contains(genre); });
 			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static List<AudioItem> AudioFilesByArtist(String artist)
-		{
+		public static List<AudioItem> AudioFilesByArtist(ValueList vals) {
+			var items =
+				m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item) { return vals.ContainsIndexValue(item.Author, false); });
+			//GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
+			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
+		}
+
+		public static List<AudioItem> AudioFilesByArtist(String artist) {
 			artist = artist.ToLower();
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return item.Author.ToLower().Contains(artist);
-			});
+			var items =
+				m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item) { return item.Author.ToLower().Contains(artist); });
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static List<AudioItem> AudioFilesByAlbum(String album)
-		{
+		public static List<AudioItem> AudioFilesByAlbum(String album) {
 			album = album.ToLower();
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return item.Album.ToLower().Contains(album);
-			});
+			var items =
+				m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item) { return item.Album.ToLower().Contains(album); });
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static List<AudioItem> AudioFilesByFolder(String sourceContainerURL)
-		{
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return sourceContainerURL.Equals(item.SourceContainerURL);
-			});
+		public static List<AudioItem> AudioFilesByFolder(String sourceContainerURL) {
+			var items =
+				m_musicFiles.PlaylistItems.FindAll(
+					delegate(AudioItem item) { return sourceContainerURL.Equals(item.SourceContainerURL); });
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static List<AudioItem> AudioFilesByRating(int rating)
-		{
-			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item)
-			{
-				return rating.Equals(item.Rating);
-			});
+		public static List<AudioItem> AudioFilesByRating(int rating) {
+			var items = m_musicFiles.PlaylistItems.FindAll(delegate(AudioItem item) { return rating.Equals(item.Rating); });
 			return items.OrderBy(x => x.PlayCount).ThenBy(x => x.RandomId).ToList();
 		}
 
-		public static ValueList MusicGenres
-		{
-			get
-			{
+		public static ValueList MusicGenres {
+			get {
 				//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 				var unique = m_musicFiles.PlaylistItems.Select(i => i.Genre).Distinct().ToList();
 				ValueList val = new ValueList(CommandSources.system);
@@ -1705,10 +1618,8 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public static ValueList MusicArtists
-		{
-			get
-			{
+		public static ValueList MusicArtists {
+			get {
 				//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
 				var unique = m_musicFiles.PlaylistItems.Select(i => i.Author).Distinct().ToList();
 				unique.Sort();
@@ -1718,6 +1629,7 @@ namespace MultiZonePlayer
 				return val;
 			}
 		}
+
 		public static ValueList MovieList {
 			get {
 				//var unique = m_musicFiles.PlaylistItems.GroupBy(i => i.Genre).Where(i => i.Count() == 1).Select(i => i.Key);
@@ -1730,114 +1642,117 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public static List<AudioItem> GetMoodPlaylist(MoodMusic mood)
-		{
+		public static List<AudioItem> GetMoodPlaylist(MoodMusic mood) {
 			List<AudioItem> result = null;
-			if (mood != null)
-			{
-				try
-				{
+			if (mood != null) {
+				try {
 					IEnumerable<AudioItem> query, res1, res2, res3, res4;
 					bool exclude;
 					String value;
 
 					res1 = null;
-					foreach (String val in mood.Genres)
-					{
+					foreach (String val in mood.Genres) {
 						exclude = val.Contains('!');
-						if (exclude)
-						{
-							if (res1 == null) res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
+						if (exclude) {
+							if (res1 == null) {
+								res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
+							}
 							value = val.Replace("!", "");
 							res1 = res1.Where(i => !i.Genre.ToLower().Contains(value.ToLower())).ToList();
 							//res1 = res1.Intersect(query).Distinct().ToList();
 						}
-						else
-						{
-							if (res1 == null) res1 = new List<AudioItem>();
+						else {
+							if (res1 == null) {
+								res1 = new List<AudioItem>();
+							}
 							value = val;
 							query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Genre.ToLower().Contains(value.ToLower())).ToList();
 							res1 = res1.Union(query).Distinct().ToList();
 						}
 					}
-					if (res1 == null) res1 = new List<AudioItem>();
+					if (res1 == null) {
+						res1 = new List<AudioItem>();
+					}
 
 					res2 = null;
-					foreach (String val in mood.Authors)
-					{
+					foreach (String val in mood.Authors) {
 						exclude = val.Contains('!');
-						if (exclude)
-						{
-							if (res2 == null) res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
+						if (exclude) {
+							if (res2 == null) {
+								res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
+							}
 							value = val.Replace("!", "");
 							res2 = res2.Where(i => !i.Author.ToLower().Contains(value.ToLower())).ToList();
-
 						}
-						else
-						{
-							if (res2 == null) res2 = new List<AudioItem>();
+						else {
+							if (res2 == null) {
+								res2 = new List<AudioItem>();
+							}
 							value = val;
-							query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Author.ToLower().Contains(value.ToLower())).ToList();
+							query =
+								MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Author.ToLower().Contains(value.ToLower())).ToList();
 							res2 = res2.Union(query).Distinct().ToList();
 						}
 					}
-					if (res2 == null) res2 = new List<AudioItem>();
+					if (res2 == null) {
+						res2 = new List<AudioItem>();
+					}
 
 					res3 = new List<AudioItem>();
-					foreach (int val in mood.Ratings)
-					{
+					foreach (int val in mood.Ratings) {
 						query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.Rating.Equals(val)).ToList();
 						res3 = res3.Union(query).Distinct().ToList();
 					}
 
 					res4 = new List<AudioItem>();
-					foreach (int val in mood.AgeInWeeks)
-					{
+					foreach (int val in mood.AgeInWeeks) {
 						query = MediaLibrary.AllAudioFiles.PlaylistItems.Where(i => i.IsThatNew(val)).ToList();
 						res4 = res4.Union(query).Distinct().ToList();
 					}
 
-					switch (mood.LogicalSearchOperator)
-					{
+					switch (mood.LogicalSearchOperator) {
 						case MoodMusic.LogicalSearchOperatorEnum.Intersect:
-							if (res1.Count() + res2.Count() + res3.Count() + res4.Count() != 0)
-							{
-								if (res1.Count() == 0) res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
-								if (res2.Count() == 0) res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
-								if (res3.Count() == 0) res3 = MediaLibrary.AllAudioFiles.PlaylistItems;
-								if (res4.Count() == 0) res4 = MediaLibrary.AllAudioFiles.PlaylistItems;
+							if (res1.Count() + res2.Count() + res3.Count() + res4.Count() != 0) {
+								if (res1.Count() == 0) {
+									res1 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								}
+								if (res2.Count() == 0) {
+									res2 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								}
+								if (res3.Count() == 0) {
+									res3 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								}
+								if (res4.Count() == 0) {
+									res4 = MediaLibrary.AllAudioFiles.PlaylistItems;
+								}
 								result = res1.Intersect(res2).Intersect(res3).Intersect(res4).ToList();
 							}
-							else
+							else {
 								MLog.Log(null, "No songs matching criteria mood=" + mood.Name);
+							}
 							break;
 						case MoodMusic.LogicalSearchOperatorEnum.Union:
 							result = res1.Union(res2).Union(res3).Union(res4).ToList();
 							break;
-
 					}
 
-					if (result != null && mood.IsGroupByTop)
-					{
+					if (result != null && mood.IsGroupByTop) {
 						IEnumerable<AudioItem> list = new List<AudioItem>();
 						var items = result.OrderBy(y => y.PlayCount).ThenBy(z => z.RandomId).GroupBy(x => x.Author).Distinct();
-						foreach (var item in items)
-						{
+						foreach (var item in items) {
 							list = list.Union(item.Take(3));
 						}
 						result = list.ToList();
 					}
-
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					MLog.Log(ex, "Error get mood=" + mood);
 				}
 			}
-			else
+			else {
 				MLog.Log(null, "NULL mood unexpected");
+			}
 			return result;
 		}
 	}
-
-	}
+}
