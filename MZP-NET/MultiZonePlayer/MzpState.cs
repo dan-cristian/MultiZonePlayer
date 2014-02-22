@@ -20,6 +20,12 @@ public class MZPState
 	[Description("Edit")]
 	public Boolean LandLineEnabled;
 
+	public Boolean IsMobilePhoneFunctional = false;
+	public Boolean IsRFXFunctional = false;
+	public Boolean IsModemFunctional = false;
+	public Boolean IsChatFunctional = false;
+	public Boolean IsDVRFunctional = false;
+
     private static MZPState m_sysState = null;
     private ArrayList m_systemInputDeviceList = null;
     private Hashtable m_systemInputDeviceNames = null;
@@ -1023,7 +1029,7 @@ public class MZPState
 		EmailNotifier.SendEmail(message);
         foreach (IMessenger m in m_messengerList)
         {
-            //if (m.IsTargetAvailable())
+            //if (m.IsConnected())
             {
                 m.SendMessageToTarget(message);
                 return true;
@@ -1052,7 +1058,7 @@ public class MZPState
         {
             foreach (IMessenger mess in MZPState.Instance.m_messengerList)
             {
-				//if (mess.IsTargetAvailable())
+				//if (mess.IsConnected())
 				{
 					mess.MakeBuzz();
 					m_lastBuzzDateTime = DateTime.Now;

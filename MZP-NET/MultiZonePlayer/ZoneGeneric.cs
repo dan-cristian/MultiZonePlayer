@@ -344,7 +344,7 @@ namespace MultiZonePlayer
 							m_closurePatern += "x";
 						else m_closurePatern += "-";
 					}
-					MLog.Log(this, "Closure Patern="+m_closurePatern + " on zone " + m_zoneDetails.ZoneName);
+					//MLog.Log(this, "Closure Patern="+m_closurePatern + " on zone " + m_zoneDetails.ZoneName);
 					ClosureEvent(vals.GetValue(GlobalParams.id), contactMade);
 					User user = User.UserList.Find(x => x.GetMacroNameByPattern(m_closurePatern, m_zoneDetails.ZoneId) != null);
 					if (user != null) {

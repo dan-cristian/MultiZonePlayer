@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.ComponentModel;
 using System.Linq;
@@ -376,7 +377,16 @@ namespace MultiZonePlayer
 	}
 
 	
-	
+
+	public interface IMZPDevice {
+		
+		Boolean IsFunctional();
+		Boolean IsEnabled();
+		void Enable();
+		void Disable();
+		String Type();
+		String Name();
+	}
 
 	public class ValueList
 	{

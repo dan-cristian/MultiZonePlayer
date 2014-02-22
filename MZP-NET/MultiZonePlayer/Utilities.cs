@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -838,6 +839,64 @@ namespace MultiZonePlayer
                 return value.ToString();
         }
 
+
+		public static string FindFTDIComPortFromDesc(string description, bool returnCOM) {
+			FTD2XX_NET.FTDI ftdiDevice = new FTD2XX_NET.FTDI();
+			uint count = 0;
+			ftdiDevice.GetNumberOfDevices(ref count);
+			FTD2XX_NET.FTDI.FT_DEVICE_INFO_NODE[] deviceNode = new FTD2XX_NET.FTDI.FT_DEVICE_INFO_NODE[count];
+			ftdiDevice.GetDeviceList(deviceNode);
+			MLog.Log(null, "Found FTDI devices count=" + count);
+
+			FTD2XX_NET.FTDI.FT_STATUS status;
+			string serial, com;
+			//FTD2XX_NET.FTDI ftdiDevice = new FTD2XX_NET.FTDI();
+
+			for (int i = 0; i < count; i++) {
+				MLog.Log(null,
+					"FTDI desc=" + deviceNode[i].Description
+					+ " id=" + deviceNode[i].ID
+					+ " serial=" + deviceNode[i].SerialNumber
+					+ " type=" + deviceNode[i].Type
+					+ " locid=" + deviceNode[i].LocId
+					);
+				serial = deviceNode[i].SerialNumber;
+
+				if (returnCOM) {
+					try {
+						status = ftdiDevice.OpenBySerialNumber(serial);
+						if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK) {
+							ftdiDevice.GetCOMPort(out com);
+							MLog.Log(null, "FTDI Device opened ok, COM=" + com);
+
+							if (deviceNode[i].Description.ToLower().Equals(description)) {
+								MLog.Log(null, "Found FTDI device " + description + " at com port " + com);
+								ftdiDevice.Close();
+								return com;
+							}
+						}
+						else
+							MLog.Log(null, "Error, unable to open device " + serial);
+					}
+					catch (Exception ex) {
+						MLog.Log(ex, "Error opening ftdi device " + serial);
+					}
+					finally {
+						if (ftdiDevice != null)
+							ftdiDevice.Close();
+					}
+				}
+
+				if (deviceNode[i].Description.ToLower().Equals(description)) {
+					MLog.Log(null, "Found FTDI device " + description + " at port " + serial);
+					return serial;
+				}
+			}
+
+			MLog.Log("No port for " + description + " found in " + count + " devices");
+			return "";
+		}
+
 		
     }
 
@@ -1079,13 +1138,14 @@ namespace MultiZonePlayer
 			}
             try
             {
-				if (m_keywords!=null && e!= null && text != null && e.GetType() != null 
+				if (
+					(m_keywords==null || m_keywords.Contains("all"))||
+					(m_keywords!=null && e!= null && text != null && e.GetType() != null 
 					&& Thread.CurrentThread != null && Thread.CurrentThread.Name != null &&
-					(m_keywords.Contains("all")
-					|| (m_keywords.Contains(e.ToString().ToLower()))//sender
+					((m_keywords.Contains(e.ToString().ToLower()))//sender
 					|| m_keywords.Contains(Thread.CurrentThread.Name.ToLower())//thread
 					|| (e.GetType().ToString().ToLower().Contains("exception")) 
-					|| text.ToLower().Contains("error")))//any error
+					|| text.ToLower().Contains("error"))))//any error
 				{
 					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);

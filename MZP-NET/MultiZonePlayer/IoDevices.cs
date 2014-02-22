@@ -124,8 +124,11 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public Boolean IsTargetAvailable()
+		public Boolean IsConnected()
 		{
+			return (comm != null && comm.IsPortOpen());
+		}
+		public Boolean IsTargetAvailable() {
 			return (comm != null && comm.IsPortOpen());
 		}
 		public void MakeBuzz()
@@ -141,8 +144,8 @@ namespace MultiZonePlayer
 		}
 	}
 
-	class Modem : GenericModem
-	{
+	class Modem : GenericModem, IMZPDevice {
+		private string m_deviceName;
 		public Modem()
 		{
 			Reinitialise();
@@ -159,6 +162,7 @@ namespace MultiZonePlayer
 				{
 					IniFile.PARAM_MODEM_COMPORT[1] = mo["AttachedTo"].ToString();
 					MLog.Log(this, "Selected modem port is " + IniFile.PARAM_MODEM_COMPORT[1]);
+					m_deviceName = mo["Caption"].ToString();
 					break;
 				}
 			}
@@ -167,9 +171,33 @@ namespace MultiZonePlayer
 				Convert.ToInt16(IniFile.PARAM_MODEM_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_MODEM_ATD_LINES_COUNT[1]));
 		}
+
+		public bool IsFunctional() {
+			return IsConnected();
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_TEL;
+		}
+
+		public string Name() {
+			return m_deviceName;
+		}
 	}
 
-	class SMS : GenericModem
+	class SMS : GenericModem, IMZPDevice
 	{
 		public enum SMSCommandsEnum
 		{
@@ -202,6 +230,30 @@ namespace MultiZonePlayer
 				+ IniFile.PARAM_SMS_TARGETNUMBER[1] + "\"", m_atlinescount, m_stdtimeout);
 			WriteCommand(message + (char)26, 6, m_stdtimeout * 3);
 		}
+
+		public bool IsFunctional() {
+			return IsConnected();
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_TEL;
+		}
+
+		public string Name() {
+			return "Cell Phone";
+		}
 	}
 	
 	class RFXCom : SerialBase, IMessenger
@@ -217,8 +269,8 @@ namespace MultiZonePlayer
 		{
 			Reinitialise();
 		}
-		public void Reinitialise()
-		{
+		public void Reinitialise() {
+			IniFile.PARAM_RFXCOM_PORT[1] = Utilities.FindFTDIComPortFromDesc(IniFile.PARAM_RFX_DEVICE_NAME[1].ToLower(), true);
 			MLog.Log(this, "Initialise RFX on COM " + IniFile.PARAM_RFXCOM_PORT[1]);
 			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1], CommunicationManager.TransmissionType.Text);
 			//comm = new CommunicationManager("38400", "None", "One", "8", 
@@ -306,7 +358,7 @@ namespace MultiZonePlayer
 			Disconnect();
 		}
 
-		public Boolean IsTargetAvailable()
+		public Boolean IsConnected()
 		{
 			return true;
 		}
@@ -334,7 +386,7 @@ namespace MultiZonePlayer
 		}
 	}
 
-	public class WDIO : GenericModem, IMessenger
+	public class WDIO : GenericModem, IMessenger, IMZPDevice
 	{
 		private String m_lastState, m_channel;
 		private const string WDIO_ATTRIB_SWITCH = "iopin=", WDIO_ATTRIB_BUTTON = "iobutton=";
@@ -471,9 +523,33 @@ namespace MultiZonePlayer
 		}
 
 
+
+		public bool IsFunctional() {
+			return IsConnected();
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_IO;
+		}
+
+		public string Name() {
+			return "WD";
+		}
 	}
 
-	public class GPIO : GenericModem, IMessenger
+	public class GPIO : GenericModem, IMessenger, IMZPDevice
 	{
 		private String m_state, m_lastState;
 		private const string STR_ENDLINE = ">", GPIO_ATTRIB_INI_NAME = "iopin=";
@@ -648,9 +724,33 @@ namespace MultiZonePlayer
 		}
 
 
+
+		public bool IsFunctional() {
+			throw new NotImplementedException();
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			throw new NotImplementedException();
+		}
+
+		public string Name() {
+			throw new NotImplementedException();
+		}
 	}
 
-	public class OneWire : IMessenger, DeviceMonitorEventListener
+	public class OneWire : IMessenger, DeviceMonitorEventListener, IMZPDevice
 	{
 		DSPortAdapter adapter;
 		DeviceMonitor dMonitor;
@@ -1080,7 +1180,7 @@ namespace MultiZonePlayer
 		  */
 		}
 
-		public bool IsTargetAvailable()
+		public bool IsConnected()
 		{
 			return false;
 		}
@@ -1093,6 +1193,33 @@ namespace MultiZonePlayer
 		public bool IsFaulty()
 		{
 			return (adapter==null);
+		}
+
+		public bool IsFunctional() {
+			return adapter!=null && adapter.adapterDetected();
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_IO;
+		}
+
+		public string Name() {
+			if (IsFunctional())
+				return adapter.getAdapterName();
+			else 
+				return "not available";
 		}
 	}
 
@@ -1109,7 +1236,7 @@ namespace MultiZonePlayer
 		public abstract void GetStatus();
 	}
 
-	public class APCUPS : GenericUPS
+	public class APCUPS : GenericUPS, IMZPDevice
 	{
 		private WinEventLogReader m_winEventLogReader;
 		private String m_eventLog, m_eventSource;
@@ -1130,11 +1257,35 @@ namespace MultiZonePlayer
 
 		public override void GetStatus()
 		{ }
+
+		public bool IsFunctional() {
+			throw new NotImplementedException();
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_UPS;
+		}
+
+		public string Name() {
+			return m_eventSource;
+		}
 	}
 
-	public class MustekUPS : GenericUPS
+	public class MustekUPS : GenericUPS, IMZPDevice
 	{
-		string m_statusurl;
+		string m_statusurl, m_lastHtml="";
 		WebClient m_client;
 
 		public MustekUPS(String statusurl)
@@ -1154,11 +1305,11 @@ namespace MultiZonePlayer
 		{
 			try
 			{
-				string html = m_client.DownloadString(m_statusurl);
+				m_lastHtml = m_client.DownloadString(m_statusurl);
 				string[] atoms, pairs;
 				Boolean failure = m_lastStatus.PowerFail;
 
-				atoms = html.Split(new string[] { "</br>\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+				atoms = m_lastHtml.Split(new string[] { "</br>\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 				foreach (string atom in atoms)
 				{
 					pairs = atom.Replace(" ", "").Split('=');
@@ -1222,6 +1373,30 @@ namespace MultiZonePlayer
 			{
 				MLog.Log(this, "Unable to read UPS status" + ex.Message);
 			}
+		}
+
+		public bool IsFunctional() {
+			return m_lastHtml != "";
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_UPS;
+		}
+
+		public string Name() {
+			return "Mustek";
 		}
 	}
 
@@ -1602,8 +1777,8 @@ namespace MultiZonePlayer
 		}
 	}
 
-	public class Bluetooth
-	{
+	public class Bluetooth:IMZPDevice {
+		private static BluetoothClient m_btc = null;
 		public class Device
 		{
 			public string DeviceName { get; set; }
@@ -1665,6 +1840,7 @@ namespace MultiZonePlayer
 		public static List<Device> DiscoverDevices()
 		{
 			BluetoothClient bc = new BluetoothClient();
+			m_btc = bc;
 			List<Device> devices = new List<Device>();
 			DateTime startDisc; Boolean canConnect;
 			BluetoothDeviceInfo[] array = bc.DiscoverDevices(15, true, true, true);//bc.DiscoverDevices();
@@ -1724,6 +1900,31 @@ namespace MultiZonePlayer
 				MLog.Log(null, "Could not connect to BT device " + device.ToString() + " ERROR="+ex.Message);
 				return false;
 			}*/
+		}
+
+		public bool IsFunctional() {
+			return m_btc != null;
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_Radio;
+		}
+
+		public string Name() {
+
+			return m_btc!=null?"Available":"not available";
 		}
 	}
 

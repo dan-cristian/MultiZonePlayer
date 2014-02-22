@@ -18,12 +18,12 @@ namespace MultiZonePlayer
         Boolean TestConnection();
         void Reinitialise();
         void Close();
-        Boolean IsTargetAvailable();
+        Boolean IsConnected();
         void MakeBuzz();
 		Boolean IsFaulty();
     }
 
-    class GTalkMessengers:IMessenger
+    class GTalkMessengers:IMessenger, IMZPDevice
     {
 		private int m_reinitTries=0;
         agsXMPP.XmppClientConnection objXmpp;
@@ -63,9 +63,6 @@ namespace MultiZonePlayer
             objXmpp.AutoResolveConnectServer = true;
             objXmpp.OnPresence += new agsXMPP.protocol.client.PresenceHandler(xmpp_OnPresence);
 			objXmpp.OnError += new ErrorHandler(objXmpp_OnError);
-            /*objXmpp.OnRosterStart += new ObjectHandler(OnRosterStart);
-            objXmpp.OnRosterEnd += new ObjectHandler(OnRosterEnd);
-            objXmpp.OnRosterItem += new XmppClientConnection.RosterHandler(OnRosterItem);*/
             Login();
         }
 
@@ -293,7 +290,7 @@ namespace MultiZonePlayer
                 return true;
         }
 
-        public Boolean IsTargetAvailable()
+        public Boolean IsConnected()
         {
             agsXMPP.protocol.client.Presence item = null;
 
@@ -312,7 +309,31 @@ namespace MultiZonePlayer
         {
 			SendMessageToTarget("BUZZ");
         }
-    }
+
+		public bool IsFunctional() {
+			return objXmpp.Binded && objXmpp.Authenticated;
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_CHAT;
+		}
+
+		public string Name() {
+			return "GTALK";
+		}
+	}
 
 	class EmailNotifier
 	{

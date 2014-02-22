@@ -153,8 +153,8 @@ namespace MultiZonePlayer
 			MLog.Log(this, "Reinitialising, opening relay");
 			try
 			{
+				m_deviceSerial = Utilities.FindFTDIComPortFromDesc(IniFile.PARAM_RELAY_DEVICE_NAME[1].ToLower(), false);
 				m_usb8Relay = new FTD2XX_NET.FTDI();
-				ScanForDevices();
 				m_usb8Relay.SetLatency(32);//!!! check this
 				m_lastOpenDateTime = DateTime.MinValue;
 				m_threadList = new List<Thread>();
@@ -169,63 +169,6 @@ namespace MultiZonePlayer
         ~DenkoviPowerControl()
         {
             PowerOff();
-        }
-
-        private void ScanForDevices()
-        {
-            uint count=0;
-            m_usb8Relay.GetNumberOfDevices(ref count);
-            FTD2XX_NET.FTDI.FT_DEVICE_INFO_NODE[] deviceNode = new FTD2XX_NET.FTDI.FT_DEVICE_INFO_NODE[count];
-            m_usb8Relay.GetDeviceList(deviceNode);
-			MLog.Log(this, "Found FTDI devices count=" + count);
-            
-			FTD2XX_NET.FTDI.FT_STATUS status;
-			string serial,com;
-			FTD2XX_NET.FTDI ftdiDevice = new FTD2XX_NET.FTDI();
-
-			for (int i=0; i<count; i++)
-            {
-                MLog.Log(this,
-                    "FTDI desc="+deviceNode[i].Description
-                    +" id="+deviceNode[i].ID
-                    +" serial="+deviceNode[i].SerialNumber
-                    +" type="+deviceNode[i].Type
-                    +" locid="+deviceNode[i].LocId
-					);
-				serial = deviceNode[i].SerialNumber;
-				try
-				{
-					status = ftdiDevice.OpenBySerialNumber(serial);
-					if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-					{
-						ftdiDevice.GetCOMPort(out com);
-						MLog.Log(this, "Device opened ok, COM=" + com);
-
-						if (deviceNode[i].Description.ToLower().Equals(IniFile.PARAM_RFX_DEVICE_NAME[1].ToLower()))
-						{
-							IniFile.PARAM_RFXCOM_PORT[1] = com;
-							MLog.Log(this, "RFX COM port set to " + com);
-						}
-
-						ftdiDevice.Close();
-					}
-					else
-						MLog.Log(this, "Error, unable to open device " + serial);
-				}
-				catch (Exception ex)
-				{
-					MLog.Log(ex, this, "Error opening ftdi device "+serial);
-				}
-
-                if (deviceNode[i].Description.ToLower().Equals(IniFile.PARAM_RELAY_DEVICE_NAME[1].ToLower()))
-                {
-                    m_deviceSerial = serial;
-					MLog.Log(this, "Found RELAY FTDI device " + m_deviceSerial);
-                }
-            }
-
-            if (m_deviceSerial == "")
-				MLog.Log(this, "No " + IniFile.PARAM_RELAY_DEVICE_NAME[1] + " found in " + count + " devices");
         }
 
         protected override void Open()
