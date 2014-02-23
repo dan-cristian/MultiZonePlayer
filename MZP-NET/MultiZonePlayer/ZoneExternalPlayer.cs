@@ -148,7 +148,6 @@ namespace MultiZonePlayer
 			String source = vals.GetValue(GlobalParams.cmdsource) ?? "";
             switch (cmdRemote)
             {
-					
                 case GlobalCommands.right:
                     if (!source.Equals(CommandSources.rawinput.ToString()))//avoid duplicate actions
 						DirectionRight();
@@ -173,7 +172,7 @@ namespace MultiZonePlayer
                     DirectionBack();
                     break;
                 default:
-                    MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
+                    MLog.Log(this, "WARNING, unprocessed xbmc zone command " + cmdRemote);
                     break;
             }
             return result;

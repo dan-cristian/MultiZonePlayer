@@ -486,17 +486,14 @@ namespace MultiZonePlayer
 
                 ZoneGeneric zone;
                 //zone for cmd received is not active
-                if (MZPState.Instance != null)
-                {
-                    if (MZPState.Instance.GetZoneIfActive(zoneId) == null)
-                    {
-                        if (Enum.IsDefined(typeof(GlobalCommandsUniversal), apicmd.ToString()))
-                        {
+                if (MZPState.Instance != null){
+                    if (MZPState.Instance.GetZoneIfActive(zoneId) == null){
+						MLog.Log(null, "No active zone found in zone=" + zoneId + " cmd=" + apicmd);
+                        if (Enum.IsDefined(typeof(GlobalCommandsUniversal), apicmd.ToString())){
                             MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
                             zoneId = MZPState.Instance.GetActiveChildZone(zoneId);
                         }
-                        else
-                        {
+                        else{
                             if (MZPState.Instance.GetZone(zoneId) == null)
                                 MZPState.Instance.OpenZone(zoneId);
                         }

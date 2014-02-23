@@ -553,7 +553,8 @@ namespace MultiZonePlayer
 							if (m_mainZoneActivity == null && m_zoneDetails.HasVideoPlayer)
 								InitZonePlayerXBMC();
 							else
-								MLog.Log(this, "Not initialising the video as is already active or due to missing video player on zone=" + m_zoneDetails.ZoneName);
+								MLog.Log(this, "Not initialising the video Mainactivity is null=" + (m_mainZoneActivity == null)
+									+ " missing video player on zone=" + m_zoneDetails.ZoneName + " hasvideo=" + m_zoneDetails.HasVideoPlayer);
 
                             if (action != null && action.Equals(GlobalCommands.play.ToString()))
                                 m_mainZoneActivity.Play();

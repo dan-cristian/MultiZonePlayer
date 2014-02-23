@@ -112,8 +112,9 @@ namespace MultiZonePlayer
 			public const string DEVICE_TYPE_UPS = "UPS";
 			public const string DEVICE_TYPE_IO = "IO Control";
 			public const string DEVICE_TYPE_CHAT = "Chat Service";
-			public const string DEVICE_TYPE_Radio = "Radio";
+			public const string DEVICE_TYPE_RADIO = "Radio";
 			public const string DEVICE_TYPE_TEL = "Telephony";
+			public const string DEVICE_TYPE_RELAY = "Relay";
 
 			public static String[] PARAM_ALARM_SECURE_AREA_ID = new String[] { "PARAM_ALARM_SECURE_AREA_ID", "1" , "Area ID to secure when armed"};
             public static String[] PARAM_RADIO_APP = new String[] { "RADIO_APP", "c:\\Program Files\\VideoMate\\ComproFM 2\\ComproFM.exe" };

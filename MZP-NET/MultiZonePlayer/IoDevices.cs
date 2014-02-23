@@ -256,7 +256,7 @@ namespace MultiZonePlayer
 		}
 	}
 	
-	class RFXCom : SerialBase, IMessenger
+	class RFXCom : SerialBase, IMessenger, IMZPDevice
 	{
 		private static string CMD_RESET = "0D 00 00 00 00 00 00 00 00 00 00 00 00 00";
 		private static string CMD_GETSTATUS = "0D 00 00 01 02 00 00 00 00 00 00 00 00 00";
@@ -383,6 +383,30 @@ namespace MultiZonePlayer
 				return true;
 			else
 				return false;
+		}
+
+		public bool IsFunctional() {
+			return IsConnected();
+		}
+
+		public bool IsEnabled() {
+			throw new NotImplementedException();
+		}
+
+		public void Enable() {
+			throw new NotImplementedException();
+		}
+
+		public void Disable() {
+			throw new NotImplementedException();
+		}
+
+		public string Type() {
+			return IniFile.DEVICE_TYPE_RADIO;
+		}
+
+		public string Name() {
+			return "RFXCom";
 		}
 	}
 
@@ -917,8 +941,9 @@ namespace MultiZonePlayer
 						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
 					}
 					catch (Exception) {
-						MLog.Log(this, "Error setting regular speed on family="+family+", flexing");
-						adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
+						MLog.Log(this, "Error setting regular speed on family="+family+", forcing reinit.");
+						adapter = null;//force reinit
+						//adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
 					}
 					java.util.Enumeration containers = adapter.getAllDeviceContainers();
 					OneWireContainer element;
@@ -952,7 +977,7 @@ namespace MultiZonePlayer
 			while (MZPState.Instance != null) {
 				if (i > IniFile.ZONE_TICK_SLOW_SLEEP/IniFile.ZONE_TICK_FAST_SLEEP) {//slow tick
 					i = 0;
-					if (DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
+					if (adapter == null || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
 						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
 						Reinitialise();
 					}
@@ -1657,7 +1682,7 @@ namespace MultiZonePlayer
 		bool m_bX64 = false;
 
 		private short m_dataPortValue=0;
-		private bool m_isInit;
+		private bool m_isInit = false;
 		private short m_portAddress;
 		private Object m_locker = new Object();
 
@@ -1704,7 +1729,7 @@ namespace MultiZonePlayer
             }
 		}
 
-		private void ReadPort()
+		private bool ReadPort()
 		{
 			lock (m_locker)
 			{
@@ -1721,10 +1746,12 @@ namespace MultiZonePlayer
 					}
 					//MLog.Log(this, "ReadLPT port int=" + (short)c+ " char="+c);
 					m_dataPortValue = (short)c;
+					return true;
 				}
 				catch (Exception ex)
 				{
 					MLog.Log(ex, this, "An error occured on ReadPort");
+					return false;
 				}
 			}
 		}
@@ -1774,6 +1801,10 @@ namespace MultiZonePlayer
 		{
 			string state = PortState;
 			return state[state.Length - 1 - pinIndex] == '1';
+		}
+
+		public Boolean IsInitialised() {
+			return m_isInit;
 		}
 	}
 
@@ -1919,7 +1950,7 @@ namespace MultiZonePlayer
 		}
 
 		public string Type() {
-			return IniFile.DEVICE_TYPE_Radio;
+			return IniFile.DEVICE_TYPE_RADIO;
 		}
 
 		public string Name() {

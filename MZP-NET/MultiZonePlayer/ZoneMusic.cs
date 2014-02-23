@@ -856,7 +856,7 @@ namespace MultiZonePlayer
 					//	Play(IniFile.PARAM_NOTIFYUSER_SOUND_FILE[1]);
 					//	break;
                     default:
-                        MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
+                        MLog.Log(this, "WARNING, unprocessed Music zone command " + cmdRemote);
                         break;
                 }
                 
@@ -1136,7 +1136,7 @@ namespace MultiZonePlayer
                     HoldCriteriaToggle();
                     break;
                 default:
-                    MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
+                    MLog.Log(this, "WARNING, unprocessed Music clone zone command " + cmdRemote);
                     break;
             }
             return result;

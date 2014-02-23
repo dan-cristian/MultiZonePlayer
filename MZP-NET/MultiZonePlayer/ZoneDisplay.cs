@@ -103,7 +103,7 @@ namespace MultiZonePlayer
                     Input = action;
                     break;
                 default:
-                    MLog.Log(this, "WARNING, unprocessed zone command " + cmdRemote);
+                    MLog.Log(this, "WARNING, unprocessed DisplayLG zone command " + cmdRemote);
                     break;
             }
             return result;
