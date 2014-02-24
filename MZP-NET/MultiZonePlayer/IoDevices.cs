@@ -750,7 +750,7 @@ namespace MultiZonePlayer
 
 
 		public bool IsFunctional() {
-			throw new NotImplementedException();
+			return IsConnected();
 		}
 
 		public bool IsEnabled() {
@@ -766,11 +766,11 @@ namespace MultiZonePlayer
 		}
 
 		public string Type() {
-			throw new NotImplementedException();
+			return IniFile.DEVICE_TYPE_RELAY;
 		}
 
 		public string Name() {
-			throw new NotImplementedException();
+			return "GPIO";
 		}
 	}
 
@@ -1853,6 +1853,10 @@ namespace MultiZonePlayer
 					return false;
 				return this.Address.Equals(dev.Address);
 			}
+		}
+
+		public Bluetooth() {
+			;
 		}
 
 		//separate thread as discovery takes long time

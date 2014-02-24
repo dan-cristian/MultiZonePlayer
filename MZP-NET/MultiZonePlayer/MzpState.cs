@@ -56,6 +56,7 @@ namespace MultiZonePlayer {
 		private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 		private WDIO m_wdio;
 		public Boolean TestCond = false;
+		private Bluetooth m_bt;
 		private SysLog m_syslog;
 
 		public WDIO WDIO {
@@ -215,6 +216,7 @@ namespace MultiZonePlayer {
 		private void LoadSerials() {
 			m_messengerList = new List<IMessenger>();
 			m_wdio = new WDIO(); //new GPIO();
+			m_bt = new Bluetooth();
 			m_messengerList.Add(new GTalkMessengers(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERPASS[1]));
 			if (SMSEnabled) {
 				m_messengerList.Add(new SMS());
@@ -454,7 +456,7 @@ namespace MultiZonePlayer {
 				}
 				obj.Add(m_powerControlDenkovi as IMZPDevice);
 				obj.Add(m_powerControlNumato as IMZPDevice);
-
+				obj.Add(m_bt);
 				return obj;
 			}
 			
