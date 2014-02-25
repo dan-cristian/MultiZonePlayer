@@ -25,7 +25,7 @@ namespace MultiZonePlayer
         rating
     }
 
-    public class ZoneMusic : ZoneBase, IZoneActivity
+    public class MusicActivity : BaseActivity, IZoneActivity
     {
         private DCPlayer m_dcPlay = null;
         private ZoneGeneric m_zoneForm = null;
@@ -43,7 +43,7 @@ namespace MultiZonePlayer
         private bool m_isGuideMode = false;
         private string m_numericCmd = "";
 
-            public ZoneMusic(ZoneGeneric zoneForm)
+            public MusicActivity(ZoneGeneric zoneForm)
             {
                 this.m_zoneForm = zoneForm;
                 m_zoneDetails = zoneForm.ZoneDetails;
@@ -57,7 +57,7 @@ namespace MultiZonePlayer
             }
 
             // used to play beeps and other notification signals
-            public ZoneMusic(ZoneGeneric p_zoneForm, String p_fileName)
+            public MusicActivity(ZoneGeneric p_zoneForm, String p_fileName)
             {
                 m_zoneForm = p_zoneForm;
                 m_zoneDetails = p_zoneForm.ZoneDetails;
@@ -888,7 +888,7 @@ namespace MultiZonePlayer
             }
     }
 
-    public class ZoneMusicClone : ZoneBase
+    public class ZoneMusicClone : BaseActivity
     {
         private ZoneGeneric m_parentZoneForm;
 		private ZoneGeneric m_cloneSourceZone;
@@ -898,7 +898,7 @@ namespace MultiZonePlayer
 			get { return m_cloneSourceZone; }
 			
 		}
-        private ZoneMusic m_clonedZoneMusic;
+        private MusicActivity m_clonedZoneMusic;
         private ZoneState m_zoneState;
 
         public ZoneMusicClone(ZoneGeneric p_zoneForm, ZoneGeneric p_cloneSource)
@@ -914,7 +914,7 @@ namespace MultiZonePlayer
 				m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControlOn(m_parentZoneForm.ZoneDetails.ZoneId);
                 m_cloneSourceZone.AddClonedZone(this.ZoneDetails);
-                m_clonedZoneMusic = (ZoneMusic)m_cloneSourceZone.GetCurrentActivity();
+                m_clonedZoneMusic = (MusicActivity)m_cloneSourceZone.GetCurrentActivity();
                 m_clonedZoneMusic.UpdateOutputDevices();
                 m_zoneState = ZoneState.Running;
             }

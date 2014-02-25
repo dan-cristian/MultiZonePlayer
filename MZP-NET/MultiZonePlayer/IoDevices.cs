@@ -1244,7 +1244,7 @@ namespace MultiZonePlayer
 			if (IsFunctional())
 				return adapter.getAdapterName();
 			else 
-				return "not available";
+				return "OneWire";
 		}
 	}
 
@@ -1284,7 +1284,7 @@ namespace MultiZonePlayer
 		{ }
 
 		public bool IsFunctional() {
-			throw new NotImplementedException();
+			return m_winEventLogReader!=null && DateTime.Now.Subtract(m_winEventLogReader.LastLogEntryDate).TotalDays<=1;
 		}
 
 		public bool IsEnabled() {
@@ -1958,8 +1958,7 @@ namespace MultiZonePlayer
 		}
 
 		public string Name() {
-
-			return m_btc!=null?"Available":"not available";
+			return "Bluetooth";
 		}
 	}
 

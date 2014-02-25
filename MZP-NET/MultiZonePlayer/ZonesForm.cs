@@ -87,7 +87,7 @@ namespace MultiZonePlayer
 
         public void NextPlaylist()
         {
-            ((ZoneMusic)m_zone.MainZoneActivity).NextPlaylist();
+            ((MusicActivity)m_zone.MainZoneActivity).NextPlaylist();
             ShowPlayList();
         }
 
@@ -105,7 +105,7 @@ namespace MultiZonePlayer
 
                 txtOutputDevice.Text = m_zoneDetails.OutputKeywords + " - " + m_zoneDetails.OutputDeviceUserSelected;
                 txtUser.Text = m_zone.ZoneUser.Name;
-                txtInactiveCycles.Text = m_zone.InactiveCyclesCount.ToString()+"/" + IniFile.ZONE_INACTIVITY_MAX_CYCLES;
+                //txtInactiveCycles.Text = m_zone.InactiveCyclesCount.ToString()+"/" + IniFile.ZONE_INACTIVITY_MAX_CYCLES;
                 txtControlDevice.Text = m_zone.ControlDevice;
                 txtCurrentCmd.Text = m_zone.CurrentCmd;
                 txtZoneName.Text = m_zoneDetails.ZoneId + ":"+m_zoneDetails.ZoneName;
@@ -121,9 +121,9 @@ namespace MultiZonePlayer
                     txtVolumeLevel.Text = m_zone.MainZoneActivity.GetVolumeLevel().ToString();
                     txtMusicStatus.Text = m_zone.MainZoneActivity.GetState().ToString();
 
-                    if (m_zone.MainZoneActivity.GetType() == typeof(ZoneMusic))
+                    if (m_zone.MainZoneActivity.GetType() == typeof(MusicActivity))
                     {
-                        ZoneMusic zMusic = (ZoneMusic)m_zone.MainZoneActivity;
+                        MusicActivity zMusic = (MusicActivity)m_zone.MainZoneActivity;
 
                         tabZone.SelectedTab = tabZone.TabPages[0];
                         txtMusicFile.Text = zMusic.GetMusicFileDescription();
@@ -201,7 +201,7 @@ namespace MultiZonePlayer
             dgvPlayList.Rows.Clear();
             List<AudioItem> defaultSongList;
 
-            defaultSongList = ((ZoneMusic)m_zone.MainZoneActivity).GetSongList();
+            defaultSongList = ((MusicActivity)m_zone.MainZoneActivity).GetSongList();
             if (defaultSongList != null)
             {
                 dgvPlayList.Visible = false;
@@ -274,7 +274,7 @@ namespace MultiZonePlayer
 
         private void dgvPlayList_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            ZoneMusic music = (ZoneMusic) m_zone.MainZoneActivity;
+            MusicActivity music = (MusicActivity) m_zone.MainZoneActivity;
             int ind = Convert.ToInt16(dgvPlayList.Rows[e.RowIndex].Cells[Music_Index.Name].Value);//todo change index
 
             if (ind >=0)
@@ -304,7 +304,7 @@ namespace MultiZonePlayer
 
         private void btClearTags_Click(object sender, EventArgs e)
         {
-            ZoneMusic music = (ZoneMusic)m_zone.MainZoneActivity;
+            MusicActivity music = (MusicActivity)m_zone.MainZoneActivity;
             music.ClearUsageTags();
             ShowPlayList();
             RefreshState();

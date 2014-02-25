@@ -12,7 +12,7 @@ using Vlc.DotNet.Forms;
 
 namespace MultiZonePlayer
 {
-    class ZoneStreamVLC:ZoneBase
+    class ZoneStreamVLC:BaseActivity
     {
         private VlcControl m_vlcControl;
 

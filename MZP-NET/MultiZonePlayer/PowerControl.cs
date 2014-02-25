@@ -224,7 +224,7 @@ namespace MultiZonePlayer
 						Thread.Sleep(100);
 						//MLog.Log(this,"Now closing");
 						status = m_usb8Relay.Close();
-						MLog.Log(this, "Now closed");
+						//MLog.Log(this, "Now closed");
 						m_lastCommandWasOK = true;
 					}
 					catch (Exception ex) {
@@ -466,7 +466,7 @@ namespace MultiZonePlayer
 				        MLog.Log(this, "SendPowercmd failed status=" + status);
 			        Thread.Sleep(100);
 					byte bvalue = 0;
-					MLog.Log(this, "Updating socket status");
+					//MLog.Log(this, "Updating socket status");
 					m_usb8Relay.GetPinStates(ref bvalue);
 					//MLog.Log(this, "Updated socket status OK");
 					m_socketsStatus = Convert.ToString(bvalue, 2);

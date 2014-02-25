@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace MultiZonePlayer
 {
-    public class ZoneExternalPlayerBase :ZoneBase
+    public class ZoneExternalPlayerBase :BaseActivity
     {
         protected Display m_display;
     }

@@ -229,6 +229,12 @@ namespace MultiZonePlayer
 			public static String[] PARAM_REMOTE_SERVER_BT_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_BT_STATUS_FILE", "btstat.txt", "file name with BT status" };
 			public static String[] PARAM_REMOTE_SERVER_WIFI_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_WIFI_STATUS_FILE", "wifi.txt", "file name with wifi status" };
 
+			public static String[] PARAM_CLOSE_ACTIVE_ZONE_MUSIC = new String[] { "PARAM_CLOSE_ACTIVE_ZONE_MUSIC", "30", "minutes of user inactivity after which an active zone of type x will be closed" };
+			public static String[] PARAM_CLOSE_ACTIVE_ZONE_TV = new String[] { "PARAM_CLOSE_ACTIVE_ZONE_TV", "60", "minutes of user inactivity after which an active zone of type x will be closed" };
+			public static String[] PARAM_CLOSE_ACTIVE_ZONE_VIDEO = new String[] { "PARAM_CLOSE_ACTIVE_ZONE_VIDEO", "120", "minutes of user inactivity after which an active zone of type x will be closed" };
+			public static String[] PARAM_CLOSE_INACTIVE_ZONE = new String[] { "PARAM_CLOSE_INACTIVE_ZONE", "1", "minutes after which an inactive zone will be closed" };
+
+
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
@@ -321,7 +327,11 @@ namespace MultiZonePlayer
 				PARAM_ROUTER_LOGOUT_URL,
 				PARAM_REMOTE_SERVER_LIST,
 				PARAM_REMOTE_SERVER_BT_STATUS_FILE,
-				PARAM_REMOTE_SERVER_WIFI_STATUS_FILE
+				PARAM_REMOTE_SERVER_WIFI_STATUS_FILE,
+				PARAM_CLOSE_ACTIVE_ZONE_MUSIC,
+				PARAM_CLOSE_ACTIVE_ZONE_TV,
+				PARAM_CLOSE_ACTIVE_ZONE_VIDEO,
+				PARAM_CLOSE_INACTIVE_ZONE
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;

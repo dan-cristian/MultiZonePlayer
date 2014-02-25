@@ -12,6 +12,7 @@ namespace MultiZonePlayer
     {
         private EventLog myLog ;
         private static List<String> m_eventSourceList;
+	    private DateTime m_lastLogEntryDate = DateTime.MinValue;
 
         public WinEventLogReader(String logname)
         {
@@ -40,14 +41,18 @@ namespace MultiZonePlayer
             myLog.EnableRaisingEvents = true;
         }
 
-        public static void OnEntryWritten(Object source, EntryWrittenEventArgs e)
+	    public DateTime LastLogEntryDate {
+		    get { return m_lastLogEntryDate; }
+	    }
+
+	    public void OnEntryWritten(Object source, EntryWrittenEventArgs e)
         {
             Console.WriteLine("written entry: " + e.Entry.Message);
 
             foreach (String sourceString in m_eventSourceList)
             {
-                if (e.Entry.Source.ToLower().Equals(sourceString.ToLower()))
-                {
+                if (e.Entry.Source.ToLower().Equals(sourceString.ToLower())) {
+	                m_lastLogEntryDate = e.Entry.TimeGenerated;
                     MZPState.Instance.ZoneEvents.WinEventLogEntryMatch(sourceString, e.Entry.Message, e.Entry.TimeGenerated);
                 }
             }

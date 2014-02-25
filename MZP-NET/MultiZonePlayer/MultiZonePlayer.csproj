@@ -296,7 +296,7 @@
     <Compile Include="ZoneExternalPlayer.cs" />
     <Compile Include="ZoneGeneric.cs" />
     <Compile Include="ZoneMic.cs" />
-    <Compile Include="ZoneMusic.cs" />
+    <Compile Include="MusicActivity.cs" />
     <Compile Include="ZoneAux.cs" />
     <Compile Include="ZoneRadio.cs" />
     <Compile Include="ZonesForm.cs">

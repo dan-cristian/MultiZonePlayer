@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MultiZonePlayer
 {
-    public abstract class ZoneDisplay : ZoneBase
+    public abstract class ZoneDisplay : BaseActivity
     {
         protected Display m_display;
 

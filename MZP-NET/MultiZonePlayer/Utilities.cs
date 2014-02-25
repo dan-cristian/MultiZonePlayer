@@ -1006,7 +1006,7 @@ namespace MultiZonePlayer
                     synth.Dispose();
                     stream.Flush();
                     stream.Close();
-                    ZoneMusic music = new ZoneMusic(zone, stream.Name);
+                    MusicActivity music = new MusicActivity(zone, stream.Name);
                 }
             }
             catch (Exception ex)

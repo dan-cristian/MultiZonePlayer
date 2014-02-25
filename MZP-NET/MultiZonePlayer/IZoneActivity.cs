@@ -42,7 +42,7 @@ namespace MultiZonePlayer
         void Tick();
     }
 
-    public class ZoneBase:IZoneActivity
+    public class BaseActivity:IZoneActivity
     {
         protected DateTime m_lastSlowTickDateTime = DateTime.Now;
 		protected ZoneDetails m_zoneDetails;

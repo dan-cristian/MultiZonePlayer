@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MultiZonePlayer
 {
-    class ZoneAux : ZoneBase
+    class ZoneAux : BaseActivity
     {
         private AuxPlayer auxPlayer = null;
         private ZoneGeneric zoneForm;
