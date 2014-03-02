@@ -60,12 +60,29 @@ namespace MultiZonePlayer {
 		public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
 		//public ClosureOpenCloseRelay ClosureOpenCloseRelay;
 		[Description("Edit")]
-		public ulong ClosureCounts = 0;
+		public ulong ClosureCount = 0;
+		
 		public Boolean IsClosureArmed = false;
+		[Description("Edit")]
+		public EnumClosureType ClosureType = EnumClosureType.Undefined;
 		private Boolean m_isClosureContactMade = false, m_isClosureContactMadeLast = false;
 		public EnumRelayState RelayState = EnumRelayState.Undefined;
+		[Description("Edit")]
 		public EnumRelayType RelayType = EnumRelayType.Undefined;
-		
+
+		[Description("Edit")]
+		public EnumPulseDeviceType PulseDeviceType = EnumPulseDeviceType.Undefined;
+		public ulong PulseCountInSample = 0;
+		[Description("Edit")]
+		public int PulseSampleMinutesFrequency = 1;//in minutes
+		[Description("Edit")]
+		public uint PulseSubUnits = 1;//how many subunits in a main unit 100 e.g. flashes in a kwh
+		[Description("Edit")]
+		public double PulseMainUnitsCount = 0;//main units, e.g. kwh
+		private DateTime m_lastPulseSamplingStart = DateTime.Now;
+		[Description("Edit")]
+		public String PulseMainUnitType = "";
+
 		[Description("Edit")]
 		public String TemperatureDeviceId;
 		//[Description("Edit")]
@@ -158,7 +175,7 @@ namespace MultiZonePlayer {
 			get { return m_isClosureContactMade; }
 			set {
 				m_isClosureContactMade = value;
-				ClosureCounts++;
+				ClosureCount++;
 				if (m_isClosureContactMade != m_isClosureContactMadeLast) {
 					Rules.ExecuteRule(this, "isclosurecontact=" + m_isClosureContactMade);
 					m_isClosureContactMadeLast= m_isClosureContactMade;
@@ -166,6 +183,19 @@ namespace MultiZonePlayer {
 			}
 		}
 
+		public void RecordPulse() {
+			if (DateTime.Now.Subtract(m_lastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
+				double mainUnits = (double)PulseCountInSample/PulseSubUnits;
+				PulseMainUnitsCount += mainUnits;
+				Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), 
+					mainUnits.ToString(), ZoneId.ToString(), PulseDeviceType.ToString() );
+				m_lastPulseSamplingStart = DateTime.Now;
+				PulseCountInSample = 0;
+			}
+			else {
+				PulseCountInSample++;
+			}
+		}
 		public Boolean IsActive {
 			get {
 				return ZoneState == MultiZonePlayer.ZoneState.Running;
@@ -560,7 +590,8 @@ namespace MultiZonePlayer {
 					}*/
 
 					ClosureIdList = zonestorage.ClosureIdList.Trim();
-					ClosureCounts = zonestorage.ClosureCounts;
+					ClosureCount = zonestorage.ClosureCount;
+					ClosureType = zonestorage.ClosureType;
 					
 					//if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
 					IsClosureArmed = true;
@@ -576,6 +607,14 @@ namespace MultiZonePlayer {
 					TemperatureMinAlarm = zonestorage.TemperatureMinAlarm;
 					Color = zonestorage.Color;
 					//Temperature = "1";
+
+					PulseDeviceType = zonestorage.PulseDeviceType;
+					PulseMainUnitsCount = zonestorage.PulseMainUnitsCount;
+					PulseSampleMinutesFrequency = zonestorage.PulseSampleMinutesFrequency;
+					PulseSubUnits = zonestorage.PulseSubUnits;
+					PulseMainUnitType = zonestorage.PulseMainUnitType;
+					PulseCountInSample = zonestorage.PulseCountInSample;
+
 					LoadPicturesFromDisk();
 				}
 				else
@@ -845,6 +884,17 @@ namespace MultiZonePlayer {
 		Undefined = -1,
 		ContactOpen = 0,
 		ContactClosed = 1
+	}
+	public enum EnumClosureType {
+		Undefined = -1,
+		Contact = 0,
+		Pulse = 1
+	}
+	public enum EnumPulseDeviceType {
+		Undefined = -1,
+		Electricity = 0,
+		Water = 1,
+		Gas = 2
 	}
 	public enum EnumRelayType {
 		Undefined,

@@ -387,6 +387,27 @@ namespace MultiZonePlayer {
 			}
 		}
 
+		public List<String> GetEditableFieldTypeList(String className) {
+			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
+				System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
+			Object p = handle.Unwrap();
+			Type t = p.GetType();
+			List<String> list;
+			if (t != null) {
+				list = t.GetFields().ToList().FindAll(x => (
+					(x.GetCustomAttributes(typeof(DescriptionAttribute), false) != null) &&
+					(x.GetCustomAttributes(typeof(DescriptionAttribute), false).Length > 0)
+					&&
+					(((DescriptionAttribute[])x.GetCustomAttributes(typeof(DescriptionAttribute), false))[0].Description == "Edit"))
+					).Select(y => (y.FieldType.Name + " " +Reflect.ListTypeValues(y.FieldType,","))).ToList();
+			}
+			else {
+				list = null;
+				
+			}
+			return list;
+		}
+
 		public List<String> GetFieldList(String className) {
 			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
 				System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);

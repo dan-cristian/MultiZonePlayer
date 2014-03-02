@@ -386,7 +386,8 @@ namespace MultiZonePlayer {
 				case GlobalCommands.generategraph:
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
 					string type = vals.GetValue(GlobalParams.type).ToLower();
-					SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == "voltage");
+					SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == "voltage", 
+						type == Constants.CAPABILITY_ELECTRICITY);
 					if (type == "temphum") {
 						graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
 					}
@@ -395,6 +396,9 @@ namespace MultiZonePlayer {
 					}
 					if (type == "voltage") {
 						graph.ShowVoltageGraph(m_zoneDetails.ZoneId, ageHours);
+					}
+					if (type == Constants.CAPABILITY_ELECTRICITY) {
+						graph.ShowElectricityGraph(m_zoneDetails.ZoneId, ageHours);
 					}
 					break;
 				case GlobalCommands.doorring:
@@ -824,19 +828,30 @@ namespace MultiZonePlayer {
 			ZoneOpenActions();
 			m_zoneDetails.LastClosureEventDateTime = DateTime.Now;
 
-			string message = "Closure contact state " + key + " is " + isContactMade
+			switch (m_zoneDetails.ClosureType) {
+					case EnumClosureType.Contact:
+						string message = "Closure contact state " + key + " is " + isContactMade
 			                 + " on zone " + m_zoneDetails.ZoneName;
-			MLog.Log(this, message);
-			Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key,
-				DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), m_zoneDetails.RelayState.ToString(),
-				m_zoneDetails.ZoneId.ToString(), Constants.EVENT_TYPE_CLOSURE, key);
+						MLog.Log(this, message);
+						Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key,
+							DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), m_zoneDetails.RelayState.ToString(),
+							m_zoneDetails.ZoneId.ToString(), Constants.EVENT_TYPE_CLOSURE, key);
 
-			if (isContactMade) {
-				if (m_zoneDetails.IsArmed ||
-				    (MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId == m_zoneDetails.AlarmAreaId)) {
-					Alert.CreateAlert(message, m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
-				}
+						if (isContactMade) {
+							if (m_zoneDetails.IsArmed ||
+								(MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId == m_zoneDetails.AlarmAreaId)) {
+								Alert.CreateAlert(message, m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+							}
+						}	
+						break;
+					case EnumClosureType.Pulse:
+						m_zoneDetails.RecordPulse();
+						break;
+				default:
+					MLog.Log(this, "Error, undefined closure type for zone="+m_zoneDetails.ZoneName);
+					break;
 			}
+			
 			m_zoneDetails.MovementAlert = false;
 
 			/*ClosureOpenCloseRelay lastState = m_zoneDetails.ClosureOpenCloseRelay;

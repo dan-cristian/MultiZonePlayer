@@ -1048,29 +1048,29 @@ namespace MultiZonePlayer
 							}*/
 							if (lastLevelA != levelA || activityA) {
 								MLog.Log(this, "Event closure change A on " + zone.ZoneName 
-									+ " count=" + zone.ClosureCounts + " level=" + levelA
-									+ " lastlevel="+lastLevelA);
+									+ " count=" + zone.ClosureCount + " level=" + levelA
+									+ " lastlevel="+lastLevelA + " activity="+activityA);
 								//if (!activityB)
 								//	Alert.CreateAlert("No Activity A on level change");
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
 								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-								val.Add(GlobalParams.id, "Sensor A");
-								val.Add(GlobalParams.iscontactmade, ((levelA == false)||(levelB == false)).ToString());//normal close
+								val.Add(GlobalParams.id, "1");
+								val.Add(GlobalParams.iscontactmade, ((levelA == false)).ToString());//normal close
 								API.DoCommand(val);
 							}
 
 							if (lastLevelB != levelB || activityB) {
 								MLog.Log(this, "Event closure change B on " + zone.ZoneName
-									+ " count=" + zone.ClosureCounts + " level=" + levelB
-									+ " lastlevel=" + lastLevelB);
+									+ " count=" + zone.ClosureCount + " level=" + levelB
+									+ " lastlevel=" + lastLevelB + " activity=" + activityB);
 								//if (!activityB)
 								//	Alert.CreateAlert("No Activity B on level change");
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
 								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-								val.Add(GlobalParams.id, "Sensor B");
-								val.Add(GlobalParams.iscontactmade, ((levelA == false) || (levelB == false)).ToString());//normal close
+								val.Add(GlobalParams.id, "2");
+								val.Add(GlobalParams.iscontactmade, ((levelB == false)).ToString());//normal close
 								API.DoCommand(val);
 							}
 

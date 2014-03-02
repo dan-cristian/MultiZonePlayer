@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -13,11 +15,12 @@ namespace MultiZonePlayer
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
 		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
+		private List<Tuple<int, DateTime, double>> m_utilitiesHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
 		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
 
 
-		public SimpleGraph(bool needTempHum, bool needClosure, bool needVoltage)
+		public SimpleGraph(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities)
 		{
 			InitializeComponent();
 			m_colors[0] = System.Drawing.Color.Orchid;
@@ -30,7 +33,7 @@ namespace MultiZonePlayer
 			m_colors[7] = System.Drawing.Color.PaleVioletRed;
 			m_colors[8] = System.Drawing.Color.LightSalmon;
 			m_colors[9] = System.Drawing.Color.MediumSlateBlue;
-			LoadHistory(needTempHum, needClosure, needVoltage);
+			LoadHistory(needTempHum, needClosure, needVoltage, needUtilities);
 		}
 
 		public void AddTemperatureReading(Tuple<int, DateTime, double> reading)
@@ -118,7 +121,8 @@ namespace MultiZonePlayer
 			this.chart1.Legends[0].Docking = Docking.Bottom;
 			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(period);
 			chart1.Titles.Add(title);
-
+			chart1.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.LightGray;
+			chart1.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
 		}
 
 		public void ShowVoltageGraph(int zoneId, int ageHours) {
@@ -159,6 +163,49 @@ namespace MultiZonePlayer
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "Err gen voltage graph");
+			}
+		}
+
+		public void ShowElectricityGraph(int zoneId, int ageHours) {
+			try {
+
+				PrepareGraph(Constants.CAPABILITY_ELECTRICITY+ " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				System.Windows.Forms.DataVisualization.Charting.Series series;
+				double minY = double.MaxValue, maxY = double.MinValue;
+				
+				List<Tuple<int, DateTime, double>> tempValues = m_utilitiesHistoryList.FindAll(
+					x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+				if (tempValues.Count > 0) {
+					series = new System.Windows.Forms.DataVisualization.Charting.Series {
+						Name = Constants.CAPABILITY_ELECTRICITY,
+						Color = Color.OrangeRed,
+						IsVisibleInLegend = true,
+						IsXValueIndexed = false,
+						ChartType = SeriesChartType.StepLine,
+						BorderWidth = 1,
+						MarkerSize = 3,
+					};
+					this.chart1.Series.Add(series);
+					foreach (var point in tempValues) {
+						series.Points.AddXY(point.Item2, point.Item3);
+						minY = Math.Min(minY, tempValues.Min(x => x.Item3));
+						maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+					}
+				}
+				else {
+					maxY = 1;
+					minY = 0;
+				}
+
+				chart1.ChartAreas[0].AxisY.Maximum = maxY;
+				chart1.ChartAreas[0].AxisY.Minimum = minY;
+				chart1.ChartAreas[0].RecalculateAxesScale();
+				chart1.Invalidate();
+				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+					+ Constants.CAPABILITY_ELECTRICITY + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+			}
+			catch (Exception ex) {
+				MLog.Log(ex, this, "Err gen electricity graph");
 			}
 		}
 
@@ -348,11 +395,12 @@ namespace MultiZonePlayer
 			this.ResumeLayout(false);
 		}
 
-		private void LoadHistory(bool needTempHum, bool needClosure, bool needVoltage){
+		private void LoadHistory(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities){
 			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
 			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int>>();
+			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double>>();
 			string[] allLines;
 
 			if (needTempHum) {
@@ -384,7 +432,7 @@ namespace MultiZonePlayer
 			if (needVoltage) {
 				MLog.Log(this, "START reading Voltage");
 				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_VOLTAGE);
-				var query1 = from line in allLines
+				var query = from line in allLines
 							 let data = line.Split(',')
 							 select new {
 								 ZoneName = data[0],
@@ -395,7 +443,7 @@ namespace MultiZonePlayer
 								 VoltageIndex = Convert.ToInt16(data[5])
 							 };
 				MLog.Log(this, "Processing Voltage");
-				foreach (var line in query1) {
+				foreach (var line in query) {
 					switch (line.Type) {
 						case Constants.CAPABILITY_VOLTAGE:
 							m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int>(line.ZoneId, line.Date, line.Value, line.VoltageIndex));
@@ -408,7 +456,7 @@ namespace MultiZonePlayer
 				MLog.Log(this, "START reading Closures");
 				//GET closures from storage
 				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_CLOSURES);
-				var query2 = from line in allLines
+				var query = from line in allLines
 							 let data = line.Split(',')
 							 select new {
 								 ZoneName = data[0],
@@ -420,10 +468,32 @@ namespace MultiZonePlayer
 								 Identifier = data.Length > 6 ? data[6] : "Main"
 							 };
 				MLog.Log(this, "Processing Closures");
-				foreach (var line in query2) {
+				foreach (var line in query) {
 					m_eventHistoryList.Add(new Tuple<int, DateTime, int, String, String>(line.ZoneId, line.Date, line.State, line.EventType, line.Identifier));
 				}
 				MLog.Log(this, "End reading Closures");
+			}
+			if (needUtilities) {
+				MLog.Log(this, "START reading Utilities");
+				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_UTILITIES);
+				var query = from line in allLines
+							 let data = line.Split(',')
+							 select new {
+								 ZoneName = data[0],
+								 Date = Convert.ToDateTime(data[1]),
+								 Value = Convert.ToDouble(data[2]),
+								 ZoneId = Convert.ToInt16(data[3]),
+								 Type = data[4].ToLower()
+							 };
+				MLog.Log(this, "Processing Utilities");
+				foreach (var line in query) {
+					switch (line.Type) {
+						case Constants.CAPABILITY_ELECTRICITY:
+							m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
+							break;
+					}
+				}
+				MLog.Log(this, "End reading Utilities");
 			}
 		}
 

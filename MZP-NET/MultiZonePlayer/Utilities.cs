@@ -251,7 +251,7 @@ namespace MultiZonePlayer
             return (IntPtr)((HiWord << 16) | (LoWord & 0xffff));
         }
 
-		
+	   
 
         public static bool CloseProcSync(String procName)
         {
@@ -896,8 +896,6 @@ namespace MultiZonePlayer
 			MLog.Log("No port for " + description + " found in " + count + " devices");
 			return "";
 		}
-
-		
     }
 
     public class WebPostRequest

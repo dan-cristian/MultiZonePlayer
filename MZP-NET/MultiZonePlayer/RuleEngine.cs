@@ -345,31 +345,31 @@ namespace MultiZonePlayer
 						//MLog.Log(null, "Warning, Property called with parameters");
 						if (value.GetType().Name == "List`1")
 						{//WARNING - Order Long class name first - contains is not failproof
-							if (value.ToString().Contains(typeof(MultiZonePlayer.ZoneDetails).ToString()))
+							if (value.ToString().Contains(typeof(ZoneDetails).ToString()))
 								value = ((List<ZoneDetails>)value)[Convert.ToInt32(parameters[0])];
 							else
-								if (value.ToString().Contains(typeof(System.String).ToString()))
-									value = ((List<String>)value)[Convert.ToInt32(parameters[0])];
+								if (value.ToString().Contains(typeof(String).ToString()))
+									value = ((List<string>)value)[Convert.ToInt32(parameters[0])];
 								else
-									if (value.ToString().Contains(typeof(MultiZonePlayer.Alert).ToString()))
+									if (value.ToString().Contains(typeof(Alert).ToString()))
 										value = ((List<Alert>)value)[Convert.ToInt32(parameters[0])];
 									else
-										if (value.ToString().Contains(typeof(MultiZonePlayer.UserPresence).ToString()))
+										if (value.ToString().Contains(typeof(UserPresence).ToString()))
 											value = ((List<UserPresence>)value)[Convert.ToInt32(parameters[0])];
 										else
-											if (value.ToString().Contains(typeof(MultiZonePlayer.User).ToString()))
+											if (value.ToString().Contains(typeof(User).ToString()))
 												value = ((List<User>)value)[Convert.ToInt32(parameters[0])];
 											else
-												if (value.ToString().Contains(typeof(MultiZonePlayer.OneWire.Device).ToString()))
+												if (value.ToString().Contains(typeof(OneWire.Device).ToString()))
 													value = ((List<OneWire.Device>)value)[Convert.ToInt32(parameters[0])];
 												else
-													if (value.ToString().Contains(typeof(MultiZonePlayer.Singleton).ToString()))
+													if (value.ToString().Contains(typeof(Singleton).ToString()))
 														value = ((List<Singleton>)value)[Convert.ToInt32(parameters[0])];
 													else
-														if (value.ToString().Contains(typeof(MultiZonePlayer.PictureSnapshot).ToString()))
+														if (value.ToString().Contains(typeof(PictureSnapshot).ToString()))
 															value = ((List<PictureSnapshot>)value)[Convert.ToInt32(parameters[0])];
 														else
-															if (value.ToString().Contains(typeof(MultiZonePlayer.IMZPDevice).ToString()))
+															if (value.ToString().Contains(typeof(IMZPDevice).ToString()))
 																value = ((List<IMZPDevice>)value)[Convert.ToInt32(parameters[0])];
 															else
 									//"System.Collections.Generic.ValueList`1[System.String]"
@@ -486,25 +486,51 @@ namespace MultiZonePlayer
 		}
 
 		public static Boolean SetFieldValue(ref Object fieldInstance, String fieldName, string value) {
-			System.Reflection.FieldInfo fieldInfo = null;
+			FieldInfo fieldInfo = null;
 			Type paramType;
 
 			fieldInfo = fieldInstance.GetType().GetField(fieldName);
 			if (fieldInfo != null) {
 				object obj;
 				paramType = fieldInfo.FieldType;
-				if (paramType.Name == "List`1") {
-					obj = "NONE";
-					MLog.Log(null, "Unsuported set operation");
+				switch (paramType.BaseType.Name) {
+					case "List`1":
+						obj = "NONE";
+						MLog.Log(null, "Unsuported set operation");
+						break;
+					case "Enum":
+						obj = Enum.Parse(paramType, value);
+						break;
+					default:
+						obj = Convert.ChangeType(value, paramType);
+						break;
 				}
-				else
-					obj = Convert.ChangeType(value, paramType);
 				
 				fieldInfo.SetValue(fieldInstance, obj);
 				return true;
 			}
 			else 
 				return false;
+		}
+
+		public static String ListTypeValues(Type type, String separator) {
+			String res = "";
+
+			try {
+				switch (type.BaseType.Name) {
+					case "Enum":
+						var list = Enum.GetValues(type);
+						foreach (Enum en in list) {
+							res += en + separator;
+						}
+						break;
+				}
+			}
+			catch (Exception e) {
+				throw e;
+			}
+
+			return res;
 		}
 	}
 

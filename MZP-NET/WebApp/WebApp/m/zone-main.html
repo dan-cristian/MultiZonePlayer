@@ -27,11 +27,14 @@
 <%if;#Zones,%_zoneid.HasMotionSensor#%>
 <button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Motion</button>
 <%%>
-<%if;#Zones,%_zoneid.HasClosures#%>
+<%if;"#Zones,%_zoneid.ClosureType#"=="Contact"%>
 <button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Closure #Zones,%_zoneid.ClosureState#</button>
 <%%>
+<%if;"#Zones,%_zoneid.PulseDeviceType#"=="Electricity"%>
+<button class="small" onclick="ajaxCall('event','zone-electricity-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=electricity', false)">Electricity</button>
+<%%>
 <%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum', false)">#Zones,%_zoneid.Temperature#°</button>
-#Zones,%_zoneid.ClosureCounts#
+#Zones,%_zoneid.ClosureCount#
 <%%>
 <%if;#Zones,%_zoneid.HasHumiditySensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum', false)">#Zones,%_zoneid.Humidity#%</button><%%>
 <%if;#Zones,%_zoneid.HasPowerCapabilities#%>
