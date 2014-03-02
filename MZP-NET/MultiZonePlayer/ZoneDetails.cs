@@ -79,6 +79,7 @@ namespace MultiZonePlayer {
 		public uint PulseSubUnits = 1;//how many subunits in a main unit 100 e.g. flashes in a kwh
 		[Description("Edit")]
 		public double PulseMainUnitsCount = 0;//main units, e.g. kwh
+		public double PulseLastMainUnitsCount = 0;
 		private DateTime m_lastPulseSamplingStart = DateTime.Now;
 		[Description("Edit")]
 		public String PulseMainUnitType = "";
@@ -185,10 +186,10 @@ namespace MultiZonePlayer {
 
 		public void RecordPulse() {
 			if (DateTime.Now.Subtract(m_lastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
-				double mainUnits = (double)PulseCountInSample/PulseSubUnits;
-				PulseMainUnitsCount += mainUnits;
-				Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), 
-					mainUnits.ToString(), ZoneId.ToString(), PulseDeviceType.ToString() );
+				PulseLastMainUnitsCount = (double)PulseCountInSample/PulseSubUnits;
+				PulseMainUnitsCount += PulseLastMainUnitsCount;
+				Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
+					PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), PulseDeviceType.ToString());
 				m_lastPulseSamplingStart = DateTime.Now;
 				PulseCountInSample = 0;
 			}
