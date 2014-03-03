@@ -73,6 +73,10 @@ namespace MultiZonePlayer {
 			get { return (User) MultiZonePlayer.User.StaticInstance; }
 		}
 
+		public UtilityCost UtilityCost{
+			get { return (UtilityCost)MultiZonePlayer.UtilityCost.StaticInstance; }
+		}
+
 		public OneWire OneWire {
 			get { return m_oneWire; }
 		}
@@ -134,6 +138,7 @@ namespace MultiZonePlayer {
 			LoadIniParams();
 			LoadIniSections();
 			LoadSystemAndUserControls();
+			UtilityCost.LoadFromIni();
 
 			MLog.Log(this, "Retrieving system available audio input devices");
 			DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
@@ -298,6 +303,7 @@ namespace MultiZonePlayer {
 				foreach (IMessenger mes in m_messengerList) {
 					mes.Close();
 				}
+				UtilityCost.SaveAllToIni();
 				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
 			}
@@ -462,6 +468,10 @@ namespace MultiZonePlayer {
 
 		public String UserIsNearSummary {
 			get { return MultiZonePlayer.UserPresence.UserIsNearSummary; }
+		}
+
+		public List<UtilityCost> UtilityCostList{
+			get { return UtilityCost.StaticInstance.ValueList.Select(x => (UtilityCost)x).ToList(); }
 		}
 
 		public List<IMZPDevice> DeviceList {

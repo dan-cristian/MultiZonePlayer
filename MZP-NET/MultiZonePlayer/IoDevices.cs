@@ -928,7 +928,7 @@ namespace MultiZonePlayer
 		}
 
 		//Family codes http://owfs.sourceforge.net/family.html
-		private void ProcessFamily(int family, Boolean verboseLog) {
+		private void ProcessFamily(int family, String familyName, Boolean verboseLog) {
 			if (adapter != null) {
 				try {
 					// get exclusive use of adapter
@@ -959,7 +959,7 @@ namespace MultiZonePlayer
 						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
 						elementCount++;
 					}
-					Performance.Create("OneWire lookup family="+family+" for elements count=" + elementCount + " took "
+					Performance.Create("OneWire lookup family="+familyName+" for elements count=" + elementCount + " took "
 						+ DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount, verboseLog,
 						family.ToString(),
 						Performance.PerformanceFlags.IsError, errCount,
@@ -981,11 +981,11 @@ namespace MultiZonePlayer
 						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
 						Reinitialise();
 					}
-					ProcessFamily(0x28, false);//DS18B20
-					ProcessFamily(0x26, false);//DS2438, Smart Battery Monitor
-					ProcessFamily(0x1D, false);//DS2423
+					ProcessFamily(0x28, ONEWIRE_TEMPDEV_NAME, false);//DS18B20
+					ProcessFamily(0x26, ONEWIRE_SMARTBATDEV_NAME,false);//DS2438, Smart Battery Monitor
+					ProcessFamily(0x1D, ONEWIRE_COUNTER_NAME,false);//DS2423
 				}
-				ProcessFamily(0x12, false);//DS2406 or DS2407
+				ProcessFamily(0x12, ONEWIRE_PHOTODEV_NAME, false);//DS2406 or DS2407
 				i++;
 				Thread.Sleep(IniFile.ZONE_TICK_FAST_SLEEP);
 			}

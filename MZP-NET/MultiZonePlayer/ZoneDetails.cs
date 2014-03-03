@@ -71,7 +71,7 @@ namespace MultiZonePlayer {
 		public EnumRelayType RelayType = EnumRelayType.Undefined;
 
 		[Description("Edit")]
-		public EnumPulseDeviceType PulseDeviceType = EnumPulseDeviceType.Undefined;
+		public EnumUtilityType UtilityType = EnumUtilityType.Undefined;
 		public ulong PulseCountInSample = 0;
 		[Description("Edit")]
 		public int PulseSampleMinutesFrequency = 1;//in minutes
@@ -135,7 +135,7 @@ namespace MultiZonePlayer {
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 		// not serializable, hidden from json
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
-		protected static List<Singleton> m_valueList = new List<Singleton>();
+		protected static new List<Singleton> m_valueList = new List<Singleton>();
 		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false;
 
 		public ZoneDetails() {
@@ -156,7 +156,7 @@ namespace MultiZonePlayer {
 				else return new ZoneDetails();
 			}
 		}
-		public override List<Singleton> ValueList{
+		public override List<Singleton> ValueList {
 			get { return m_valueList; }
 		}
 		public override Singleton Instance {
@@ -188,14 +188,20 @@ namespace MultiZonePlayer {
 			if (DateTime.Now.Subtract(m_lastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
 				PulseLastMainUnitsCount = (double)PulseCountInSample/PulseSubUnits;
 				PulseMainUnitsCount += PulseLastMainUnitsCount;
+				double cost = PulseLastMainUnitsCount * UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost;
 				Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
-					PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), PulseDeviceType.ToString());
+					PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), PulseMainUnitsCount.ToString(),
+					cost.ToString());
 				m_lastPulseSamplingStart = DateTime.Now;
 				PulseCountInSample = 0;
 			}
 			else {
 				PulseCountInSample++;
 			}
+		}
+
+		public double PulseTotalCost {
+			get { return PulseMainUnitsCount * UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost; }
 		}
 		public Boolean IsActive {
 			get {
@@ -609,7 +615,7 @@ namespace MultiZonePlayer {
 					Color = zonestorage.Color;
 					//Temperature = "1";
 
-					PulseDeviceType = zonestorage.PulseDeviceType;
+					UtilityType = zonestorage.UtilityType;
 					PulseMainUnitsCount = zonestorage.PulseMainUnitsCount;
 					PulseSampleMinutesFrequency = zonestorage.PulseSampleMinutesFrequency;
 					PulseSubUnits = zonestorage.PulseSubUnits;
@@ -891,7 +897,7 @@ namespace MultiZonePlayer {
 		Contact = 0,
 		Pulse = 1
 	}
-	public enum EnumPulseDeviceType {
+	public enum EnumUtilityType {
 		Undefined = -1,
 		Electricity = 0,
 		Water = 1,
@@ -903,6 +909,8 @@ namespace MultiZonePlayer {
 		NormalClosed,
 		Button
 	}
+
+	
 	/*
 	public class ClosureOpenCloseRelay {
 		//public string Key;

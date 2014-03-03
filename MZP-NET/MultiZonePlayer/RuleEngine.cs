@@ -372,6 +372,9 @@ namespace MultiZonePlayer
 															if (value.ToString().Contains(typeof(IMZPDevice).ToString()))
 																value = ((List<IMZPDevice>)value)[Convert.ToInt32(parameters[0])];
 															else
+																if (value.ToString().Contains(typeof(UtilityCost).ToString()))
+																	value = ((List<UtilityCost>)value)[Convert.ToInt32(parameters[0])];
+																else
 									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
@@ -912,7 +915,7 @@ namespace MultiZonePlayer
 								string filter;
 								forstart = Convert.ToInt16(start);
 								if (!Int32.TryParse(end, out forend))
-									MLog.Log(null, "Error detectin FOR end loop, val="+end);
+									MLog.Log(null, "Error detectin FOR end loop, val="+end+" script orig="+script + " reflected="+scriptReflect);
 								String generated;
 
 								switch (oper)

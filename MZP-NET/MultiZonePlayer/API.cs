@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System.Text;
-using System.Threading;
-
 using System.Runtime.Serialization;
 using System.ComponentModel;
 using fastJSON;
-
-
+using java.lang;
+using Boolean = System.Boolean;
+using Exception = System.Exception;
+using Thread = System.Threading.Thread;
 
 namespace MultiZonePlayer
 {
@@ -385,6 +385,12 @@ namespace MultiZonePlayer
 									break;
 								case "User":
 									fieldObj = User.GetUser(id);
+									break;
+								case "UtilityCost":
+									fieldObj = UtilityCost.GetUtility(id);
+									break;
+								default:
+									MLog.Log("Error, classname not recognised on set field, class="+classname);
 									break;
 							}
 							if (Reflect.SetFieldValue(ref fieldObj, field, text)) {

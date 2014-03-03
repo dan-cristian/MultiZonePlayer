@@ -1,0 +1,17 @@
+﻿<!doctype html>
+<html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="robots" content="index, follow, noodp" />
+<title>View %_classname</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body style="text-align:left" onload="refresh(30000)">
+<%for;i;0;++;#S.%_classname.ValueList.Count#;%>
+<button class="Small" onclick="window.open('zone-param.html?classname=%_classname&index=#S.%_classname.ValueList.?,%i.Index#&id=#S.%_classname.ValueList.?,%i.Id#&source=%_source','_self')">
+#S.%_classname.ValueList.?,%i.Name#</button>
+<%%>
+<br />
+<button onclick="window.open('%_source.html', '_self')">Back</button>
+</body>
+</html>

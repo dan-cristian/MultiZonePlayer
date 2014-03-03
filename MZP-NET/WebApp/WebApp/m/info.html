@@ -25,9 +25,11 @@
 	#S.DeviceList,%i.Name# #S.DeviceList,%i.Type#</button>
 </>
 <%%>
-	
 	<br/>
-<table style="border-width:1px;border-color:Black;border-style:inset">
+	<button class="small" onclick="window.open('singleton.html?classname=User&source=info','_self')">User</button>
+	<button class="small" onclick="window.open('singleton.html?classname=UtilityCost&source=info','_self')">UtilityCost</button>
+	<br/>
+<table border="1" style="border-width:1px;border-color:Black;border-style:inset;">
 <tr class="Header">
 <td>Cause</td>
 <td>Errors</td>
@@ -37,6 +39,7 @@
 <td>Last</td>
 </tr>
 <%for;i;0;++;#S.PerformanceList.Count#;%>
+<tr>
 <td>#S.PerformanceList.?,%i.InitialMessage#; #S.PerformanceList.?,%i.LastMessage#</td>
 <td>#S.PerformanceList.?,%i.ErrorCount#</td>
 <td>#S.PerformanceList.?,%i.OccurenceCount#</td>
@@ -46,7 +49,6 @@
 </tr>
 <%%>
 </table>
-
 <button onclick="window.open('start.html', '_self')">Back</button>
 </body>
 </html>

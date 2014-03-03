@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.ComponentModel;
 using System.Net;
@@ -24,6 +25,7 @@ namespace MultiZonePlayer {
 				return instance;
 			}
 		}*/
+		//protected static List<Singleton> m_valueList = new List<Singleton>();
 		[Description("Edit")]
 		public String UniqueIdentifier="";
 		public int Id;
@@ -32,6 +34,7 @@ namespace MultiZonePlayer {
 		public abstract List<Singleton> ValueList {
 			get;
 		}
+		
 		public int Index {
 			get { return ValueList.IndexOf(this); }
 		}
@@ -42,6 +45,8 @@ namespace MultiZonePlayer {
 		public virtual Singleton Instance{get{return this;}}
 
 		public abstract void SaveToIni();
+
+		
 	}
 
 	public class Performance:Singleton {
@@ -52,7 +57,7 @@ namespace MultiZonePlayer {
 			///<summary>Speed of operation in miliseconds</summary>
 			Speed
 		}
-		protected static List<Singleton> m_valueList = new List<Singleton>();
+		
 		private List<PerformanceFlags> Flags;
 		private List<Object> FlagVars;
 		private List<Int32> Speed = new List<Int32>();
@@ -64,7 +69,8 @@ namespace MultiZonePlayer {
 		public int ErrorCount = 0;
 		protected static int m_id = 0;
 		protected int id;
-		
+		protected static List<Singleton> m_valueList = new List<Singleton>();
+
 		public Performance(){
 		}
 		public Performance(String uniqueIdentifier, String message, params Object[] flagVars) {
@@ -73,9 +79,7 @@ namespace MultiZonePlayer {
 			UniqueIdentifier = uniqueIdentifier;
 			Update(message, flagVars);
 		}
-		public override List<Singleton> ValueList {
-			get { return m_valueList; }
-		}
+		
 		public static Performance StaticInstance { 
 			get {
 				if (m_valueList != null && m_valueList.Count > 0)
@@ -83,6 +87,11 @@ namespace MultiZonePlayer {
 				else return new Performance();
 			}
 		}
+
+		public override List<Singleton> ValueList {
+			get { return m_valueList; }
+		}
+
 		public override Singleton Instance {
 			get {return Performance.StaticInstance;}
 		}
@@ -197,6 +206,8 @@ namespace MultiZonePlayer {
 				else return new User();
 			}
 		}
+		
+
 		public override Singleton Instance { get { return User.StaticInstance; } }
 
 		public User() {
@@ -207,9 +218,11 @@ namespace MultiZonePlayer {
 			this.Name = name;
 			this.Code = code;
 		}
+
 		public override List<Singleton> ValueList {
 			get { return m_valueList; }
 		}
+
 		public static List<User> UserList {
 			get { return m_valueList.Select(x => (User)x).ToList(); }
 		}
@@ -654,6 +667,75 @@ namespace MultiZonePlayer {
 			}
 			catch (Exception ex) {
 				MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
+			}
+		}
+	}
+
+	public class UtilityCost:Singleton {
+		[Description("Edit")]
+		public EnumUtilityType Name;
+		[Description("Edit")]
+		public double UnitCost;
+
+		protected static List<Singleton> m_valueList = new List<Singleton>();
+
+		public UtilityCost() {
+			
+		}
+		public static Singleton StaticInstance {
+			get {
+				if (m_valueList != null && m_valueList.Count > 0)
+					return m_valueList[0];
+				else return new UtilityCost();
+			}
+		}
+
+		public override Singleton Instance { get { return UtilityCost.StaticInstance; } }
+
+
+		public override List<Singleton> ValueList {
+			get { return m_valueList; }
+		}
+		public static List<UtilityCost> UtilityCostList {
+			get { return m_valueList.Select(x => (UtilityCost)x).ToList(); }
+		}
+		public static void Add(Singleton item) {
+			m_valueList.Add(item);
+		}
+		public static UtilityCost GetUtility(int id) {
+			return (UtilityCost)m_valueList.Find(x => x.Id == id);
+		}
+		public override void SaveToIni() {
+			String json;
+			int r = 0;
+			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
+			param.UseExtensions = false;
+			foreach (Object obj in m_valueList) {
+				json = fastJSON.JSON.Instance.ToJSON(obj, param);
+				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_UTILITYCOST, r.ToString(), json);
+				r++;
+			}
+		}
+
+		public static void LoadFromIni() {
+			Hashtable values = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_UTILITYCOST);
+			Singleton item;
+
+			try {
+				foreach (String json in values.Values) {
+					item = fastJSON.JSON.Instance.ToObject<UtilityCost>(json);
+					Add(item);
+				}
+			}
+			catch (Exception ex) {
+				MLog.Log(ex, "Error loading UtilityCost");
+				throw new Exception("Error load UtilityCost", ex);
+			}
+		}
+
+		public static void SaveAllToIni() {
+			foreach (Singleton item in m_valueList) {
+				item.SaveToIni();
 			}
 		}
 	}
