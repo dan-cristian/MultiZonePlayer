@@ -113,10 +113,10 @@ namespace MultiZonePlayer
 				}
 				//else
 				//	MLog.Log(this, "Display is ON already for XBMC");
-				if (m_display.InputTypeCached != Display.InputTypeEnum.HDMI)
+				if (m_display.InputTypeCached != Display.InputTypeEnum.HDMI1)
 				{
 					MLog.Log(this, "XBMC set input to HDMI");
-					m_display.InputType = Display.InputTypeEnum.HDMI;
+					m_display.InputType = Display.InputTypeEnum.HDMI1;
 					System.Threading.Thread.Sleep(4000);
 					Monitor.RefreshFrequencySecondary();
 				}

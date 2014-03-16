@@ -327,6 +327,7 @@ namespace MultiZonePlayer {
 					}
 					break;
 				case GlobalCommands.closure:
+				case GlobalCommands.pulse:
 					Boolean contactMade = vals.GetValue(GlobalParams.iscontactmade).ToLower() == "true";
 					double contactMadeDuration, contactReleasedDuration;
 					if (contactMade) {
@@ -360,6 +361,13 @@ namespace MultiZonePlayer {
 					m_zoneDetails.IsClosureArmed = (cmdRemote == GlobalCommands.closurearm);
 					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " closure armed status=" +
 					                           m_zoneDetails.IsClosureArmed;
+					break;
+				case GlobalCommands.counter:
+					ulong counter = 0;
+					string id;
+					ulong.TryParse(vals.GetValue(GlobalParams.count), out counter);
+					id = vals.GetValue(GlobalParams.id);
+					CounterEvent(id, counter);
 					break;
 				case GlobalCommands.notifyuser:
 					if (m_zoneDetails.HasSpeakers) {
@@ -845,7 +853,7 @@ namespace MultiZonePlayer {
 						}	
 						break;
 					case EnumClosureType.Pulse:
-						m_zoneDetails.RecordPulse();
+						m_zoneDetails.RecordPulse(key);
 						break;
 				default:
 					MLog.Log(this, "Error, undefined closure type for zone="+m_zoneDetails.ZoneName);
@@ -889,6 +897,21 @@ namespace MultiZonePlayer {
 			 */
 		}
 
+		public void CounterEvent(string id, ulong counter)
+		{
+			MLog.Log(this, "CounterEvent zone=" + m_zoneDetails.ZoneName + " id=" + id+ " count=" + counter);
+			
+			switch (m_zoneDetails.ClosureType) {
+				case EnumClosureType.Counter:
+					m_zoneDetails.RecordCounter(id, counter);
+					break;
+				default:
+					MLog.Log(this, "Error, undefined closure type in CounterEvent for zone=" + m_zoneDetails.ZoneName);
+					break;
+			}
+
+			m_zoneDetails.MovementAlert = false;
+		}
 		private String SaveCurrentPicture(EventSource source) {
 			string url = "", fullfilepath = "";
 			try {

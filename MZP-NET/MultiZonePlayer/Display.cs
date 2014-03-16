@@ -12,7 +12,8 @@ namespace MultiZonePlayer {
 
 		public enum InputTypeEnum {
 			AV,
-			HDMI,
+			HDMI1,
+			HDMI2,
 			Unknown
 		};
 
@@ -175,9 +176,10 @@ namespace MultiZonePlayer {
 					case "20":
 						return InputTypeEnum.AV;
 					case "90":
-					case "91":
 					case "a0":
-						return InputTypeEnum.HDMI;
+						return InputTypeEnum.HDMI1;
+					case "91":
+						return InputTypeEnum.HDMI2;
 					default: {
 						MLog.Log(this, "Unknown input type=" + res);
 						return InputTypeEnum.Unknown;
@@ -215,8 +217,11 @@ namespace MultiZonePlayer {
 			}
 			set {
 				switch (value) {
-					case InputTypeEnum.HDMI:
+					case InputTypeEnum.HDMI1:
 						Input = "90";
+						break;
+					case InputTypeEnum.HDMI2:
+						Input = "91";
 						break;
 					case InputTypeEnum.AV:
 						Input = "20";

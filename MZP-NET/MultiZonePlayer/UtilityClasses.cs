@@ -144,6 +144,8 @@ namespace MultiZonePlayer
 		closure,
 		closurearm,
 		closuredisarm,
+		pulse,
+		counter,
 		runscript,
 		poweron,
 		poweroff,

@@ -921,7 +921,7 @@ namespace MultiZonePlayer {
 			int cycle = 1000;
 			while (MZPState.Instance != null) {
 				if (i > 10) {
-//slow tick
+					//slow tick
 					i = 0;
 					if (adapter == null || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
 						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
@@ -1007,7 +1007,7 @@ namespace MultiZonePlayer {
 								//if (!activityB)
 								//	Alert.CreateAlert("No Activity A on level change");
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
-								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
 								val.Add(GlobalParams.id, "1");
 								val.Add(GlobalParams.iscontactmade, ((levelA == false)).ToString()); //normal close
@@ -1021,7 +1021,7 @@ namespace MultiZonePlayer {
 								//if (!activityB)
 								//	Alert.CreateAlert("No Activity B on level change");
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
-								val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
 								val.Add(GlobalParams.id, "2");
 								val.Add(GlobalParams.iscontactmade, ((levelB == false)).ToString()); //normal close
@@ -1079,10 +1079,26 @@ namespace MultiZonePlayer {
 							break;
 						case ONEWIRE_COUNTER_NAME:
 							OneWireContainer1D counter = (OneWireContainer1D) element;
-							MLog.Log(this, "Counter 14=" + counter.readCounter(14));
-							MLog.Log(this, "Counter 15=" + counter.readCounter(15));
-							MLog.Log(this, "Counter 12=" + counter.readCounter(12));
-							MLog.Log(this, "Counter 13=" + counter.readCounter(13));
+							//MLog.Log(this, "Counter 14=" + counter.readCounter(14));
+							//MLog.Log(this, "Counter 15=" + counter.readCounter(15));
+							//MLog.Log(this, "Counter 12=" + counter.readCounter(12));
+							//MLog.Log(this, "Counter 13=" + counter.readCounter(13));
+							zone.HasOneWireIODevice = true;
+
+							val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
+							//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+							val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
+							val.Add(GlobalParams.id, "1");
+							val.Add(GlobalParams.count, counter.readCounter(14).ToString()); //normal close
+							API.DoCommand(val);
+
+							val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
+							//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+							val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
+							val.Add(GlobalParams.id, "2");
+							val.Add(GlobalParams.count, counter.readCounter(15).ToString()); //normal close
+							API.DoCommand(val);
+
 							break;
 						default:
 							MLog.Log(this, "Unknown onewire device " + element.getName());
