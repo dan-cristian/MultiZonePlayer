@@ -868,7 +868,7 @@ namespace MultiZonePlayer {
 		}
 
 		//Family codes http://owfs.sourceforge.net/family.html
-		private void ProcessFamily(int family, String familyName, Boolean verboseLog) {
+		private void ProcessFamily(int family, String familyName, Boolean verboseLog, Boolean tryOverdrive) {
 			if (adapter != null) {
 				try {
 					// get exclusive use of adapter
@@ -877,8 +877,19 @@ namespace MultiZonePlayer {
 					adapter.setSearchAllDevices();
 					//adapter.targetAllFamilies();
 					adapter.targetFamily(family);
+					Boolean speedSet = false;
 					try {
-						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+						if (tryOverdrive) {
+							try {
+								//adapter.setSpeed(DSPortAdapter.SPEED_OVERDRIVE);
+								//speedSet = true;
+								//MLog.Log(this, "Overdrive speed on family=" + family);
+							}
+							catch (Exception)
+							{}
+						}
+						if (!speedSet)
+							adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
 					}
 					catch (Exception) {
 						MLog.Log(this, "Error setting regular speed on family=" + family + ", forcing reinit.");
@@ -918,7 +929,7 @@ namespace MultiZonePlayer {
 
 		public void LoopRead() {
 			int i = 0;
-			int cycle = 1000;
+			int cycle = 2000;
 			while (MZPState.Instance != null) {
 				if (i > 10) {
 					//slow tick
@@ -927,11 +938,11 @@ namespace MultiZonePlayer {
 						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
 						Reinitialise();
 					}
-					ProcessFamily(0x28, ONEWIRE_TEMPDEV_NAME, false); //DS18B20
-					ProcessFamily(0x26, ONEWIRE_SMARTBATDEV_NAME, false); //DS2438, Smart Battery Monitor
-					ProcessFamily(0x1D, ONEWIRE_COUNTER_NAME, false); //DS2423
+					ProcessFamily(0x28, ONEWIRE_TEMPDEV_NAME, false, false); //DS18B20
+					ProcessFamily(0x26, ONEWIRE_SMARTBATDEV_NAME, false, false); //DS2438, Smart Battery Monitor
+					ProcessFamily(0x1D, ONEWIRE_COUNTER_NAME, false, false); //DS2423
 				}
-				ProcessFamily(0x12, ONEWIRE_PHOTODEV_NAME, false); //DS2406 or DS2407
+				ProcessFamily(0x12, ONEWIRE_PHOTODEV_NAME, false, true); //DS2406 or DS2407
 				i++;
 				Thread.Sleep(cycle);
 			}

@@ -18,6 +18,7 @@ namespace MultiZonePlayer {
 		//public int MinutesUntilSleep = -1;
 		[Description("Edit")]
 		public String SleepHourMin = "";//format HH:MM
+		[Description("Edit")]
 		public String ZoneName;
 		private ZoneState m_zoneState, m_zoneStateLast = MultiZonePlayer.ZoneState.Undefined;
 		[Description("Edit")]
@@ -25,6 +26,7 @@ namespace MultiZonePlayer {
 		[Description("Edit")]
 		public int PowerIndex = -1;
 		public String PowerType;
+		[Description("Edit")]
 		public int PowerOnDelay;
 		public String WakeTime = "";
 		public String WakeWeekDay = "";
@@ -74,16 +76,16 @@ namespace MultiZonePlayer {
 
 		[Description("Edit")]
 		public EnumUtilityType UtilityType = EnumUtilityType.Undefined;
-		public ulong PulseCountInSample = 0;
-		public ulong CounterCountInSample = 0;
+		public ulong PulseCountInTimeSample = 0;
+		//public ulong CounterCountInSample = 0;
 		[Description("Edit")]
 		public int PulseSampleMinutesFrequency = 1;//in minutes
 		[Description("Edit")]
 		public uint PulseSubUnits = 1;//how many subunits in a main unit 100 e.g. flashes in a kwh
 		[Description("Edit")]
 		public double PulseMainUnitsCount = 0;//main units, e.g. 3 kwh
-		[Description("Edit")]
-		public double CounterMainUnitsCount = 0;//main units, e.g. 4 kwh
+		//[Description("Edit")]
+		//public double CounterMainUnitsCount = 0;//main units, e.g. 4 kwh
 		[Description("Edit")]
 		public string CounterPageNameToInclude = "1";//counter page name to consider, ignore rest (e.g. 1)
 		[Description("Edit")]
@@ -91,10 +93,10 @@ namespace MultiZonePlayer {
 		[Description("Edit")]
 		public DateTime PulseMainUnitsStartDate = DateTime.Now;
 		public double PulseLastMainUnitsCount = 0;
-		public double CounterLastMainUnitsCount = 0;
-		private ulong m_lastCounterCount = 0;
+		//public double CounterLastMainUnitsCount = 0;
+		public ulong LastCounterCount = 0;
 		private DateTime m_lastPulseSamplingStart = DateTime.Now;
-		private DateTime m_lastCounterSamplingStart = DateTime.Now;
+		//private DateTime m_lastCounterSamplingStart = DateTime.Now;
 		[Description("Edit")]
 		public String PulseMainUnitType = "";
 
@@ -201,22 +203,50 @@ namespace MultiZonePlayer {
 		public void RecordPulse(string level) {
 			if (ClosureLevelNameToInclude.Contains(level)) {
 				if (DateTime.Now.Subtract(m_lastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
-					PulseLastMainUnitsCount = (double)PulseCountInSample / PulseSubUnits;
+					PulseLastMainUnitsCount = (double)PulseCountInTimeSample / PulseSubUnits;
 					PulseMainUnitsCount += PulseLastMainUnitsCount;
 					double cost = PulseLastMainUnitsCount * UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost;
 					Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
 						PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), PulseMainUnitsCount.ToString(),
 						cost.ToString());
 					m_lastPulseSamplingStart = DateTime.Now;
-					PulseCountInSample = 0;
+					PulseCountInTimeSample = 0;
 				}
 				else {
-					PulseCountInSample++;
+					PulseCountInTimeSample++;
 				}
 			}
 			else {
 				MLog.Log(this, "Ignoring closure level " + level);
 			}//ignoring other closure levels
+		}
+		public void RecordCounter(string id, ulong counter) {
+			if (id.Contains(CounterPageNameToInclude)) {
+				if (DateTime.Now.Subtract(m_lastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
+					PulseLastMainUnitsCount = (double)PulseCountInTimeSample / PulseSubUnits;
+					PulseMainUnitsCount += PulseLastMainUnitsCount;
+					double unitCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost;
+					double cost = PulseLastMainUnitsCount * unitCost;
+					Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
+						PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), PulseMainUnitsCount.ToString(),
+						cost.ToString(), unitCost.ToString());
+					m_lastPulseSamplingStart = DateTime.Now;
+					PulseCountInTimeSample = 0;
+				}
+				else {
+					ulong units = counter - LastCounterCount;
+					if (units < 0) {
+						MLog.Log(this, "WARNING, counter reset at LastCount="+LastCounterCount);
+						units = 0;
+					}
+					if (LastCounterCount != 0)
+						PulseCountInTimeSample += units;
+					LastCounterCount = counter;
+				}
+			}
+			else {
+				MLog.Log(this, "Ignoring counter id " + id);
+			}//ignoring other counters
 		}
 
 		public void ResetPulse() {
@@ -229,33 +259,11 @@ namespace MultiZonePlayer {
 		}
 
 		public double PulseFrequencyPerMinute {
-			get { return (double) PulseCountInSample/PulseSampleMinutesFrequency; }
+			get { return (double) PulseCountInTimeSample/PulseSampleMinutesFrequency; }
 		}
 
 		public double PulseTotalUnitsAgeInHours {
-			get { return DateTime.Now.Subtract(PulseMainUnitsStartDate).TotalHours; }
-		}
-
-		public void RecordCounter(string id, ulong counter) {
-			if (id.Contains(CounterPageNameToInclude)) {
-				if (DateTime.Now.Subtract(m_lastCounterSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
-					CounterLastMainUnitsCount = (double)CounterCountInSample / PulseSubUnits;
-					CounterMainUnitsCount += CounterLastMainUnitsCount;
-					double cost = PulseLastMainUnitsCount * UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost;
-					Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
-						CounterLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), CounterMainUnitsCount.ToString(),
-						cost.ToString());
-					m_lastCounterSamplingStart = DateTime.Now;
-					CounterCountInSample = 0;
-				}
-				else {
-					if (m_lastCounterCount != 0)
-						CounterCountInSample += (counter - m_lastCounterCount);
-					m_lastCounterCount = counter;
-				}
-			}
-			else { MLog.Log(this, "Ignoring counter id " + id);
-			}//ignoring other counters
+			get { return Math.Round(DateTime.Now.Subtract(PulseMainUnitsStartDate).TotalHours, 2); }
 		}
 
 		public Boolean IsActive {
@@ -676,10 +684,8 @@ namespace MultiZonePlayer {
 					PulseSampleMinutesFrequency = zonestorage.PulseSampleMinutesFrequency;
 					PulseSubUnits = zonestorage.PulseSubUnits;
 					PulseMainUnitType = zonestorage.PulseMainUnitType;
-					PulseCountInSample = zonestorage.PulseCountInSample;
-
-					CounterMainUnitsCount = zonestorage.CounterMainUnitsCount;
-					CounterCountInSample = zonestorage.CounterCountInSample;
+					PulseCountInTimeSample = zonestorage.PulseCountInTimeSample;
+					LastCounterCount = zonestorage.LastCounterCount;
 
 					LoadPicturesFromDisk();
 				}

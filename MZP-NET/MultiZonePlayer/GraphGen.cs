@@ -15,7 +15,7 @@ namespace MultiZonePlayer
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
 		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
-		private List<Tuple<int, DateTime, double>> m_utilitiesHistoryList;
+		private List<Tuple<int, DateTime, double, double>> m_utilitiesHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
 		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
 
@@ -123,6 +123,9 @@ namespace MultiZonePlayer
 			chart1.Titles.Add(title);
 			chart1.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.LightGray;
 			chart1.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
+			//chart1.ChartAreas[0].AxisX2.Enabled = AxisEnabled.False;
+			//chart1.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
+			//chart1.ChartAreas[0].AxisY2.MajorGrid.Enabled = false;
 		}
 
 		public void ShowVoltageGraph(int zoneId, int ageHours) {
@@ -170,35 +173,56 @@ namespace MultiZonePlayer
 			try {
 
 				PrepareGraph(Constants.CAPABILITY_ELECTRICITY+ " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-				System.Windows.Forms.DataVisualization.Charting.Series series;
+				System.Windows.Forms.DataVisualization.Charting.Series series1, series2;
 				double minY = double.MaxValue, maxY = double.MinValue;
 				
-				List<Tuple<int, DateTime, double>> tempValues = m_utilitiesHistoryList.FindAll(
+				List<Tuple<int, DateTime, double, double>> tempValues = m_utilitiesHistoryList.FindAll(
 					x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
 				if (tempValues.Count > 0) {
-					series = new System.Windows.Forms.DataVisualization.Charting.Series {
-						Name = Constants.CAPABILITY_ELECTRICITY,
+					series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+						//Name = Constants.CAPABILITY_ELECTRICITY,
 						Color = Color.OrangeRed,
 						IsVisibleInLegend = true,
 						IsXValueIndexed = false,
 						ChartType = SeriesChartType.StepLine,
 						BorderWidth = 1,
 						MarkerSize = 3,
+						XAxisType = AxisType.Primary,
+						YAxisType = AxisType.Primary
 					};
-					this.chart1.Series.Add(series);
+					this.chart1.Series.Add(series1);
+					
+					/*series2 = new System.Windows.Forms.DataVisualization.Charting.Series {
+						Name = "cost",
+						Color = Color.Green,
+						IsVisibleInLegend = true,
+						IsXValueIndexed = false,
+						ChartType = SeriesChartType.Bubble,
+						BorderWidth = 1,
+						MarkerSize = 1,
+						XAxisType = AxisType.Secondary,
+						YAxisType = AxisType.Secondary
+					};
+					this.chart1.Series.Add(series2);
+					*/
+					double value = 0, cost = 0;
 					foreach (var point in tempValues) {
-						series.Points.AddXY(point.Item2, point.Item3);
+						series1.Points.AddXY(point.Item2, point.Item3);
+						value += point.Item3;
 						minY = Math.Min(minY, tempValues.Min(x => x.Item3));
 						maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+						cost += point.Item4;
+						//series2.Points.AddXY(point.Item2, point.Item4);
 					}
+					series1.Name = Constants.CAPABILITY_ELECTRICITY + "\nunits=" + Math.Round(value, 2) + "   cost=" + Math.Round(cost, 2);
 				}
 				else {
 					maxY = 1;
 					minY = 0;
 				}
 
-				chart1.ChartAreas[0].AxisY.Maximum = maxY;
-				chart1.ChartAreas[0].AxisY.Minimum = minY;
+				//chart1.ChartAreas[0].AxisY.Maximum = maxY;
+				//chart1.ChartAreas[0].AxisY.Minimum = minY;
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
 				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
@@ -384,7 +408,8 @@ namespace MultiZonePlayer
 			//
 			// Form1
 			//
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 18F);
+			//this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 18F);
+			this.AutoScaleDimensions = new System.Drawing.SizeF(5F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			//this.ClientSize = new System.Drawing.Size(640, 480);
 			this.Controls.Add(this.chart1);
@@ -400,7 +425,7 @@ namespace MultiZonePlayer
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
 			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int>>();
-			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double>>();
+			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double, double>>();
 			string[] allLines;
 
 			if (needTempHum) {
@@ -483,13 +508,16 @@ namespace MultiZonePlayer
 								 Date = Convert.ToDateTime(data[1]),
 								 Value = Convert.ToDouble(data[2]),
 								 ZoneId = Convert.ToInt16(data[3]),
-								 Type = data[4].ToLower()
+								 Type = data[4].ToLower(),
+								 //TotalUnits
+								 Cost = Convert.ToDouble(data[6])
+								 //UnitCost
 							 };
 				MLog.Log(this, "Processing Utilities");
 				foreach (var line in query) {
 					switch (line.Type) {
 						case Constants.CAPABILITY_ELECTRICITY:
-							m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
+							m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double, double>(line.ZoneId, line.Date, line.Value, line.Cost));
 							break;
 					}
 				}
