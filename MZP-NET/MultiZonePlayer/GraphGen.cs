@@ -80,10 +80,15 @@ namespace MultiZonePlayer
 					BorderWidth = 1
 				};
 				this.chart1.Series.Add(series1);
+				double total = 0, min = double.MaxValue, max = double.MinValue;
 				foreach (var point in tempValues)
 				{
 					series1.Points.AddXY(point.Item2, point.Item3);
+					min = Math.Min(min, point.Item3);
+					max = Math.Max(max, point.Item3);
+					total += point.Item3;
 				}
+				series1.Name += " Avg=" + Math.Round(total / series1.Points.Count, 2) + " Min=" + min + " Max=" + max;
 			}
 
 			List<Tuple<int, DateTime, double>> humValues = m_humHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
@@ -100,10 +105,15 @@ namespace MultiZonePlayer
 					BorderWidth = 1
 				};
 				this.chart1.Series.Add(series2);
+				double total = 0, min = double.MaxValue, max = double.MinValue;
 				foreach (var point in humValues)
 				{
 					series2.Points.AddXY(point.Item2, point.Item3);
+					min = Math.Min(min, point.Item3);
+					max = Math.Max(max, point.Item3);
+					total += point.Item3;
 				}
+				series2.Name += " Avg=" + Math.Round(total / series2.Points.Count, 2) + " Min=" + min + " Max=" + max;
 			}
 			double minT;
 			minT = tempValues.Count>0? tempValues.Min(x => x.Item3):0;
@@ -255,11 +265,17 @@ namespace MultiZonePlayer
 						BorderWidth = 1
 					};
 					this.chart1.Series.Add(series1);
+					double total = 0, min = double.MaxValue, max = double.MinValue;
 					foreach (var point in tempValues)
 					{
 						series1.Points.AddXY(point.Item2, point.Item3);
+						total += point.Item3;
+						min = Math.Min(min,point.Item3);
+						max = Math.Max(max, point.Item3);
+						total += point.Item3;
 					}
 
+					series1.Name += " Avg="+Math.Round(total/series1.Points.Count,2)+" Min="+min+" Max="+max;
 				}
 				
 				double minT;
