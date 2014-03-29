@@ -95,7 +95,7 @@ namespace MultiZonePlayer {
 		public double PulseLastMainUnitsCount = 0;
 		//public double CounterLastMainUnitsCount = 0;
 		public ulong LastCounterCount = 0;
-		private DateTime m_lastPulseSamplingStart = DateTime.Now;
+		public DateTime LastPulseSamplingStart = DateTime.Now;
 		//private DateTime m_lastCounterSamplingStart = DateTime.Now;
 		[Description("Edit")]
 		public String PulseMainUnitType = "";
@@ -202,14 +202,14 @@ namespace MultiZonePlayer {
 
 		public void RecordPulse(string level) {
 			if (ClosureLevelNameToInclude.Contains(level)) {
-				if (DateTime.Now.Subtract(m_lastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
+				if (DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
 					PulseLastMainUnitsCount = (double)PulseCountInTimeSample / PulseSubUnits;
 					PulseMainUnitsCount += PulseLastMainUnitsCount;
 					double cost = PulseLastMainUnitsCount * UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost;
 					Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
 						PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), PulseMainUnitsCount.ToString(),
 						cost.ToString());
-					m_lastPulseSamplingStart = DateTime.Now;
+					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
 				}
 				else {
@@ -222,15 +222,26 @@ namespace MultiZonePlayer {
 		}
 		public void RecordCounter(string id, ulong counter) {
 			if (id.Contains(CounterPageNameToInclude)) {
-				if (DateTime.Now.Subtract(m_lastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
+				if (DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
 					PulseLastMainUnitsCount = (double)PulseCountInTimeSample / PulseSubUnits;
+					if (PulseLastMainUnitsCount > 1) {
+						Alert.CreateAlert("WARNING: Large count, counter=" + counter + " deltaPulses=" + PulseCountInTimeSample,
+							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
+					}
+					if (DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes > 2 * PulseSampleMinutesFrequency)
+					{
+						Alert.CreateAlert("Long pulse counter period detected, minutes=" + DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes
+							+ " counterdelta=" + PulseCountInTimeSample,
+							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
+					}
 					PulseMainUnitsCount += PulseLastMainUnitsCount;
 					double unitCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost;
 					double cost = PulseLastMainUnitsCount * unitCost;
+					double watts = 1000 * PulseLastMainUnitsCount/(PulseSampleMinutesFrequency/60d);
 					Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
 						PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), PulseMainUnitsCount.ToString(),
-						cost.ToString(), unitCost.ToString());
-					m_lastPulseSamplingStart = DateTime.Now;
+						cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
+					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
 				}
 				else {
@@ -686,6 +697,7 @@ namespace MultiZonePlayer {
 					PulseMainUnitType = zonestorage.PulseMainUnitType;
 					PulseCountInTimeSample = zonestorage.PulseCountInTimeSample;
 					LastCounterCount = zonestorage.LastCounterCount;
+					LastPulseSamplingStart = zonestorage.LastPulseSamplingStart;
 
 					LoadPicturesFromDisk();
 				}
