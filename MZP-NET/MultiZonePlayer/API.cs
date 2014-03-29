@@ -353,17 +353,33 @@ namespace MultiZonePlayer
 							cmdresult.OutputMessage = "Exit code="+proc.ExitCode;
 							break;
 						case GlobalCommands.generatefullgraph:
-							int _zoneid;
 							int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
-							SimpleGraph graph = new SimpleGraph(true, true, true, true);
-							string[] zones = vals.GetValue(GlobalParams.zoneidlist).Split(',');
-							List<ZoneDetails> zoneList = new List<ZoneDetails>();
+							string type = vals.GetValue(GlobalParams.type).ToLower();
+							SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == Constants.CAPABILITY_VOLTAGE,
+								type == Constants.CAPABILITY_ELECTRICITY);
+
+							//string[] zones = vals.GetValue(GlobalParams.zoneidlist).Split(',');
+							/*
 							foreach (string _zone in zones)
 							{
 								_zoneid = Convert.ToInt16(_zone);
 								zoneList.Add(ZoneDetails.GetZoneById(_zoneid));
 							}
-							graph.ShowTempGraph(ageHours, zoneList);
+							if (type == "temphum") {
+								graph.ShowTempHumGraph(ZoneDetails.ZoneDetailsList, ageHours);
+							}
+							if (type == "closure") {
+								graph.ShowEventGraph(zoneList, ageHours);
+							}
+							if (type == Constants.CAPABILITY_VOLTAGE) {
+								graph.ShowVoltageGraph(zoneList, ageHours);
+							}
+							 */
+							if (type == Constants.CAPABILITY_ELECTRICITY) {
+								graph.ShowElectricityGraph(-1, "all", ageHours);
+							}
+							
+							//graph.ShowTempGraph(ageHours, zoneList);
 							break;
 						case GlobalCommands.dismissalert:
 							int aid = Convert.ToInt16(vals.GetValue(GlobalParams.id));

@@ -406,7 +406,7 @@ namespace MultiZonePlayer {
 						graph.ShowVoltageGraph(m_zoneDetails.ZoneId, ageHours);
 					}
 					if (type == Constants.CAPABILITY_ELECTRICITY) {
-						graph.ShowElectricityGraph(m_zoneDetails.ZoneId, ageHours);
+						graph.ShowElectricityGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours);
 					}
 					break;
 				case GlobalCommands.doorring:

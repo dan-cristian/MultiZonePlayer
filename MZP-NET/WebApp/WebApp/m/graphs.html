@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>Utilities</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script>
+<script type="text/JavaScript">
+	function loadAll()
+	{
+		ajaxCall('event', 'zone-electricity-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=electricity');
+
+	}
+</script>
+</head>
+<body style="text-align:left" onload="loadAll()">
+<button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
+<br />
+
+<div id="camera"></div>
+<div id="temp-hum"></div>
+<div id="event"></div>
+<div id="voltage"></div>
+<br />
+<button onclick="window.open('start.html', '_self')">Back</button>
+</body>
+</html>

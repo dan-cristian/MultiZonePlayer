@@ -113,6 +113,7 @@
     <Content Include="m\test.html" />
     <Content Include="m\JSONViewer.html" />
     <Content Include="m\leap.js" />
+    <Content Include="m\graphs.html" />
     <Content Include="m\zone-electricity-event.html" />
     <Content Include="m\zone-graph-voltage.html" />
     <Content Include="m\zone-cam-video.html" />

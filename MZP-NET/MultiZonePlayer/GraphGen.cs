@@ -23,7 +23,7 @@ namespace MultiZonePlayer
 		public SimpleGraph(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities)
 		{
 			InitializeComponent();
-			m_colors[0] = System.Drawing.Color.Orchid;
+			m_colors[0] = System.Drawing.Color.OrangeRed;
 			m_colors[1] = System.Drawing.Color.DarkRed;
 			m_colors[2] = System.Drawing.Color.Aquamarine;
 			m_colors[3] = System.Drawing.Color.GreenYellow;
@@ -36,20 +36,7 @@ namespace MultiZonePlayer
 			LoadHistory(needTempHum, needClosure, needVoltage, needUtilities);
 		}
 
-		public void AddTemperatureReading(Tuple<int, DateTime, double> reading)
-		{
-			m_tempHistoryList.Add(reading);
-		}
-
-		public void AddHumidityReading(Tuple<int, DateTime, double> reading)
-		{
-			m_humHistoryList.Add(reading);
-		}
-
-		public void AddEventReading(Tuple<int, DateTime, int, String, String> reading)
-		{
-			m_eventHistoryList.Add(reading);
-		}
+		
 		private String GetDateFormat(int ageHours)
 		{
 			String format;
@@ -73,7 +60,7 @@ namespace MultiZonePlayer
 			chart1.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.LightGray;
 			chart1.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
 			//chart1.Legends[0].MaximumAutoSize = 50;
-			chart1.Legends[0].TextWrapThreshold = 50;
+			chart1.Legends[0].TextWrapThreshold = 75;
 			//chart1.ChartAreas[0].AxisX2.Enabled = AxisEnabled.False;
 			//chart1.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
 			//chart1.ChartAreas[0].AxisY2.MajorGrid.Enabled = false;
@@ -183,66 +170,60 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public void ShowElectricityGraph(int zoneId, int ageHours) {
+		public void ShowElectricityGraph(int zoneId, String zoneName, int ageHours) {
 			try {
 
-				PrepareGraph(Constants.CAPABILITY_ELECTRICITY+ " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-				System.Windows.Forms.DataVisualization.Charting.Series series1, series2;
-				double minY = double.MaxValue, maxY = double.MinValue;
+				PrepareGraph(zoneName + " " + Constants.CAPABILITY_ELECTRICITY + " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				
-				List<Tuple<int, DateTime, double, double, double>> tempValues = m_utilitiesHistoryList.FindAll(
-					x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
-				if (tempValues.Count > 0) {
-					series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
-						//Name = Constants.CAPABILITY_ELECTRICITY,
-						Color = Color.OrangeRed,
-						IsVisibleInLegend = true,
-						IsXValueIndexed = false,
-						ChartType = SeriesChartType.StepLine,
-						BorderWidth = 1,
-						MarkerSize = 3,
-						XAxisType = AxisType.Primary,
-						YAxisType = AxisType.Primary
-					};
-					this.chart1.Series.Add(series1);
-					
-					/*series2 = new System.Windows.Forms.DataVisualization.Charting.Series {
-						Name = "cost",
-						Color = Color.Green,
-						IsVisibleInLegend = true,
-						IsXValueIndexed = false,
-						ChartType = SeriesChartType.Bubble,
-						BorderWidth = 1,
-						MarkerSize = 1,
-						XAxisType = AxisType.Secondary,
-						YAxisType = AxisType.Secondary
-					};
-					this.chart1.Series.Add(series2);
-					*/
-					double value = 0, cost = 0, minwatts = double.MaxValue, maxwatts=double.MinValue, totalwatts=0, avgwatts;
-					foreach (var point in tempValues) {
-						series1.Points.AddXY(point.Item2, point.Item3);
-						value += point.Item3;
-						minY = Math.Min(minY, tempValues.Min(x => x.Item3));
-						maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
-						cost += point.Item4;
-						totalwatts += point.Item5;
-						if (point.Item5 != 0) 
-							minwatts = Math.Min(minwatts, point.Item5);
-						maxwatts = Math.Max(maxwatts, point.Item5);
-						//series2.Points.AddXY(point.Item2, point.Item4);
-					}
-					avgwatts = totalwatts/series1.Points.Count;
-					series1.Name = Constants.CAPABILITY_ELECTRICITY + " units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2)
-						+ "\nwatts min="+ Math.Round(minwatts,0) + " max="+Math.Round(maxwatts,0) + " avg="+Math.Round(avgwatts,0);
-				}
-				else {
-					maxY = 1;
-					minY = 0;
-				}
+				List<int> zoneList = m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneId || zoneId == -1)
+					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours).Select(x => x.Item1).Distinct().OrderBy(x=>x).ToList();
+				int zoneCount=zoneList.Count;
+				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[zoneCount];
+				System.Windows.Forms.DataVisualization.Charting.Series series1;
 
-				//chart1.ChartAreas[0].AxisY.Maximum = maxY;
-				//chart1.ChartAreas[0].AxisY.Minimum = minY;
+				for (int i = 0; i < zoneCount; i++) {
+					List<Tuple<int, DateTime, double, double, double>> tempValues=m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneList[i]) 
+						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+					double minY = double.MaxValue, maxY = double.MinValue;
+
+					if (tempValues.Count > 0) {
+						series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+							//Name = Constants.CAPABILITY_ELECTRICITY,
+							Color = m_colors[i],
+							IsVisibleInLegend = true,
+							IsXValueIndexed = false,
+							ChartType = SeriesChartType.StepLine,
+							BorderWidth = 1,
+							MarkerSize = 3,
+							XAxisType = AxisType.Primary,
+							YAxisType = AxisType.Primary
+						};
+						this.chart1.Series.Add(series1);
+
+						double value = 0, cost = 0, minwatts = double.MaxValue, maxwatts = double.MinValue, totalwatts = 0, avgwatts;
+						foreach (var point in tempValues) {
+							series1.Points.AddXY(point.Item2, point.Item3);
+							value += point.Item3;
+							minY = Math.Min(minY, tempValues.Min(x => x.Item3));
+							maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+							cost += point.Item4;
+							totalwatts += point.Item5;
+							if (point.Item5 != 0)
+								minwatts = Math.Min(minwatts, point.Item5);
+							maxwatts = Math.Max(maxwatts, point.Item5);
+						}
+						avgwatts = totalwatts / series1.Points.Count;
+						series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2)
+							+ " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
+						if (zoneId == -1)
+							series1.Name = "zoneid=" + zoneList[i] + " " + series1.Name;
+					}
+					else {
+						maxY = 1;
+						minY = 0;
+					}
+
+				}
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
 				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
