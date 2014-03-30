@@ -190,16 +190,16 @@ namespace MultiZonePlayer {
 
 			m_cron = new Cron();
 			Thread cron = new Thread(() => m_cron.start());
-			cron.Name = "Cron Service";
+			cron.Name = "Cron";
 			cron.Start();
 
 			m_oneWire = new OneWire();
-			Thread onew = new Thread(() => m_oneWire.LoopRead());
-			onew.Name = "Onewire Service";
+			Thread onew = new Thread(() => m_oneWire.LoopReadSlow());
+			onew.Name = "Onewire";
 			onew.Start();
 
 			Thread bt = new Thread(() => Bluetooth.StartDiscovery());
-			bt.Name = "Bluetooth discovery service";
+			bt.Name = "Bluetooth";
 			bt.Start();
 
 			m_syslog = new SysLog();

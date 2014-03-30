@@ -746,10 +746,10 @@ namespace MultiZonePlayer {
 		public class Device {
 			public String Name;
 			public String Address;
-			public int Family;
+			public String Family;
 			public ZoneDetails Zone;
 
-			public Device(String name, String address, int family, ZoneDetails zone) {
+			public Device(String name, String address, String family, ZoneDetails zone) {
 				Name = name;
 				Address = address;
 				Family = family;
@@ -868,8 +868,9 @@ namespace MultiZonePlayer {
 		}
 
 		//Family codes http://owfs.sourceforge.net/family.html
-		private void ProcessFamily(int family, String familyName, Boolean verboseLog, Boolean tryOverdrive) {
+		private void ProcessFamily(String familyName, Boolean verboseLog, Boolean tryOverdrive, params sbyte[] family) {
 			if (adapter != null) {
+				lock (adapter)
 				try {
 					// get exclusive use of adapter
 					adapter.beginExclusive(true);
@@ -899,24 +900,27 @@ namespace MultiZonePlayer {
 					java.util.Enumeration containers = adapter.getAllDeviceContainers();
 					OneWireContainer element;
 					ZoneDetails zone;
-					m_deviceList.RemoveAll(x => x.Family == family);
+					string familyString="";
+					foreach (sbyte sfam in family) {
+						familyString += sfam+";";
+					}
+					m_deviceList.RemoveAll(x => x.Family == familyString);
 					DateTime start = DateTime.Now;
 					int elementCount = 0, errCount = 0;
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer) containers.nextElement();
-						zone =
-							ZoneDetails.ZoneDetailsList.Find(
+						zone = ZoneDetails.ZoneDetailsList.Find(
 								x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
 						if (!ProcessElement(zone, element)) {
 							errCount++;
 						}
-						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), family, zone));
+						
+						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), familyString, zone));
 						elementCount++;
 					}
 					Performance.Create("OneWire lookup family=" + familyName + " for elements count=" + elementCount + " took "
 					                   + DateTime.Now.Subtract(start).TotalSeconds + " seconds and had errcount=" + errCount,
-						verboseLog,
-						family.ToString(),
+						verboseLog, familyName,
 						Performance.PerformanceFlags.IsError, errCount,
 						Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(start).TotalMilliseconds);
 					adapter.endExclusive();
@@ -927,9 +931,12 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public void LoopRead() {
+		/// <summary>
+		/// Reads one wire components. DS2423 which is time critical is read mixed with others
+		/// </summary>
+		public void LoopReadSlow() {
 			int i = 0;
-			int cycle = 2000;
+			int cycle = 3000;
 			while (MZPState.Instance != null) {
 				if (i > 10) {
 					//slow tick
@@ -938,15 +945,14 @@ namespace MultiZonePlayer {
 						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
 						Reinitialise();
 					}
-					ProcessFamily(0x28, ONEWIRE_TEMPDEV_NAME, false, false); //DS18B20
-					ProcessFamily(0x26, ONEWIRE_SMARTBATDEV_NAME, false, false); //DS2438, Smart Battery Monitor
-					ProcessFamily(0x1D, ONEWIRE_COUNTER_NAME, false, false); //DS2423
+					ProcessFamily(ONEWIRE_TEMPDEV_NAME, false, false, 0x28, 0x1D); //DS18B20 and DS2423
+					ProcessFamily(ONEWIRE_SMARTBATDEV_NAME, false, false, 0x26); //DS2438, Smart Battery Monitor
 				}
-				ProcessFamily(0x12, ONEWIRE_PHOTODEV_NAME, false, true); //DS2406 or DS2407
+				ProcessFamily(ONEWIRE_PHOTODEV_NAME + " & " + ONEWIRE_COUNTER_NAME, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
 				i++;
 				Thread.Sleep(cycle);
 			}
-			MLog.Log(this, "OneWire LoopRead exit");
+			MLog.Log(this, "OneWire LoopReadSlow exit");
 		}
 
 		private Boolean ProcessElement(ZoneDetails zone, OneWireContainer element) {

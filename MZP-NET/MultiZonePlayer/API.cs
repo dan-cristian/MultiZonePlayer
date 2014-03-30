@@ -143,7 +143,8 @@ namespace MultiZonePlayer
 				cmdresult.Command = cmdName;
 				if (cmdName != GlobalCommands.closure.ToString() 
 					&& cmdName != GlobalCommands.getpicture.ToString()
-					&& cmdName != GlobalCommands.alarmevent.ToString())
+					&& cmdName != GlobalCommands.alarmevent.ToString()
+					&& cmdName != GlobalCommands.counter.ToString())
 					MLog.Log(null, "Executing DOCommand " + cmdName + " zoneid="+zoneId);
 				bool isCmdDefined = Enum.IsDefined(typeof(GlobalCommands), cmdName);
                 

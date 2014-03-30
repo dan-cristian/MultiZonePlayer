@@ -899,7 +899,7 @@ namespace MultiZonePlayer {
 
 		public void CounterEvent(string id, ulong counter)
 		{
-			MLog.Log(this, "CounterEvent zone=" + m_zoneDetails.ZoneName + " id=" + id+ " count=" + counter);
+			//MLog.Log(this, "CounterEvent zone=" + m_zoneDetails.ZoneName + " id=" + id+ " count=" + counter);
 			
 			switch (m_zoneDetails.ClosureType) {
 				case EnumClosureType.Counter:

@@ -24,6 +24,8 @@ namespace MultiZonePlayer {
 		[Description("Edit")]
 		public int ParentZoneId = -1;
 		[Description("Edit")]
+		public String LocationName = "Default Location";
+		[Description("Edit")]
 		public int PowerIndex = -1;
 		public String PowerType;
 		[Description("Edit")]
@@ -256,7 +258,7 @@ namespace MultiZonePlayer {
 				}
 			}
 			else {
-				MLog.Log(this, "Ignoring counter id " + id);
+				//MLog.Log(this, "Ignoring counter id " + id);
 			}//ignoring other counters
 		}
 
@@ -698,6 +700,8 @@ namespace MultiZonePlayer {
 					PulseCountInTimeSample = zonestorage.PulseCountInTimeSample;
 					LastCounterCount = zonestorage.LastCounterCount;
 					LastPulseSamplingStart = zonestorage.LastPulseSamplingStart;
+
+					LocationName = zonestorage.LocationName;
 
 					LoadPicturesFromDisk();
 				}

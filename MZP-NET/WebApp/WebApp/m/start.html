@@ -11,9 +11,9 @@
 </head>
 <body onload="refresh(60000)" onerror="refresh(60000)" style="text-align:center">
 	<%for;i;0;++;#S.ZonesCount#;"#Zones,%i.Type#"=="Space"%>
-	<button class="Action#Zones,%i.HasAction# Activity#Zones,%i.ActivityType#" 
-		onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones,%i.ZoneName#</button>
+	<button class="Action#Zones,%i.HasAction# Activity#Zones,%i.ActivityType#" onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones,%i.ZoneName#</button>
 	<%%>
+
 	<hr />
 	<button class="Action<%?;"#S.UserIsNearList.Count#"!="0"%>" onclick="window.open('users.html','_self')">Users [#S.UserIsNearList.Count#]</button>
 	<button class="Small" onclick="window.open('zone-type.html?type=Closure#','_self')">Closures</button>
@@ -23,7 +23,8 @@
 	<%%>
 	<button onclick="window.open('alarm.html','_self')">Alarm #SystemAlarm.AreaState#</button>
 	<br /><br />
-	<a href="slide.html">Slide</a>&nbsp;&nbsp;&nbsp;<a href="info.html">Info</a>&nbsp;&nbsp;&nbsp;<a href="graphs.html">Graphs</a>
+	<a href="slide.html"><img src="images.png" alt="Slide"/></a>&nbsp;&nbsp;&nbsp;<a href="info.html"><img src="system.png" alt="Info"/></a>
+		&nbsp;&nbsp;&nbsp;<a href="graphs.html"><img src="graph.png" alt="Graphs"/></a>
 	<br /><br />
 	<button onclick="ajaxConfirmCall('result','cmd.html?command=macro&singleparamvalue=door', true)">Open Door</button>
 	<button onclick="ajaxConfirmCall('result','cmd.html?command=macro&singleparamvalue=gate', true)">Toggle Gate</button>
