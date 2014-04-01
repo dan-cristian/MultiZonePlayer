@@ -826,15 +826,8 @@ namespace MultiZonePlayer {
 			MLog.Log(this, "ClosureEvent zone=" + m_zoneDetails.ZoneName + " key=" + key + " contactmade=" + isContactMade);
 			Boolean isContactMadeLast = m_zoneDetails.IsClosureContactMade;
 			m_zoneDetails.IsClosureContactMade = isContactMade;
-			if (isContactMade) {
-				m_zoneDetails.RelayState = EnumRelayState.ContactClosed;
-			}
-			else {
-				m_zoneDetails.RelayState = EnumRelayState.ContactOpen;
-			}
 			m_zoneDetails.MovementAlert = true;
 			ZoneOpenActions();
-			m_zoneDetails.LastClosureEventDateTime = DateTime.Now;
 
 			switch (m_zoneDetails.ClosureType) {
 					case EnumClosureType.Contact:

@@ -995,13 +995,13 @@ namespace MultiZonePlayer {
 								lastLevelA = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelA"]);
 							}
 							else {
-								lastLevelA = levelA;
+								lastLevelA = !levelA;//force an initial state update
 							}
 							if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelB")) {
 								lastLevelB = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelB"]);
 							}
 							else {
-								lastLevelB = levelB;
+								lastLevelB = !levelB;//force an initial state update
 							}
 							m_deviceAttributes[element.getAddressAsString() + "LevelA"] = levelA.ToString();
 							m_deviceAttributes[element.getAddressAsString() + "LevelB"] = levelB.ToString();

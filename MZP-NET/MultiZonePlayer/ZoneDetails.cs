@@ -195,6 +195,15 @@ namespace MultiZonePlayer {
 			set {
 				m_isClosureContactMade = value;
 				ClosureCount++;
+				if (value && RelayType==EnumRelayType.NormalOpen) {
+					RelayState = EnumRelayState.ContactClosed;
+				}
+				else {
+					RelayState = EnumRelayState.ContactOpen;
+				}
+				MLog.Log(this, "Contact event=" + value + " on zone="+ ZoneName +" relaystate=" + RelayState + " relaytype="+RelayType);
+
+				LastClosureEventDateTime = DateTime.Now;
 				if (m_isClosureContactMade != m_isClosureContactMadeLast) {
 					Rules.ExecuteRule(this, "isclosurecontact=" + m_isClosureContactMade);
 					m_isClosureContactMadeLast= m_isClosureContactMade;
@@ -675,6 +684,7 @@ namespace MultiZonePlayer {
 					ClosureIdList = zonestorage.ClosureIdList.Trim();
 					ClosureCount = zonestorage.ClosureCount;
 					ClosureType = zonestorage.ClosureType;
+					RelayType = zonestorage.RelayType;
 					
 					//if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
 					IsClosureArmed = true;
