@@ -121,7 +121,7 @@ namespace MultiZonePlayer
                 {
                     m_zoneDetails.ZoneState = ZoneState.Running;
                     //m_zoneDetails.IsActive = true;
-                    m_zoneDetails.RequirePower = m_inputType == DisplayLGTV.InputTypeEnum.HDMI1;
+                    //m_zoneDetails.RequirePower = m_inputType == DisplayLGTV.InputTypeEnum.HDMI1;
 
 					if (m_zoneDetails.RequirePower && !MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId))
                     {
@@ -134,7 +134,7 @@ namespace MultiZonePlayer
                 {
                     m_zoneDetails.ZoneState = ZoneState.NotStarted;
                     //m_zoneDetails.IsActive = false;
-                    m_zoneDetails.RequirePower = false;
+                    //m_zoneDetails.RequirePower = false;
                     MLog.Log(this, "Zone Display has TV off");
                 }
             }

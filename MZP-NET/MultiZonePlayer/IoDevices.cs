@@ -811,10 +811,11 @@ namespace MultiZonePlayer {
 				//sbyte[] state;
 				while (containers.hasMoreElements()) {
 					element = (OneWireContainer) containers.nextElement();
-					ZoneDetails zone =
-						ZoneDetails.ZoneDetailsList.Find(
+					List<ZoneDetails> zoneList =
+						ZoneDetails.ZoneDetailsList.FindAll(
 							x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
-					String zonename = zone != null ? zone.ZoneName : "ZONE NOT ASSOCIATED";
+
+					String zonename = zoneList.Count > 0 ? zoneList[0].ZoneName + ", zonecount="+zoneList.Count : "ZONE NOT ASSOCIATED";
 					MLog.Log(this, "OneWire device found zone=" + zonename + ", addr=" + element.getAddressAsString()
 					               + " name=" + element.getName() + " altname=" + element.getAlternateNames()
 					               + " speed=" + element.getMaxSpeed()
@@ -899,8 +900,9 @@ namespace MultiZonePlayer {
 					}
 					java.util.Enumeration containers = adapter.getAllDeviceContainers();
 					OneWireContainer element;
-					ZoneDetails zone;
+					List<ZoneDetails> zoneList;
 					string familyString="";
+					ZoneDetails zone;
 					foreach (sbyte sfam in family) {
 						familyString += sfam+";";
 					}
@@ -909,12 +911,11 @@ namespace MultiZonePlayer {
 					int elementCount = 0, errCount = 0;
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer) containers.nextElement();
-						zone = ZoneDetails.ZoneDetailsList.Find(
-								x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
-						if (!ProcessElement(zone, element)) {
+						zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
+						if (!ProcessElement(zoneList, element)) {
 							errCount++;
 						}
-						
+						zone= zoneList.Count > 0 ? zoneList[0]: null;
 						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), familyString, zone));
 						elementCount++;
 					}
@@ -955,13 +956,14 @@ namespace MultiZonePlayer {
 			MLog.Log(this, "OneWire LoopReadSlow exit");
 		}
 
-		private Boolean ProcessElement(ZoneDetails zone, OneWireContainer element) {
+		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element) {
 			sbyte[] state;
 			Boolean result = true;
 			TemperatureContainer temp;
 			double tempVal;
 			m_lastOKRead = DateTime.Now;
-			if (zone != null) {
+			if (zoneList != null) {
+				String zoneName = zoneList.Count > 0 ? zoneList[0].ZoneName + ", totalzonecount=" + zoneList.Count : "no zone exist";
 				try {
 					switch (element.getName()) {
 						case ONEWIRE_TEMPDEV_NAME:
@@ -969,14 +971,17 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							if (tempVal != TEMP_DEFAULT) {
-								zone.Temperature = Math.Round(tempVal, 2);
-							}
-							else {
-								MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
+							
+							foreach (ZoneDetails zone in zoneList) {
+								zone.HasOneWireTemperatureSensor = true;
+								if (tempVal != TEMP_DEFAULT) {
+									zone.Temperature = Math.Round(tempVal, 2);
+								}
+								else {
+									MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
+								}
 							}
 							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
-							zone.HasOneWireTemperatureSensor = true;
 							break;
 						case ONEWIRE_PHOTODEV_NAME:
 							SwitchContainer swd = (SwitchContainer) element;
@@ -1018,31 +1023,37 @@ namespace MultiZonePlayer {
 								swd.readDevice();
 							}*/
 							if (lastLevelA != levelA || activityA) {
-								MLog.Log(this, "Event closure change A on " + zone.ZoneName
-								               + " count=" + zone.ClosureCount + " level=" + levelA
-								               + " lastlevel=" + lastLevelA + " activity=" + activityA);
-								//if (!activityB)
-								//	Alert.CreateAlert("No Activity A on level change");
-								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
-								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
-								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-								val.Add(GlobalParams.id, "1");
-								val.Add(GlobalParams.iscontactmade, ((levelA == false)).ToString()); //normal close
-								API.DoCommand(val);
+								foreach (ZoneDetails zone in zoneList) {
+									zone.HasOneWireIODevice = true;
+									MLog.Log(this, "Event closure change A on " + zone.ZoneName
+												   + " count=" + zone.ClosureCount + " level=" + levelA
+												   + " lastlevel=" + lastLevelA + " activity=" + activityA);
+									//if (!activityB)
+									//	Alert.CreateAlert("No Activity A on level change");
+									val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+									//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+									val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+									val.Add(GlobalParams.id, "1");
+									val.Add(GlobalParams.iscontactmade, ((levelA == false)).ToString()); //normal close
+									API.DoCommand(val);
+								}
 							}
 
 							if (lastLevelB != levelB || activityB) {
-								MLog.Log(this, "Event closure change B on " + zone.ZoneName
-								               + " count=" + zone.ClosureCount + " level=" + levelB
-								               + " lastlevel=" + lastLevelB + " activity=" + activityB);
-								//if (!activityB)
-								//	Alert.CreateAlert("No Activity B on level change");
-								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
-								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
-								val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-								val.Add(GlobalParams.id, "2");
-								val.Add(GlobalParams.iscontactmade, ((levelB == false)).ToString()); //normal close
-								API.DoCommand(val);
+								foreach (ZoneDetails zone in zoneList) {
+									zone.HasOneWireIODevice = true;
+									MLog.Log(this, "Event closure change B on " + zone.ZoneName
+												   + " count=" + zone.ClosureCount + " level=" + levelB
+												   + " lastlevel=" + lastLevelB + " activity=" + activityB);
+									//if (!activityB)
+									//	Alert.CreateAlert("No Activity B on level change");
+									val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+									//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+									val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+									val.Add(GlobalParams.id, "2");
+									val.Add(GlobalParams.iscontactmade, ((levelB == false)).ToString()); //normal close
+									API.DoCommand(val);
+								}
 							}
 
 							/*
@@ -1055,7 +1066,7 @@ namespace MultiZonePlayer {
 								zone.ClosureCounts++;
 								MLog.Log(this, "Event closure B on " + zone.ZoneName + " count=" + zone.ClosureCounts);
 							}*/
-							zone.HasOneWireIODevice = true;
+							
 							//swd.setLatchState(0, true, false, state);
 
 							//MLog.Log(null, "\n\nLEVEL=" + level + "  latch=" + latch + " activity=" + activity
@@ -1090,9 +1101,11 @@ namespace MultiZonePlayer {
 							double[] voltage;
 							getVoltage(adc, channel, out voltage);
 							for (int i = 0; i < voltage.Length; i++) {
-								zone.SetVoltage(i, voltage[i]);
+								foreach (ZoneDetails zone in zoneList) {
+									zone.HasOneWireVoltageSensor = true;
+									zone.SetVoltage(i, voltage[i]);
+								}
 							}
-							zone.HasOneWireVoltageSensor = true;
 							break;
 						case ONEWIRE_COUNTER_NAME:
 							OneWireContainer1D counter = (OneWireContainer1D) element;
@@ -1100,22 +1113,23 @@ namespace MultiZonePlayer {
 							//MLog.Log(this, "Counter 15=" + counter.readCounter(15));
 							//MLog.Log(this, "Counter 12=" + counter.readCounter(12));
 							//MLog.Log(this, "Counter 13=" + counter.readCounter(13));
-							zone.HasOneWireIODevice = true;
+							foreach (ZoneDetails zone in zoneList) {
+								zone.HasOneWireIODevice = true;
 
-							val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
-							//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
-							val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
-							val.Add(GlobalParams.id, "1");
-							val.Add(GlobalParams.count, counter.readCounter(14).ToString()); //normal close
-							API.DoCommand(val);
+								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
+								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
+								val.Add(GlobalParams.id, "1");
+								val.Add(GlobalParams.count, counter.readCounter(14).ToString()); //normal close
+								API.DoCommand(val);
 
-							val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
-							//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
-							val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
-							val.Add(GlobalParams.id, "2");
-							val.Add(GlobalParams.count, counter.readCounter(15).ToString()); //normal close
-							API.DoCommand(val);
-
+								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
+								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
+								val.Add(GlobalParams.id, "2");
+								val.Add(GlobalParams.count, counter.readCounter(15).ToString()); //normal close
+								API.DoCommand(val);
+							}
 							break;
 						default:
 							MLog.Log(this, "Unknown onewire device " + element.getName());
@@ -1123,8 +1137,8 @@ namespace MultiZonePlayer {
 					}
 				}
 				catch (Exception ex) {
-					String err = "Err reading OneWire zone=" + zone.ZoneName + " err=" + ex.Message;
-					Performance.Create(err, true, "", Performance.PerformanceFlags.IsError, 1);
+					String err = "Err reading OneWire zone=" + zoneName+ " err=" + ex.Message;
+					Performance.Create(err, true, zoneName, Performance.PerformanceFlags.IsError, 1);
 					MLog.Log(this, err);
 					result = false;
 				}

@@ -705,9 +705,10 @@ namespace MultiZonePlayer
         // If this is the end of the clip, reset to beginning
         if(evCode == EventCode.Complete)
         {
-            if (autoNext) zoneForm.EventNextAuto();
-            else
-            {
+            if (autoNext) 
+				zoneForm.EventNextAuto();
+            else {
+				zoneForm.EventStop();
                 CloseClip();
                 Dispose();
                 return;

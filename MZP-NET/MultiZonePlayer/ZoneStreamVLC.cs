@@ -107,7 +107,7 @@ namespace MultiZonePlayer
         {
             m_vlcControl.Stop();
             m_tickCount = 0;
-            m_zoneDetails.RequirePower = false;
+            //m_zoneDetails.RequirePower = false;
 			//m_zoneDetails.IsActive = false;
         }
 		public override void Close()
@@ -173,7 +173,7 @@ namespace MultiZonePlayer
                 MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
                 var media = new PathMedia(m_url);
                 m_vlcControl.Media = media;
-                m_zoneDetails.RequirePower = true;
+                //m_zoneDetails.RequirePower = true;
 				//m_zoneDetails.IsActive = true;
             }
             else

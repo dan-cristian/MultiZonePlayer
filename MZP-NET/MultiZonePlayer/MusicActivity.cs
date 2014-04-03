@@ -192,7 +192,7 @@ namespace MultiZonePlayer
                         //m_currentPlayList.MediaItemValueChange(musicFile, WindowsMediaItem.keyPlayCount, 1, 0, int.MaxValue);
 						MLog.Log(this, "Playing file" + CurrentItem.SourceURL + " playcount=" + CurrentItem.PlayCount + " vol="+m_dcPlay.GetVolumeLevel());
                         //init amp power if needed
-						m_zoneDetails.RequirePower = true;
+						//m_zoneDetails.RequirePower = true;
 						//m_zoneDetails.IsActive = true;
                         MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 						int loop = 0;
@@ -244,9 +244,9 @@ namespace MultiZonePlayer
             {
 				Stop();
                 int volume = m_zoneForm.GetVolumeLevel();
-				m_zoneDetails.RequirePower = true;
+				//m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControlOn(m_zoneForm.ZoneDetails.ZoneId);
-				System.Threading.Thread.Sleep(4000);//ensure we can hear this
+				System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
                 DCPlayer tempPlay = new DCPlayer(m_zoneForm, IniFile.CurrentPath()+ filePathName, volume);
             }
 
@@ -911,7 +911,7 @@ namespace MultiZonePlayer
             if (m_cloneSourceZone != null)
             {
 				m_cloneSourceZone.MainZoneActivity.SetVolumeLevel(m_cloneSourceZone.ZoneDetails.GetDefaultVolume());
-				m_zoneDetails.RequirePower = true;
+				//m_zoneDetails.RequirePower = true;
                 MZPState.Instance.PowerControlOn(m_parentZoneForm.ZoneDetails.ZoneId);
                 m_cloneSourceZone.AddClonedZone(this.ZoneDetails);
                 m_clonedZoneMusic = (MusicActivity)m_cloneSourceZone.GetCurrentActivity();
@@ -928,7 +928,7 @@ namespace MultiZonePlayer
                 m_clonedZoneMusic.UpdateOutputDevices();
             }
             m_zoneState = ZoneState.NotStarted;
-			m_zoneDetails.RequirePower = false;
+			//m_zoneDetails.RequirePower = false;
         }
 		public override void Close()
         {

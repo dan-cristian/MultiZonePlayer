@@ -301,28 +301,34 @@ namespace MultiZonePlayer {
 					Thread.Sleep(Convert.ToInt16(vals.GetValue(GlobalParams.interval)));
 					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
 					break;
+				case GlobalCommands.heatscheduleon:
+					m_zoneDetails.ScheduledHeatActive = true;
+					break;
+				case GlobalCommands.heatscheduleoff:
+					m_zoneDetails.ScheduledHeatActive = false;
+					break;
 				case GlobalCommands.poweron:
 					MLog.Log(this, "Permanent power ON zone=" + m_zoneDetails.ZoneName);
-					m_zoneDetails.RequirePower = true;
+					m_zoneDetails.RequirePowerForced = true;
 					MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 					cmdresult.OutputMessage += "power on ok";
 					break;
 				case GlobalCommands.poweroff:
 					MLog.Log(this, "Permanent power OFF zone=" + m_zoneDetails.ZoneName);
 					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
-					m_zoneDetails.RequirePower = false;
+					m_zoneDetails.RequirePowerForced = false;
 					cmdresult.OutputMessage += "power off ok";
 					break;
 				case GlobalCommands.powertoggle:
 					MLog.Log(this, "Power toggle zone=" + m_zoneDetails.ZoneName);
 					if (m_zoneDetails.IsPowerOn) {
 						MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
-						m_zoneDetails.RequirePower = false;
+						m_zoneDetails.RequirePowerForced = false;
 						cmdresult.OutputMessage += "power toggled OFF";
 					}
 					else {
 						MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
-						m_zoneDetails.RequirePower = true;
+						m_zoneDetails.RequirePowerForced = true;
 						cmdresult.OutputMessage += "power toggled ON";
 					}
 					break;
@@ -372,7 +378,7 @@ namespace MultiZonePlayer {
 				case GlobalCommands.notifyuser:
 					if (m_zoneDetails.HasSpeakers) {
 						bool needsPower = m_zoneDetails.RequirePower;
-						m_zoneDetails.RequirePower = true;
+						m_zoneDetails.RequirePowerForced = true;
 						if (!MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId)) {
 							MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 							System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay); //ensure we can hear this
@@ -384,7 +390,7 @@ namespace MultiZonePlayer {
 						}
 						DCPlayer tempPlay = new DCPlayer(this, file, m_zoneDetails.GetDefaultNotifyUserVolume());
 						//System.Threading.Thread.Sleep(4000);//ensure we can hear this
-						m_zoneDetails.RequirePower = needsPower;
+						m_zoneDetails.RequirePowerForced = needsPower;
 					}
 					else {
 						MLog.Log(this, "Error, notify user on zone without speakers=" + m_zoneDetails.ZoneName);
@@ -788,6 +794,10 @@ namespace MultiZonePlayer {
 			m_mainZoneActivity.Next();
 		}
 
+		public void EventStop() {
+			//m_mainZoneActivity.s();
+		}
+
 		private void LoadZoneIni() {
 			m_controlDevice = MZPState.Instance.GetControlDeviceByZone(m_zoneDetails.ZoneId);
 		}
@@ -962,6 +972,16 @@ namespace MultiZonePlayer {
 				}
 				CheckForSleep();
 
+				//turn on or off power
+				if (m_zoneDetails.RequirePower && !m_zoneDetails.IsPowerOn) {
+					MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+				}
+
+				if (!m_zoneDetails.RequirePower && m_zoneDetails.IsPowerOn){
+					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
+				}
+
+
 				int musicInactivity = 60, videoInactivity = 60, tvInactivity = 60, inactiveZone = 1; //default values
 				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_MUSIC[1], out musicInactivity);
 				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_VIDEO[1], out videoInactivity);
@@ -998,6 +1018,7 @@ namespace MultiZonePlayer {
 						MLog.Log(this, "Zone " + m_zoneDetails.ZoneName + " active=" + m_zoneDetails.IsActive +
 						               " closed due to inactivity lapse, type=" + m_zoneDetails.ActivityType.ToString() + " lastcmd=" +
 						               m_zoneDetails.LastLocalCommandDateTime);
+						m_zoneDetails.Close();
 						if (m_zoneForm != null) {
 							m_zoneForm.CloseFormSafe();
 						}

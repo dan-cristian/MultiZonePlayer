@@ -59,7 +59,7 @@ namespace MultiZonePlayer {
 		public Boolean HasVideoPlayer = false;
 		public String DisplayConnection = "";
 		public String DisplayType = "";
-		public Boolean RequirePower = false;
+		public Boolean RequirePowerForced = false;
 		[Description("Edit")]
 		public String NearbyZonesIdList = "";//zone id list separated by ;
 		[Description("Edit")]
@@ -113,6 +113,7 @@ namespace MultiZonePlayer {
 		public double TemperatureMinAlarm = -1000;
 		[Description("Edit")]
 		public double TemperatureTarget = -1000;
+		public Boolean ScheduledHeatActive = false;
 		public String CronSchedule = "";
 		[Description("Edit")]
 		public String Color;
@@ -233,15 +234,16 @@ namespace MultiZonePlayer {
 		}
 		public void RecordCounter(string id, ulong counter) {
 			if (id.Contains(CounterPageNameToInclude)) {
-				if (DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
+				double lapsedMinutes = DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes;
+				if ( lapsedMinutes >= PulseSampleMinutesFrequency) {
 					PulseLastMainUnitsCount = (double)PulseCountInTimeSample / PulseSubUnits;
 					if (PulseLastMainUnitsCount > 1) {
 						Alert.CreateAlert("WARNING: Large count, counter=" + counter + " deltaPulses=" + PulseCountInTimeSample,
 							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
 					}
-					if (DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes > 2 * PulseSampleMinutesFrequency)
+					if (lapsedMinutes > 2 * PulseSampleMinutesFrequency)
 					{
-						Alert.CreateAlert("Long pulse counter period detected, minutes=" + DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes
+						Alert.CreateAlert("Long pulse counter period detected, minutes=" + lapsedMinutes
 							+ " counterdelta=" + PulseCountInTimeSample,
 							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
 					}
@@ -295,11 +297,11 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public Boolean IsIdle {
+		/*public Boolean IsIdle {
 			get {
 				return IsActive || LastLocalCommandAgeInSeconds<120; 
 			}
-		}
+		}*/
 
 		public ZoneState ZoneState {
 			get { return m_zoneState; }
@@ -497,6 +499,24 @@ namespace MultiZonePlayer {
 			}
 		}
 
+		public Boolean RequireHeat {
+			get {
+				return (Temperature < TemperatureTargetTreshhold) && ScheduledHeatActive;
+			}
+		}
+		public Boolean RequirePower {
+			get {
+				bool powerfortoolong = (RequirePowerForced || IsActive) 
+					&& (LastMovementAge.TotalMinutes>15)
+					&& (LastLocalCommandAgeInSeconds > 60 * 15);
+				bool regularstate = (RequireHeat && ScheduledHeatActive)
+					|| (ZoneState == MultiZonePlayer.ZoneState.Running)
+					|| RequirePowerForced;
+				bool exclude = ActivityType!=GlobalCommands.tv;
+
+				return HasPowerCapabilities && regularstate && (!powerfortoolong) && exclude;
+			}
+		}
 
 		public int MacroCount {
 			get {
@@ -873,7 +893,7 @@ namespace MultiZonePlayer {
 			Title = null;
 			Genre = null;
 			SourceURL = null;
-			RequirePower = false;
+			//RequirePower = false;
 			ZoneState = ZoneState.NotStarted;
 			//ActivityType = GlobalCommands.nul;
 		}
@@ -951,6 +971,12 @@ namespace MultiZonePlayer {
 					|| x.HasRecentMove || x.LastLocalCommandAgeInSeconds < 600))
 					.OrderByDescending(x => x.IsActive).ThenByDescending(x => x.HasImmediateMove)
 					.ThenBy(x => x.LastLocalCommandAgeInSeconds).ToList();
+			}
+		}
+
+		public static Boolean ZoneThatRequireHeat_All {
+			get {
+				return ZoneDetailsList.Find(x=>x.RequireHeat) != null;
 			}
 		}
 		#endregion

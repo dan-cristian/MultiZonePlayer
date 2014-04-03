@@ -25,6 +25,7 @@ namespace MultiZonePlayer
 		private ArrayList processes;
 		int lastMinute;
 		string m_cronTabText="";
+		Boolean m_cronJustReloaded = false;
 		Thread m_thread;
 
 		public string CronTabText
@@ -60,8 +61,10 @@ namespace MultiZonePlayer
 					
 						for (int i = 0; i < 30; i++) {
 							Thread.Sleep(1000); // half a minute
-							if (MZPState.Instance==null)
+							if (MZPState.Instance == null || m_cronJustReloaded) {
+								m_cronJustReloaded = false;//force a recheck on cron
 								break;
+							}
 						}
 					}
 					catch (Exception ex)
@@ -133,23 +136,25 @@ namespace MultiZonePlayer
 
 							if (var2.ToLower().Contains("command="))
 							{
-								String[] cmds = var2.SplitTwo(" ");
-								Reflect.GenericReflect(ref var1);
-								String reseval = ExpressionEvaluator.EvaluateBoolToString(var1);
-								if (Convert.ToBoolean(reseval))
-								{
-									ValueList val = new ValueList();
-									ValueList.ParseStringToValues(cmds[0], ";", "=", ref val);
-									API.DoCommand(val);
-								}
-								else
-								{
-									if (cmds.Length > 1)
-									{
+								try {
+									String[] cmds = var2.SplitTwo(" ");
+									Reflect.GenericReflect(ref var1);
+									String reseval = ExpressionEvaluator.EvaluateBoolToString(var1);
+									if (Convert.ToBoolean(reseval)) {
 										ValueList val = new ValueList();
-										ValueList.ParseStringToValues(cmds[1], ";", "=", ref val);
+										ValueList.ParseStringToValues(cmds[0], ";", "=", ref val);
 										API.DoCommand(val);
 									}
+									else {
+										if (cmds.Length > 1) {
+											ValueList val = new ValueList();
+											ValueList.ParseStringToValues(cmds[1], ";", "=", ref val);
+											API.DoCommand(val);
+										}
+									}
+								}
+								catch (Exception ex) {
+									MLog.Log(ex, "Err on cron command="+var2 + " cond="+var1);
 								}
 							}
 							/*Process proc = new Process();
@@ -359,6 +364,7 @@ namespace MultiZonePlayer
 					}
 				}
 				m_cronTabText = cronTabText;
+				m_cronJustReloaded = true;
 				MLog.Log(this, "Added crontab lines=" + crontab.Count);
 			}
 			catch (Exception e)

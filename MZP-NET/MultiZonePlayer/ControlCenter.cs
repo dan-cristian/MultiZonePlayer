@@ -149,7 +149,7 @@ namespace MultiZonePlayer
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
 						MZPState.Instance.TickSlow();
-						foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList){
+						/*foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList){
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
 							List<ZoneDetails> zonesWithPower = ZoneDetails.ZoneDetailsList.FindAll(x =>
 								(x.IsIdle ||x.RequirePower) &&
@@ -164,7 +164,7 @@ namespace MultiZonePlayer
 									MZPState.Instance.PowerControlOff(details.ZoneId);
 								}
 							}
-						}
+						}*/
                     }
                 }
                 catch (Exception ex)

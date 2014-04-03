@@ -158,7 +158,9 @@ namespace MultiZonePlayer
 		userlist,
 		reloadlibrarymusic,
 		reloadlibraryvideo,
-		reloadlibrarypictures
+		reloadlibrarypictures,
+		heatscheduleon,
+		heatscheduleoff
 	}
 	public enum GlobalParams
 	{

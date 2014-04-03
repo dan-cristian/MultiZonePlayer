@@ -386,7 +386,7 @@ namespace MultiZonePlayer
 							m_isXBMCPlayerRunning = true;
 							m_zoneDetails.Title = resp.result.items[0].label;
 							m_zoneDetails.Author = "xbmc";
-							m_zoneDetails.RequirePower = true;
+							//m_zoneDetails.RequirePower = true;
 							//m_zoneDetails.IsActive = true;
 							m_zoneDetails.Genre = "";//resp.result.type;
 							m_zoneDetails.ActivityType = GlobalCommands.xbmc;
