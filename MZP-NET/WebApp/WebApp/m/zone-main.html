@@ -28,7 +28,10 @@
 <button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Motion</button>
 <%%>
 <%if;"#Zones,%_zoneid.ClosureType#"=="Contact"%>
-<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Closure #Zones,%_zoneid.ClosureState#</button>
+<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Closure #Zones,%_zoneid.ClosureState# #Zones,%_zoneid.IsClosureContactMade#</button>
+<%%>
+<%if;"#Zones,%_zoneid.ClosureType#"=="PresenceContact"%>
+<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Presence #Zones,%_zoneid.IsClosureContactMade#</button>
 <%%>
 <%if;"#Zones,%_zoneid.UtilityType#"=="Electricity"%>
 <button class="small" onclick="ajaxCall('event','zone-electricity-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=electricity', false)">Electricity</button>

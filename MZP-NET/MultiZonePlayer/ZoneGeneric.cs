@@ -377,7 +377,7 @@ namespace MultiZonePlayer {
 					break;
 				case GlobalCommands.notifyuser:
 					if (m_zoneDetails.HasSpeakers) {
-						bool needsPower = m_zoneDetails.RequirePower;
+						bool needsPower = m_zoneDetails.RequirePowerForced;
 						m_zoneDetails.RequirePowerForced = true;
 						if (!MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId)) {
 							MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
@@ -840,6 +840,7 @@ namespace MultiZonePlayer {
 			ZoneOpenActions();
 
 			switch (m_zoneDetails.ClosureType) {
+					case EnumClosureType.PresenceContact:
 					case EnumClosureType.Contact:
 						string message = "Closure contact state " + key + " is " + isContactMade
 			                 + " on zone " + m_zoneDetails.ZoneName;

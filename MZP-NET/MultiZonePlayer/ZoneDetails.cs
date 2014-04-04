@@ -370,7 +370,9 @@ namespace MultiZonePlayer {
 		public Boolean HasImmediateMove {
 			get {
 				double span = DateTime.Now.Subtract(LastMovementDate).TotalMinutes;
-				return (span <= m_intervalImmediate);
+				//if presence contact is active means user is at home (e.g. on bed)
+				bool isPresenceContactMade = (ClosureType == EnumClosureType.PresenceContact) && IsClosureContactMade;
+				return (span <= m_intervalImmediate) || isPresenceContactMade;
 			}
 		}
 
@@ -509,9 +511,19 @@ namespace MultiZonePlayer {
 				bool powerfortoolong = (RequirePowerForced || IsActive) 
 					&& (LastMovementAge.TotalMinutes>15)
 					&& (LastLocalCommandAgeInSeconds > 60 * 15);
-				bool regularstate = (RequireHeat && ScheduledHeatActive)
+				
+				bool powerforparentheat = false;
+
+				if (Type == ZoneType.Heat) {//for zones with child heat component
+					ZoneDetails parent = ZoneDetails.GetZoneById(ParentZoneId);
+					if (parent!=null)
+						powerforparentheat = parent.RequireHeat;
+				}
+				bool regularstate = powerforparentheat
+					//|| (RequireHeat && ) //for zones with own heat and temp sensor
 					|| (ZoneState == MultiZonePlayer.ZoneState.Running)
 					|| RequirePowerForced;
+				
 				bool exclude = ActivityType!=GlobalCommands.tv;
 
 				return HasPowerCapabilities && regularstate && (!powerfortoolong) && exclude;
@@ -1013,7 +1025,8 @@ namespace MultiZonePlayer {
 		Undefined = -1,
 		Contact = 0,
 		Pulse = 1,
-		Counter = 2
+		Counter = 2,
+		PresenceContact = 3
 	}
 	public enum EnumUtilityType {
 		Undefined = -1,
