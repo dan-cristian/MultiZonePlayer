@@ -991,6 +991,11 @@ namespace MultiZonePlayer {
 				return ZoneDetailsList.Find(x=>x.RequireHeat) != null;
 			}
 		}
+
+		public static Boolean ZoneThatRequireHeat_AllExcept(int exceptedZoneId) {
+			return ZoneDetailsList.Find(x => x.RequireHeat && x.ZoneId!=exceptedZoneId) != null;
+		}
+
 		#endregion
 	}
 
