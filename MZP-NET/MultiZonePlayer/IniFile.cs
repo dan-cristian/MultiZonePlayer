@@ -238,6 +238,7 @@ namespace MultiZonePlayer
 
 			public static String[] PARAM_ONEWIRE_ADAPTER_NAME = new String[] { "PARAM_ONEWIRE_ADAPTER_NAME", "{DS9097U_DS948X}", "adapter name, {DS9097U_DS948X} for LinkUSB" };
 			public static String[] PARAM_ONEWIRE_ADAPTER_PORTNAME = new String[] { "PARAM_ONEWIRE_ADAPTER_PORTNAME", "COM9", "adapter port, e.g. COM9" };
+            public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
 
 
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
@@ -338,7 +339,8 @@ namespace MultiZonePlayer
 				PARAM_CLOSE_ACTIVE_ZONE_VIDEO,
 				PARAM_CLOSE_INACTIVE_ZONE,
 				PARAM_ONEWIRE_ADAPTER_NAME,
-				PARAM_ONEWIRE_ADAPTER_PORTNAME
+				PARAM_ONEWIRE_ADAPTER_PORTNAME,
+                PARAM_ONEWIRE_SLOW_READ_DELAY
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;

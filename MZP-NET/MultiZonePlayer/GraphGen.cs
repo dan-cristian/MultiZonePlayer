@@ -25,7 +25,7 @@ namespace MultiZonePlayer
 			InitializeComponent();
 			m_colors[0] = System.Drawing.Color.OrangeRed;
 			m_colors[1] = System.Drawing.Color.DarkRed;
-			m_colors[2] = System.Drawing.Color.Aquamarine;
+			m_colors[2] = System.Drawing.Color.BlueViolet;
 			m_colors[3] = System.Drawing.Color.GreenYellow;
 			m_colors[4] = System.Drawing.Color.Olive;
 			m_colors[5] = System.Drawing.Color.HotPink;
@@ -136,6 +136,7 @@ namespace MultiZonePlayer
 				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
 				double minY = double.MaxValue, maxY = double.MinValue;
+                //only index 2 seems relevant on my sensor
 				for (int index = 2; index <= maxIndex; index++) {
 					List<Tuple<int, DateTime, double, int>> tempValues = m_voltageHistoryList.FindAll(
 						x => x.Item1 == zoneId

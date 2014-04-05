@@ -786,6 +786,7 @@ namespace MultiZonePlayer {
 					MLog.Log("Failed to init onewire adapter using DefaultAdapter method, trying with COM settings. Error was " + ex.Message);
 					try {
 						adapter = OneWireAccessProvider.getAdapter(IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1], IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
+                        m_lastOKRead = DateTime.Now;
 					}
 					catch (Exception ex2) {
 						MLog.Log(ex2, this, "Error init onewire adapter name=" 
@@ -939,7 +940,7 @@ namespace MultiZonePlayer {
 			int i = 0;
 			int cycle = 3000;
 			while (MZPState.Instance != null) {
-				if (i > 10) {
+				if (i > Convert.ToInt16(IniFile.PARAM_ONEWIRE_SLOW_READ_DELAY[1])) {
 					//slow tick
 					i = 0;
 					if (adapter == null || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
