@@ -77,6 +77,10 @@ namespace MultiZonePlayer {
 			get { return (UtilityCost)MultiZonePlayer.UtilityCost.StaticInstance; }
 		}
 
+		public LightSensor LightSensor {
+			get { return (LightSensor)MultiZonePlayer.LightSensor.StaticInstance; }
+		}
+
 		public OneWire OneWire {
 			get { return m_oneWire; }
 		}
@@ -139,6 +143,7 @@ namespace MultiZonePlayer {
 			LoadIniSections();
 			LoadSystemAndUserControls();
 			UtilityCost.LoadFromIni();
+			LightSensor.LoadFromIni();
 
 			MLog.Log(this, "Retrieving system available audio input devices");
 			DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
@@ -298,12 +303,13 @@ namespace MultiZonePlayer {
 				}
 				m_cron.stop();
 				foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
-					zone.SaveToIni();
+					zone.SaveEntryToIni();
 				}
 				foreach (IMessenger mes in m_messengerList) {
 					mes.Close();
 				}
 				UtilityCost.SaveAllToIni();
+				LightSensor.SaveAllToIni();
 				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
 			}
@@ -472,6 +478,10 @@ namespace MultiZonePlayer {
 
 		public List<UtilityCost> UtilityCostList{
 			get { return UtilityCost.StaticInstance.ValueList.Select(x => (UtilityCost)x).ToList(); }
+		}
+
+		public List<LightSensor> LightSensorList {
+			get { return LightSensor.StaticInstance.ValueList.Select(x => (LightSensor)x).ToList(); }
 		}
 
 		public List<IMZPDevice> DeviceList {

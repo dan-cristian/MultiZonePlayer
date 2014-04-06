@@ -182,7 +182,7 @@ namespace MultiZonePlayer
 					zone.PowerType = (dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString();
 					zone.Type = (ZoneType)Enum.Parse(typeof(ZoneType),(dgvZones.Rows[r].Cells[Zones_Type.Name].Value ?? "Undefined").ToString());
 					zone.CronSchedule = (dgvZones.Rows[r].Cells[Zones_HeatSchedule.Name].Value ?? "").ToString();
-					zone.SaveToIni();
+					zone.SaveEntryToIni();
                 }
             }
 
@@ -194,7 +194,7 @@ namespace MultiZonePlayer
                     ZoneDetails zone = ZoneDetails.GetZoneById(Convert.ToInt16(zoneId));
                     zone.DisplayConnection = dgvDisplay.Rows[r].Cells[Display_ConnectionName.Name].Value.ToString();
                     zone.DisplayType = dgvDisplay.Rows[r].Cells[Display_Type.Name].Value.ToString();
-                    zone.SaveToIni();
+                    zone.SaveEntryToIni();
                 }
             }
         }
@@ -353,7 +353,7 @@ namespace MultiZonePlayer
 						}
 					}
 				}
-				User.StaticInstance.SaveToIni();
+				User.StaticInstance.SaveEntryToIni();
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "error save users");

@@ -68,6 +68,7 @@ namespace MultiZonePlayer
             public const String INI_SECTION_INPUTS = "Inputs";
             public const String INI_SECTION_USERS = "Users";
 			public const String INI_SECTION_UTILITYCOST = "UtilityCost";
+			public const String INI_SECTION_LIGHTSENSOR = "LightSensor";
             public const String INI_SECTION_PARAMS = "Parameters";
             public const String INI_SECTION_MUSICMOOD = "MusicMood";
             public const String INI_SECTION_MUSICSCHEDULE = "MusicSchedule";

@@ -151,6 +151,7 @@ namespace MultiZonePlayer
 		poweroff,
 		powertoggle,
 		setfield,
+		createfield,
 		generategraph,
 		generatefullgraph,
 		doorring,

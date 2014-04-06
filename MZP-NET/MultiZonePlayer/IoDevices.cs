@@ -976,7 +976,7 @@ namespace MultiZonePlayer {
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
 								if (tempVal != TEMP_DEFAULT) {
-									zone.Temperature = Math.Round(tempVal, 2);
+									zone.Temperature = Math.Round(tempVal, 1);
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
@@ -1018,11 +1018,7 @@ namespace MultiZonePlayer {
 								swd.readDevice();
 							}
 
-							/*if (levelA || levelB) {
-								swd.clearActivity();
-								swd.writeDevice(state);
-								swd.readDevice();
-							}*/
+							
 							if (lastLevelA != levelA || activityA) {
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireIODevice = true;
@@ -1107,25 +1103,36 @@ namespace MultiZonePlayer {
 									zone.SetVoltage(i, voltage[i]);
 								}
 							}
+
+							//reading temp
+							temp = (TemperatureContainer) element;
+							state = temp.readDevice();
+							temp.doTemperatureConvert(state);
+							tempVal = temp.getTemperature(state);
+							
+							foreach (ZoneDetails zone in zoneList) {
+								zone.HasOneWireTemperatureSensor = true;
+								if (tempVal != TEMP_DEFAULT) {
+									zone.Temperature = Math.Round(tempVal, 1);
+								}
+								else {
+									MLog.Log(this, "Reading DEFAULT temp via ds2438 in zone " + zone.ZoneName);
+								}
+							}
+							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
 							break;
 						case ONEWIRE_COUNTER_NAME:
 							OneWireContainer1D counter = (OneWireContainer1D) element;
-							//MLog.Log(this, "Counter 14=" + counter.readCounter(14));
-							//MLog.Log(this, "Counter 15=" + counter.readCounter(15));
-							//MLog.Log(this, "Counter 12=" + counter.readCounter(12));
-							//MLog.Log(this, "Counter 13=" + counter.readCounter(13));
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireIODevice = true;
 
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
-								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
 								val.Add(GlobalParams.id, "1");
 								val.Add(GlobalParams.count, counter.readCounter(14).ToString()); //normal close
 								API.DoCommand(val);
 
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
-								//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
 								val.Add(GlobalParams.id, "2");
 								val.Add(GlobalParams.count, counter.readCounter(15).ToString()); //normal close

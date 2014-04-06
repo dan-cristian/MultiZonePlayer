@@ -375,6 +375,9 @@ namespace MultiZonePlayer
 																if (value.ToString().Contains(typeof(UtilityCost).ToString()))
 																	value = ((List<UtilityCost>)value)[Convert.ToInt32(parameters[0])];
 																else
+																	if (value.ToString().Contains(typeof(LightSensor).ToString()))
+																		value = ((List<LightSensor>)value)[Convert.ToInt32(parameters[0])];
+																	else
 									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());

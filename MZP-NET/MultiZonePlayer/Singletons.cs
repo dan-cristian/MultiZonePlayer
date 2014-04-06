@@ -28,13 +28,21 @@ namespace MultiZonePlayer {
 		//protected static List<Singleton> m_valueList = new List<Singleton>();
 		[Description("Edit")]
 		public String UniqueIdentifier="";
-		public int Id;
+		[Description("Edit")]
+		public int Id = 0;
 
-		public Singleton() { }
+		public Singleton() {
+			Id = GetNextId();
+		}
 		public abstract List<Singleton> ValueList {
 			get;
 		}
-		
+		public int GetNextId() {
+			int id = 0;
+			if (ValueList != null && ValueList.Count > 0)
+				id = ValueList.Max(x => x.Id) + 1;
+			return id;
+		}
 		public int Index {
 			get { return ValueList.IndexOf(this); }
 		}
@@ -44,9 +52,9 @@ namespace MultiZonePlayer {
 		
 		public virtual Singleton Instance{get{return this;}}
 
-		public abstract void SaveToIni();
-
-		
+		public abstract void SaveEntryToIni();
+		//public abstract static void LoadFromIni();
+		//public abstract static void SaveAllToIni();
 	}
 
 	public class Performance:Singleton {
@@ -164,7 +172,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public override void SaveToIni() {
+		public override void SaveEntryToIni() {
 		//TODO
 		}
 	}
@@ -277,7 +285,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public override void SaveToIni() {
+		public override void SaveEntryToIni() {
 			String json;
 			int r = 0;
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
@@ -705,7 +713,7 @@ namespace MultiZonePlayer {
 		public static UtilityCost GetUtility(int id) {
 			return (UtilityCost)m_valueList.Find(x => x.Id == id);
 		}
-		public override void SaveToIni() {
+		public override void SaveEntryToIni() {
 			String json;
 			int r = 0;
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
@@ -735,9 +743,97 @@ namespace MultiZonePlayer {
 
 		public static void SaveAllToIni() {
 			foreach (Singleton item in m_valueList) {
-				item.SaveToIni();
+				item.SaveEntryToIni();
 			}
 		}
 	}
 
+	public class LightSensor : Singleton {
+		[Description("Edit")]
+		public String Name;
+		[Description("Edit")]
+		public bool IsActive;
+		[Description("Edit")]
+		public int ApplyForVoltageIndex;
+		[Description("Edit")]
+		public double ResistorValue;
+
+		[Description("Edit")]
+		public double MinVoltageValue;
+		[Description("Edit")]
+		public double MinLuxValue;
+
+		[Description("Edit")]
+		public double MaxVoltageValue;
+		[Description("Edit")]
+		public double MaxLuxValue;
+
+		[Description("Edit")]
+		public double HasSunMinVoltageValue;
+		
+
+		protected static List<Singleton> m_valueList = new List<Singleton>();
+
+		public LightSensor() {
+			Id = GetNextId();
+		}
+
+		public LightSensor(String name) {
+			Name = name;
+			Id = GetNextId();
+		}
+
+		public static Singleton StaticInstance {
+			get {
+				if (m_valueList != null && m_valueList.Count > 0)
+					return m_valueList[0];
+				else return new LightSensor();
+			}
+		}
+
+		public override Singleton Instance { get { return LightSensor.StaticInstance; } }
+
+		public override List<Singleton> ValueList {
+			get { return m_valueList; }
+		}
+		public static void Add(Singleton item) {
+			m_valueList.Add(item);
+		}
+
+		public static LightSensor GetLightSensor(int id) {
+			return (LightSensor)m_valueList.Find(x => x.Id == id);
+		}
+		public override void SaveEntryToIni() {
+			String json;
+			int r = 0;
+			fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+			param.UseExtensions = false;
+			foreach (Object obj in m_valueList) {
+				json = fastJSON.JSON.Instance.ToJSON(obj, param);
+				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_LIGHTSENSOR, r.ToString(), json);
+				r++;
+			}
+		}
+		public static void SaveAllToIni() {
+			foreach (Singleton item in m_valueList) {
+				item.SaveEntryToIni();
+			}
+		}
+
+		public static void LoadFromIni() {
+			Hashtable values = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_LIGHTSENSOR);
+			Singleton item;
+
+			try {
+				foreach (String json in values.Values) {
+					item = fastJSON.JSON.Instance.ToObject<LightSensor>(json);
+					Add(item);
+				}
+			}
+			catch (Exception ex) {
+				MLog.Log(ex, "Error loading LightSensor");
+				throw new Exception("Error load LightSensor", ex);
+			}
+		}
+	}
 }

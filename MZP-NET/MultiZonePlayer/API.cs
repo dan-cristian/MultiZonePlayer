@@ -387,8 +387,31 @@ namespace MultiZonePlayer
 							//MZPState.Instance.ZoneEvents.DismissAlert(vals);
 							Alert.DismissAlert(aid);
 							break;
-						case GlobalCommands.setfield:
+						case GlobalCommands.createfield:
 							string classname = vals.GetValue(GlobalParams.classname);
+							switch (classname) {
+								case "ZoneDetails":
+									ZoneDetails zone = new ZoneDetails();
+									zone.ZoneName = "Default Zone";
+									ZoneDetails.ZoneDetailsList.Add(zone);
+									break;
+								case "User":
+									User.Add(new User());
+									break;
+								case "UtilityCost":
+									UtilityCost.Add(new UtilityCost());
+									break;
+								case "LightSensor":
+									LightSensor light = new LightSensor("Default Sensor");
+									LightSensor.Add(light);
+									break;
+								default:
+									MLog.Log("Error, classname not recognised on create field, class=" + classname);
+									break;
+							}
+							break;
+						case GlobalCommands.setfield:
+							classname = vals.GetValue(GlobalParams.classname);
 							string field = vals.GetValue(GlobalParams.field);
 							string text = vals.GetValue(GlobalParams.text);
 							string valId = vals.GetValue(GlobalParams.id);
@@ -398,7 +421,7 @@ namespace MultiZonePlayer
 							Object fieldObj=null;
 							switch (classname) {
 								case "ZoneDetails":
-									fieldObj = ZoneDetails.GetZoneById(id);
+									fieldObj = ZoneDetails.GetZoneByInternalId(id);
 									break;
 								case "User":
 									fieldObj = User.GetUser(id);
@@ -406,13 +429,17 @@ namespace MultiZonePlayer
 								case "UtilityCost":
 									fieldObj = UtilityCost.GetUtility(id);
 									break;
+								case "LightSensor":
+									fieldObj = LightSensor.GetLightSensor(id);
+									break;
 								default:
 									MLog.Log("Error, classname not recognised on set field, class="+classname);
 									break;
 							}
 							if (Reflect.SetFieldValue(ref fieldObj, field, text)) {
-								((Singleton)fieldObj).SaveToIni();
-								cmdresult.OutputMessage += "Field " + field + " set to " + text;
+								((Singleton)fieldObj).SaveEntryToIni();
+								cmdresult.OutputMessage += "Field " + field + " set to " + text + " for id="+id;
+								MLog.Log(null, cmdresult.OutputMessage);
 							}
 							else {
 								cmdresult.OutputMessage += "Error setting value, not found field=" + field + " value=" + text;

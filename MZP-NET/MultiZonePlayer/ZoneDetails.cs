@@ -168,6 +168,12 @@ namespace MultiZonePlayer {
 			ActivityType = GlobalCommands.nul;
 			LoadStateFromIni();
 		}
+		public String Name {//for web edit, match singleton Name field requirements
+			get {return ZoneName;}
+		}
+		/*public new int Id {//for web edit, match singleton Name field requirements
+			get { return ZoneId; }
+		}*/
 		public static ZoneDetails StaticInstance {
 			get {
 				if (m_valueList != null && m_valueList.Count > 0)
@@ -223,6 +229,7 @@ namespace MultiZonePlayer {
 						cost.ToString());
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
+					SaveEntryToIni();
 				}
 				else {
 					PulseCountInTimeSample++;
@@ -256,6 +263,7 @@ namespace MultiZonePlayer {
 						cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
+					SaveEntryToIni();//save in case of power outage
 				}
 				else {
 					ulong units = counter - LastCounterCount;
@@ -667,6 +675,7 @@ namespace MultiZonePlayer {
 					if (ZoneId == 20)
 						MultiZonePlayer.MZPState.Instance.TestCond = true;
 					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
+					Id = zonestorage.Id;
 					Description = zonestorage.Description;
 					ZoneName = zonestorage.ZoneName;
 					ParentZoneId = zonestorage.ParentZoneId;
@@ -757,7 +766,7 @@ namespace MultiZonePlayer {
 		}
 
 
-		public override void SaveToIni() {
+		public override void SaveEntryToIni() {
 			MLog.Log(this, "Saving state to ini zone=" + ZoneName);
 			//remove fields that generate serialisation problems
 			this.Meta = null;
@@ -873,7 +882,7 @@ namespace MultiZonePlayer {
 
 		public void Close() {
 			ZoneClose();
-			SaveToIni();
+			SaveEntryToIni();
 		}
 
 		public int GetDefaultVolume() {
@@ -928,12 +937,17 @@ namespace MultiZonePlayer {
 
 		public void SetVoltage(int voltageIndex, double value) {
 			double lastVal;
+			LightSensor light = MZPState.Instance.LightSensorList.Find(x=>x.IsActive);
+			
 			lastVal = m_voltage[voltageIndex];
 			if (lastVal != value) {
-				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName,
-						Constants.CAPABILITY_VOLTAGE,
-						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), 
-						value.ToString(), ZoneId.ToString(), voltageIndex.ToString());
+				double lux=-1d;
+				if (light != null && light.ApplyForVoltageIndex == voltageIndex && light.MaxVoltageValue != 0){
+					lux = value * light.MaxLuxValue / light.MaxVoltageValue;
+				}
+				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName, Constants.CAPABILITY_VOLTAGE,
+						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), voltageIndex.ToString(),
+						lux.ToString());
 				m_voltage[voltageIndex] = value;
 			}
 			
@@ -949,7 +963,9 @@ namespace MultiZonePlayer {
 		public static ZoneDetails GetZoneById(int zoneId) {
 			return (ZoneDetails)m_valueList.Find(item => ((ZoneDetails)item).ZoneId == zoneId);
 		}
-
+		public static ZoneDetails GetZoneByInternalId(int Id) {
+			return (ZoneDetails)m_valueList.Find(item => ((ZoneDetails)item).Id == Id);
+		}
 		public static TimeSpan LastMovementAge_Min {
 			get {
 				return ZoneDetailsList.Min(x => x.LastMovementAge);
@@ -1051,7 +1067,8 @@ namespace MultiZonePlayer {
 		Undefined = -1,
 		Electricity = 0,
 		Water = 1,
-		Gas = 2
+		Gas = 2,
+		Sunlight = 3
 	}
 	public enum EnumRelayType {
 		Undefined,
