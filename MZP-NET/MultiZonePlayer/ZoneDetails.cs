@@ -508,9 +508,10 @@ namespace MultiZonePlayer {
 		}
 		public Boolean RequirePower {
 			get {
+				int closeperiod = Convert.ToInt16(IniFile.PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD[1]);
 				bool powerfortoolong = (RequirePowerForced || IsActive) 
-					&& (LastMovementAge.TotalMinutes>15)
-					&& (LastLocalCommandAgeInSeconds > 60 * 15);
+					&& (LastMovementAge.TotalMinutes>closeperiod)
+					&& (LastLocalCommandAgeInSeconds > 60 * closeperiod);
 				
 				bool powerforparentheat = false;
 
@@ -520,13 +521,12 @@ namespace MultiZonePlayer {
 						powerforparentheat = parent.RequireHeat;
 				}
 				bool regularstate = powerforparentheat
-					//|| (RequireHeat && ) //for zones with own heat and temp sensor
 					|| (ZoneState == MultiZonePlayer.ZoneState.Running)
 					|| RequirePowerForced;
-				
-				bool exclude = ActivityType!=GlobalCommands.tv;
 
-				return HasPowerCapabilities && regularstate && (!powerfortoolong) && exclude;
+				bool keepOn = (ActivityType != GlobalCommands.tv) || (Type == ZoneType.Heat);
+
+				return HasPowerCapabilities && regularstate && ((!powerfortoolong) || keepOn);
 			}
 		}
 
@@ -996,6 +996,20 @@ namespace MultiZonePlayer {
 			return ZoneDetailsList.Find(x => x.RequireHeat && x.ZoneId!=exceptedZoneId) != null;
 		}
 
+		public static void ProcessAllZones(bool fastActions, bool slowActions) {
+			foreach (ZoneDetails zone in ZoneDetailsList) {
+				if (fastActions) {
+					//turn on or off power
+					if (zone.RequirePower && !zone.IsPowerOn) {
+						MZPState.Instance.PowerControlOn(zone.ZoneId);
+					}
+
+					if (!zone.RequirePower && zone.IsPowerOn) {
+						MZPState.Instance.PowerControlOff(zone.ZoneId);
+					}
+				}
+			}
+		}
 		#endregion
 	}
 

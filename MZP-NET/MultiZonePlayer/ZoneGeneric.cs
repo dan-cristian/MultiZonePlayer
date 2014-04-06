@@ -973,16 +973,6 @@ namespace MultiZonePlayer {
 				}
 				CheckForSleep();
 
-				//turn on or off power
-				if (m_zoneDetails.RequirePower && !m_zoneDetails.IsPowerOn) {
-					MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
-				}
-
-				if (!m_zoneDetails.RequirePower && m_zoneDetails.IsPowerOn){
-					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
-				}
-
-
 				int musicInactivity = 60, videoInactivity = 60, tvInactivity = 60, inactiveZone = 1; //default values
 				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_MUSIC[1], out musicInactivity);
 				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_VIDEO[1], out videoInactivity);

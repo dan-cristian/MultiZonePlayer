@@ -15,7 +15,7 @@ img {vertical-align:middle;}
 /***FIRST STYLE THE BUTTON***/
 button, form input[type="submit"]{
 cursor:pointer; /*forces the cursor to change to a hand when the button is hovered*/
-padding:10px 15px; /*add some padding to the inside of the button*/
+padding:14px 15px; /*add some padding to the inside of the button*/
 background:#35b128; /*the colour of the button*/
 border:1px solid #33842a; /*required or the default border for the browser will appear*/
 min-width:100px;

@@ -128,6 +128,7 @@ namespace MultiZonePlayer
                     Thread.Sleep(IniFile.ZONE_TICK_FAST_SLEEP);
                     // FAST TICK
                     RefreshState();
+					ZoneDetails.ProcessAllZones(true, false);
 					if (MZPState.Instance != null)	{
 						debug = "";
 						activeZoneClone = MZPState.Instance.ActiveZones.ToArray();
@@ -148,6 +149,7 @@ namespace MultiZonePlayer
                     if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 30)
                     {
                         m_lastSlowTickDateTime = DateTime.Now;
+						ZoneDetails.ProcessAllZones(false, true);
 						MZPState.Instance.TickSlow();
 						/*foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList){
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
