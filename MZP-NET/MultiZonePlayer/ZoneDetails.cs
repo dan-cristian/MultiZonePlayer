@@ -399,7 +399,9 @@ namespace MultiZonePlayer {
 		public Boolean HasImmediateClosureMove {
 			get {
 				double span = DateTime.Now.Subtract(LastClosureEventDateTime).TotalMinutes;
-				return (span <= m_intervalImmediate);
+				//if presence contact is active means user is at home (e.g. on bed)
+				bool isPresenceContactMade = (ClosureType == EnumClosureType.PresenceContact) && IsClosureContactMade;
+				return (span <= m_intervalImmediate) || isPresenceContactMade;
 			}
 		}
 
@@ -942,12 +944,12 @@ namespace MultiZonePlayer {
 			lastVal = m_voltage[voltageIndex];
 			if (lastVal != value) {
 				double lux=-1d;
-				if (light != null && light.ApplyForVoltageIndex == voltageIndex && light.MaxVoltageValue != 0){
+				if (value>=0 && light != null && light.ApplyForVoltageIndex == voltageIndex && light.MaxVoltageValue != 0){
 					lux = value * light.MaxLuxValue / light.MaxVoltageValue;
 				}
 				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName, Constants.CAPABILITY_VOLTAGE,
 						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), voltageIndex.ToString(),
-						lux.ToString());
+						lux.ToString(), light.Name);
 				m_voltage[voltageIndex] = value;
 			}
 			
