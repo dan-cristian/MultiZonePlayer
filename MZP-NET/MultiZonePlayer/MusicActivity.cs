@@ -245,13 +245,14 @@ namespace MultiZonePlayer
 				Stop();
                 int volume = m_zoneForm.GetVolumeLevel();
 				//m_zoneDetails.RequirePower = true;
-                MZPState.Instance.PowerControlOn(m_zoneForm.ZoneDetails.ZoneId);
-				System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
-                DCPlayer tempPlay = new DCPlayer(m_zoneForm, IniFile.CurrentPath()+ filePathName, volume);
+				if (!MZPState.Instance.PowerControlIsOn(m_zoneForm.ZoneDetails.ZoneId)) {
+					MZPState.Instance.PowerControlOn(m_zoneForm.ZoneDetails.ZoneId);
+					System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
+				}
+				DCPlayer tempPlay = new DCPlayer(m_zoneForm, IniFile.CurrentPath()+ filePathName, volume);
             }
 
-            public void UpdateOutputDevices()
-            {
+            public void UpdateOutputDevices(){
                 if (GetState().Equals(ZoneState.Running))
                     m_dcPlay.UpdateOutputDevices();
             }
@@ -1147,6 +1148,7 @@ namespace MultiZonePlayer
             //not implemented
             if (m_clonedZoneMusic != null && m_clonedZoneMusic.CurrentItem != null)
             {
+				m_zoneDetails.ActivityType = GlobalCommands.music;
                 m_zoneDetails.Title = m_clonedZoneMusic.CurrentItem.Title;
                 m_zoneDetails.Rating = m_clonedZoneMusic.CurrentItem.Rating;
                 m_zoneDetails.Playcount = m_clonedZoneMusic.CurrentItem.PlayCount;

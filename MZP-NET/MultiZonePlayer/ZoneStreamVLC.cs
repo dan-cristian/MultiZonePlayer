@@ -263,6 +263,7 @@ namespace MultiZonePlayer
         {
             if (m_vlcControl != null && m_vlcControl.Media != null)
             {
+				m_zoneDetails.ActivityType = GlobalCommands.radio;
                 m_zoneDetails.Title = m_vlcControl.Media.Metadatas.NowPlaying;
                 m_zoneDetails.Genre = m_vlcControl.Media.Metadatas.Genre;
                 m_zoneDetails.Author = m_vlcControl.Media.Metadatas.Title;

@@ -152,6 +152,7 @@ namespace MultiZonePlayer {
 		protected double m_temperature = DEFAULT_TEMP_HUM, m_humidity = DEFAULT_TEMP_HUM;
 		//protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
+		protected DateTime m_lastRunningDateTime = DateTime.MinValue;
 		// not serializable, hidden from json
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
 		protected static new List<Singleton> m_valueList = new List<Singleton>();
@@ -305,16 +306,19 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		/*public Boolean IsIdle {
+		public Boolean HadRecentRunState {
 			get {
-				return IsActive || LastLocalCommandAgeInSeconds<120; 
+				return DateTime.Now.Subtract(m_lastRunningDateTime).TotalMinutes 
+					< Convert.ToInt16(IniFile.PARAM_RECENT_RUN_INTERVAL_MINUTES[1]); 
 			}
-		}*/
+		}
 
 		public ZoneState ZoneState {
 			get { return m_zoneState; }
 			set {
 				m_zoneState = value;
+				if (value == MultiZonePlayer.ZoneState.Running)
+					m_lastRunningDateTime = DateTime.Now;
 				if (m_zoneState != m_zoneStateLast) {
 					Rules.ExecuteRule(this, "zonestate=" + m_zoneState);
 					m_zoneStateLast = m_zoneState;
@@ -532,6 +536,7 @@ namespace MultiZonePlayer {
 				}
 				bool regularstate = powerforparentheat
 					|| (ZoneState == MultiZonePlayer.ZoneState.Running)
+					|| HadRecentRunState
 					|| RequirePowerForced;
 
 				bool keepOn = (ActivityType != GlobalCommands.tv) || (Type == ZoneType.Heat);

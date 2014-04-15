@@ -203,10 +203,10 @@ namespace MultiZonePlayer
 
 						double value = 0, cost = 0, minwatts = double.MaxValue, maxwatts = double.MinValue, totalwatts = 0, avgwatts;
 						foreach (var point in tempValues) {
-							series1.Points.AddXY(point.Item2, point.Item3);
-							value += point.Item3;
-							minY = Math.Min(minY, tempValues.Min(x => x.Item3));
-							maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+							series1.Points.AddXY(point.Item2, point.Item5);
+							value += point.Item5;
+							minY = Math.Min(minY, tempValues.Min(x => x.Item5));
+							maxY = Math.Max(maxY, tempValues.Max(x => x.Item5));
 							cost += point.Item4;
 							totalwatts += point.Item5;
 							if (point.Item5 != 0)

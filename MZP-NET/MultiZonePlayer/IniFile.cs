@@ -242,7 +242,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
 
 			public static String[] PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD = new String[] { "PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD", "15", "close power after x minutes of activity in a zone without user interaction or move" };
-
+			public static String[] PARAM_RECENT_RUN_INTERVAL_MINUTES = new String[] { "PARAM_RECENT_RUN_INTERVAL_MINUTES", "1", "number of minutes to keep a zone power on after recent run state, e.g. music playing" };
 
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
@@ -344,7 +344,8 @@ namespace MultiZonePlayer
 				PARAM_ONEWIRE_ADAPTER_NAME,
 				PARAM_ONEWIRE_ADAPTER_PORTNAME,
                 PARAM_ONEWIRE_SLOW_READ_DELAY,
-				PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD
+				PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD,
+				PARAM_RECENT_RUN_INTERVAL_MINUTES
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;
