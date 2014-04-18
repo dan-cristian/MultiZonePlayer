@@ -376,8 +376,8 @@ namespace MultiZonePlayer
 								graph.ShowVoltageGraph(zoneList, ageHours);
 							}
 							 */
-							if (type == Constants.CAPABILITY_ELECTRICITY) {
-								graph.ShowElectricityGraph(-1, "all", ageHours);
+							if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
+								graph.ShowUtilitiesGraph(-1, "all", ageHours, type);
 							}
 							
 							//graph.ShowTempGraph(ageHours, zoneList);

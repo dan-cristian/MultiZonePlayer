@@ -8,7 +8,8 @@
 <script type="text/JavaScript">
 	function loadAll()
 	{
-		ajaxCall('event', 'zone-electricity-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=electricity');
+		ajaxCall('electricity', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=electricity');
+		ajaxCall('water', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=water');
 
 	}
 </script>
@@ -18,7 +19,8 @@
 <br />
 <div id="camera"></div>
 <div id="temp-hum"></div>
-<div id="event"></div>
+<div id="electricity"></div>
+<div id="water"></div>
 <div id="voltage"></div>
 <br />
 <button onclick="window.open('start.html', '_self')">Back</button>

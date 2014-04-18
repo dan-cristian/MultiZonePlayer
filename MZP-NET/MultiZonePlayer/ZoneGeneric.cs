@@ -411,8 +411,8 @@ namespace MultiZonePlayer {
 					if (type == "voltage") {
 						graph.ShowVoltageGraph(m_zoneDetails.ZoneId, ageHours);
 					}
-					if (type == Constants.CAPABILITY_ELECTRICITY) {
-						graph.ShowElectricityGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours);
+					if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
+						graph.ShowUtilitiesGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type);
 					}
 					break;
 				case GlobalCommands.doorring:

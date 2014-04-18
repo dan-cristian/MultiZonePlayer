@@ -665,7 +665,7 @@ namespace MultiZonePlayer {
 
 		public ZoneGeneric GetZoneIfActive(int zoneId) {
 			ZoneGeneric zp = ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
-			if (zp != null && IsZoneActive(zoneId)) {
+			if (zp != null){// && IsZoneActive(zoneId)) {
 				return zp;
 			}
 			else {

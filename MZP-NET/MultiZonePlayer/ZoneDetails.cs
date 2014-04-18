@@ -83,7 +83,7 @@ namespace MultiZonePlayer {
 		[Description("Edit")]
 		public int PulseSampleMinutesFrequency = 1;//in minutes
 		[Description("Edit")]
-		public uint PulseSubUnits = 1;//how many subunits in a main unit 100 e.g. flashes in a kwh
+		public double PulseSubUnits = 1;//how many subunits in a main unit 100 e.g. flashes in a kwh or 10 pulses per liter
 		[Description("Edit")]
 		public double PulseMainUnitsCount = 0;//main units, e.g. 3 kwh
 		//[Description("Edit")]
@@ -256,9 +256,23 @@ namespace MultiZonePlayer {
 							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
 					}
 					PulseMainUnitsCount += PulseLastMainUnitsCount;
-					double unitCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost;
-					double cost = PulseLastMainUnitsCount * unitCost;
-					double watts = 1000 * PulseLastMainUnitsCount/(PulseSampleMinutesFrequency/60d);
+					double unitCost=0;
+					double cost=0, watts = -1;
+					UtilityCost utilCost  = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType));
+					if (utilCost != null) {
+						unitCost = utilCost.UnitCost;
+						switch (UtilityType) {
+							case EnumUtilityType.Electricity:
+								watts = 1000 * PulseLastMainUnitsCount / (PulseSampleMinutesFrequency / 60d);
+								break;
+							case EnumUtilityType.Water:
+								break;
+							default:
+								MLog.Log(this, "WARNING unprocessed utility type " + UtilityType);
+								break;
+						}
+						cost = PulseLastMainUnitsCount * unitCost;
+					}
 					Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
 						PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), PulseMainUnitsCount.ToString(),
 						cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());

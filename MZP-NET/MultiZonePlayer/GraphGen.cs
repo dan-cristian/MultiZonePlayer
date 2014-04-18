@@ -171,10 +171,10 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public void ShowElectricityGraph(int zoneId, String zoneName, int ageHours) {
+		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType) {
 			try {
 
-				PrepareGraph(zoneName + " " + Constants.CAPABILITY_ELECTRICITY + " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				PrepareGraph(zoneName + " " + utilityType + " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				
 				List<int> zoneList = m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneId || zoneId == -1)
 					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours).Select(x => x.Item1).Distinct().OrderBy(x=>x).ToList();
@@ -203,19 +203,37 @@ namespace MultiZonePlayer
 
 						double value = 0, cost = 0, minwatts = double.MaxValue, maxwatts = double.MinValue, totalwatts = 0, avgwatts;
 						foreach (var point in tempValues) {
-							series1.Points.AddXY(point.Item2, point.Item5);
-							value += point.Item5;
-							minY = Math.Min(minY, tempValues.Min(x => x.Item5));
-							maxY = Math.Max(maxY, tempValues.Max(x => x.Item5));
+							switch (utilityType) {
+								case Constants.CAPABILITY_ELECTRICITY:
+									series1.Points.AddXY(point.Item2, point.Item5);
+									value += point.Item5;
+									minY = Math.Min(minY, tempValues.Min(x => x.Item5));
+									maxY = Math.Max(maxY, tempValues.Max(x => x.Item5));
+									totalwatts += point.Item5;
+									if (point.Item5 != 0)
+										minwatts = Math.Min(minwatts, point.Item5);
+									maxwatts = Math.Max(maxwatts, point.Item5);
+									break;
+								case Constants.CAPABILITY_WATER:
+									series1.Points.AddXY(point.Item2, point.Item3);
+									value += point.Item3;
+									minY = Math.Min(minY, tempValues.Min(x => x.Item3));
+									maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+									break;
+								
+							}
 							cost += point.Item4;
-							totalwatts += point.Item5;
-							if (point.Item5 != 0)
-								minwatts = Math.Min(minwatts, point.Item5);
-							maxwatts = Math.Max(maxwatts, point.Item5);
 						}
-						avgwatts = totalwatts / series1.Points.Count;
-						series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2)
-							+ " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
+						switch (utilityType) {
+							case Constants.CAPABILITY_ELECTRICITY:
+								avgwatts = totalwatts / series1.Points.Count;
+								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2)
+									+ " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
+								break;
+							case Constants.CAPABILITY_WATER:
+								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2);
+								break;
+						}
 						if (zoneId == -1)
 							series1.Name = "zoneid=" + zoneList[i] + " " + series1.Name;
 					}
@@ -228,10 +246,10 @@ namespace MultiZonePlayer
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
 				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-					+ Constants.CAPABILITY_ELECTRICITY + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+					+ utilityType + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 			}
 			catch (Exception ex) {
-				MLog.Log(ex, this, "Err gen electricity graph");
+				MLog.Log(ex, this, "Err gen utility graph");
 			}
 		}
 
