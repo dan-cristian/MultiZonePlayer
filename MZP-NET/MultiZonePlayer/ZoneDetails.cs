@@ -772,6 +772,8 @@ namespace MultiZonePlayer {
 					PulseCountInTimeSample = zonestorage.PulseCountInTimeSample;
 					LastCounterCount = zonestorage.LastCounterCount;
 					LastPulseSamplingStart = zonestorage.LastPulseSamplingStart;
+					CounterPageNameToInclude = zonestorage.CounterPageNameToInclude;
+					ClosureLevelNameToInclude = zonestorage.ClosureLevelNameToInclude;
 
 					LocationName = zonestorage.LocationName;
 
