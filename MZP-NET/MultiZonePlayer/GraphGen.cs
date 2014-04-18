@@ -543,6 +543,7 @@ namespace MultiZonePlayer
 				MLog.Log(this, "Processing Utilities");
 				foreach (var line in query) {
 					switch (line.Type) {
+						case Constants.CAPABILITY_WATER:
 						case Constants.CAPABILITY_ELECTRICITY:
 							m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double, double, double>(line.ZoneId, line.Date, line.Value, line.Cost, line.Watts));
 							break;

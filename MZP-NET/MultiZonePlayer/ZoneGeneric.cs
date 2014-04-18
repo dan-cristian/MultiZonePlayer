@@ -401,7 +401,7 @@ namespace MultiZonePlayer {
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
 					string type = vals.GetValue(GlobalParams.type).ToLower();
 					SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == "voltage", 
-						type == Constants.CAPABILITY_ELECTRICITY);
+						type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER);
 					if (type == "temphum") {
 						graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
 					}

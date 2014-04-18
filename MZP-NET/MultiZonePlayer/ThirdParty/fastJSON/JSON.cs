@@ -447,7 +447,16 @@ namespace fastJSON
             else if (IsTypeRegistered(conversionType))
                 return CreateCustom((string)value, conversionType);
 
-            return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
+			object ret;
+			try {
+				ret = Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
+			}
+			catch (Exception ex)
+			{
+				ret = null;
+			}
+
+			return ret;
         }
         #endregion
 
