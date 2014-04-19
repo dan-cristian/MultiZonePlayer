@@ -158,8 +158,12 @@ namespace MultiZonePlayer {
 		protected static new List<Singleton> m_valueList = new List<Singleton>();
 		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false;
 
+		protected ZoneGeneric m_zoneGeneric;
+
 		public ZoneDetails() {
 			//ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
+			if (m_zoneGeneric == null)
+				m_zoneGeneric = new ZoneGeneric(this);
 		}
 
 		public ZoneDetails(int p_zoneId, String p_zoneName) {
@@ -167,6 +171,8 @@ namespace MultiZonePlayer {
 			ZoneName = p_zoneName;
 			ZoneState = MultiZonePlayer.ZoneState.NotInitialised;
 			ActivityType = GlobalCommands.nul;
+			if (m_zoneGeneric == null)
+				m_zoneGeneric = new ZoneGeneric(this);
 			LoadStateFromIni();
 		}
 		public String Name {//for web edit, match singleton Name field requirements
@@ -190,6 +196,10 @@ namespace MultiZonePlayer {
 		}
 		public override string ToString() {
 			return "ID=" + ZoneId + ";Name=" + ZoneName;
+		}
+
+		public ZoneGeneric ZoneGeneric {
+			get { return m_zoneGeneric; }
 		}
 		#region getters
 
@@ -245,15 +255,15 @@ namespace MultiZonePlayer {
 				double lapsedMinutes = DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes;
 				if ( lapsedMinutes >= PulseSampleMinutesFrequency) {
 					PulseLastMainUnitsCount = (double)PulseCountInTimeSample / PulseSubUnits;
-					if (PulseLastMainUnitsCount > 1) {
+					/*if (PulseLastMainUnitsCount > 1) {
 						Alert.CreateAlert("WARNING: Large count, counter=" + counter + " deltaPulses=" + PulseCountInTimeSample,
 							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
-					}
+					}*/
 					if (lapsedMinutes > 2 * PulseSampleMinutesFrequency)
 					{
 						Alert.CreateAlert("Long pulse counter period detected, minutes=" + lapsedMinutes
 							+ " counterdelta=" + PulseCountInTimeSample,
-							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
+							this, false, Alert.NotificationFlags.NotifyUserAfterXOccurences, 10);
 					}
 					PulseMainUnitsCount += PulseLastMainUnitsCount;
 					double unitCost=0;
@@ -302,7 +312,7 @@ namespace MultiZonePlayer {
 		}
 
 		public double PulseTotalCost {
-			get { return PulseMainUnitsCount * UtilityCost.UtilityCostList.Find(x => x.Name.Equals(EnumUtilityType.Electricity)).UnitCost; }
+			get { return PulseMainUnitsCount * UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType)).UnitCost; }
 		}
 
 		public double PulseFrequencyPerMinute {
@@ -531,7 +541,7 @@ namespace MultiZonePlayer {
 
 		public Boolean RequireHeat {
 			get {
-				return (Temperature < TemperatureTargetTreshhold) && ScheduledHeatActive;
+				return (Temperature < TemperatureTargetTreshhold) && ScheduledHeatActive && HasTemperatureSensor;
 			}
 		}
 		public Boolean RequirePower {
@@ -1049,7 +1059,16 @@ namespace MultiZonePlayer {
 				}
 			}
 		}
+
+
 		#endregion
+
+		#region  zone generic
+		public static List<ZoneGeneric> ActiveZones {
+			get { return ZoneDetailsList.FindAll(x=>x.IsActive).Select(x=>x.ZoneGeneric).ToList(); }
+		}
+		#endregion
+
 	}
 
 

@@ -57,9 +57,9 @@ namespace MultiZonePlayer {
 			set { m_zoneForm = value; }
 		}
 
-		public ZoneGeneric(int zoneId) {
-			m_zoneDetails = ZoneDetails.GetZoneById(zoneId);
-			this.m_sourceZoneId = zoneId;
+		public ZoneGeneric(ZoneDetails zone) {
+			m_zoneDetails = zone;
+			this.m_sourceZoneId = zone.ZoneId;
 			m_clonedZones = new List<ZoneDetails>();
 			//default user - all
 			m_zoneUser = new User(0, "all", "000"); //SystemState.iniUserList["000"] as User;
@@ -73,7 +73,7 @@ namespace MultiZonePlayer {
 					m_mainZoneActivity.Close();
 				}
 				m_zoneDetails.Close();
-				MZPState.Instance.ActiveZones.Remove(this);
+				//MZPState.Instance.ActiveZones.Remove(this);
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, "Error closing generic zone " + m_zoneDetails.ZoneName);
@@ -83,7 +83,7 @@ namespace MultiZonePlayer {
 		private void StopRemoveClonedZones() {
 			ZoneGeneric zone;
 			foreach (ZoneDetails izone in m_clonedZones) {
-				zone = MZPState.Instance.ActiveZones.Find(x => x.ZoneDetails.ZoneId == izone.ZoneId);
+				zone = ZoneDetails.ActiveZones.Find(x => x.ZoneDetails.ZoneId == izone.ZoneId);
 				if (zone != null && zone.MainZoneActivity != null) {
 					zone.MainZoneActivity.Stop();
 				}
@@ -113,7 +113,7 @@ namespace MultiZonePlayer {
 			///ControlCenter.Instance.OpenZone(m_zoneDetails.ZoneId);
 			StopRemoveClonedZones();
 
-			ZoneGeneric clonesource = MZPState.Instance.ActiveZones.Find
+			ZoneGeneric clonesource = ZoneDetails.ActiveZones.Find
 				(x => x.ZoneDetails.ActivityType == GlobalCommands.musicclone);
 			if (clonesource != null) {
 				m_mainZoneActivity = new ZoneMusicClone(this, ((ZoneMusicClone) clonesource.MainZoneActivity).CloneSourceZone);

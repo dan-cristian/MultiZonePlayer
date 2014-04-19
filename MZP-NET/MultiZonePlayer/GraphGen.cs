@@ -15,7 +15,7 @@ namespace MultiZonePlayer
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
 		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
-		private List<Tuple<int, DateTime, double, double, double>> m_utilitiesHistoryList;
+		private List<Tuple<int, DateTime, double, double, double, String>> m_utilitiesHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
 		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
 
@@ -177,14 +177,14 @@ namespace MultiZonePlayer
 				PrepareGraph(zoneName + " " + utilityType + " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				
 				List<int> zoneList = m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneId || zoneId == -1)
-					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours).Select(x => x.Item1).Distinct().OrderBy(x=>x).ToList();
+					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType)).Select(x => x.Item1).Distinct().OrderBy(x=>x).ToList();
 				int zoneCount=zoneList.Count;
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[zoneCount];
 				System.Windows.Forms.DataVisualization.Charting.Series series1;
 
 				for (int i = 0; i < zoneCount; i++) {
-					List<Tuple<int, DateTime, double, double, double>> tempValues=m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneList[i]) 
-						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+					List<Tuple<int, DateTime, double, double, double, String>> tempValues=m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneList[i])
+						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType));
 					double minY = double.MaxValue, maxY = double.MinValue;
 
 					if (tempValues.Count > 0) {
@@ -451,7 +451,7 @@ namespace MultiZonePlayer
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
 			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int>>();
-			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double, double, double>>();
+			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double, double, double, String>>();
 			string[] allLines;
 
 			if (needTempHum) {
@@ -545,7 +545,8 @@ namespace MultiZonePlayer
 					switch (line.Type) {
 						case Constants.CAPABILITY_WATER:
 						case Constants.CAPABILITY_ELECTRICITY:
-							m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double, double, double>(line.ZoneId, line.Date, line.Value, line.Cost, line.Watts));
+							m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double, double, double, String>
+								(line.ZoneId, line.Date, line.Value, line.Cost, line.Watts, line.Type));
 							break;
 					}
 				}

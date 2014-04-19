@@ -90,10 +90,6 @@ namespace MultiZonePlayer {
 			set { m_isWinloadLoading = value; }
 		}
 
-		public List<ZoneGeneric> ActiveZones {
-			get { return m_activeZones; }
-			set { m_activeZones = value; }
-		}
 
 		public List<Display> DisplayList {
 			get { return m_displayList; }
@@ -663,6 +659,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
+		/*
 		public ZoneGeneric GetZoneIfActive(int zoneId) {
 			ZoneGeneric zp = ActiveZones.Find(item => item.ZoneDetails.ZoneId == zoneId);
 			if (zp != null){// && IsZoneActive(zoneId)) {
@@ -683,7 +680,7 @@ namespace MultiZonePlayer {
 				ActiveZones.Add(new ZoneGeneric(zoneId));
 			}
 		}
-
+		*/
 		public bool IsZoneActive(int zoneId) {
 			ZoneDetails zone = ZoneDetails.ZoneDetailsList.Find(item => item.ZoneId == zoneId);
 			if (zone != null) {
@@ -873,7 +870,7 @@ namespace MultiZonePlayer {
 			ZoneDetails zonedetails = ZoneDetails.ZoneDetailsList.OrderBy(x => x.LastLocalCommandDateTime).ToList().Find(x =>
 				(x.ActivityType.Equals(GlobalCommands.music) && x.IsActive));
 			if (zonedetails != null) {
-				zone = ActiveZones.Find(x => x.GetZoneId() == zonedetails.ZoneId);
+				zone = ZoneDetails.ActiveZones.Find(x => x.GetZoneId() == zonedetails.ZoneId);
 			}
 			return zone;
 		}

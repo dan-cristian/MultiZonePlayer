@@ -131,7 +131,7 @@ namespace MultiZonePlayer
 					ZoneDetails.ProcessAllZones(true, false);
 					if (MZPState.Instance != null)	{
 						debug = "";
-						activeZoneClone = MZPState.Instance.ActiveZones.ToArray();
+						activeZoneClone = ZoneDetails.ActiveZones.ToArray();
 						foreach (ZoneGeneric zone in activeZoneClone)	{
 							debug += zone.ZoneDetails.ZoneName + "-";
 							if (MZPState.Instance == null) break;
@@ -193,7 +193,7 @@ namespace MultiZonePlayer
                 //txtInactivityCycles.Text = MZPState.Instance.PowerControl.GetInactivityCycles().ToString() + "/" + IniFile.POWERSAVING_MAX_CYCLES;
                 txAlarm.Text = MZPState.Instance.SystemAlarm.IsMonitoringActive + ":" + MZPState.Instance.SystemAlarm.AreaState.ToString();
 				//txtGPIO.Text = MZPState.Instance.Gpio.State;
-                foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
+                /*foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList)
                 {
                     if (zone.IsActive)
                     {
@@ -204,7 +204,7 @@ namespace MultiZonePlayer
                             OpenZoneForm(zone.ZoneId);
                         }
                     }
-                }
+                }*/
 	            txtThreadCount.Text = WebServer.WebThreadCount.ToString();
                 ShowPowerControlStatus();
             }
@@ -261,8 +261,7 @@ namespace MultiZonePlayer
             }
         }
         
-        
-
+		/*
         private void OpenZoneForm(int zoneId)
         {
             if (MZPState.Instance.IsZoneActive(zoneId))
@@ -283,7 +282,7 @@ namespace MultiZonePlayer
                 else
                     MLog.Log(this, "Unable to open zone form, zone not in active zoneform list " + zoneId);
             }
-        }
+        }*/
 
         public static int GetActiveZonesCount()
         {

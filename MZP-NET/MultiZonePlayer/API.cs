@@ -357,7 +357,7 @@ namespace MultiZonePlayer
 							int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
 							string type = vals.GetValue(GlobalParams.type).ToLower();
 							SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == Constants.CAPABILITY_VOLTAGE,
-								type == Constants.CAPABILITY_ELECTRICITY);
+								type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER);
 
 							//string[] zones = vals.GetValue(GlobalParams.zoneidlist).Split(',');
 							/*
@@ -537,7 +537,8 @@ namespace MultiZonePlayer
                 ZoneGeneric zone;
                 //zone for cmd received is not active
                 if (MZPState.Instance != null){
-                    if (MZPState.Instance.GetZoneIfActive(zoneId) == null){
+                    /*
+					if (MZPState.Instance.GetZoneIfActive(zoneId) == null){
 						//MLog.Log(null, "No active zone found in zone=" + zoneId + " cmd=" + apicmd);
                         if (Enum.IsDefined(typeof(GlobalCommandsUniversal), apicmd.ToString())){
                             MLog.Log(null, "Universal cmd received for zone recent=" + zoneId + " cmd=" + apicmd);
@@ -547,9 +548,9 @@ namespace MultiZonePlayer
                             if (MZPState.Instance.GetZone(zoneId) == null)
                                 MZPState.Instance.OpenZone(zoneId);
                         }
-                    }
+                    }*/
 
-                    zone = MZPState.Instance.GetZone(zoneId);
+                    zone = ZoneDetails.GetZoneById(zoneId).ZoneGeneric;
                     if (zone == null)
                     {
                         MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
