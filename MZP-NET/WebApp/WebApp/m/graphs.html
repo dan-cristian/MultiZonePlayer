@@ -8,9 +8,8 @@
 <script type="text/JavaScript">
 	function loadAll()
 	{
-		ajaxCall('electricity', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=electricity');
-		ajaxCall('water', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=water');
-
+		ajaxCall('electricity', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=electricity&targetdiv=electricity');
+		ajaxCall('water', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=water&targetdiv=water');
 	}
 </script>
 </head>

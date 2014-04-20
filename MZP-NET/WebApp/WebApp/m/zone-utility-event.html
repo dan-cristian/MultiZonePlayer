@@ -1,9 +1,9 @@
 <img src="tmp/%_type-%_zoneid-%_interval.gif?r=#R.Random#;"/><br />
-<a href="#" onclick="ajaxCall('event','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=1&type=%_type', false)">Hour</a>&nbsp
-<a href="#" onclick="ajaxCall('event','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=8&type=%_type', false)">8 Hours</a>&nbsp
-<a href="#" onclick="ajaxCall('event','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=24&type=%_type', false)">Day</a>&nbsp
-<a href="#" onclick="ajaxCall('event','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=168&type=%_type', false)">Week</a>&nbsp
-<a href="#" onclick="ajaxCall('event','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=744&type=%_type', false)">Month</a>
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=1&type=%_type&targetdiv=%_targetdiv', false)">Hour</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=8&type=%_type&targetdiv=%_targetdiv', false)">8 Hours</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=24&type=%_type&targetdiv=%_targetdiv', false)">Day</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=168&type=%_type&targetdiv=%_targetdiv', false)">Week</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-utility-event.html?command=%_command&zoneid=%_zoneid&interval=744&type=%_type&targetdiv=%_targetdiv', false)">Month</a>
 <%if;"%_zoneid"!="-1"%>
 <br/>Total #Zones,%_zoneid.PulseMainUnitsCount# #Zones,%_zoneid.PulseMainUnitType#, Cost #Zones,%_zoneid.PulseTotalCost#, since #Zones,%_zoneid.PulseTotalUnitsAgeInHours# hr ago
 <br/>Last #Zones,%_zoneid.PulseLastMainUnitsCount# #Zones,%_zoneid.PulseMainUnitType#, #Zones,%_zoneid.PulseFrequencyPerMinute# pulse/min

@@ -34,10 +34,10 @@
 <button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Presence #Zones,%_zoneid.IsClosureContactMade#</button>
 <%%>
 <%if;"#Zones,%_zoneid.UtilityType#"=="Electricity"%>
-<button class="small" onclick="ajaxCall('event','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=electricity', false)">Electricity</button>
+<button class="small" onclick="ajaxCall('event','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=electricity&targetdiv=utility', false)">Electricity</button>
 <%%>
 <%if;"#Zones,%_zoneid.UtilityType#"=="Water"%>
-<button class="small" onclick="ajaxCall('event','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=water', false)">Water</button>
+<button class="small" onclick="ajaxCall('event','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=water&targetdiv=utility', false)">Water</button>
 <%%>
 <%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum', false)" title="Target #Zones,%_zoneid.TemperatureTarget#°">#Zones,%_zoneid.Temperature#°</button>
 #Zones,%_zoneid.ClosureCount#
@@ -59,6 +59,7 @@
 <div id="camera"></div>
 <div id="temp-hum"></div>
 <div id="event"></div>
+<div id="utility"></div>
 <div id="voltage"></div>
 <%if;"#Zones,%_zoneid.ChildZonesCount#"!="0"%><hr/><%%>
 <%for;i;0;++;#Zones,%_zoneid.ChildZonesCount#;%>

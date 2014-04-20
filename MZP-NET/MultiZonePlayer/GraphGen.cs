@@ -206,7 +206,7 @@ namespace MultiZonePlayer
 							switch (utilityType) {
 								case Constants.CAPABILITY_ELECTRICITY:
 									series1.Points.AddXY(point.Item2, point.Item5);
-									value += point.Item5;
+									value += point.Item3;
 									minY = Math.Min(minY, tempValues.Min(x => x.Item5));
 									maxY = Math.Max(maxY, tempValues.Max(x => x.Item5));
 									totalwatts += point.Item5;
