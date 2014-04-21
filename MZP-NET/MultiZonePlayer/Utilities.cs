@@ -440,7 +440,7 @@ namespace MultiZonePlayer
 				str.Write(text);
 				str.Close();
 			}
-			catch (Exception ex) { }
+			catch (Exception) { }
             
         }
 		public static bool ExistFileRelativeToAppPath(String fileName) {

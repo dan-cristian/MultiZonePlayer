@@ -1050,7 +1050,7 @@ namespace TagLib.Xmp
 
 			public void Visit (XmpNode node)
 			{
-				// TODO: This should be a proper check to see if it is a nodeElement
+				// TODO : This should be a proper check to see if it is a nodeElement
 				if (node.Namespace == XmpTag.RDF_NS && node.Name == XmpTag.LI_URI)
 					return;
 
@@ -1130,7 +1130,7 @@ namespace TagLib.Xmp
 		/// </value>
 		public override DateTime? DateTime {
 			get {
-				// TODO: use correct parsing
+				// TODO : use correct parsing
 				try {
 					return System.DateTime.Parse (GetTextNode (XAP_NS, "CreateDate"));
 				} catch {}
@@ -1138,7 +1138,7 @@ namespace TagLib.Xmp
 				return null;
 			}
 			set {
-				// TODO: write correct format
+				// TODO : write correct format
 				SetTextNode (XAP_NS, "CreateDate", value != null ? value.ToString () : null);
 			}
 		}

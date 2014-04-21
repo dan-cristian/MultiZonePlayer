@@ -169,12 +169,13 @@
 
         internal abstract class DeviceReport
         {
-            internal int HIDHandle;
+            /*internal int HIDHandle;
             internal bool MyDeviceDetected;
             internal int ReadHandle;
-            internal int Result;
+           
             internal int WriteHandle;
-
+			*/
+			internal int Result;
             protected DeviceReport()
             {
             }

@@ -246,7 +246,7 @@ namespace Vlc.DotNet.Core.Interops.Signatures
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void Next(IntPtr logIteratorInstance, ref LogMessage buffer);
         }
-        //TODO
+        // TODO
         /*public struct ModuleDescription
         {
             public string Name;

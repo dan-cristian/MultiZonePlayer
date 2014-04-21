@@ -111,7 +111,7 @@ namespace MultiZonePlayer
                 {
                     fs = new FileStream(this.filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     MLog.Log(this, "Unable to open tail file: " + this.filename);
                     return;

@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<layerDiagram dslVersion="1.0.0.0" Id="cb9affb6-4062-49bd-8283-a2a5679390ea" absoluteBounds="0, 0, 11, 8.5" name="LayerDiagram1">
+  <layerModelMoniker Id="7d3b2bcb-f200-459a-a797-e10397f1ad7f" />
+  <nestedChildShapes>
+    <commentShape Id="072e182a-d6da-45e4-a78d-218462c7b951" absoluteBounds="1.125, 0.75, 1.75, 1" customColor="255, 255, 204">
+      <commentMoniker Id="f6ace149-d222-4560-8e95-310f192dc3be" />
+      <relativeChildShapes />
+    </commentShape>
+    <rectangleShape Id="e0bbd3e9-3fd6-4070-aebd-e1f9987d7306" absoluteBounds="3, 2.125, 0.875, 0.5" outlineColor="83, 134, 191" outlineThickness="0.03125" />
+    <rectangleShape Id="69061b22-4f4f-43ff-a2d5-a5ffec9cd021" absoluteBounds="1.5, 2.625, 0.375, 0.25" outlineColor="83, 134, 191" outlineThickness="0.03125" />
+    <rectangleShape Id="719bbe9c-f7d6-45f1-a098-e1d618d379e7" absoluteBounds="1.125, 2.125, 1.125, 0.5" outlineColor="83, 134, 191" outlineThickness="0.03125" />
+    <rectangleShape Id="0bcb8390-b0e7-492c-a3da-c9981de0f551" absoluteBounds="5.375, 2.625, 0.375, 0.25" outlineColor="83, 134, 191" outlineThickness="0.03125" />
+    <lineShape Id="36691b5e-9cbf-4c5b-99db-951a0e6500ff" absoluteBounds="1.875, 2.25, 0.03125, 0.25" outlineColor="Silver" outlineThickness="0.03125" />
+    <lineShape Id="6d768947-2daf-49c1-bba8-1adafe78989e" absoluteBounds="1.25, 2.25, 0.03125, 0.25" outlineColor="Silver" outlineThickness="0.03125" />
+    <lineShape Id="f5f7a1c9-6208-4700-b429-fb1b54639ada" absoluteBounds="7.375, 2.25, 0.03125, 0.25" outlineColor="Red" outlineThickness="0.03125" />
+    <lineShape Id="c7d54c43-1cc9-478a-a714-c179dc180761" absoluteBounds="3.25, 2.25, 0.03125, 0.25" outlineColor="0, 192, 0" outlineThickness="0.03125" />
+    <lineShape Id="6206d17d-958c-4ac9-9b8b-9f729622632b" absoluteBounds="1.5, 2.25, 0.03125, 0.25" outlineColor="Silver" outlineThickness="0.03125" />
+    <lineShape Id="7e10e08b-8d71-4f66-a0d9-3efc02c46fff" absoluteBounds="1.375, 2.25, 0.03125, 0.25" outlineColor="Silver" outlineThickness="0.03125" />
+    <lineShape Id="e26742f1-dd93-4f35-b114-cf82e1a4d3cf" absoluteBounds="2, 2.25, 0.03125, 0.25" outlineColor="0, 192, 0" outlineThickness="0.03125" />
+    <commentShape Id="efab99e6-4732-4be9-8b93-c0084f664377" absoluteBounds="0.5, 0.75, 0.5, 0.375" customColor="255, 255, 204">
+      <commentMoniker Id="2c95cd04-4aa8-4929-b93f-b74ecf6fa498" />
+      <relativeChildShapes />
+    </commentShape>
+    <lineShape Id="b53e9c75-1f41-4209-b1ad-152a8c7a7fe2" absoluteBounds="1.625, 2.25, 0.03125, 0.25" outlineColor="Red" outlineThickness="0.03125" />
+    <lineShape Id="84c032aa-6593-4a0f-9a88-5d8b77a10ff8" absoluteBounds="1.75, 2.25, 0.03125, 0.25" outlineColor="0, 192, 0" outlineThickness="0.03125" />
+    <lineShape Id="062e5902-e65a-4af4-bd9a-27c1ae3e3e94" absoluteBounds="3.125, 2.25, 0.03125, 0.25" outlineColor="Silver" outlineThickness="0.03125" />
+    <commentShape Id="62f700ba-e78b-42a5-a519-e0ba79fe0cb7" absoluteBounds="3, 0.75, 1.75, 0.875" customColor="255, 255, 204">
+      <commentMoniker Id="09674e2d-7871-4735-90a3-cb3a1edf6707" />
+      <relativeChildShapes />
+    </commentShape>
+    <rectangleShape Id="a37bff65-5f75-40ca-a77a-2e323d0ede31" absoluteBounds="5.125, 2.125, 0.875, 0.5" outlineColor="83, 134, 191" outlineThickness="0.03125" />
+    <rectangleShape Id="334e19ee-3892-4a9f-b6a1-9b3409132490" absoluteBounds="3.25, 2.625, 0.375, 0.25" outlineColor="83, 134, 191" outlineThickness="0.03125" />
+    <lineShape Id="7710e4c7-6bea-4abd-b18a-af8ebb373819" absoluteBounds="3.375, 2.25, 0.03125, 0.25" outlineColor="Red" outlineThickness="0.03125" />
+    <lineShape Id="6d64e2a2-314e-4c51-bad7-df6981c51f58" absoluteBounds="7.5, 2.25, 0.03125, 0.25" outlineColor="0, 192, 0" outlineThickness="0.03125" />
+    <commentShape Id="4639e2b9-140f-4742-9cac-73cc6f12a07f" absoluteBounds="4.875, 0.75, 2, 0.875" customColor="255, 255, 204">
+      <commentMoniker Id="6b51609b-625b-41d8-950f-2fcb2453702b" />
+      <relativeChildShapes />
+    </commentShape>
+    <lineShape Id="9e13335d-00a0-416b-a83c-abb58d3d16af" absoluteBounds="3.5, 2.25, 0.03125, 0.25" outlineColor="0, 192, 0" outlineThickness="0.03125" />
+    <lineShape Id="77772bf5-388e-4761-8481-fc5888b00c95" absoluteBounds="3.625, 2.25, 0.03125, 0.25" outlineColor="Silver" outlineThickness="0.03125" />
+    <ellipseShape Id="ca9c0f2a-6c7f-4051-91ab-1d26d0bd642d" absoluteBounds="7, 2.125, 0.75, 0.5" outlineColor="83, 134, 191" outlineThickness="0.03125" />
+    <lineShape Id="9fa5cd5c-8c97-4ba1-9875-36cdc79caef7" absoluteBounds="7.125, 2.5, 0.5, 0.03125" outlineColor="83, 134, 191" outlineThickness="0.03125" orientation="Horizontal" />
+    <lineShape Id="24614fc5-979e-499a-ad60-b163e17291c5" absoluteBounds="5.5, 2.25, 0.03125, 0.25" outlineColor="Red" outlineThickness="0.03125" />
+    <lineShape Id="89e4c684-2bfd-446c-ac17-49fa2d9cf42e" absoluteBounds="5.625, 2.25, 0.03125, 0.25" outlineColor="0, 192, 0" outlineThickness="0.03125" />
+    <lineShape Id="c628bb5d-5816-4f9a-8fd5-299099492bd3" absoluteBounds="7.25, 2.25, 0.03125, 0.25" outlineColor="Black" outlineThickness="0.03125" />
+    <lineShape Id="b1aefb37-9f72-4d66-9537-77f198d00a41" absoluteBounds="5.75, 2.25, 0.03125, 0.25" outlineColor="Yellow" outlineThickness="0.03125" />
+    <commentShape Id="830d4dbc-599e-49fe-bda1-2521053d4cf0" absoluteBounds="7, 0.75, 1, 0.875" customColor="255, 255, 204">
+      <commentMoniker Id="4db35019-2bad-443d-ae84-4cd89fec3e27" />
+      <relativeChildShapes />
+    </commentShape>
+    <lineShape Id="e36084e3-cc18-41c3-b71f-b9365a9f9cdb" absoluteBounds="5.375, 2.25, 0.03125, 0.25" outlineColor="Black" outlineThickness="0.03125" />
+    <lineShape Id="cc47810d-89ec-44a4-b0db-c21ac69077ed" absoluteBounds="3.75, 2.25, 0.03125, 0.25" outlineColor="Black" outlineThickness="0.03125" />
+    <lineShape Id="fc5882a5-7272-42f3-b5cd-aa9b9981afea" absoluteBounds="2.125, 2.25, 0.03125, 0.25" outlineColor="Black" outlineThickness="0.03125" />
+  </nestedChildShapes>
+</layerDiagram>

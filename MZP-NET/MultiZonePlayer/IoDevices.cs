@@ -727,8 +727,8 @@ namespace MultiZonePlayer {
 
 	public class OneWire : IMessenger, DeviceMonitorEventListener, IMZPDevice {
 		private DSPortAdapter adapter;
-		private DeviceMonitor dMonitor;
-		private Thread m_searchThread;
+		//private DeviceMonitor dMonitor;
+		//private Thread m_searchThread;
 		private List<Device> m_deviceList;
 		private const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
 		private const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
@@ -740,7 +740,7 @@ namespace MultiZonePlayer {
 		private Dictionary<string, string> m_deviceAttributes = new Dictionary<string, string>();
 
 		public List<Device> DeviceList {
-			get { return m_deviceList; }
+			get { return m_deviceList.OrderByDescending(x=>x.LastRead).ToList(); }
 		}
 
 		public class Device {
@@ -748,12 +748,49 @@ namespace MultiZonePlayer {
 			public String Address;
 			public String Family;
 			public ZoneDetails Zone;
+			public DateTime LastRead = DateTime.MinValue;
+			public double Temperature;
+			public double Humidity;
+			public double[] Voltage = new double[3];
+			public double[] Counter = new double[2];
+			public Boolean[] Activity = new Boolean[2];
+			public int ErrorCount = 0;
+			private DateTime m_startProc = DateTime.Now;
+			private TimeSpan m_lastProcessingDuration = TimeSpan.MinValue;
+			private TimeSpan m_minProcessingDuration = TimeSpan.MaxValue;
+			private TimeSpan m_maxProcessingDuration = TimeSpan.MinValue;
 
 			public Device(String name, String address, String family, ZoneDetails zone) {
 				Name = name;
 				Address = address;
 				Family = family;
 				Zone = zone;
+				LastRead = DateTime.Now;
+			}
+
+			public String Summary {
+				get {
+					String zone = Zone != null ? Zone.ZoneName : "zoneN/A";
+					String s = Name + "-" + Address + ", " +  zone + ", err="+ ErrorCount;
+					s += ", " + Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead)) + " ago, speed=" + m_lastProcessingDuration.TotalSeconds + "s";
+					s += " min=" + m_minProcessingDuration.TotalSeconds + "s" + " max=" + m_maxProcessingDuration.TotalSeconds + "s"; 
+					s += ", temp=" + Temperature + " hum=" + Humidity + " cnt1=" + Counter[0] + " cnt2="+Counter[1];
+					s += " activityA=" + Activity[0] + ", activityB=" + Activity[1];
+					return s;
+				}
+			}
+
+			public void RecordError(Exception ex) {
+				ErrorCount++;
+			}
+			public void StartProcessing() {
+				m_startProc = DateTime.Now;
+			}
+
+			public void EndProcessing() {
+				m_lastProcessingDuration = DateTime.Now.Subtract(m_startProc);
+				m_maxProcessingDuration = m_lastProcessingDuration > m_maxProcessingDuration? m_lastProcessingDuration:m_maxProcessingDuration;
+				m_minProcessingDuration = m_lastProcessingDuration < m_minProcessingDuration ? m_lastProcessingDuration : m_minProcessingDuration;
 			}
 		}
 
@@ -821,6 +858,9 @@ namespace MultiZonePlayer {
 					               + " name=" + element.getName() + " altname=" + element.getAlternateNames()
 					               + " speed=" + element.getMaxSpeed()
 					               + " desc=" + element.getDescription());
+					if (element.getName().ToLower() == ONEWIRE_TEMPDEV_NAME.ToLower()) {
+						SetResolution(element, Convert.ToInt16(IniFile.PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX[1]));
+					}
 				}
 				adapter.endExclusive();
 
@@ -839,6 +879,25 @@ namespace MultiZonePlayer {
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "General 1wire exception occurred");
+			}
+		}
+
+		public void SetResolution(OneWireContainer tempelement, int resolIndex) {
+			try {
+				TemperatureContainer tc = (TemperatureContainer)tempelement;
+				//Boolean selectable = tc.hasSelectableTemperatureResolution();
+				double[] resolution = null;
+				sbyte[] state = tc.readDevice();
+				//if (selectable) {
+				resolution = tc.getTemperatureResolutions();
+					//}
+				MLog.Log(this, "Setting temperature resolution to " + resolution[resolIndex] + "...");
+				tc.setTemperatureResolution(resolution[resolIndex], state);
+				tc.writeDevice(state);
+			}
+			catch (Exception ex)
+			{
+				MLog.Log(this, "Error, could not set resolution on tempsensor: " + ex.Message);
 			}
 		}
 
@@ -907,17 +966,29 @@ namespace MultiZonePlayer {
 					foreach (sbyte sfam in family) {
 						familyString += sfam+";";
 					}
-					m_deviceList.RemoveAll(x => x.Family == familyString);
+					//m_deviceList.RemoveAll(x => x.Family == familyString);
 					DateTime start = DateTime.Now;
 					int elementCount = 0, errCount = 0;
+					String address;
+					Device dev;
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer) containers.nextElement();
+						address = element.getAddressAsString();
+						dev = m_deviceList.Find(x => x.Address == address);
 						zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
-						if (!ProcessElement(zoneList, element)) {
+						zone = zoneList.Count > 0 ? zoneList[0] : null;
+						if (dev == null) {
+							dev = new Device(element.getName(), address, familyString, zone);
+							m_deviceList.Add(dev);
+						}
+						else {
+							dev.LastRead = DateTime.Now;
+						}
+						dev.StartProcessing();
+						if (!ProcessElement(zoneList, element, dev)) {
 							errCount++;
 						}
-						zone= zoneList.Count > 0 ? zoneList[0]: null;
-						m_deviceList.Add(new Device(element.getName(), element.getAddressAsString(), familyString, zone));
+						dev.EndProcessing();
 						elementCount++;
 					}
 					Performance.Create("OneWire lookup family=" + familyName + " for elements count=" + elementCount + " took "
@@ -957,7 +1028,7 @@ namespace MultiZonePlayer {
 			MLog.Log(this, "OneWire LoopReadSlow exit");
 		}
 
-		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element) {
+		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element, Device dev) {
 			sbyte[] state;
 			Boolean result = true;
 			TemperatureContainer temp;
@@ -972,11 +1043,12 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							
+							dev.Temperature = tempVal;
+
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
 								if (tempVal != TEMP_DEFAULT) {
-									zone.Temperature = Math.Round(tempVal, 1);
+									zone.Temperature = tempVal;
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
@@ -1020,6 +1092,7 @@ namespace MultiZonePlayer {
 
 							
 							if (lastLevelA != levelA || activityA) {
+								dev.Activity[0] = activityA;
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireIODevice = true;
 									MLog.Log(this, "Event closure change A on " + zone.ZoneName
@@ -1037,6 +1110,7 @@ namespace MultiZonePlayer {
 							}
 
 							if (lastLevelB != levelB || activityB) {
+								dev.Activity[1] = activityB;
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireIODevice = true;
 									MLog.Log(this, "Event closure change B on " + zone.ZoneName
@@ -1097,11 +1171,13 @@ namespace MultiZonePlayer {
 							}
 							double[] voltage;
 							getVoltage(adc, channel, out voltage);
+							
 							for (int i = 0; i < voltage.Length; i++) {
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireVoltageSensor = true;
 									zone.SetVoltage(i, voltage[i]);
 								}
+								dev.Voltage[i] = voltage[i];
 							}
 
 							//reading temp
@@ -1109,11 +1185,12 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							
+							dev.Temperature = tempVal;
+
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
 								if (tempVal != TEMP_DEFAULT) {
-									zone.Temperature = Math.Round(tempVal, 1);
+									zone.Temperature = tempVal;
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp via ds2438 in zone " + zone.ZoneName);
@@ -1123,19 +1200,24 @@ namespace MultiZonePlayer {
 							break;
 						case ONEWIRE_COUNTER_NAME:
 							OneWireContainer1D counter = (OneWireContainer1D) element;
+							long c1, c2;
+							c1 = counter.readCounter(14);
+							c2= counter.readCounter(15);
+							dev.Counter[0] = c1;
+							dev.Counter[1] = c2;
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireIODevice = true;
 
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
 								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
 								val.Add(GlobalParams.id, "1");
-								val.Add(GlobalParams.count, counter.readCounter(14).ToString()); //normal close
+								val.Add(GlobalParams.count, c1.ToString()); //normal close
 								API.DoCommand(val);
 
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
 								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
 								val.Add(GlobalParams.id, "2");
-								val.Add(GlobalParams.count, counter.readCounter(15).ToString()); //normal close
+								val.Add(GlobalParams.count, c2.ToString()); //normal close
 								API.DoCommand(val);
 							}
 							break;
@@ -1148,6 +1230,7 @@ namespace MultiZonePlayer {
 					String err = "Err reading OneWire zone=" + zoneName+ " err=" + ex.Message;
 					Performance.Create(err, true, zoneName, Performance.PerformanceFlags.IsError, 1);
 					MLog.Log(this, err);
+					dev.RecordError(ex);
 					result = false;
 				}
 			}
@@ -1462,7 +1545,7 @@ namespace MultiZonePlayer {
 
 		private static List<String> listDevices = new List<string>();
 		private static List<String> listSettings = new List<string>();
-		private static int listSettingsIndex, listDevicesIndex;
+		private static int listSettingsIndex, listDevicesIndex=0;
 
 		public static void RefreshFrequencySecondary() {
 			MLog.Log(null, "Refreshing screen");

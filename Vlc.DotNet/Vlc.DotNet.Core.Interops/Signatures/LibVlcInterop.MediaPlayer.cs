@@ -559,12 +559,12 @@ namespace Vlc.DotNet.Core.Interops.Signatures
                 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
                 public delegate IntPtr GetChapterDescription(IntPtr playerInstance, int title);
 
-                //TODO
+                // TODO
                 //[LibVlcFunction("libvlc_video_get_crop_geometry")]
                 //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
                 //public delegate IntPtr GetCropGeometry(IntPtr playerInstance);
 
-                //TODO
+                // TODO :
                 //[LibVlcFunction("libvlc_video_set_crop_geometry")]
                 //[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
                 //public delegate void SetCropGeometry(IntPtr playerInstance, string geometry);

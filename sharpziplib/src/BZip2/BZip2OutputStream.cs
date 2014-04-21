@@ -41,7 +41,7 @@ using ICSharpCode.SharpZipLib.Checksums;
 namespace ICSharpCode.SharpZipLib.BZip2 
 {
 	
-	// TODO: Update to BZip2 1.0.1, 1.0.2
+	// TODO : Update to BZip2 1.0.1, 1.0.2
 	
 	/// <summary>
 	/// An output stream that compresses into the BZip2 format 

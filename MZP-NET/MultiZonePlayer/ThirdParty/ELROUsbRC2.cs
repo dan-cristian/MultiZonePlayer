@@ -10,7 +10,7 @@ namespace USB_RC2
 {
 	class ELROUsbRC2
 	{
-		private IntPtr _DeviceNotificationHandle;
+		//private IntPtr _DeviceNotificationHandle;
 		private int _HIDHandle;
 		private bool _MyDeviceDetected;
 		private DeviceManagement _MyDeviceManagement = new DeviceManagement();

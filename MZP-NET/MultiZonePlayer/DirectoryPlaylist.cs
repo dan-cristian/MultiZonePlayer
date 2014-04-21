@@ -1080,7 +1080,14 @@ namespace MultiZonePlayer {
 					ParseImdbData(vidInfo);
 				}
 				else {
-					MLog.Log(this, "Unexpected Missing Video file in memory, file=" + fi.FullName);
+					MLog.Log(this, "Unexpected Missing Video file in memory, countMemFiles="+m_playlistFiles.Count+" countVidFiles="
+						+m_videoPlayList.Count+ ", file=" + fi.FullName);
+					//TODO: check this fix
+					vidInfo = new VideoItem(fi.FullName);
+					vidInfo.RetrieveMediaItemValues();
+					ParseImdbData(vidInfo);
+					m_videoPlayList.Add(vidInfo);
+
 				}
 			}
 		}

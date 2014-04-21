@@ -43,7 +43,7 @@ namespace MultiZonePlayer
 			Reflect.GenericReflect(ref r);
 		}
 
-        VlcControl vlcControl1;
+       // VlcControl vlcControl1;
 
         public Test()
         {

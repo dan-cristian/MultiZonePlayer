@@ -159,11 +159,11 @@ namespace TagLib.Id3v2
 					version);
 			}
 			
-			// TODO: Support Compression.
+			// TODO : Support Compression.
 			if ((header.Flags & FrameFlags.Compression) != 0)
 				throw new System.NotImplementedException ();
 			
-			// TODO: Support Encryption.
+			// TODO : Support Encryption.
 			if ((header.Flags & FrameFlags.Encryption) != 0)
 				throw new System.NotImplementedException ();
 			

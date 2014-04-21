@@ -265,27 +265,41 @@ namespace MultiZonePlayer {
 							+ " counterdelta=" + PulseCountInTimeSample,
 							this, false, Alert.NotificationFlags.NotifyUserAfterXOccurences, 10);
 					}
-					PulseMainUnitsCount += PulseLastMainUnitsCount;
-					double unitCost=0;
-					double cost=0, watts = -1;
-					UtilityCost utilCost  = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType));
-					if (utilCost != null) {
-						unitCost = utilCost.UnitCost;
-						switch (UtilityType) {
-							case EnumUtilityType.Electricity:
-								watts = 1000 * PulseLastMainUnitsCount / (PulseSampleMinutesFrequency / 60d);
-								break;
-							case EnumUtilityType.Water:
-								break;
-							default:
-								MLog.Log(this, "WARNING unprocessed utility type " + UtilityType);
-								break;
+					UtilityCost utilCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType));
+						
+					// TODO: split consumption evenly when PC down for long
+					//PulseMainUnitsCount += PulseLastMainUnitsCount;
+					double unitCost, cost, watts, pulseCountPerMissedFrame;
+					int missedFrames = (int)Math.Round(lapsedMinutes / PulseSampleMinutesFrequency, 0);
+					double totalLoggedPulses = 0, pulseIncrement = 0;
+					pulseCountPerMissedFrame = PulseLastMainUnitsCount / missedFrames;
+					do {
+						pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, pulseCountPerMissedFrame);
+						totalLoggedPulses += pulseIncrement;
+						PulseMainUnitsCount += pulseIncrement;
+						unitCost = 0;
+						cost = 0;
+						watts = -1;
+						if (utilCost != null) {
+							unitCost = utilCost.UnitCost;
+							switch (UtilityType) {
+								case EnumUtilityType.Electricity:
+									watts = 1000 * pulseCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
+									break;
+								case EnumUtilityType.Water:
+									break;
+								default:
+									MLog.Log(this, "WARNING unprocessed utility type " + UtilityType);
+									break;
+							}
+							cost = pulseCountPerMissedFrame * unitCost;
 						}
-						cost = PulseLastMainUnitsCount * unitCost;
+						LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
+						Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
+							PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), pulseCountPerMissedFrame.ToString(),
+							cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
 					}
-					Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT),
-						PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), PulseMainUnitsCount.ToString(),
-						cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
+					while (totalLoggedPulses < PulseLastMainUnitsCount);
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
 					SaveEntryToIni();//save in case of power outage
@@ -643,13 +657,11 @@ namespace MultiZonePlayer {
 							+ ZoneName + ", temp is " + Temperature, this, false,
 							Alert.NotificationFlags.NotifyUserAfterXHours, 1);
 					}
-
-				
 			}
 		}
 
 		public double TemperatureTargetTreshhold {
-			get { return TemperatureTarget + 0.2; }
+			get { return TemperatureTarget + Convert.ToDouble(IniFile.PARAM_TEMP_TRESHHOLD[1]); }
 		}
 
 		public TimeSpan TemperatureAge {

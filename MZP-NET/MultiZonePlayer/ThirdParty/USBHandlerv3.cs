@@ -370,7 +370,7 @@ namespace MultiZonePlayer
                         devType = Marshal.ReadInt32(m.LParam, 4);
                         if (devType == DBT_DEVTYP_HANDLE)
                         {
-                            // TODO: we could get the handle for which this message is sent 
+                            // TODO : we could get the handle for which this message is sent 
                             // from vol.dbch_handle and compare it against a list of handles for 
                             // which we have registered the query remove message (?)                                                 
                             //DEV_BROADCAST_HANDLE vol;
@@ -435,7 +435,7 @@ namespace MultiZonePlayer
                                     tempDeviceRemoved(this, e);
                                 }
 
-                                // TODO: we could unregister the notify handle here if we knew it is the
+                                // TODO : we could unregister the notify handle here if we knew it is the
                                 // right drive which has been just removed
                                 //RegisterForDeviceChange(false, null);
                             }

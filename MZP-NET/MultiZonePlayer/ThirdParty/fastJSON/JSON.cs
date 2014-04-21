@@ -451,7 +451,7 @@ namespace fastJSON
 			try {
 				ret = Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				ret = null;
 			}

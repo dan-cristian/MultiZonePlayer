@@ -469,7 +469,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 					ZipEntry entry = (ZipEntry)enumerator.Current;
 					if (entry.IsFile)
 					{
-						// TODO Path.GetDirectory can fail here on invalid characters.
+						// TODO : Path.GetDirectory can fail here on invalid characters.
 						if (directoryFilter_.IsMatch(Path.GetDirectoryName(entry.Name)) && fileFilter_.IsMatch(entry.Name)) {
 							ExtractEntry(entry);
 						}
@@ -603,7 +603,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 						
 						if ( RestoreAttributesOnExtract && entry.IsDOSEntry && (entry.ExternalFileAttributes != -1)) {
 							FileAttributes fileAttributes = (FileAttributes) entry.ExternalFileAttributes;
-							// TODO: FastZip - Setting of other file attributes on extraction is a little trickier.
+							// TODO : FastZip - Setting of other file attributes on extraction is a little trickier.
 							fileAttributes &= (FileAttributes.Archive | FileAttributes.Normal | FileAttributes.ReadOnly | FileAttributes.Hidden);
 							File.SetAttributes(targetName, fileAttributes);
 						}
@@ -638,7 +638,7 @@ namespace ICSharpCode.SharpZipLib.Zip
 				doExtraction = !((targetName == null) || (targetName.Length == 0));
 			}
 			
-			// TODO: Fire delegate/throw exception were compression method not supported, or name is invalid?
+			// TODO : Fire delegate/throw exception were compression method not supported, or name is invalid?
 
 			string dirName = null;
 			

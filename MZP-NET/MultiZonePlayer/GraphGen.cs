@@ -231,7 +231,7 @@ namespace MultiZonePlayer
 									+ " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
 								break;
 							case Constants.CAPABILITY_WATER:
-								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2);
+								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min="+minY + " max="+maxY;
 								break;
 						}
 						if (zoneId == -1)
@@ -324,7 +324,7 @@ namespace MultiZonePlayer
 				if (closureValues.Count > 0) {
 					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
 						Name = "Closure " + closureIdentifier,
-						Color = m_colors[r.Next(m_colors.Length-1)],//System.Drawing.Color.Red,
+						Color = m_colors[i],//System.Drawing.Color.Red,
 						IsVisibleInLegend = true,
 						IsXValueIndexed = false,
 						ChartType = SeriesChartType.StepLine,
@@ -335,6 +335,8 @@ namespace MultiZonePlayer
 					foreach (var point in closureValues) {
 						series1.Points.AddXY(point.Item2, point.Item3 !=0 ? point.Item3 + i/2:0);//add i to avoid line overlapp
 					}
+					String details = closureValues[closureValues.Count - 1].Item2.ToString();
+					series1.Name += " last @ " + details + ", " + closureValues.Count + " events";
 				}
 				i++;
 			}
@@ -354,6 +356,8 @@ namespace MultiZonePlayer
 				{
 					series2.Points.AddXY(point.Item2, point.Item3);
 				}
+				String details = sensorValues[sensorValues.Count - 1].Item2.ToString();
+				series2.Name += " last @ " + details + ", " + sensorValues.Count + " events";
 			}
 
 			if (camValues.Count > 0)
@@ -372,6 +376,8 @@ namespace MultiZonePlayer
 				{
 					series3.Points.AddXY(point.Item2, point.Item3);
 				}
+				String details = camValues[camValues.Count - 1].Item2.ToString();
+				series3.Name += " last @ " + details + ", " + camValues.Count + " events";
 			}
 			if (powerValues.Count > 0)
 			{
@@ -390,6 +396,8 @@ namespace MultiZonePlayer
 				{
 					series4.Points.AddXY(point.Item2, point.Item3);
 				}
+				String details = powerValues[powerValues.Count - 1].Item2.ToString();
+				series4.Name += " last @ " + details + ", " + powerValues.Count + " events";
 			}
 			chart1.ChartAreas[0].AxisY.Minimum = 0;
 			chart1.ChartAreas[0].AxisY.Maximum = 4;

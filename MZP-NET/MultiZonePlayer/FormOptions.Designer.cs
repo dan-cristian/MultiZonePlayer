@@ -996,7 +996,7 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn ParamName;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ParamValue;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Param_Description;
-		private System.Windows.Forms.DataGridViewComboBoxColumn Zones_PowerIndexType;
+		//private System.Windows.Forms.DataGridViewComboBoxColumn Zones_PowerIndexType;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ZoneId;

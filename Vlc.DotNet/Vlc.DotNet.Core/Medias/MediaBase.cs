@@ -217,7 +217,7 @@ namespace Vlc.DotNet.Core.Medias
                 case EventTypes.MediaStateChanged:
                     EventsHelper.RaiseEvent(StateChanged, this, new VlcEventArgs<States>(eventData.MediaStateChanged.NewState));
                     break;
-                //TODO
+                // TODO
                 case EventTypes.MediaSubItemAdded:
                     MediaBase media;
                     if (this is LocationMedia)

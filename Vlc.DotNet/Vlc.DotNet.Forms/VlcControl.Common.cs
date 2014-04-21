@@ -591,7 +591,7 @@ namespace Vlc.DotNet.Forms
                     EventsHelper.RaiseEvent(LengthChanged, this, new VlcEventArgs<long>(eventData.MediaPlayerLengthChanged.NewLength));
                     break;
                 case EventTypes.MediaPlayerMediaChanged:
-                    //TODO
+                    // TODO
                     //EventsHelper.RaiseEvent(MediaChanged, this, new VlcEventArgs<MediaBase>(eventData.MediaPlayerMediaChanged.NewMediaHandle));
                     break;
                 case EventTypes.MediaPlayerNothingSpecial:
@@ -649,7 +649,7 @@ namespace Vlc.DotNet.Forms
         [Category(CommonStrings.VLC_DOTNET_PROPERTIES_CATEGORY)]
         public event VlcEventHandler<VlcControl, long> LengthChanged;
 
-        //TODO
+        // TODO
         //[Category(CommonStrings.VLC_DOTNET_PROPERTIES_CATEGORY)]
         //public event VlcEventHandler<MediaBase> MediaChanged;
 

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<layerModel xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/SimpleShapesModel" dslVersion="1.0.0.0" Id="7d3b2bcb-f200-459a-a797-e10397f1ad7f" xmlns="http://schemas.microsoft.com/VisualStudio/TeamArchitect/LayerDesigner">
+  <comments>
+    <comment Id="f6ace149-d222-4560-8e95-310f192dc3be" name="Comment1">
+      <body>J1 - J2
+Pin 4 - Data (red)
+Pin 5 - Ground (green)
+Pin 7 - Ground
+Pin 8 - Vin 5+v DC (black)
+view from plug back</body>
+    </comment>
+    <comment Id="2c95cd04-4aa8-4929-b93f-b74ecf6fa498" name="Comment2">
+      <body>JB6</body>
+    </comment>
+    <comment Id="09674e2d-7871-4735-90a3-cb3a1edf6707" name="Comment11">
+      <body>J3 - J8
+Pin 2 - Ground (green)
+Pin 3 - Data (red)
+Pin 4 - Ground
+Pin 6 - Vout 5+v DC (black)</body>
+    </comment>
+    <comment Id="6b51609b-625b-41d8-950f-2fcb2453702b" name="Comment111">
+      <body>cable to J3 - J8
+Pin 1 - Vout 5+v DC (black)
+Pin 2 - Data (red)
+Pin 3 - Ground (green)
+Pin 4 - custom Data Return (yellow)</body>
+    </comment>
+    <comment Id="4db35019-2bad-443d-ae84-4cd89fec3e27" name="Comment3">
+      <body>DS18B20
+yellow - Vdd
+red - data
+green - ground
+view from legs</body>
+    </comment>
+  </comments>
+</layerModel>

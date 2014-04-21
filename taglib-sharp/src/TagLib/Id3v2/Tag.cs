@@ -564,7 +564,7 @@ namespace TagLib.Id3v2 {
 			
 			ByteVector tag_data = new ByteVector ();
 			
-			// TODO: Render the extended header.
+			// TODO : Render the extended header.
 			header.Flags &= ~HeaderFlags.ExtendedHeader;
 			
 			// Loop through the frames rendering them and adding
@@ -965,7 +965,7 @@ namespace TagLib.Id3v2 {
 		
 #region Private Methods
 		
-		// TODO: These should become public some day.
+		// TODO : These should become public some day.
 		
 		/// <summary>
 		///    Gets the text value from a specified Text Information
