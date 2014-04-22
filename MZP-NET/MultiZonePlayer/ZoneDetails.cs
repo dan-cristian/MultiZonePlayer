@@ -113,6 +113,8 @@ namespace MultiZonePlayer {
 		public double TemperatureMinAlarm = -1000;
 		[Description("Edit")]
 		public double TemperatureTarget = -1000;
+		[Description("Edit")]
+		public int TemperatureResolutionIndex = 1;
 		public Boolean ScheduledHeatActive = false;
 		public String CronSchedule = "";
 		[Description("Edit")]
@@ -782,6 +784,7 @@ namespace MultiZonePlayer {
 					TemperatureTarget = zonestorage.TemperatureTarget;
 					TemperatureMaxAlarm = zonestorage.TemperatureMaxAlarm;
 					TemperatureMinAlarm = zonestorage.TemperatureMinAlarm;
+					TemperatureResolutionIndex = zonestorage.TemperatureResolutionIndex;
 					Color = zonestorage.Color;
 					//Temperature = "1";
 

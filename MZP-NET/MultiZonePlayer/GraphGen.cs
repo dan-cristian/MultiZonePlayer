@@ -462,106 +462,123 @@ namespace MultiZonePlayer
 			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double, double, double, String>>();
 			string[] allLines;
 
-			if (needTempHum) {
-				MLog.Log(this, "Start reading TEMP/HUM from csv files");
-				//GET TEMP and HUM from storage
-				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_TEMPERATURE_HUMIDITY);
-				var query = from line in allLines
-							let data = line.Split(',')
-							select new {
-								ZoneName = data[0],
-								Type = data[1],
-								Date = Convert.ToDateTime(data[2]),
-								Value = Convert.ToDouble(data[3]),
-								ZoneId = Convert.ToInt16(data[4])
-							};
-				MLog.Log(this, "Processing TEMP/HUM");
-				foreach (var line in query) {
-					switch (line.Type) {
-						case Constants.CAPABILITY_TEMP:
-							m_tempHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
-							break;
-						case Constants.CAPABILITY_HUM:
-							m_humHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
-							break;
+			try {
+				if (needTempHum) {
+					MLog.Log(this, "Start reading TEMP/HUM from csv files");
+					//GET TEMP and HUM from storage
+					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_TEMPERATURE_HUMIDITY);
+					var query = from line in allLines
+								let data = line.Split(',')
+								select new {
+									ZoneName = data[0],
+									Type = data[1],
+									Date = Convert.ToDateTime(data[2]),
+									Value = Convert.ToDouble(data[3]),
+									ZoneId = Convert.ToInt16(data[4])
+								};
+					MLog.Log(this, "Processing TEMP/HUM");
+					foreach (var line in query) {
+						switch (line.Type) {
+							case Constants.CAPABILITY_TEMP:
+								m_tempHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
+								break;
+							case Constants.CAPABILITY_HUM:
+								m_humHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
+								break;
+						}
 					}
+					MLog.Log(this, "End reading TEMP/HUM from csv files");
 				}
-				MLog.Log(this, "End reading TEMP/HUM from csv files");
-			}
-			if (needVoltage) {
-				MLog.Log(this, "START reading Voltage");
-				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_VOLTAGE);
-				var query = from line in allLines
-							 let data = line.Split(',')
-							 select new {
-								 ZoneName = data[0],
-								 Type = data[1],
-								 Date = Convert.ToDateTime(data[2]),
-								 Value = Convert.ToDouble(data[3]),
-								 ZoneId = Convert.ToInt16(data[4]),
-								 VoltageIndex = Convert.ToInt16(data[5])
-							 };
-				MLog.Log(this, "Processing Voltage");
-				foreach (var line in query) {
-					switch (line.Type) {
-						case Constants.CAPABILITY_VOLTAGE:
-							m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int>(line.ZoneId, line.Date, line.Value, line.VoltageIndex));
-							break;
+				if (needVoltage) {
+					MLog.Log(this, "START reading Voltage");
+					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_VOLTAGE);
+					var query = from line in allLines
+								let data = line.Split(',')
+								select new {
+									ZoneName = data[0],
+									Type = data[1],
+									Date = Convert.ToDateTime(data[2]),
+									Value = Convert.ToDouble(data[3]),
+									ZoneId = Convert.ToInt16(data[4]),
+									VoltageIndex = Convert.ToInt16(data[5])
+								};
+					MLog.Log(this, "Processing Voltage");
+					foreach (var line in query) {
+						switch (line.Type) {
+							case Constants.CAPABILITY_VOLTAGE:
+								m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int>(line.ZoneId, line.Date, line.Value, line.VoltageIndex));
+								break;
+						}
 					}
+					MLog.Log(this, "End reading Voltage");
 				}
-				MLog.Log(this, "End reading Voltage");
-			}
-			if (needClosure) {
-				MLog.Log(this, "START reading Closures");
-				//GET closures from storage
-				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_CLOSURES);
-				var query = from line in allLines
-							 let data = line.Split(',')
-							 select new {
-								 ZoneName = data[0],
-								 Key = data[1],
-								 Date = Convert.ToDateTime(data[2]),
-								 State = GetStateValue(data[3]),
-								 ZoneId = Convert.ToInt16(data[4]),
-								 EventType = data[5],
-								 Identifier = data.Length > 6 ? data[6] : "Main"
-							 };
-				MLog.Log(this, "Processing Closures");
-				foreach (var line in query) {
-					m_eventHistoryList.Add(new Tuple<int, DateTime, int, String, String>(line.ZoneId, line.Date, line.State, line.EventType, line.Identifier));
-				}
-				MLog.Log(this, "End reading Closures");
-			}
-			if (needUtilities) {
-				MLog.Log(this, "START reading Utilities");
-				allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_UTILITIES);
-				var query = from line in allLines
-							 let data = line.Split(',')
-							 select new {
-								 ZoneName = data[0],
-								 Date = Convert.ToDateTime(data[1]),
-								 Value = Convert.ToDouble(data[2]),
-								 ZoneId = Convert.ToInt16(data[3]),
-								 Type = data[4].ToLower(),
-								 //TotalUnits
-								 Cost = Convert.ToDouble(data[6]),
-								 //UnitCost
-								 Watts = (data.Length>8 && data[8]!="")?Convert.ToDouble(data[8]):0
-							 };
-				MLog.Log(this, "Processing Utilities");
-				foreach (var line in query) {
-					switch (line.Type) {
-						case Constants.CAPABILITY_WATER:
-						case Constants.CAPABILITY_ELECTRICITY:
-							m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double, double, double, String>
-								(line.ZoneId, line.Date, line.Value, line.Cost, line.Watts, line.Type));
-							break;
+				if (needClosure) {
+					MLog.Log(this, "START reading Closures");
+					//GET closures from storage
+					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_CLOSURES);
+					var query = from line in allLines
+								let data = line.Split(',')
+								select new {
+									ZoneName = data[0],
+									Key = data[1],
+									Date = Convert.ToDateTime(data[2]),
+									State = GetStateValue(data[3]),
+									ZoneId = Convert.ToInt16(data[4]),
+									EventType = data[5],
+									Identifier = data.Length > 6 ? data[6] : "Main"
+								};
+					MLog.Log(this, "Processing Closures");
+					foreach (var line in query) {
+						m_eventHistoryList.Add(new Tuple<int, DateTime, int, String, String>(line.ZoneId, line.Date, line.State, line.EventType, line.Identifier));
 					}
+					MLog.Log(this, "End reading Closures");
 				}
-				MLog.Log(this, "End reading Utilities");
+				if (needUtilities) {
+					MLog.Log(this, "START reading Utilities");
+					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_UTILITIES);
+					DateTime test;
+					var query = from line in allLines
+								let data = line.Split(',')
+								select new {
+									ZoneName = data[0],
+									Date = GetDate(data[1]),
+									Value = Convert.ToDouble(data[2]),
+									ZoneId = Convert.ToInt16(data[3]),
+									Type = data[4].ToLower(),
+									//TotalUnits
+									Cost = Convert.ToDouble(data[6]),
+									//UnitCost
+									Watts = (data.Length > 8 && data[8] != "") ? Convert.ToDouble(data[8]) : 0
+								};
+					MLog.Log(this, "Processing Utilities");
+					foreach (var line in query) {
+						switch (line.Type) {
+							case Constants.CAPABILITY_WATER:
+							case Constants.CAPABILITY_ELECTRICITY:
+								m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double, double, double, String>
+									(line.ZoneId, line.Date, line.Value, line.Cost, line.Watts, line.Type));
+								break;
+						}
+					}
+					MLog.Log(this, "End reading Utilities");
+				}
+			}
+			catch (Exception ex) {
+				MLog.Log(ex, this, "Error loading history for graph");
 			}
 		}
-
+		private DateTime GetDate(String date) {
+			DateTime datetime;
+			//System.Globalization.CultureInfo culture;
+			//System.Globalization.DateTimeStyles styles;
+			//styles = System.Globalization.DateTimeStyles.None;
+			//culture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
+			if (!DateTime.TryParse(date, /*culture, styles,*/out datetime)) {
+				datetime = DateTime.Now;
+				Alert.CreateAlert("Error converting datetime in graph load @" + datetime);
+			}
+			return datetime;
+		}
 		private int GetStateValue(string state)
 		{
 			switch (state)

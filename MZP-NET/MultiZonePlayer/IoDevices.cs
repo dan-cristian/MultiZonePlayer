@@ -732,7 +732,7 @@ namespace MultiZonePlayer {
 		private List<Device> m_deviceList;
 		private const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
 		private const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
-		private const string ONEWIRE_PHOTODEV_NAME = "DS2406";
+		private const string ONEWIRE_IO_NAME = "DS2406";
 		private const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
 		private const string ONEWIRE_COUNTER_NAME = "DS2423";
 		private double TEMP_DEFAULT = 85;
@@ -750,11 +750,16 @@ namespace MultiZonePlayer {
 			public ZoneDetails Zone;
 			public DateTime LastRead = DateTime.MinValue;
 			public double Temperature;
+			public int TemperatureResolutionIndex = -1;
 			public double Humidity;
 			public double[] Voltage = new double[3];
 			public double[] Counter = new double[2];
 			public Boolean[] Activity = new Boolean[2];
+			public Boolean[] Level = new Boolean[2];
+			public Boolean[] Latch= new Boolean[2];
+			public Boolean IOHigh = false, IOAlarm=false;
 			public int ErrorCount = 0;
+			private Boolean m_isCounter = false, m_hasTemp = false, m_hasVoltage = false, m_hasClosure = false;
 			private DateTime m_startProc = DateTime.Now;
 			private TimeSpan m_lastProcessingDuration = TimeSpan.MinValue;
 			private TimeSpan m_minProcessingDuration = TimeSpan.MaxValue;
@@ -766,16 +771,40 @@ namespace MultiZonePlayer {
 				Family = family;
 				Zone = zone;
 				LastRead = DateTime.Now;
+				switch (name) {
+					case ONEWIRE_COUNTER_NAME:
+						m_isCounter = true;
+						break;
+					case ONEWIRE_TEMPDEV_NAME:
+						m_hasTemp = true;
+						break;
+					case ONEWIRE_SMARTBATDEV_NAME:
+						m_hasVoltage = true;
+						break;
+					case ONEWIRE_IO_NAME:
+						m_hasClosure = true;
+						break;
+					default:
+						Alert.CreateAlert("Unknown one wire device name " + name);
+						break;
+				}
 			}
 
 			public String Summary {
 				get {
 					String zone = Zone != null ? Zone.ZoneName : "zoneN/A";
-					String s = Name + "-" + Address + ", " +  zone + ", err="+ ErrorCount;
-					s += ", " + Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead)) + " ago, speed=" + m_lastProcessingDuration.TotalSeconds + "s";
-					s += " min=" + m_minProcessingDuration.TotalSeconds + "s" + " max=" + m_maxProcessingDuration.TotalSeconds + "s"; 
-					s += ", temp=" + Temperature + " hum=" + Humidity + " cnt1=" + Counter[0] + " cnt2="+Counter[1];
-					s += " activityA=" + Activity[0] + ", activityB=" + Activity[1];
+					String s = Name + "-" + Address + ", err=" + ErrorCount + ", " + zone;
+					s += ", " + Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead)) + " ago, speed=" + Math.Round(m_lastProcessingDuration.TotalSeconds, 2) + "s";
+					//s += " min=" + m_minProcessingDuration.TotalSeconds + "s" + " max=" + m_maxProcessingDuration.TotalSeconds + "s"; 
+					if (m_hasTemp)
+						s += ", temp=" + Temperature;
+					if (m_isCounter)
+						s += " cnt1=" + Counter[0] + " cnt2=" + Counter[1];
+					if (m_hasClosure)
+						s += " actA=" + Activity[0] + ", actB=" + Activity[1] + (Level[0]?" IsLevelA":"") + (Level[1]?" IsLevelB":"") 
+							+ (Latch[0]?" IsLatchA":"") + (Latch[1]?" IsLatchB":"") + (IOHigh?" IsHigh":"") + (IOAlarm?" IsAlarm":"");
+					if (m_hasVoltage)
+						s+= " V1="+Voltage[0]+" V2="+Voltage[1] + " V3=" + Voltage[2];
 					return s;
 				}
 			}
@@ -858,9 +887,8 @@ namespace MultiZonePlayer {
 					               + " name=" + element.getName() + " altname=" + element.getAlternateNames()
 					               + " speed=" + element.getMaxSpeed()
 					               + " desc=" + element.getDescription());
-					if (element.getName().ToLower() == ONEWIRE_TEMPDEV_NAME.ToLower()) {
-						SetResolution(element, Convert.ToInt16(IniFile.PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX[1]));
-					}
+
+					
 				}
 				adapter.endExclusive();
 
@@ -1021,7 +1049,7 @@ namespace MultiZonePlayer {
 					ProcessFamily(ONEWIRE_TEMPDEV_NAME, false, false, 0x28, 0x1D); //DS18B20 and DS2423
 					ProcessFamily(ONEWIRE_SMARTBATDEV_NAME, false, false, 0x26); //DS2438, Smart Battery Monitor
 				}
-				ProcessFamily(ONEWIRE_PHOTODEV_NAME + " & " + ONEWIRE_COUNTER_NAME, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
+				ProcessFamily(ONEWIRE_IO_NAME + " & " + ONEWIRE_COUNTER_NAME, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
 				i++;
 				Thread.Sleep(cycle);
 			}
@@ -1044,9 +1072,13 @@ namespace MultiZonePlayer {
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
 							dev.Temperature = tempVal;
-
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
+								if (dev.TemperatureResolutionIndex == -1) {//set once if resolution not yet set
+									SetResolution(element, zone.TemperatureResolutionIndex);
+									dev.TemperatureResolutionIndex = zone.TemperatureResolutionIndex;
+								}
+							
 								if (tempVal != TEMP_DEFAULT) {
 									zone.Temperature = tempVal;
 								}
@@ -1056,17 +1088,26 @@ namespace MultiZonePlayer {
 							}
 							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
 							break;
-						case ONEWIRE_PHOTODEV_NAME:
+						case ONEWIRE_IO_NAME:
 							SwitchContainer swd = (SwitchContainer) element;
 							state = swd.readDevice();
-							bool latchA = swd.getLatchState(0, state);
+							//bool latchA = swd.getLatchState(0, state);
 							bool lastLevelA, levelA = swd.getLevel(0, state);
 							bool activityA = swd.getSensedActivity(0, state);
-							bool latchB = swd.getLatchState(1, state);
+							//bool latchB = swd.getLatchState(1, state);
 							bool lastLevelB, levelB = swd.getLevel(1, state);
 							bool activityB = swd.getSensedActivity(1, state);
-							bool high = swd.isHighSideSwitch();
-							bool alarm = element.isAlarming();
+							//bool high = swd.isHighSideSwitch();
+							//bool alarm = element.isAlarming();
+							dev.Activity[0] = activityA;
+							dev.Activity[1] = activityB;
+							//dev.Latch[0] = latchA;
+							//dev.Latch[1] = latchB;
+							dev.Level[0] = levelA;
+							dev.Level[1] = levelB;
+							//dev.IOHigh = high;
+							//dev.IOAlarm = alarm;
+
 							ValueList val;
 
 							if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelA")) {
@@ -1090,9 +1131,7 @@ namespace MultiZonePlayer {
 								swd.readDevice();
 							}
 
-							
 							if (lastLevelA != levelA || activityA) {
-								dev.Activity[0] = activityA;
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireIODevice = true;
 									MLog.Log(this, "Event closure change A on " + zone.ZoneName
@@ -1110,7 +1149,6 @@ namespace MultiZonePlayer {
 							}
 
 							if (lastLevelB != levelB || activityB) {
-								dev.Activity[1] = activityB;
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireIODevice = true;
 									MLog.Log(this, "Event closure change B on " + zone.ZoneName
