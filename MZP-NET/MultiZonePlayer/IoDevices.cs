@@ -1037,7 +1037,6 @@ namespace MultiZonePlayer {
 		/// </summary>
 		public void LoopReadSlow() {
 			int i = 0;
-			int cycle = 3000;
 			while (MZPState.Instance != null) {
 				if (i > Convert.ToInt16(IniFile.PARAM_ONEWIRE_SLOW_READ_DELAY[1])) {
 					//slow tick
@@ -1046,12 +1045,12 @@ namespace MultiZonePlayer {
 						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
 						Reinitialise();
 					}
-					ProcessFamily(ONEWIRE_TEMPDEV_NAME, false, false, 0x28, 0x1D); //DS18B20 and DS2423
-					ProcessFamily(ONEWIRE_SMARTBATDEV_NAME, false, false, 0x26); //DS2438, Smart Battery Monitor
+					ProcessFamily(ONEWIRE_TEMPDEV_NAME, false, false, 0x28); //DS18B20 = temp
+					ProcessFamily(ONEWIRE_SMARTBATDEV_NAME, false, false, 0x26); //DS2438 = Smart Battery Monitor
 				}
 				ProcessFamily(ONEWIRE_IO_NAME + " & " + ONEWIRE_COUNTER_NAME, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
 				i++;
-				Thread.Sleep(cycle);
+				Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
 			}
 			MLog.Log(this, "OneWire LoopReadSlow exit");
 		}

@@ -239,6 +239,7 @@ namespace MultiZonePlayer
 
 			public static String[] PARAM_ONEWIRE_ADAPTER_NAME = new String[] { "PARAM_ONEWIRE_ADAPTER_NAME", "{DS9097U_DS948X}", "adapter name, {DS9097U_DS948X} for LinkUSB" };
 			public static String[] PARAM_ONEWIRE_ADAPTER_PORTNAME = new String[] { "PARAM_ONEWIRE_ADAPTER_PORTNAME", "COM9", "adapter port, e.g. COM9" };
+			public static String[] PARAM_ONEWIRE_FAST_READ_DELAY = new String[] { "PARAM_ONEWIRE_FAST_READ_DELAY", "5", "number of seconds between reads for fast components, e.g. counters or IO" };
             public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
 			public static String[] PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX = new String[] { "PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX", "1", "resolution index for temp reading: 0=0.5, 1=0.25, 2=0...." };
 			
@@ -349,6 +350,7 @@ namespace MultiZonePlayer
 				PARAM_ONEWIRE_ADAPTER_PORTNAME,
                 PARAM_ONEWIRE_SLOW_READ_DELAY,
 				PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX,
+				PARAM_ONEWIRE_FAST_READ_DELAY,
 				PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD,
 				PARAM_RECENT_RUN_INTERVAL_MINUTES,
 				PARAM_TEMP_TRESHHOLD
