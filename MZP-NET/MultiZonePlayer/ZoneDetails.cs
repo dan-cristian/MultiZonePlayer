@@ -152,6 +152,7 @@ namespace MultiZonePlayer {
 		protected const double DEFAULT_TEMP_HUM = -1000;
 
 		protected double m_temperature = DEFAULT_TEMP_HUM, m_humidity = DEFAULT_TEMP_HUM;
+		protected Boolean m_lowTempReached = true;
 		//protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
 		protected DateTime m_lastRunningDateTime = DateTime.MinValue;
@@ -557,7 +558,18 @@ namespace MultiZonePlayer {
 
 		public Boolean RequireHeat {
 			get {
-				return (Temperature < TemperatureTargetTreshhold) && ScheduledHeatActive && HasTemperatureSensor;
+				if (Temperature < TemperatureTarget) {
+					m_lowTempReached = true;
+					return ScheduledHeatActive && HasTemperatureSensor;
+				}
+
+				if (Temperature < TemperatureTargetMaxTreshhold) {
+					return ScheduledHeatActive && HasTemperatureSensor && m_lowTempReached;
+				}
+				else {
+					m_lowTempReached = false;
+					return false;
+				}
 			}
 		}
 		public Boolean RequirePower {
@@ -662,7 +674,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public double TemperatureTargetTreshhold {
+		public double TemperatureTargetMaxTreshhold {
 			get { return TemperatureTarget + Convert.ToDouble(IniFile.PARAM_TEMP_TRESHHOLD[1]); }
 		}
 
