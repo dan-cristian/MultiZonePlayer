@@ -729,7 +729,7 @@ namespace MultiZonePlayer {
 		private DSPortAdapter adapter;
 		//private DeviceMonitor dMonitor;
 		//private Thread m_searchThread;
-		private List<Device> m_deviceList;
+		private List<Device> m_deviceList = new List<Device>();
 		private const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
 		private const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
 		private const string ONEWIRE_IO_NAME = "DS2406";
@@ -738,9 +738,15 @@ namespace MultiZonePlayer {
 		private double TEMP_DEFAULT = 85;
 		private DateTime m_lastOKRead = DateTime.Now;
 		private Dictionary<string, string> m_deviceAttributes = new Dictionary<string, string>();
+		private int m_initErrors = 0;
 
 		public List<Device> DeviceList {
-			get { return m_deviceList.OrderByDescending(x=>x.LastRead).ToList(); }
+			get {
+				if (m_deviceList.Count > 0)
+					return m_deviceList.OrderByDescending(x => x.Type).ToList();
+				else
+					return m_deviceList;
+			}
 		}
 
 		public class Device {
@@ -758,7 +764,7 @@ namespace MultiZonePlayer {
 			public Boolean[] Level = new Boolean[2];
 			public Boolean[] Latch= new Boolean[2];
 			public Boolean IOHigh = false, IOAlarm=false;
-			public int ErrorCount = 0;
+			private int m_errorCount = 0, m_successCount = 0;
 			private Boolean m_isCounter = false, m_hasTemp = false, m_hasVoltage = false, m_hasClosure = false;
 			private DateTime m_startProc = DateTime.Now;
 			private TimeSpan m_lastProcessingDuration = TimeSpan.MinValue;
@@ -809,8 +815,66 @@ namespace MultiZonePlayer {
 				}
 			}
 
+			public String DisplayValue {
+				get {
+					String val = "";
+					if (m_isCounter)
+						val = Counter[0] + ":" + Counter[1];
+					if (m_hasVoltage)
+						val = Voltage[0] + "/" + Voltage[1] + "/"+Voltage[2];
+					if (m_hasClosure)
+						val = (Activity[0] ? "1" : "0") + ":" + (Activity[1] ? "1" : "0");
+					if (m_hasTemp)
+						val += Temperature.ToString();
+					if (val == "") val = "n/a";
+					return val;
+				}
+			}
+			public String LastReadAge {
+				get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead));}
+			}
+			public String Type {
+				get { return (HasTemp ? "Temperature" : "") + (IsCounter ? "Counter" : "") + (HasVoltage ? "Voltage" : "") + (HasClosure ? "Closure" : ""); }
+			}
+
+			public Boolean HasClosure {
+				get { return m_hasClosure; }
+			}
+
+			public Boolean HasVoltage {
+				get { return m_hasVoltage; }
+			}
+
+			public Boolean HasTemp {
+				get { return m_hasTemp; }
+			}
+
+			public Boolean IsCounter {
+				get { return m_isCounter; }
+			}
+
+			public int SuccessCount {
+				get { return m_successCount; }
+			}
+
+			public int ErrorCount {
+				get { return m_errorCount; }
+			}
+
 			public void RecordError(Exception ex) {
-				ErrorCount++;
+				m_errorCount++;
+			}
+			public void RecordSuccess() {
+				m_successCount++;
+			}
+
+			public int HealthPercent {
+				get {
+					if (m_successCount + m_errorCount > 0)
+						return 100 * m_successCount / (m_successCount + m_errorCount);
+					else
+						return 0;
+				}
 			}
 			public void StartProcessing() {
 				m_startProc = DateTime.Now;
@@ -842,29 +906,40 @@ namespace MultiZonePlayer {
 
 		public void Reinitialise() {
 			try {
-				MLog.Log(this, "Initialising OneWire");
+				m_deviceList.Clear();
+				if (m_initErrors < 5)
+					MLog.Log(this, "Initialising OneWire");
 				try {
 					adapter = null;
 					adapter = OneWireAccessProvider.getDefaultAdapter();
 					m_lastOKRead = DateTime.Now;
+					m_initErrors = 0;
 				}
 				catch (Exception ex) {
-					MLog.Log("Failed to init onewire adapter using DefaultAdapter method, trying with COM settings. Error was " + ex.Message);
+					//MLog.Log("Failed to init onewire adapter using DefaultAdapter method, trying with COM settings. Error was " + ex.Message);
 					try {
 						adapter = OneWireAccessProvider.getAdapter(IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1], IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
                         m_lastOKRead = DateTime.Now;
+						m_initErrors = 0;
 					}
 					catch (Exception ex2) {
-						MLog.Log(ex2, this, "Error init onewire adapter name=" 
-							+ IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1] + " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
+						if (m_initErrors < 5) {
+							MLog.Log(ex2, this, "Error init onewire adapter name="
+								+ IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1] + " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
+						}
+						m_initErrors++;
+						if (m_initErrors > 100)
+							m_initErrors = 0;
 					}
 				}
 				if (adapter == null) {
-					MLog.Log(this, "Error, OneWire adapter not found");
+					if (m_initErrors < 5) {
+						MLog.Log(this, "Error, OneWire adapter not found");
+					}
 					return;
 				}
 				MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
-				m_deviceList = new List<Device>();
+				
 
 				// get exclusive use of adapter
 				adapter.beginExclusive(true);
@@ -1262,6 +1337,7 @@ namespace MultiZonePlayer {
 							MLog.Log(this, "Unknown onewire device " + element.getName());
 							break;
 					}
+					dev.RecordSuccess();
 				}
 				catch (Exception ex) {
 					String err = "Err reading OneWire zone=" + zoneName+ " err=" + ex.Message;

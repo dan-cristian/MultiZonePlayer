@@ -14,25 +14,26 @@ namespace MultiZonePlayer {
 		private static UdpClient udpListener;
 		public void Start()
         {
-            IPEndPoint anyIP = new IPEndPoint(IPAddress.Any, 0);
-            udpListener = new UdpClient(514);
-            byte[] bReceive; string sReceive; string sourceIP;
+			try {
+				IPEndPoint anyIP = new IPEndPoint(IPAddress.Any, 0);
+				udpListener = new UdpClient(514);
+				byte[] bReceive; string sReceive; string sourceIP;
 
-            /* Main Loop */
-            /* Listen for incoming data on udp port 514 (default for SysLog events) */
-            while (MZPState.Instance != null && !MZPState.Instance.IsShuttingDown)          {
-                try               {
-                    bReceive = udpListener.Receive(ref anyIP);
-                    /* Convert incoming data from bytes to ASCII */
-                    sReceive = Encoding.ASCII.GetString(bReceive);
-                    /* Get the IP of the device sending the syslog */
-                    sourceIP = anyIP.Address.ToString();
-                    new Thread(new logHandler(sourceIP, sReceive).handleLog).Start();
-                    /* Start a new thread to handle received syslog event */
-                }
-				catch (Exception ex) { 
-					MLog.Log(null, ex.Message); }
-            }
+				/* Main Loop */
+				/* Listen for incoming data on udp port 514 (default for SysLog events) */
+				while (MZPState.Instance != null && !MZPState.Instance.IsShuttingDown) {
+					bReceive = udpListener.Receive(ref anyIP);
+					/* Convert incoming data from bytes to ASCII */
+					sReceive = Encoding.ASCII.GetString(bReceive);
+					/* Get the IP of the device sending the syslog */
+					sourceIP = anyIP.Address.ToString();
+					new Thread(new logHandler(sourceIP, sReceive).handleLog).Start();
+					/* Start a new thread to handle received syslog event */
+				}
+			}
+			catch (Exception ex) {
+				MLog.Log(null, ex.Message);
+			}
         }
 		public void Stop() {
 			try {

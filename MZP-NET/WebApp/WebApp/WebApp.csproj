@@ -20,6 +20,10 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -115,6 +119,7 @@
     <Content Include="m\alerts.html" />
     <Content Include="m\auth.html" />
     <Content Include="m\basic.js" />
+    <Content Include="m\sensors.html" />
     <Content Include="m\singleton.html" />
     <Content Include="m\test.html" />
     <Content Include="m\JSONViewer.html" />

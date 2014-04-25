@@ -879,34 +879,43 @@ namespace MultiZonePlayer
 		public static void GenerateServerSideScript(ref String result)
 		{
 			//MLog.Log(this, "Generating SS script");
-			const string delim_start = "<%", delim_end = "%>";
+			const string delim_start1 = "<%", delim_end1 = "%>";
+			const string delim_start2 = "<~", delim_end2 = "~>";
+			string delim_start, delim_end;
+
 			String script, target, scriptReflect;
 			int cycles = 0;
 			do
 			{
-				script = result.Substring(delim_start, delim_end);
-				if (script != null && script != "")
-				{
+				script = result.Substring(delim_start1, delim_end1);
+				if (script == null || script == "") {
+					script = result.Substring(delim_start2, delim_end2);
+					delim_start = delim_start2;
+					delim_end = delim_end2;
+				}
+				else {
+					delim_start = delim_start1;
+					delim_end = delim_end1;
+				}
+				if (script != null && script != "") {
+
 					scriptReflect = script;
 					Reflect.GenericReflect(ref scriptReflect);
 					string[] atoms = scriptReflect.Split(';');
 
 					target = result.Substring(delim_end, delim_start + delim_end);
+					
 					if (atoms[0] == "?" && target == null)
 						target = "";
-					if (target == null)
-					{
+					if (target == null) {
 						MLog.Log(null, "Could not find script target");
 						break;
 					}
 					int resultInsertIndex = result.IndexOf(target);
-					
 
-					switch (atoms[0])
-					{
+					switch (atoms[0]) {
 						case "for":
-							if (script.Contains("for"))
-							{
+							if (script.Contains("for")) {
 								string var, start, end, oper, cond;
 								var = atoms[1];
 								start = atoms[2];
@@ -914,36 +923,36 @@ namespace MultiZonePlayer
 								end = atoms[4];
 								cond = atoms[5];
 
-								int forstart=0, forend=0;
+								int forstart = 0, forend = 0;
 								string filter;
 								forstart = Convert.ToInt16(start);
 								if (!Int32.TryParse(end, out forend))
-									MLog.Log(null, "Error detectin FOR end loop, val="+end+" script orig="+script + " reflected="+scriptReflect);
+									MLog.Log(null, "Error detectin FOR end loop, val=" + end + " script orig=" + script + " reflected=" + scriptReflect);
 								String generated;
 
-								switch (oper)
-								{
+								switch (oper) {
 									case "++":
 										String reseval = "";
-										for (int j = forstart; j < forend; j++)
-										{
-											if (cond != "")
-											{
+										for (int j = forstart; j < forend; j++) {
+											if (cond != "") {
 												filter = cond.Replace("%" + var, j.ToString());
 												Reflect.GenericReflect(ref filter);
 												reseval = ExpressionEvaluator.EvaluateBoolToString(filter);
 											}
-											if (cond == "" || Convert.ToBoolean(reseval))
-											{
+											if (cond == "" || Convert.ToBoolean(reseval)) {
 												generated = target.Replace("%" + var, j.ToString());
+												//imbricated 
+												if (generated.Contains(delim_start2)) {
+													GenerateServerSideScript(ref generated);
+												}
 												result = result.Insert(resultInsertIndex, generated);
 												resultInsertIndex += generated.Length;
+												
 											}
 										}
 										break;
 									case "--":
-										for (int j = forstart; j < forend; j--)
-										{
+										for (int j = forstart; j < forend; j--) {
 											generated = target.Replace("%" + var, j.ToString());
 											result = result.Insert(resultInsertIndex, generated);
 											resultInsertIndex += generated.Length;
@@ -970,7 +979,7 @@ namespace MultiZonePlayer
 						case "if":
 							string res;
 							res = atoms[1];
-							if (res.ToLower()!="true" && res.ToLower() != "false")
+							if (res.ToLower() != "true" && res.ToLower() != "false")
 								res = ExpressionEvaluator.EvaluateBoolToString(res);
 							result = result.Replace(delim_start + script + delim_end, "");
 							if (res.ToLower() == "false")
@@ -989,7 +998,7 @@ namespace MultiZonePlayer
 							break;
 					}
 				}
-				cycles++;
+			cycles++;
 			}
 			while (script != null && script != "" && cycles <= 100);
 			if (cycles > 100)

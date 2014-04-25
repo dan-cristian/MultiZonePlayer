@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+<meta name="robots" content="index, follow, noodp" />
+<title>Sensors</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+</head>
+<body style="text-align:left">
+<button onclick="window.open('start.html', '_self')">Back</button>
+    <br />
+    #S.OneWire.DeviceList.Count#
+    <br />
+	<%for;i;0;++;#S.OneWire.DeviceList.Count#;%>
+        <button class="Sensor #S.OneWire.DeviceList.?,%i.Type#" onclick="window.open('zone-main.html?zoneid=#S.OneWire.DeviceList.?,%i.Zone.ZoneId#', '_self')" title="#S.OneWire.DeviceList.?,%i.Summary#" >
+            <span> #S.OneWire.DeviceList.?,%i.DisplayValue# </span><br /><br />
+            <span style="font-size:x-small;text-align:right">#S.OneWire.DeviceList.?,%i.Zone.ZoneName# #S.OneWire.DeviceList.?,%i.HealthPercent#% #S.OneWire.DeviceList.?,%i.ErrorCount#</span>
+        </button>
+	<%%>
+<br />    
+<br />
+<button onclick="window.open('start.html', '_self')">Back</button>
+</body>
+</html>
