@@ -726,7 +726,7 @@ namespace MultiZonePlayer {
 	}
 
 	public class OneWire : IMessenger, DeviceMonitorEventListener, IMZPDevice {
-		private DSPortAdapter adapter;
+		private List<DSPortAdapter> m_adapterList = new List<DSPortAdapter>();
 		//private DeviceMonitor dMonitor;
 		//private Thread m_searchThread;
 		private List<Device> m_deviceList = new List<Device>();
@@ -833,6 +833,11 @@ namespace MultiZonePlayer {
 			public String LastReadAge {
 				get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead));}
 			}
+
+			public double LastReadAgeInMinutes {
+				get { return DateTime.Now.Subtract(LastRead).TotalMinutes; }
+			}
+
 			public String Type {
 				get { return (HasTemp ? "Temperature" : "") + (IsCounter ? "Counter" : "") + (HasVoltage ? "Voltage" : "") + (HasClosure ? "Closure" : ""); }
 			}
@@ -907,82 +912,98 @@ namespace MultiZonePlayer {
 		public void Reinitialise() {
 			try {
 				m_deviceList.Clear();
+				foreach (DSPortAdapter adapter in m_adapterList){
+					try { adapter.freePort(); }
+					catch (Exception) { }
+				}
+				m_adapterList.Clear();
+				DSPortAdapter adapterVar;
 				if (m_initErrors < 5)
 					MLog.Log(this, "Initialising OneWire");
 				try {
-					adapter = null;
-					adapter = OneWireAccessProvider.getDefaultAdapter();
+					adapterVar = null;
+					adapterVar = OneWireAccessProvider.getDefaultAdapter();
 					m_lastOKRead = DateTime.Now;
 					m_initErrors = 0;
+					m_adapterList.Add(adapterVar);
+					MLog.Log("Found onewire Default adapter " + adapterVar.getAdapterName());
 				}
 				catch (Exception ex) {
-					//MLog.Log("Failed to init onewire adapter using DefaultAdapter method, trying with COM settings. Error was " + ex.Message);
-					try {
-						adapter = OneWireAccessProvider.getAdapter(IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1], IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
-                        m_lastOKRead = DateTime.Now;
-						m_initErrors = 0;
-					}
-					catch (Exception ex2) {
-						if (m_initErrors < 5) {
-							MLog.Log(ex2, this, "Error init onewire adapter name="
-								+ IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1] + " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
-						}
-						m_initErrors++;
-						if (m_initErrors > 100)
-							m_initErrors = 0;
+					if (m_initErrors < 5) {
+						MLog.Log(this, "Unable to init onewire default adapter");
 					}
 				}
-				if (adapter == null) {
+
+				try {
+					adapterVar = OneWireAccessProvider.getAdapter(IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1], IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
+					m_lastOKRead = DateTime.Now;
+					m_initErrors = 0;
+					if (m_adapterList.Find(x => x.getAddressAsString() == adapterVar.getAddressAsString()) == null) {
+						m_adapterList.Add(adapterVar);
+						MLog.Log("Found onewire port based adapter " + adapterVar.getAdapterName());
+					}
+				}
+				catch (Exception ex) {
+					if (m_initErrors < 5) {
+						MLog.Log(this, "Unable to init onewire adapter name=" + IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1] 
+							+ " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
+					}
+					
+				}
+
+				if (m_adapterList.Count== 0) {
+					m_initErrors++;
+					if (m_initErrors > 100)
+						m_initErrors = 0;
+
 					if (m_initErrors < 5) {
 						MLog.Log(this, "Error, OneWire adapter not found");
 					}
 					return;
 				}
-				MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
-				
+				//MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
 
-				// get exclusive use of adapter
-				adapter.beginExclusive(true);
+				foreach (DSPortAdapter adapter in m_adapterList) {
+					// get exclusive use of adapter
+					adapter.beginExclusive(true);
+					// clear any previous search restrictions
+					adapter.setSearchAllDevices();
+					adapter.targetAllFamilies();
+					adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+					java.util.Enumeration containers = adapter.getAllDeviceContainers();
+					OneWireContainer element; //TemperatureContainer temp;
+					//sbyte[] state;
+					while (containers.hasMoreElements()) {
+						element = (OneWireContainer)containers.nextElement();
+						List<ZoneDetails> zoneList =
+							ZoneDetails.ZoneDetailsList.FindAll(
+								x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
 
-				// clear any previous search restrictions
-				adapter.setSearchAllDevices();
-				adapter.targetAllFamilies();
-				adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
-				java.util.Enumeration containers = adapter.getAllDeviceContainers();
-				OneWireContainer element; //TemperatureContainer temp;
-				//sbyte[] state;
-				while (containers.hasMoreElements()) {
-					element = (OneWireContainer) containers.nextElement();
-					List<ZoneDetails> zoneList =
-						ZoneDetails.ZoneDetailsList.FindAll(
-							x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
+						String zonename = zoneList.Count > 0 ? zoneList[0].ZoneName + ", zonecount=" + zoneList.Count : "ZONE NOT ASSOCIATED";
+						MLog.Log(this, "OneWire device found adapter="+adapter.getAdapterName()+" zone=" + zonename + ", addr=" + element.getAddressAsString()
+									   + " name=" + element.getName() + " altname=" + element.getAlternateNames()
+									   + " speed=" + element.getMaxSpeed()
+									   + " desc=" + element.getDescription());
 
-					String zonename = zoneList.Count > 0 ? zoneList[0].ZoneName + ", zonecount="+zoneList.Count : "ZONE NOT ASSOCIATED";
-					MLog.Log(this, "OneWire device found zone=" + zonename + ", addr=" + element.getAddressAsString()
-					               + " name=" + element.getName() + " altname=" + element.getAlternateNames()
-					               + " speed=" + element.getMaxSpeed()
-					               + " desc=" + element.getDescription());
 
-					
+					}
+					adapter.endExclusive();
+
+					/*// Monitor of the network
+					dMonitor = new DeviceMonitor(adapter);
+					dMonitor.setDoAlarmSearch(false);
+					// setup event listener (should point to this form)
+					dMonitor.addDeviceMonitorEventListener(this);
+					m_searchThread = new Thread(() => dMonitor.run());
+					m_searchThread.Name = "OneWire Search";
+					m_searchThread.Start();
+					*/
 				}
-				adapter.endExclusive();
-
-				/*// Monitor of the network
-                dMonitor = new DeviceMonitor(adapter);
-                dMonitor.setDoAlarmSearch(false);
-                // setup event listener (should point to this form)
-                dMonitor.addDeviceMonitorEventListener(this);
-                m_searchThread = new Thread(() => dMonitor.run());
-                m_searchThread.Name = "OneWire Search";
-                m_searchThread.Start();
-                */
-			}
-			catch (BadImageFormatException be) {
-				MLog.Log(be, this, "General 1wire exception occurred");
 			}
 			catch (Exception ex) {
-				MLog.Log(ex, this, "General 1wire exception occurred");
+				MLog.Log(ex, this, ex.Message);
 			}
+		
 		}
 
 		public void SetResolution(OneWireContainer tempelement, int resolIndex) {
@@ -1032,7 +1053,7 @@ namespace MultiZonePlayer {
 		}
 
 		//Family codes http://owfs.sourceforge.net/family.html
-		private void ProcessFamily(String familyName, Boolean verboseLog, Boolean tryOverdrive, params sbyte[] family) {
+		private void ProcessFamily(String familyName, DSPortAdapter adapter, Boolean verboseLog, Boolean tryOverdrive, params sbyte[] family) {
 			if (adapter != null) {
 				lock (adapter)
 				try {
@@ -1058,7 +1079,7 @@ namespace MultiZonePlayer {
 					}
 					catch (Exception) {
 						MLog.Log(this, "Error setting regular speed on family=" + family + ", forcing reinit.");
-						adapter = null; //force reinit
+						//adapter = null; //force reinit
 						//adapter.setSpeed(DSPortAdapter.SPEED_FLEX);
 					}
 					java.util.Enumeration containers = adapter.getAllDeviceContainers();
@@ -1113,19 +1134,26 @@ namespace MultiZonePlayer {
 		public void LoopReadSlow() {
 			int i = 0;
 			while (MZPState.Instance != null) {
-				if (i > Convert.ToInt16(IniFile.PARAM_ONEWIRE_SLOW_READ_DELAY[1])) {
-					//slow tick
-					i = 0;
-					if (adapter == null || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
-						Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
-						Reinitialise();
+				try {
+					foreach (DSPortAdapter adapter in m_adapterList) {
+						if (i > Convert.ToInt16(IniFile.PARAM_ONEWIRE_SLOW_READ_DELAY[1])) {
+							//slow tick
+							i = 0;
+							if (adapter == null || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
+								Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
+								Reinitialise();
+							}
+							ProcessFamily(ONEWIRE_TEMPDEV_NAME, adapter, false, false, 0x28); //DS18B20 = temp
+							ProcessFamily(ONEWIRE_SMARTBATDEV_NAME, adapter, false, false, 0x26); //DS2438 = Smart Battery Monitor
+						}
+						ProcessFamily(ONEWIRE_IO_NAME + " & " + ONEWIRE_COUNTER_NAME, adapter, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
+						i++;
+						Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
 					}
-					ProcessFamily(ONEWIRE_TEMPDEV_NAME, false, false, 0x28); //DS18B20 = temp
-					ProcessFamily(ONEWIRE_SMARTBATDEV_NAME, false, false, 0x26); //DS2438 = Smart Battery Monitor
 				}
-				ProcessFamily(ONEWIRE_IO_NAME + " & " + ONEWIRE_COUNTER_NAME, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
-				i++;
-				Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
+				catch (Exception ex) {
+					MLog.Log(ex, this, "Error on 1wire loop");
+				}
 			}
 			MLog.Log(this, "OneWire LoopReadSlow exit");
 		}
@@ -1411,11 +1439,11 @@ namespace MultiZonePlayer {
 		}
 
 		public bool IsFaulty() {
-			return (adapter == null);
+			return (m_adapterList.Count == 0);
 		}
 
 		public bool IsFunctional() {
-			return adapter != null && adapter.adapterDetected();
+			return !IsFaulty();
 		}
 
 		public bool IsEnabled() {
@@ -1436,7 +1464,10 @@ namespace MultiZonePlayer {
 
 		public string Name() {
 			if (IsFunctional()) {
-				return adapter.getAdapterName();
+				String name="";
+				foreach (DSPortAdapter adapter in m_adapterList)
+					name += adapter.getAdapterName() + " ";
+				return name;
 			}
 			else {
 				return "OneWire";

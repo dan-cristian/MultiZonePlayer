@@ -766,7 +766,10 @@ namespace MultiZonePlayer
                         PreviousPlaylist();
                         break;
                     case GlobalCommands.enter://for numpads
-                        Next();
+						if (GetState() == ZoneState.Running)
+							Next();
+						else
+							MLog.Log(this, "Enter pressed but not moving next as music state == not running");
                         break;
                     case GlobalCommands.ffwd:
                         Ffwd();

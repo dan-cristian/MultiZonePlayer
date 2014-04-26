@@ -32,6 +32,9 @@ namespace MultiZonePlayer
 					//MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
 					return;
 				}
+				if (kd.Device == "") {
+					MLog.Log("Command received from unknown keyboard device, ignoring");
+				}
 
 				ValueList val = new ValueList(GlobalParams.zoneid, zoneId.ToString(), CommandSources.rawinput);
 				val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
@@ -59,7 +62,7 @@ namespace MultiZonePlayer
 					cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
 					int macroId = MZPState.Instance.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
 
-					MLog.Log(null, "DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
+					MLog.Log("DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
 						+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId + " macroid="+macroId);
 					
 					if (cmdRemote == null || macroId != -1)
