@@ -10,13 +10,13 @@
 <button onclick="window.open('%_source.html?zoneid=%_id', '_self')">Back</button>
 <table>
 <%for;j;0;++;#S.GetEditableFieldList,%_classname.Count#;%>
-<tr><td>
+<tr><td class="grid">
 <form id="param" action="?id=%_id&classname=%_classname&index=%_index&source=%_source" method="post">
 <input name="command" type="hidden" value="setfield"/>
-<input id="Submit#S.GetEditableFieldList,%_classname.?,%j#" type="submit" value="Set" />
-<input type="text" name="text" value="#S.%_classnameList.?,%_index:S.GetEditableFieldList,%_classname.?,%j#"/>
-<input name="field" type="hidden" value="#S.GetEditableFieldList,%_classname.?,%j#"/>
-#S.GetEditableFieldList,%_classname.?,%j# [#S.GetEditableFieldTypeList,%_classname.?,%j#]
+<input id="Submit#S.GetEditableFieldList,%_classname.?,%j.Name#" type="submit" value="Set" />
+<input type="text" name="text" size="10" value="#S.%_classnameList.?,%_index:S.GetEditableFieldList,%_classname.?,%j.Name#"/>
+<input name="field" type="hidden" value="#S.GetEditableFieldList,%_classname.?,%j.Name#"/>
+#S.GetEditableFieldList,%_classname.?,%j.Name#, #S.GetEditableFieldList,%_classname.?,%j.Type#, #S.GetEditableFieldList,%_classname.?,%j.Description#
 </td></tr>
 </form>
 <%%>

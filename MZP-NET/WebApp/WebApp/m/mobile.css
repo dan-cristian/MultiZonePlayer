@@ -52,7 +52,9 @@ button.Videoxbmc {background-image:url('Bande-video-icon.png');background-color:
 button.Musicmusic {background-image:url('Music-Library-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.Radioradio {background-image:url('radio-metal-2-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.TVtv {background-image:url('television-04-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.Sensor {min-width:80px;text-align:right;padding:5px 5px;background-color:antiquewhite;color:black;background-repeat:no-repeat;background-position:left}
+button.Sensor {min-width:80px;text-align:right;padding:5px 5px;background-color:antiquewhite;color:black;background-repeat:no-repeat;background-position:2px 21px}
 button.Temperature {background-image:url('temperature.png');}
+button.TemperatureVoltage {background-image:url('light-icon.png'),url('thermometer-icon-tiny.png');background-position:0px 24px,32px 32px;}
 button.Closure {background-image:url('magnets-icon.png');}
 button.Counter {min-width:80px;background-image:url('Numbers-icon.png');}
+button.Voltage {background-image:url('light-icon.png');}

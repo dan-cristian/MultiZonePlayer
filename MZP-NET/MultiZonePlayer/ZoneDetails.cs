@@ -12,46 +12,46 @@ namespace MultiZonePlayer {
 	public class ZoneDetails : Singleton{
 		//private static List<ZoneDetails> m_valueList = new List<ZoneDetails>();
 		public int ZoneId = 0;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String Description;
 		//public Boolean IsActive = false;
 		//public int MinutesUntilSleep = -1;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String SleepHourMin = "";//format HH:MM
-		[Description("Edit")]
+		[Category("Edit")]
 		public String ZoneName;
 		private ZoneState m_zoneState, m_zoneStateLast = MultiZonePlayer.ZoneState.Undefined;
-		[Description("Edit")]
+		[Category("Edit")]
 		public int ParentZoneId = -1;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String LocationName = "Default Location";
-		[Description("Edit")]
+		[Category("Edit")]
 		public int PowerIndex = -1;
 		public String PowerType;
-		[Description("Edit")]
+		[Category("Edit")]
 		public int PowerOnDelay;
 		public String WakeTime = "";
 		public String WakeWeekDay = "";
-		[Description("Edit")]
+		[Category("Edit"), Description("ID of camera object from iSpy")]
 		public String CameraId = "";
-		[Description("Edit")]
+		[Category("Edit"), Description("format widthXheight")]
 		public String CameraResolution = "";
 		public Boolean HasSpeakers = false;
-		[Description("Edit")]
+		[Category("Edit")]
 		public int DefaultVolumePercent;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String OutputKeywords;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String OutputDeviceUserSelected;
-		[Description("Edit")]
+		[Category("Edit")]
 		public ZoneType Type = ZoneType.Undefined;
 		public String OutputDeviceNameWaveVLC;
 		public int WavedeviceIndex;
 		//public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
-		[Description("Edit")]
+		[Category("Edit"), Description("ID from winload/paradox system")]
 		public int AlarmZoneId = -1;
-		[Description("Edit")]
+		[Category("Edit"), Description("ID used to arm an entire area")]
 		public int AlarmAreaId = -1;
 		public Boolean HasMotionSensor = false;
 		public Boolean HasMicrophone = false;
@@ -60,64 +60,64 @@ namespace MultiZonePlayer {
 		public String DisplayConnection = "";
 		public String DisplayType = "";
 		public Boolean RequirePowerForced = false;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String NearbyZonesIdList = "";//zone id list separated by ;
-		[Description("Edit")]
+		[Category("Edit")]
 		public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
 		//public ClosureOpenCloseRelay ClosureOpenCloseRelay;
-		[Description("Edit")]
+		[Category("Edit")]
 		public ulong ClosureCount = 0;
 		
 		public Boolean IsClosureArmed = false;
-		[Description("Edit")]
+		[Category("Edit")]
 		public EnumClosureType ClosureType = EnumClosureType.Undefined;
 		private Boolean m_isClosureContactMade = false, m_isClosureContactMadeLast = false;
 		public EnumRelayState RelayState = EnumRelayState.Undefined;
-		[Description("Edit")]
+		[Category("Edit")]
 		public EnumRelayType RelayType = EnumRelayType.Undefined;
 
-		[Description("Edit")]
+		[Category("Edit"), Description("Set type if zone represents an utility")]
 		public EnumUtilityType UtilityType = EnumUtilityType.Undefined;
 		public ulong PulseCountInTimeSample = 0;
 		//public ulong CounterCountInSample = 0;
-		[Description("Edit")]
+		[Category("Edit"), Description("How often pulses or counters are read / sampling frequency")]
 		public int PulseSampleMinutesFrequency = 1;//in minutes
-		[Description("Edit")]
+		[Category("Edit")]
 		public double PulseSubUnits = 1;//how many subunits in a main unit 100 e.g. flashes in a kwh or 10 pulses per liter
-		[Description("Edit")]
+		[Category("Edit")]
 		public double PulseMainUnitsCount = 0;//main units, e.g. 3 kwh
-		//[Description("Edit")]
+		//[Category("Edit")]
 		//public double CounterMainUnitsCount = 0;//main units, e.g. 4 kwh
-		[Description("Edit")]
+		[Category("Edit")]
 		public string CounterPageNameToInclude = "1";//counter page name to consider, ignore rest (e.g. 1)
-		[Description("Edit")]
+		[Category("Edit")]
 		public string ClosureLevelNameToInclude = "1,2";//counter page name to consider, ignore rest (e.g. 1,2)
-		[Description("Edit")]
+		[Category("Edit")]
 		public DateTime PulseMainUnitsStartDate = DateTime.Now;
 		public double PulseLastMainUnitsCount = 0;
 		//public double CounterLastMainUnitsCount = 0;
 		public ulong LastCounterCount = 0;
 		public DateTime LastPulseSamplingStart = DateTime.Now;
 		//private DateTime m_lastCounterSamplingStart = DateTime.Now;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String PulseMainUnitType = "";
 
-		[Description("Edit")]
+		[Category("Edit")]
 		public String TemperatureDeviceId;
-		//[Description("Edit")]
+		//[Category("Edit")]
 		//public String OtherOneWireDeviceIdList;//separated by ;
 
-		[Description("Edit")]
+		[Category("Edit")]
 		public double TemperatureMaxAlarm = 1000;
-		[Description("Edit")]
+		[Category("Edit")]
 		public double TemperatureMinAlarm = -1000;
-		[Description("Edit")]
+		[Category("Edit")]
 		public double TemperatureTarget = -1000;
-		[Description("Edit")]
+		[Category("Edit")]
 		public int TemperatureResolutionIndex = 1;
 		public Boolean ScheduledHeatActive = false;
 		public String CronSchedule = "";
-		[Description("Edit")]
+		[Category("Edit")]
 		public String Color;
 
 		public int VolumeLevel;
@@ -997,8 +997,10 @@ namespace MultiZonePlayer {
 
 		public void SetVoltage(int voltageIndex, double value) {
 			double lastVal;
-			LightSensor light = MZPState.Instance.LightSensorList.Find(x=>x.IsActive);
-			
+			LightSensor light = MZPState.Instance.LightSensorList.Find(x=>x.IsActive && x.ApplyForZoneId == ZoneId);
+			if (light == null)
+				Alert.CreateAlert("No light sensor (active) found for zone "+ ZoneName);
+
 			lastVal = m_voltage[voltageIndex];
 			if (lastVal != value) {
 				double lux=-1d;

@@ -770,6 +770,7 @@ namespace MultiZonePlayer {
 			private TimeSpan m_lastProcessingDuration = TimeSpan.MinValue;
 			private TimeSpan m_minProcessingDuration = TimeSpan.MaxValue;
 			private TimeSpan m_maxProcessingDuration = TimeSpan.MinValue;
+			private DateTime m_lastHealthResetDateTime = DateTime.Now;
 
 			public Device(String name, String address, String family, ZoneDetails zone) {
 				Name = name;
@@ -786,6 +787,7 @@ namespace MultiZonePlayer {
 						break;
 					case ONEWIRE_SMARTBATDEV_NAME:
 						m_hasVoltage = true;
+						m_hasTemp = true;
 						break;
 					case ONEWIRE_IO_NAME:
 						m_hasClosure = true;
@@ -823,9 +825,12 @@ namespace MultiZonePlayer {
 					if (m_hasVoltage)
 						val = Voltage[0] + "/" + Voltage[1] + "/"+Voltage[2];
 					if (m_hasClosure)
-						val = (Activity[0] ? "1" : "0") + ":" + (Activity[1] ? "1" : "0");
-					if (m_hasTemp)
+						val = (Activity[0] ? "1" : "0") + ":" + (Activity[1] ? "1" : "0") + ":" + (Level[0] ? "1" : "0") + ":" + (Level[1] ? "1" : "0");
+					if (m_hasTemp) {
+						if (val != "")
+							val += " ";
 						val += Temperature.ToString();
+					}
 					if (val == "") val = "n/a";
 					return val;
 				}
@@ -882,6 +887,11 @@ namespace MultiZonePlayer {
 				}
 			}
 			public void StartProcessing() {
+				if (DateTime.Now.Subtract(m_lastHealthResetDateTime).TotalHours >= 24) {
+					m_successCount = 0;
+					m_errorCount = 0;
+					m_lastHealthResetDateTime = DateTime.Now;
+				}
 				m_startProc = DateTime.Now;
 			}
 
@@ -1006,18 +1016,30 @@ namespace MultiZonePlayer {
 		
 		}
 
-		public void SetResolution(OneWireContainer tempelement, int resolIndex) {
+		public void SetResolution(OneWireContainer tempelement, ZoneDetails zone, Device dev, double readTemperature) {
 			try {
-				TemperatureContainer tc = (TemperatureContainer)tempelement;
-				//Boolean selectable = tc.hasSelectableTemperatureResolution();
-				double[] resolution = null;
-				sbyte[] state = tc.readDevice();
-				//if (selectable) {
-				resolution = tc.getTemperatureResolutions();
+				int fractionalPart=0;
+				if (readTemperature != Math.Round(readTemperature,0))
+					fractionalPart= new System.Version(readTemperature.ToString()).Minor;
+				if (dev.TemperatureResolutionIndex == -1 || fractionalPart.ToString().Length > dev.TemperatureResolutionIndex+1) {//set once if resolution not yet set
+					int resolIndex = zone.TemperatureResolutionIndex;
+					TemperatureContainer tc = (TemperatureContainer)tempelement;
+					//Boolean selectable = tc.hasSelectableTemperatureResolution();
+					double[] resolution = null;
+					sbyte[] state = tc.readDevice();
+					//if (selectable) {
+					resolution = tc.getTemperatureResolutions();
 					//}
-				MLog.Log(this, "Setting temperature resolution to " + resolution[resolIndex] + "...");
-				tc.setTemperatureResolution(resolution[resolIndex], state);
-				tc.writeDevice(state);
+					if (resolution.Length > resolIndex) {
+						MLog.Log(this, "Setting temperature resolution to " + resolution[resolIndex] + "...");
+						tc.setTemperatureResolution(resolution[resolIndex], state);
+						tc.writeDevice(state);
+						dev.TemperatureResolutionIndex = resolIndex;
+					}
+					else
+						Alert.CreateAlert("Unable to set resolution index " + resolIndex + " for zone "+zone.ZoneName +" as we only have resolutions="+resolution.Length, zone,
+							false, Alert.NotificationFlags.SystemError);
+				}
 			}
 			catch (Exception ex)
 			{
@@ -1173,14 +1195,15 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							dev.Temperature = tempVal;
+							if (tempVal != TEMP_DEFAULT) {
+								if (dev.TemperatureResolutionIndex != -1)
+									dev.Temperature = tempVal;
+								else
+									dev.Temperature = Math.Round(tempVal, 2);
+							}
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
-								if (dev.TemperatureResolutionIndex == -1) {//set once if resolution not yet set
-									SetResolution(element, zone.TemperatureResolutionIndex);
-									dev.TemperatureResolutionIndex = zone.TemperatureResolutionIndex;
-								}
-							
+								SetResolution(element, zone, dev, tempVal);
 								if (tempVal != TEMP_DEFAULT) {
 									zone.Temperature = tempVal;
 								}
@@ -1299,15 +1322,15 @@ namespace MultiZonePlayer {
 								// clear all channel selection
 								channel[i] = true;
 
-								if (adc.hasADAlarms()) {
-									MLog.Log(this, "Has ALARM capability");
+								//if (adc.hasADAlarms()) {
+								//	MLog.Log(this, "Has ALARM capability");
 									/*/ disable alarms
 									adc.setADAlarmEnable(i, ADContainer.ALARM_LOW, false,
 															state);
 									adc.setADAlarmEnable(i, ADContainer.ALARM_HIGH,
 															false, state);
 									 */
-								}
+								//}
 							}
 							double[] voltage;
 							getVoltage(adc, channel, out voltage);
@@ -1325,10 +1348,13 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							dev.Temperature = tempVal;
-
+							if (tempVal != TEMP_DEFAULT) {
+								dev.Temperature = Math.Round(tempVal, 2);//too many digits, not needed
+							}
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
+								SetResolution(element, zone, dev, tempVal);
+								
 								if (tempVal != TEMP_DEFAULT) {
 									zone.Temperature = tempVal;
 								}

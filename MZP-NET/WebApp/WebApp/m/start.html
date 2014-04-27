@@ -13,13 +13,14 @@
 	<%for;i;0;++;#S.ZonesCount#;"#Zones,%i.LocationName# #Zones,%i.Type#"=="Parter Space"%>
 	<button class="Action#Zones,%i.HasAction# Activity#Zones,%i.ActivityType#" onclick="window.open('zone-main.html?zoneid=%i','_self')">#Zones,%i.ZoneName#</button>
 	<%%>
-
 	<%for;j;0;++;#S.ZonesCount#;"#Zones,%j.LocationName# #Zones,%j.Type#"=="Beci Space"%>
 	<button class="Action#Zones,%j.HasAction# Activity#Zones,%j.ActivityType#" onclick="window.open('zone-main.html?zoneid=%j','_self')">#Zones,%j.ZoneName#</button>
 	<%%>
-	
 	<%for;k;0;++;#S.ZonesCount#;"#Zones,%k.LocationName# #Zones,%k.Type#"=="Etaj Space"%>
 	<button class="Action#Zones,%k.HasAction# Activity#Zones,%k.ActivityType#" onclick="window.open('zone-main.html?zoneid=%k','_self')">#Zones,%k.ZoneName#</button>
+	<%%>
+    <%for;l;0;++;#S.ZonesCount#;"#Zones,%l.LocationName# #Zones,%l.Type#"=="Pod Space"%>
+	<button class="Action#Zones,%l.HasAction# Activity#Zones,%l.ActivityType#" onclick="window.open('zone-main.html?zoneid=%l','_self')">#Zones,%l.ZoneName#</button>
 	<%%>
 	<hr />
 	<button class="Action<%?;"#S.UserIsNearList.Count#"!="0"%>" onclick="window.open('users.html','_self')">Users [#S.UserIsNearList.Count#]</button>

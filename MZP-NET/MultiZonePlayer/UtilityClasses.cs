@@ -1513,6 +1513,9 @@ namespace MultiZonePlayer
 								alerts.Add(alert);
 							break;
 						}
+						case NotificationFlags.SystemError:
+							alerts.Add(alert);
+							break;
 					}
 				}
 			}

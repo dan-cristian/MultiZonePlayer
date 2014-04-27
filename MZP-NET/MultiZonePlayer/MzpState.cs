@@ -12,8 +12,8 @@ using System.ComponentModel;
 
 namespace MultiZonePlayer {
 	public class MZPState {
-		[Description("Edit")] public Boolean SMSEnabled = false;
-		[Description("Edit")] public Boolean LandLineEnabled;
+		[Category("Edit")] public Boolean SMSEnabled = false;
+		[Category("Edit")] public Boolean LandLineEnabled;
 
 		public Boolean IsMobilePhoneFunctional = false;
 		public Boolean IsRFXFunctional = false;
@@ -377,25 +377,43 @@ namespace MultiZonePlayer {
 			//TODO
 		}
 
-		public List<String> GetEditableFieldList(String className) {
+		public class EditableField {
+			public String Name;
+			public String Description;
+			public String Type;
+		}
+		public List<EditableField> GetEditableFieldList(String className) {
 			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
 				System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
 			Object p = handle.Unwrap();
 			Type t = p.GetType();
 			if (t != null) {
-				return t.GetFields().ToList().FindAll(x => (
-					(x.GetCustomAttributes(typeof (DescriptionAttribute), false) != null) &&
-					(x.GetCustomAttributes(typeof (DescriptionAttribute), false).Length > 0)
+				List<System.Reflection.FieldInfo> fieldList = t.GetFields().ToList().FindAll(x => (
+					(x.GetCustomAttributes(typeof(CategoryAttribute), false) != null) &&
+					(x.GetCustomAttributes(typeof(CategoryAttribute), false).Length > 0)
 					&&
-					(((DescriptionAttribute[]) x.GetCustomAttributes(typeof (DescriptionAttribute), false))[0].Description == "Edit"))
-					).Select(y => y.Name).ToList();
+					(((CategoryAttribute[])x.GetCustomAttributes(typeof(CategoryAttribute), false))[0].Category == "Edit"))
+					).ToList();//.Select(y => y.Name).ToList();
+				EditableField newfld;
+				List<EditableField> fldList = new List<EditableField>();
+				foreach (System.Reflection.FieldInfo field in fieldList) {
+					newfld = new EditableField();
+					newfld.Name = field.Name;
+					if (field.GetCustomAttributes(typeof(DescriptionAttribute), false) != null && field.GetCustomAttributes(typeof(DescriptionAttribute), false).Length > 0) {
+						newfld.Description = ((DescriptionAttribute)field.GetCustomAttributes(typeof(DescriptionAttribute), false)[0]).Description;
+					}
+					else newfld.Description = "[description n/a]";
+					newfld.Type = field.FieldType.Name +" "+ Reflect.ListTypeValues(field.FieldType,",");
+					fldList.Add(newfld);
+				}
+				return fldList;
 			}
 			else {
 				return null;
 			}
 		}
 
-		public List<String> GetEditableFieldTypeList(String className) {
+		public List<String> GetEditableFieldTypeList_OLD(String className) {
 			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
 				System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
 			Object p = handle.Unwrap();
@@ -403,10 +421,10 @@ namespace MultiZonePlayer {
 			List<String> list;
 			if (t != null) {
 				list = t.GetFields().ToList().FindAll(x => (
-					(x.GetCustomAttributes(typeof(DescriptionAttribute), false) != null) &&
-					(x.GetCustomAttributes(typeof(DescriptionAttribute), false).Length > 0)
+					(x.GetCustomAttributes(typeof(CategoryAttribute), false) != null) &&
+					(x.GetCustomAttributes(typeof(CategoryAttribute), false).Length > 0)
 					&&
-					(((DescriptionAttribute[])x.GetCustomAttributes(typeof(DescriptionAttribute), false))[0].Description == "Edit"))
+					(((CategoryAttribute[])x.GetCustomAttributes(typeof(CategoryAttribute), false))[0].Category == "Edit"))
 					).Select(y => (y.FieldType.Name + " " +Reflect.ListTypeValues(y.FieldType,","))).ToList();
 			}
 			else {

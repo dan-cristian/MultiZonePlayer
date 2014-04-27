@@ -9,7 +9,7 @@
 <body style="text-align:left">
 	<%for;i;0;++;#S.OneWire.DeviceList.Count#;%>
         <button class="Sensor #S.OneWire.DeviceList.?,%i.Type#" onclick="window.open('zone-main.html?zoneid=#S.OneWire.DeviceList.?,%i.Zone.ZoneId#', '_self')">
-            <span title="#S.OneWire.DeviceList.?,%i.Zone.TemperatureTarget#">#S.OneWire.DeviceList.?,%i.DisplayValue#</span>
+            <span title=" Target/Min/Max #S.OneWire.DeviceList.?,%i.Zone.TemperatureTarget#/#S.OneWire.DeviceList.?,%i.Zone.TemperatureMinAlarm#/#S.OneWire.DeviceList.?,%i.Zone.TemperatureMaxAlarm#">#S.OneWire.DeviceList.?,%i.DisplayValue#</span>
             <br /><br />
             <span style="font-size:x-small;text-align:right" title="#S.OneWire.DeviceList.?,%i.Summary#">#S.OneWire.DeviceList.?,%i.Zone.ZoneName#</span>
             <~if;#S.OneWire.DeviceList.?,%i.HealthPercent#==100~>

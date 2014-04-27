@@ -26,9 +26,9 @@ namespace MultiZonePlayer {
 			}
 		}*/
 		//protected static List<Singleton> m_valueList = new List<Singleton>();
-		[Description("Edit")]
+		[Category("Edit")]
 		public String UniqueIdentifier="";
-		[Description("Edit")]
+		[Category("Edit")]
 		public int Id = 0;
 
 		public Singleton() {
@@ -178,22 +178,22 @@ namespace MultiZonePlayer {
 	}
 
 	public class User:Singleton {
-		[Description("Edit")]
+		[Category("Edit")]
 		public String Name;
 		public String Code;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String PhoneBTAddress;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String Email;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String MobileNumber;
-		[Description("Edit")]
+		[Category("Edit")]
 		public String WifiMACAddress;
 		public UserRole Role;
 		public DateTime NearbyPresentSince;
 		public UserPresence.PresenceType NearbyPresenceType;
 		public String Location;
-		[Description("Edit")]
+		[Category("Edit")]
 		/// <summary>
 		/// format is [pattern]:macroname:zoneid;repeat same format
 		/// </summary>
@@ -680,9 +680,9 @@ namespace MultiZonePlayer {
 	}
 
 	public class UtilityCost:Singleton {
-		[Description("Edit")]
+		[Category("Edit")]
 		public EnumUtilityType Name;
-		[Description("Edit")]
+		[Category("Edit")]
 		public double UnitCost;
 
 		protected static List<Singleton> m_valueList = new List<Singleton>();
@@ -749,26 +749,28 @@ namespace MultiZonePlayer {
 	}
 
 	public class LightSensor : Singleton {
-		[Description("Edit")]
+		[Category("Edit")]
 		public String Name;
-		[Description("Edit")]
+		[Category("Edit")]
 		public bool IsActive;
-		[Description("Edit")]
+		[Category("Edit")]
+		public int ApplyForZoneId;
+		[Category("Edit")]
 		public int ApplyForVoltageIndex;
-		[Description("Edit")]
+		[Category("Edit")]
 		public double ResistorValue;
 
-		[Description("Edit")]
+		[Category("Edit")]
 		public double MinVoltageValue;
-		[Description("Edit")]
+		[Category("Edit")]
 		public double MinLuxValue;
 
-		[Description("Edit")]
+		[Category("Edit")]
 		public double MaxVoltageValue;
-		[Description("Edit")]
+		[Category("Edit")]
 		public double MaxLuxValue;
 
-		[Description("Edit")]
+		[Category("Edit")]
 		public double HasSunMinVoltageValue;
 		
 
