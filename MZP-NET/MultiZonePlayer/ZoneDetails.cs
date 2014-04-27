@@ -1009,7 +1009,7 @@ namespace MultiZonePlayer {
 				}
 				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName, Constants.CAPABILITY_VOLTAGE,
 						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), voltageIndex.ToString(),
-						lux.ToString(), light.Name);
+						lux.ToString(), light!=null?light.Name:"[light sensor undefined]");
 				m_voltage[voltageIndex] = value;
 			}
 			

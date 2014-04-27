@@ -55,6 +55,6 @@ button.TVtv {background-image:url('television-04-icon.png');background-color:Ora
 button.Sensor {min-width:80px;text-align:right;padding:5px 5px;background-color:antiquewhite;color:black;background-repeat:no-repeat;background-position:2px 21px}
 button.Temperature {background-image:url('temperature.png');}
 button.TemperatureVoltage {background-image:url('light-icon.png'),url('thermometer-icon-tiny.png');background-position:0px 24px,32px 32px;}
-button.Closure {background-image:url('magnets-icon.png');}
+button.Closure {background-image:url('plug-icon.png');background-position:0px 18px;}
 button.Counter {min-width:80px;background-image:url('Numbers-icon.png');}
 button.Voltage {background-image:url('light-icon.png');}
