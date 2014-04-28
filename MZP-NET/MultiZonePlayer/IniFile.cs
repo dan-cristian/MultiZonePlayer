@@ -241,7 +241,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ONEWIRE_ADAPTER_PORTNAME = new String[] { "PARAM_ONEWIRE_ADAPTER_PORTNAME", "COM9", "adapter port, e.g. COM9" };
 			public static String[] PARAM_ONEWIRE_FAST_READ_DELAY = new String[] { "PARAM_ONEWIRE_FAST_READ_DELAY", "5", "number of seconds between reads for fast components, e.g. counters or IO" };
             public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
-			public static String[] PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX = new String[] { "PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX", "1", "resolution index for temp reading: 0=0.5, 1=0.25, 2=0...." };
+			public static String[] PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX = new String[] { "PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX", "1", "resolutionList index for temp reading: 0=0.5, 1=0.25, 2=0...." };
 			
 
 			public static String[] PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD = new String[] { "PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD", "15", "close power after x minutes of activity in a zone without user interaction or move" };

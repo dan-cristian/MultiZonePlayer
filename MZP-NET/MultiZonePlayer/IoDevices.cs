@@ -756,7 +756,7 @@ namespace MultiZonePlayer {
 			public ZoneDetails Zone;
 			public DateTime LastRead = DateTime.MinValue;
 			public double Temperature;
-			public int TemperatureResolutionIndex = -1;
+			public int TemperatureResolutionIndex = -1;//-1 for non initialised
 			public double Humidity;
 			public double[] Voltage = new double[3];
 			public double[] Counter = new double[2];
@@ -1018,32 +1018,44 @@ namespace MultiZonePlayer {
 
 		public void SetResolution(OneWireContainer tempelement, ZoneDetails zone, Device dev, double readTemperature) {
 			try {
+				if (zone.TemperatureResolutionDigits == -1)
+					return;//default setting is wanted, just exit
+
 				int fractionalPart=0;
 				if (readTemperature != Math.Round(readTemperature,0))
 					fractionalPart= new System.Version(readTemperature.ToString()).Minor;
-				if (dev.TemperatureResolutionIndex == -1 || fractionalPart.ToString().Length > dev.TemperatureResolutionIndex+1) {//set once if resolution not yet set
-					int resolIndex = zone.TemperatureResolutionIndex;
+				//set once if resolutionList not yet set properly. use > comparison as digits are not 0 right filled
+				if (dev.TemperatureResolutionIndex == -1 || fractionalPart.ToString().Length > zone.TemperatureResolutionDigits) {
 					TemperatureContainer tc = (TemperatureContainer)tempelement;
 					//Boolean selectable = tc.hasSelectableTemperatureResolution();
-					double[] resolution = null;
+					double[] resolutionList = null;
 					sbyte[] state = tc.readDevice();
 					//if (selectable) {
-					resolution = tc.getTemperatureResolutions();
+					resolutionList = tc.getTemperatureResolutions();
 					//}
-					if (resolution.Length > resolIndex) {
-						MLog.Log(this, "Setting temperature resolution to " + resolution[resolIndex] + "...");
-						tc.setTemperatureResolution(resolution[resolIndex], state);
+					int resolIndex = -1;
+					String resolStringList = "";
+					for (int i = 0; i < resolutionList.Length;i++ ) {
+						resolStringList += resolutionList[i] + ";";
+						if (new System.Version((resolutionList[i]).ToString()).Minor.ToString().Length == zone.TemperatureResolutionDigits) {
+							resolIndex = i;
+							break;
+						}
+					}
+					if (resolIndex != -1) {
+						MLog.Log(this, "Setting temperature resolutionList to " + resolutionList[resolIndex] + " in " + zone.ZoneName);
+						tc.setTemperatureResolution(resolutionList[resolIndex], state);
 						tc.writeDevice(state);
 						dev.TemperatureResolutionIndex = resolIndex;
 					}
 					else
-						Alert.CreateAlert("Unable to set resolution index " + resolIndex + " for zone "+zone.ZoneName +" as we only have resolutions="+resolution.Length, zone,
-							false, Alert.NotificationFlags.SystemError);
+						Alert.CreateAlert("Unable to set resolution digits to " + zone.TemperatureResolutionDigits+ " for zone "+zone.ZoneName
+							+ " as we only have " + resolutionList.Length + " resolutions, " + resolStringList);
 				}
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(this, "Error, could not set resolution on tempsensor: " + ex.Message);
+				MLog.Log(this, "Error, could not set resolutionList on tempsensor: " + ex.Message);
 			}
 		}
 
@@ -1340,7 +1352,7 @@ namespace MultiZonePlayer {
 									zone.HasOneWireVoltageSensor = true;
 									zone.SetVoltage(i, voltage[i]);
 								}
-								dev.Voltage[i] = voltage[i];
+								dev.Voltage[i] = Math.Round(voltage[i], 4);//more than 4 is not relevant for display
 							}
 
 							//reading temp

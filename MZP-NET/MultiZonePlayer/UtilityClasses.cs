@@ -1408,6 +1408,14 @@ namespace MultiZonePlayer
 			return CreateAlert(cause, null, false);
 		}
 
+		public static void CreateAlertOnce(String cause) {
+			Alert alert = m_alertList.Find(x => x.InitialCause== cause);
+			if (alert == null)
+				m_alertList.Add(new Alert(cause, null, DateTime.Now.ToLongTimeString()));
+			else
+				alert.OccurenceCount++;
+		}
+
 		public static Alert CreateAlert(String cause, ZoneDetails zone, Boolean dismissPrevAlert, params Object[] flagVars)
 		{
 			//MLog.Log(null, "ALERT: "+cause);

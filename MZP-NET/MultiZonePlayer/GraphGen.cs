@@ -14,7 +14,7 @@ namespace MultiZonePlayer
 		private System.ComponentModel.IContainer components = null;
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
 		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
-		private List<Tuple<int, DateTime, double, int>> m_voltageHistoryList;
+		private List<Tuple<int, DateTime, double, int, double>> m_voltageHistoryList;
 		private List<Tuple<int, DateTime, double, double, double, String>> m_utilitiesHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
 		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
@@ -136,9 +136,11 @@ namespace MultiZonePlayer
 				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
 				double minY = double.MaxValue, maxY = double.MinValue;
+				double unitsTotalValue = 0, voltageTotalValue=0; double minutesElapsed;
+				DateTime lastPointTaken = DateTime.MinValue; double lastUnitsValue = 0, lastVoltageValue=0;
                 //only index 2 seems relevant on my sensor
 				for (int index = 2; index <= maxIndex; index++) {
-					List<Tuple<int, DateTime, double, int>> tempValues = m_voltageHistoryList.FindAll(
+					List<Tuple<int, DateTime, double, int, double>> tempValues = m_voltageHistoryList.FindAll(
 						x => x.Item1 == zoneId
 						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == index);
 					if (tempValues.Count > 0) {
@@ -156,7 +158,22 @@ namespace MultiZonePlayer
 							series[index].Points.AddXY(point.Item2, point.Item3);
 							minY = Math.Min(minY, tempValues.Min(x => x.Item3));
 							maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+							if (lastPointTaken != DateTime.MinValue){
+								minutesElapsed = point.Item2.Subtract(lastPointTaken).TotalMinutes;
+								unitsTotalValue += minutesElapsed * lastUnitsValue;
+								voltageTotalValue += minutesElapsed * lastVoltageValue;
+								lastPointTaken = DateTime.MinValue;
+							}
+
+							if (lastPointTaken == DateTime.MinValue){
+								lastPointTaken = point.Item2;
+								lastUnitsValue = point.Item5;
+								lastVoltageValue = point.Item3;
+							}
 						}
+						minutesElapsed = tempValues[tempValues.Count - 1].Item2.Subtract(tempValues[0].Item2).TotalMinutes;
+						series[index].Name += " min=" + minY + " max=" + maxY + "\navg volt/min="+ Math.Round(voltageTotalValue/minutesElapsed, 4)
+							+" units/min="+ Math.Round(unitsTotalValue/minutesElapsed, 4);
 					}
 				}
 				chart1.ChartAreas[0].AxisY.Maximum= maxY;
@@ -458,7 +475,7 @@ namespace MultiZonePlayer
 			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
-			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int>>();
+			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int, double>>();
 			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double, double, double, String>>();
 			string[] allLines;
 
@@ -500,13 +517,14 @@ namespace MultiZonePlayer
 									Date = Convert.ToDateTime(data[2]),
 									Value = Convert.ToDouble(data[3]),
 									ZoneId = Convert.ToInt16(data[4]),
-									VoltageIndex = Convert.ToInt16(data[5])
+									VoltageIndex = Convert.ToInt16(data[5]),
+									UnitsMeasured =  GetDouble(data[6])
 								};
 					MLog.Log(this, "Processing Voltage");
 					foreach (var line in query) {
 						switch (line.Type) {
 							case Constants.CAPABILITY_VOLTAGE:
-								m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int>(line.ZoneId, line.Date, line.Value, line.VoltageIndex));
+								m_voltageHistoryList.Add(new Tuple<int, DateTime, double, int, double>(line.ZoneId, line.Date, line.Value, line.VoltageIndex, line.UnitsMeasured));
 								break;
 						}
 					}
@@ -575,9 +593,17 @@ namespace MultiZonePlayer
 			//culture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
 			if (!DateTime.TryParse(date, /*culture, styles,*/out datetime)) {
 				datetime = DateTime.Now;
-				Alert.CreateAlert("Error converting datetime in graph load @" + datetime);
+				Alert.CreateAlertOnce("Error converting datetime in graph load @" + datetime);
 			}
 			return datetime;
+		}
+		private double GetDouble(String doubl) {
+			double val;
+			if (!double.TryParse(doubl, out val)) {
+				val = 0;
+				Alert.CreateAlertOnce("Error converting double in graph load @" + doubl);
+			}
+			return val;
 		}
 		private int GetStateValue(string state)
 		{

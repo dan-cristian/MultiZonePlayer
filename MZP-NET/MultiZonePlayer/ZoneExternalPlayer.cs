@@ -89,8 +89,9 @@ namespace MultiZonePlayer
 
 			if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
 			{
+				//start minimized to force an app placement on 2nd screem
 				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1],
-					System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.AboveNormal);
+					System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.AboveNormal);
 				int i = 0;//wait for xbmc to launch
 				do { System.Threading.Thread.Sleep(100); i++; }
 				while (GetXBMCHandle() == IntPtr.Zero && i < 100);
@@ -125,6 +126,7 @@ namespace MultiZonePlayer
 					{
 					MLog.Log(this, "Sending XMBC to foreground, previous foreground win="
 						+ Utilities.GetForegroundWindow() + " xmbc=" + GetXBMCHandle());
+					//TODO: improve detection of cases when app is shown on main screem in foreground and is not moved to 2nd screen
 					MoveToSecondScreen();
 					Utilities.SetForegroundWindow(GetXBMCHandle());
 					//m_bringToForegroundOnce = true;
@@ -332,19 +334,19 @@ namespace MultiZonePlayer
 			Screen[] sc = Screen.AllScreens;
 			if (sc.Length > 1) {
 				MLog.Log(null, "Multiple screens detected, count=" + sc.Length);
-				foreach (Screen scr in sc)
-				{
-					if (!scr.Primary)
-					{
+				foreach (Screen scr in sc) {
+					if (!scr.Primary) {
 						Rectangle area = scr.Bounds;
 						IntPtr handle = GetXBMCHandle();
 						Utilities.SetWindowPos(handle, 0, area.Left, area.Top,
 							area.Width, area.Height, Utilities.SWP.SHOWWINDOW);
-						MLog.Log(null, "XBMC h="+handle+" sent to second screen at x="+area.Left+" y="+area.Top + " scrname="+scr.DeviceName);
+						MLog.Log(null, "XBMC h=" + handle + " sent to second screen at x=" + area.Left + " y=" + area.Top + " scrname=" + scr.DeviceName);
 						break;
 					}
 				}
 			}
+			else
+				Alert.CreateAlert("Only 1 PC screen detected, should be two usually for xbmc play");
 		}
 
 		private IntPtr GetXBMCHandle()

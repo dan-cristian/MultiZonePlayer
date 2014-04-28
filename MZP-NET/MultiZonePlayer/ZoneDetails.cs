@@ -101,6 +101,8 @@ namespace MultiZonePlayer {
 		//private DateTime m_lastCounterSamplingStart = DateTime.Now;
 		[Category("Edit")]
 		public String PulseMainUnitType = "";
+		[Category("Edit"), Description("Maximum number of utility units that can be consumed per minute. This is a safety check in case false records occur due to 1-wire malfunctioning. Set to -1 if limit is not enabled.")]
+		public int MaxUtilityUnitsPerMinute = -1;
 
 		[Category("Edit")]
 		public String TemperatureDeviceId;
@@ -113,8 +115,8 @@ namespace MultiZonePlayer {
 		public double TemperatureMinAlarm = -1000;
 		[Category("Edit")]
 		public double TemperatureTarget = -1000;
-		[Category("Edit")]
-		public int TemperatureResolutionIndex = 1;
+		[Category("Edit"), Description("Number of digits for temp reading. Set -1 for default device settings.")]
+		public int TemperatureResolutionDigits = -1;
 		public Boolean ScheduledHeatActive = false;
 		public String CronSchedule = "";
 		[Category("Edit")]
@@ -272,12 +274,18 @@ namespace MultiZonePlayer {
 						
 					// TODO: split consumption evenly when PC down for long
 					//PulseMainUnitsCount += PulseLastMainUnitsCount;
-					double unitCost, cost, watts, pulseCountPerMissedFrame;
+					double unitCost, cost, watts, unitCountPerMissedFrame, unitsPerMinute;
 					int missedFrames = (int)Math.Round(lapsedMinutes / PulseSampleMinutesFrequency, 0);
 					double totalLoggedPulses = 0, pulseIncrement = 0;
-					pulseCountPerMissedFrame = PulseLastMainUnitsCount / missedFrames;
+					unitCountPerMissedFrame = PulseLastMainUnitsCount / missedFrames;
+					unitsPerMinute = unitCountPerMissedFrame / PulseSampleMinutesFrequency;
+					if (MaxUtilityUnitsPerMinute > -1 && unitsPerMinute > MaxUtilityUnitsPerMinute) {
+						Alert.CreateAlert("Large utility units consumption registered, possible error, skipping, for zone="+ZoneName
+							+" units per minute="+unitsPerMinute+", limit is="+MaxUtilityUnitsPerMinute);
+					}
+					else
 					do {
-						pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, pulseCountPerMissedFrame);
+						pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, unitCountPerMissedFrame);
 						totalLoggedPulses += pulseIncrement;
 						PulseMainUnitsCount += pulseIncrement;
 						unitCost = 0;
@@ -287,7 +295,7 @@ namespace MultiZonePlayer {
 							unitCost = utilCost.UnitCost;
 							switch (UtilityType) {
 								case EnumUtilityType.Electricity:
-									watts = 1000 * pulseCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
+									watts = 1000 * unitCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
 									break;
 								case EnumUtilityType.Water:
 									break;
@@ -295,11 +303,11 @@ namespace MultiZonePlayer {
 									MLog.Log(this, "WARNING unprocessed utility type " + UtilityType);
 									break;
 							}
-							cost = pulseCountPerMissedFrame * unitCost;
+							cost = unitCountPerMissedFrame * unitCost;
 						}
 						LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
 						Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
-							PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), pulseCountPerMissedFrame.ToString(),
+							PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), unitCountPerMissedFrame.ToString(),
 							cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
 					}
 					while (totalLoggedPulses < PulseLastMainUnitsCount);
@@ -796,7 +804,7 @@ namespace MultiZonePlayer {
 					TemperatureTarget = zonestorage.TemperatureTarget;
 					TemperatureMaxAlarm = zonestorage.TemperatureMaxAlarm;
 					TemperatureMinAlarm = zonestorage.TemperatureMinAlarm;
-					TemperatureResolutionIndex = zonestorage.TemperatureResolutionIndex;
+					TemperatureResolutionDigits = zonestorage.TemperatureResolutionDigits;
 					Color = zonestorage.Color;
 					//Temperature = "1";
 
@@ -809,6 +817,7 @@ namespace MultiZonePlayer {
 					PulseCountInTimeSample = zonestorage.PulseCountInTimeSample;
 					LastCounterCount = zonestorage.LastCounterCount;
 					LastPulseSamplingStart = zonestorage.LastPulseSamplingStart;
+					MaxUtilityUnitsPerMinute = zonestorage.MaxUtilityUnitsPerMinute;
 					CounterPageNameToInclude = zonestorage.CounterPageNameToInclude;
 					ClosureLevelNameToInclude = zonestorage.ClosureLevelNameToInclude;
 
