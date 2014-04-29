@@ -72,6 +72,7 @@ namespace MultiZonePlayer
             public const String INI_SECTION_PARAMS = "Parameters";
             public const String INI_SECTION_MUSICMOOD = "MusicMood";
             public const String INI_SECTION_MUSICSCHEDULE = "MusicSchedule";
+			public const String INI_SECTION_SCRIPTINGRULES = "ScriptingRules";
 			
             public const String DEFAULT_EXT_PLAYLIST = ".m3u";
             public const String POPM_CREATOR_NAME = "MZP";

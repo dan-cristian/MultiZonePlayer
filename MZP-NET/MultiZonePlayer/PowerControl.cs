@@ -189,7 +189,7 @@ namespace MultiZonePlayer
 							m_lastCommandWasOK = true;
 						}
 						else {
-							Alert.CreateAlert("Denkovi Open failed, status = " + status);
+							Alert.CreateAlert("Denkovi Open failed, status = " + status, true);
 							//Reinitialise();
 							m_lastCommandWasOK = false;
 						}
@@ -295,7 +295,7 @@ namespace MultiZonePlayer
 
 				if (!ev.WaitOne(3000))
 				{
-					Alert.CreateAlert("Denkovi Running async power on ERROR");
+					Alert.CreateAlert("Denkovi Running async power on ERROR", false);
 					th.Abort();
 					//Reinitialise();
 				}
@@ -344,7 +344,7 @@ namespace MultiZonePlayer
                 th.Start();
 				if (!ev.WaitOne(3000))
 				{
-					Alert.CreateAlert("Running async power off ERROR");
+					Alert.CreateAlert("Running async power off ERROR", false);
 					th.Abort();
 					//Reinitialise();
 				}

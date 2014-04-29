@@ -346,7 +346,7 @@ namespace MultiZonePlayer
 				}
 			}
 			else
-				Alert.CreateAlert("Only 1 PC screen detected, should be two usually for xbmc play");
+				Alert.CreateAlert("Only 1 PC screen detected, should be two usually for xbmc play", false);
 		}
 
 		private IntPtr GetXBMCHandle()

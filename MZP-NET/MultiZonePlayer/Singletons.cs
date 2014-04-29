@@ -417,7 +417,7 @@ namespace MultiZonePlayer {
 							break;
 					}
 					added = true;
-					Rules.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
+					ScriptingRule.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
 				}
 				else
 					MLog.Log(null, "Warning, Ignoring user presence when adding usr=" + user);
@@ -450,7 +450,7 @@ namespace MultiZonePlayer {
 			}
 			if (left) {
 				MLog.Log(null, "DEVICE " + type + " LEFT user: " + user.Name);
-				Rules.ExecuteRule(up, "User left on " + type + " user=" + user.Name);
+				ScriptingRule.ExecuteRule(up, "User left on " + type + " user=" + user.Name);
 			}
 			//else
 			//	MLog.Log(null, "DEVICE " + type + " lost contact count= " + lostCount + " user=" + user.Name);
@@ -835,6 +835,109 @@ namespace MultiZonePlayer {
 			catch (Exception ex) {
 				MLog.Log(ex, "Error loading LightSensor");
 				throw new Exception("Error load LightSensor", ex);
+			}
+		}
+	}
+
+	public class PersistentObject {
+		private class ObjectStored{
+			public String ObjectName;
+			public int LastId;
+		}
+		private class ListStored{
+			public String ObjectName;
+			public List<PersistentObject> ObjectList = new List<PersistentObject>();
+		}
+		private static List<ObjectStored> m_objectIdList = new List<ObjectStored>();
+		private static List<ListStored> m_objectList = new List<ListStored>();
+		[Category("Edit")]
+		public int Id = -1;
+		public PersistentObject() {
+			
+		}
+		public int Index {
+			get { return ValueList.IndexOf(this); }
+		}
+
+		private static ListStored GetList(PersistentObject obj) {
+			return m_objectList.Find(x => x.ObjectName == obj.GetType().Name);
+		}
+		private static ListStored GetList(String objectName) {
+			return m_objectList.Find(x => x.ObjectName == objectName);
+		}
+		public static PersistentObject GetObject(String objectName, int Id){
+			return GetList(objectName).ObjectList.Find(x=>x.Id==Id);
+		}
+		public static PersistentObject StaticInstance(Type objType) {
+			ListStored list = GetList(objType.Name);
+			if (list != null)
+				if (list.ObjectList!=null)
+				return list.ObjectList[0];
+			return new PersistentObject();
+			
+		}
+		public static void Add(PersistentObject newobj){
+			if (newobj.Id == -1) {
+				int maxId = m_objectList.Find(x => x.ObjectName == newobj.GetType().Name).ObjectList.Select(x=>x.Id).Max();
+				newobj.Id = maxId+1;
+			}
+
+			ListStored list = GetList(newobj);
+			if (list==null)
+			{
+				list = new ListStored();
+				list.ObjectName = newobj.GetType().Name;
+				list.ObjectList = new List<PersistentObject>();
+				m_objectList.Add(list);
+			}
+			list.ObjectList.Add(newobj);
+		}
+
+		protected List<PersistentObject> ValueList {
+			get {
+				ListStored list = GetList(this.GetType().Name);
+				if (list != null)
+					return list.ObjectList;
+				else
+					return null;
+			}
+		}
+
+		protected static List<PersistentObject> GetValueList(Type type) {
+			ListStored list = GetList(type.Name);
+			if (list != null)
+				return list.ObjectList;
+			else
+				return null;
+		}
+
+		public virtual void LoadFromIni(String iniSectionName) {
+			Hashtable values = IniFile.LoadAllIniEntriesByIntKey(iniSectionName);
+			PersistentObject item;
+			try {
+				foreach (String json in values.Values) {
+					item = (PersistentObject)fastJSON.JSON.Instance.ToObject(json, this.GetType());
+					Add(item);
+				}
+			}
+			catch (Exception ex) {
+				string err = "Error loading persistent object " + this.GetType().Name + " from ini section " + iniSectionName;
+				MLog.Log(ex, err);
+				throw new Exception(err, ex);
+			}
+		}
+
+		public void SaveEntryToIni(String iniSectionName) {
+			String json;
+			fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+			param.UseExtensions = false;
+			json = fastJSON.JSON.Instance.ToJSON(this, param);
+			IniFile.IniWriteValuetoTemp(iniSectionName, this.Id.ToString(), json);
+		}
+		
+		public void SaveAllToIni(String iniSectionName) {
+			foreach (PersistentObject item in ValueList) {
+				item.SaveEntryToIni(iniSectionName);
 			}
 		}
 	}

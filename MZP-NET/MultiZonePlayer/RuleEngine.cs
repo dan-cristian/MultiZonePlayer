@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace MultiZonePlayer
 {
@@ -381,6 +382,12 @@ namespace MultiZonePlayer
 																		if (value.ToString().Contains(typeof(MZPState.EditableField).ToString()))
 																			value = ((List<MZPState.EditableField>)value)[Convert.ToInt32(parameters[0])];
 																		else
+																			if (value.ToString().Contains(typeof(PersistentObject).ToString()))
+																				value = ((List<PersistentObject>)value)[Convert.ToInt32(parameters[0])];
+																			else
+																				if (value.ToString().Contains(typeof(ScriptingRule).ToString()))
+																					value = ((List<ScriptingRule>)value)[Convert.ToInt32(parameters[0])];
+																				else
 									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
 										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
@@ -398,68 +405,58 @@ namespace MultiZonePlayer
 				else
 				{
 					fieldInfo = instance.GetType().GetField(propName);
-					if (fieldInfo != null)
-					{
+					if (fieldInfo != null){
 						if (parameters != null && parameters.Length > 0)
 							MLog.Log(null, "Warning, Field called with parameters");
 						value = fieldInfo.GetValue(instance);
 					}
-					else
-					{
+					else{
 						methInfo = instance.GetType().GetMethod(propName);
-						if (methInfo != null)
-						{
+						if (methInfo != null){
 							int parsLen = parameters != null ? parameters.Length : 0;
 
-							if (methInfo.GetParameters().Length == parsLen)
-							{
+							if (methInfo.GetParameters().Length == parsLen){
 								for (int p = 0; p < parsLen; p++)//setting param types
 								{
-									try
-									{
+									try{
 										Type paramType = methInfo.GetParameters()[p].ParameterType;
 										if (parameters[p].ToString().StartsWith("%"))
 											varFound = true;
-										if (paramType.IsEnum)
-										{
+										if (paramType.IsEnum){
 											parameters[p] = Enum.Parse(paramType.UnderlyingSystemType, parameters[p].ToString());
 										}
 										else
 											parameters[p] = Convert.ChangeType(parameters[p], paramType);
 									}
-									catch (Exception e)
-									{
+									catch (Exception e){
 										MLog.Log(null, "Unable to cast prop=" + Clean(propName) + " param="+parameters[p] + " err="+e.Message);
 										value = new Exception();
 										break;
 									}
 								}
-								try
-								{
+								try{
 									value = methInfo.Invoke(instance, parameters);
 								}
-								catch (Exception ex)
-								{
+								catch (Exception ex){
 									MLog.Log(ex, "Err invoking method " + Clean(propName));
 									value = new Exception();
 								}
-								if (value == null && !varFound)
-								{
+								if (value == null && !varFound){
 									MLog.Log(null, "Warning, null result returned on prop=" + Clean(propName));
 								}
 							}
-							else
-							{
-								value = new Exception();
-								MLog.Log(null, "wrong numbers of method params, meth=" + Clean(propName)
-									+ " expected=" + methInfo.GetParameters().Length + " given=" + parsLen);
+							else{
+								String err="wrong numbers of method params, meth=" + Clean(propName)
+									+ " expected=" + methInfo.GetParameters().Length + " given=" + parsLen;
+								value = new Exception(err);
+								MLog.Log(err);
 							}
 						}
-						else
-						{
-							//??
-							value = new Exception(); 
-							//MLog.Log(null, "unknown prop type for prop=" + Clean(propName));
+						else{
+							//Must be garbage if reaches this point, cannot be reflected
+
+							value = new Exception("unknown method info type for prop=" + Clean(propName)); 
+							//MLog.Log(null, );
 						}
 					}
 				}
@@ -543,11 +540,11 @@ namespace MultiZonePlayer
 		}
 	}
 
-	public static class Rules
+	public static class Rules_OLD
 	{
 		private static List<RuleEntry> m_ruleList;
-		public class RuleEntry
-		{
+
+		public class RuleEntry {
 			public string Name;
 			public string Trigger;
 			public string FilterFieldName = null;
@@ -555,18 +552,14 @@ namespace MultiZonePlayer
 			public List<String> VariableList = null;
 			public string JSCode;
 		}
-
-		public static void LoadFromIni()
-		{
+		public static void LoadFromIni() {
 			m_ruleList = new List<RuleEntry>();
 			string fileContent = Utilities.ReadFile(IniFile.CurrentPath() + IniFile.RULES_FILE);
 			string[] rules = fileContent.Split(new String[] { "};" }, StringSplitOptions.RemoveEmptyEntries);
 			string[] atoms;
 			RuleEntry entry;
-			foreach (string rule in rules)
-			{
-				try
-				{
+			foreach (string rule in rules) {
+				try {
 					entry = new RuleEntry();
 
 					atoms = rule.Split(new String[] { "={" }, StringSplitOptions.RemoveEmptyEntries);
@@ -575,12 +568,10 @@ namespace MultiZonePlayer
 					atoms = atoms[1].Split('|');
 					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
 					string[] vars = entry.Trigger.Split(';');
-					if (vars.Length > 1)
-					{
+					if (vars.Length > 1) {
 						entry.Trigger = vars[0];
 						string[] fields = vars[1].Split('=');
-						if (fields.Length > 1)
-						{
+						if (fields.Length > 1) {
 							entry.FilterFieldName = fields[0];
 							entry.FilterFieldValue = fields[1];
 						}
@@ -590,19 +581,18 @@ namespace MultiZonePlayer
 					MatchCollection matchList;
 					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");//Not clear what?
 					if (matchList.Count > 0) entry.VariableList = new List<string>();
-					foreach (Match m in matchList)
-					{
+					foreach (Match m in matchList) {
 						entry.VariableList.Add(m.Groups[1].Value);
 					}
 					m_ruleList.Add(entry);
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					MLog.Log(ex, "Error, rule was not loaded, rule=" + rule);
 				}
 			}
 			MLog.Log(null, "Loaded " + m_ruleList.Count + " rules");
 		}
+		
 
 		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 		public static void ExecuteRule(object callingInstance, params String[] values)
@@ -1009,4 +999,188 @@ namespace MultiZonePlayer
 		}
 	}
 
+	public class ScriptingRule : PersistentObject {
+		//private static List<RuleEntry> m_ruleList;
+		[Category("Edit")]
+		public string Name;
+		[Category("Edit"), Description("Name of property that will change and will trigger the event")]
+		public string Trigger;
+		[Category("Edit"), Description("Which field is used to filter the event")]
+		public string FilterFieldName = null;
+		[Category("Edit"), Description("Field value required to execute the event")]
+		public string FilterFieldValue = null;
+		protected List<String> VariableList = null;
+		[Category("Edit"), Description(@"Java Script code to be executed when trigger condition meet. Example:<br/>
+			RuleAlarm={ZoneDetails.Temperature;ZoneName=curte f|<br/>
+			if ('#ServerTime#'=='aa')<br/>
+			result = 'command=music;zonename=living';<br/>
+			else<br/>
+			if ('#S.IsWinloadLoading#' == 'False')<br/>
+				result ='command=music;zonename=buca';<br/>
+			else<br/>
+				result='';<br/>
+			};"), Editor("textarea","60,10")]
+		public string JSCode;
+
+		public new List<ScriptingRule> ValueList_old {
+			get { return base.ValueList.Select(x => (ScriptingRule)x).ToList(); }
+		}
+
+		public static new List<ScriptingRule> ValueList {
+			get {
+				if (GetValueList(typeof(ScriptingRule)) != null)
+					return GetValueList(typeof(ScriptingRule)).Select(x => (ScriptingRule)x).ToList();
+				else return null;	
+			}
+		}
+
+		public override void LoadFromIni(String iniSectionName) {
+			base.LoadFromIni(iniSectionName);
+			foreach (ScriptingRule entry in ValueList) { 
+				MatchCollection matchList;
+				if (entry.JSCode != null) {
+					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");//Not clear what?
+					if (matchList.Count > 0) entry.VariableList = new List<string>();
+					foreach (Match m in matchList) {
+						entry.VariableList.Add(m.Groups[1].Value);
+					}
+				}
+			}
+		}
+
+		public void LoadFromIni_old() {
+			//m_ruleList = new List<RuleEntry>();
+			string fileContent = Utilities.ReadFile(IniFile.CurrentPath() + IniFile.RULES_FILE);
+			string[] rules = fileContent.Split(new String[] { "};" }, StringSplitOptions.RemoveEmptyEntries);
+			string[] atoms;
+			ScriptingRule entry;
+			foreach (string rule in rules) {
+				try {
+					entry = new ScriptingRule();
+
+					atoms = rule.Split(new String[] { "={" }, StringSplitOptions.RemoveEmptyEntries);
+					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");//.ToLower();
+
+					atoms = atoms[1].Split('|');
+					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
+					string[] vars = entry.Trigger.Split(';');
+					if (vars.Length > 1) {
+						entry.Trigger = vars[0];
+						string[] fields = vars[1].Split('=');
+						if (fields.Length > 1) {
+							entry.FilterFieldName = fields[0];
+							entry.FilterFieldValue = fields[1];
+						}
+					}
+					entry.JSCode = atoms[1];
+					//find variables in js code
+					MatchCollection matchList;
+					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");//Not clear what?
+					if (matchList.Count > 0) entry.VariableList = new List<string>();
+					foreach (Match m in matchList) {
+						entry.VariableList.Add(m.Groups[1].Value);
+					}
+					Add(entry);
+				}
+				catch (Exception ex) {
+					MLog.Log(ex, "Error, rule was not loaded, rule=" + rule);
+				}
+			}
+			MLog.Log(null, "Loaded " + ValueList.Count + " rules");
+		}
+
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		public static void ExecuteRule(object callingInstance, params String[] values) {
+			//if (m_ruleList == null) LoadFromIni();
+			//string parameters = triggerField.Length>0?triggerField[0].ToString():"";
+			string triggerName;
+			var currentMethod = System.Reflection.MethodInfo.GetCurrentMethod();
+			var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
+
+			int i = callingMethod.Name.IndexOf("set_");
+			if (i >= 0) {
+				triggerName = callingMethod.Name.Substring("set_".Length);
+				triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
+			}
+			else {
+				i = callingMethod.Name.IndexOf("Set");
+				if (i >= 0) {
+					triggerName = callingMethod.Name.Substring("Set".Length);
+					triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
+				}
+				else {
+					MLog.Log(null, "Error no triggername found calling method=" + callingMethod.Name);
+					return;
+				}
+			}
+
+
+			List<ScriptingRule> ruleList, filteredList;
+			if (ValueList != null) {
+				ruleList = ValueList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName == null);
+				filteredList = ValueList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName != null).ToList();
+
+				if (filteredList != null) {
+					object val;
+					foreach (ScriptingRule r in filteredList) {
+						val = Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
+						if (val != null && r.FilterFieldValue == val.ToString())
+							ruleList.Add(r);
+					}
+				}
+
+				foreach (ScriptingRule rule in ruleList) {
+					string parsedCode = rule.JSCode;
+					//replacing variables
+					/*
+					if (rule.VariableList != null)
+					{
+						object value;
+						foreach (string variable in rule.VariableList)
+						{
+							value = Reflect.GetPropertyField(callingInstance, variable);
+							if (value != null) //TODO check the need
+								parsedCode = parsedCode.Replace("[" + variable + "]", value.ToString());
+							//else
+							//	MLog.Log(null, "No instance variable found for jscode, var=" + variable);
+						}
+					}*/
+
+					try {
+						Reflect.GenericReflect(ref  parsedCode);
+						String JSResult = ExpressionEvaluator.EvaluateToString(parsedCode);
+						String displayValues = "";
+						if (values != null) {
+							foreach (String v in values) {
+								displayValues += v + ";";
+							}
+						}
+						MLog.Log(null, "Script " + rule.Name + " values=" + displayValues + " returned result=[" + JSResult + "]");
+						string[] pairs = JSResult.Split(';');
+						string[] entry;
+						ValueList vals = new ValueList();
+
+						foreach (string pair in pairs) {
+							entry = pair.Split('=');
+							if (entry.Length > 1)
+								vals.Add(entry[0].ToLower().Trim(), entry[1].ToLower());
+							else
+								MLog.Log(null, "Missing parameters for JS command");
+						}
+						MLog.Log(null, "Execute RuleEngine command=" + rule.Name + " trigger=" + triggerName);
+						if (vals.Values.Count > 0)
+							API.DoCommand(vals);
+						else
+							MLog.Log(null, "Not executing JS script command due to missing values");
+
+					}
+					catch (Exception ex) {
+						MLog.Log(ex, "Error reflect / JS / execute");
+					}
+
+				}
+			}
+		}
+	}
 }

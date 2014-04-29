@@ -408,8 +408,14 @@ namespace MultiZonePlayer
 									LightSensor light = new LightSensor("Default Sensor");
 									LightSensor.Add(light);
 									break;
+								case "ScriptingRule":
+									ScriptingRule rule = new ScriptingRule();
+									rule.Name = "Default Rule";
+									ScriptingRule.Add(rule);
+									break;
 								default:
-									MLog.Log("Error, classname not recognised on create field, class=" + classname);
+										Alert.CreateAlert("Error, classname not recognised on create field, class=" + classname 
+											, true);
 									break;
 							}
 							break;
@@ -436,7 +442,12 @@ namespace MultiZonePlayer
 									fieldObj = LightSensor.GetLightSensor(id);
 									break;
 								default:
-									MLog.Log("Error, classname not recognised on set field, class="+classname);
+									try {
+										fieldObj = PersistentObject.GetObject(classname, id);
+									}
+									catch (Exception ex) {
+										Alert.CreateAlert("Error, classname not recognised on set field, class=" + classname + " convert attempt err="+ex.Message, true);
+									}
 									break;
 							}
 							if (Reflect.SetFieldValue(ref fieldObj, field, text)) {

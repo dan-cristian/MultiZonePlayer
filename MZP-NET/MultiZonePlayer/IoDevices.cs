@@ -743,7 +743,8 @@ namespace MultiZonePlayer {
 		public List<Device> DeviceList {
 			get {
 				if (m_deviceList.Count > 0)
-					return m_deviceList.OrderByDescending(x => x.Type).ToList();
+					//return only devices that were read ok once
+					return m_deviceList.FindAll(y=>y.SuccessCount>0).OrderByDescending(x => x.Type).ToList();
 				else
 					return m_deviceList;
 			}
@@ -764,6 +765,7 @@ namespace MultiZonePlayer {
 			public Boolean[] Level = new Boolean[2];
 			public Boolean[] Latch= new Boolean[2];
 			public Boolean IOHigh = false, IOAlarm=false;
+			public Boolean TempResolutionCanBeSet = true;
 			private int m_errorCount = 0, m_successCount = 0;
 			private Boolean m_isCounter = false, m_hasTemp = false, m_hasVoltage = false, m_hasClosure = false;
 			private DateTime m_startProc = DateTime.Now;
@@ -793,7 +795,7 @@ namespace MultiZonePlayer {
 						m_hasClosure = true;
 						break;
 					default:
-						Alert.CreateAlert("Unknown one wire device name " + name);
+						Alert.CreateAlert("Unknown one wire device name " + name, true);
 						break;
 				}
 			}
@@ -1018,8 +1020,8 @@ namespace MultiZonePlayer {
 
 		public void SetResolution(OneWireContainer tempelement, ZoneDetails zone, Device dev, double readTemperature) {
 			try {
-				if (zone.TemperatureResolutionDigits == -1)
-					return;//default setting is wanted, just exit
+				if (zone.TemperatureResolutionDigits == -1 || !dev.TempResolutionCanBeSet)
+					return;//default setting is wanted, or temp resolution cannot be set, just exit
 
 				int fractionalPart=0;
 				if (readTemperature != Math.Round(readTemperature,0))
@@ -1048,9 +1050,11 @@ namespace MultiZonePlayer {
 						tc.writeDevice(state);
 						dev.TemperatureResolutionIndex = resolIndex;
 					}
-					else
-						Alert.CreateAlert("Unable to set resolution digits to " + zone.TemperatureResolutionDigits+ " for zone "+zone.ZoneName
-							+ " as we only have " + resolutionList.Length + " resolutions, " + resolStringList);
+					else {
+						Alert.CreateAlert("Unable to set resolution digits to " + zone.TemperatureResolutionDigits + " for zone " + zone.ZoneName
+							+ " as we only have " + resolutionList.Length + " resolutions, " + resolStringList, false);
+						dev.TempResolutionCanBeSet = false;
+					}
 				}
 			}
 			catch (Exception ex)
@@ -1174,7 +1178,7 @@ namespace MultiZonePlayer {
 							//slow tick
 							i = 0;
 							if (adapter == null || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
-								Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes");
+								Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", true);
 								Reinitialise();
 							}
 							ProcessFamily(ONEWIRE_TEMPDEV_NAME, adapter, false, false, 0x28); //DS18B20 = temp
@@ -1217,7 +1221,7 @@ namespace MultiZonePlayer {
 								zone.HasOneWireTemperatureSensor = true;
 								SetResolution(element, zone, dev, tempVal);
 								if (tempVal != TEMP_DEFAULT) {
-									zone.Temperature = tempVal;
+									zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
@@ -1368,7 +1372,7 @@ namespace MultiZonePlayer {
 								SetResolution(element, zone, dev, tempVal);
 								
 								if (tempVal != TEMP_DEFAULT) {
-									zone.Temperature = tempVal;
+									zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp via ds2438 in zone " + zone.ZoneName);

@@ -33,14 +33,9 @@ namespace MultiZonePlayer
     {
 		public static void RunTest()
 		{
-			string r = "#R.Random#";
-			Reflect.GenericReflect(ref r);
-
-			r = "#Zones,1.Temperature#";
-			Reflect.GenericReflect(ref r);
-
-			r = "#Zones,2.ChildZone,0.HasAction#";
-			Reflect.GenericReflect(ref r);
+			//ScriptingRule rules = new ScriptingRule();
+			//rules.LoadFromIni("Rules");
+			//if (rules.Values != null) { };
 		}
 
        // VlcControl vlcControl1;

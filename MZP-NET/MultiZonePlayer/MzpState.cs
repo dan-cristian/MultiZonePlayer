@@ -58,6 +58,7 @@ namespace MultiZonePlayer {
 		public Boolean TestCond = false;
 		private Bluetooth m_bt;
 		private SysLog m_syslog;
+		private ScriptingRule m_rule = new ScriptingRule();
 
 		public WDIO WDIO {
 			get { return m_wdio; }
@@ -65,21 +66,7 @@ namespace MultiZonePlayer {
 
 		private OneWire m_oneWire;
 
-		public UserPresence UserPresence {
-			get { return MultiZonePlayer.UserPresence.Instance; }
-		}
-
-		public User User {
-			get { return (User) MultiZonePlayer.User.StaticInstance; }
-		}
-
-		public UtilityCost UtilityCost{
-			get { return (UtilityCost)MultiZonePlayer.UtilityCost.StaticInstance; }
-		}
-
-		public LightSensor LightSensor {
-			get { return (LightSensor)MultiZonePlayer.LightSensor.StaticInstance; }
-		}
+		
 
 		public OneWire OneWire {
 			get { return m_oneWire; }
@@ -152,6 +139,8 @@ namespace MultiZonePlayer {
 
 			m_musicScheduleList = new List<MusicScheduleEntry>();
 			MusicScheduleEntry.LoadFromIni(ref m_musicScheduleList);
+			m_rule.LoadFromIni(IniFile.INI_SECTION_SCRIPTINGRULES);
+			//MultiZonePlayer.ScriptingRule.LoadFromIni(IniFile.INI_SECTION_SCRIPTINGRULES, typeof(MultiZonePlayer.ScriptingRule));
 
 			MLog.Log(this, "Retrieving system audio input devices details");
 			int index = 0;
@@ -249,12 +238,13 @@ namespace MultiZonePlayer {
 				MLog.LoadFromIni();
 				m_lastScheduleFileModifiedDate = fileModified;
 			}
-
+			/*
 			fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.RULES_FILE);
 			if (fileModified != m_lastRulesFileModifiedDate) {
-				Rules.LoadFromIni();
+				ScriptingRule.LoadFromIni();
 				m_lastRulesFileModifiedDate = fileModified;
 			}
+			 */
 		}
 
 		public List<MacroEntry> GetZoneMacros(int zoneId) {
@@ -306,6 +296,7 @@ namespace MultiZonePlayer {
 				}
 				UtilityCost.SaveAllToIni();
 				LightSensor.SaveAllToIni();
+				m_rule.SaveAllToIni(IniFile.INI_SECTION_SCRIPTINGRULES);
 				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
 			}
@@ -377,10 +368,16 @@ namespace MultiZonePlayer {
 			//TODO
 		}
 
-		public class EditableField {
+		public class EditableField {//only edit category items included
 			public String Name;
-			public String Description;
+			public String Description;//field description visible in browser etc
 			public String Type;
+			public String Editor="";//indicate what component is used in browser for edit
+			public String EditorSize = "";
+			public String EditorSize1 = "";
+			public String EditorSize2 = "";
+
+
 		}
 		public List<EditableField> GetEditableFieldList(String className) {
 			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
@@ -404,6 +401,18 @@ namespace MultiZonePlayer {
 					}
 					else newfld.Description = "[description n/a]";
 					newfld.Type = field.FieldType.Name +" "+ Reflect.ListTypeValues(field.FieldType,",");
+					if (field.GetCustomAttributes(typeof(EditorAttribute), false) != null && field.GetCustomAttributes(typeof(EditorAttribute), false).Length > 0) {
+						newfld.Editor = ((EditorAttribute)field.GetCustomAttributes(typeof(EditorAttribute), false)[0]).EditorTypeName;
+						newfld.EditorSize = ((EditorAttribute)field.GetCustomAttributes(typeof(EditorAttribute), false)[0]).EditorBaseTypeName;
+						if (newfld.EditorSize.Contains(",")) {
+							string[] atoms = newfld.EditorSize.Split(',');
+							if (atoms.Length >= 2) {
+								newfld.EditorSize1 = atoms[0];
+								newfld.EditorSize2 = atoms[1];
+							}
+						}
+					}
+					
 					fldList.Add(newfld);
 				}
 				return fldList;
@@ -411,27 +420,6 @@ namespace MultiZonePlayer {
 			else {
 				return null;
 			}
-		}
-
-		public List<String> GetEditableFieldTypeList_OLD(String className) {
-			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
-				System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
-			Object p = handle.Unwrap();
-			Type t = p.GetType();
-			List<String> list;
-			if (t != null) {
-				list = t.GetFields().ToList().FindAll(x => (
-					(x.GetCustomAttributes(typeof(CategoryAttribute), false) != null) &&
-					(x.GetCustomAttributes(typeof(CategoryAttribute), false).Length > 0)
-					&&
-					(((CategoryAttribute[])x.GetCustomAttributes(typeof(CategoryAttribute), false))[0].Category == "Edit"))
-					).Select(y => (y.FieldType.Name + " " +Reflect.ListTypeValues(y.FieldType,","))).ToList();
-			}
-			else {
-				list = null;
-				
-			}
-			return list;
 		}
 
 		public List<String> GetFieldList(String className) {
@@ -474,6 +462,22 @@ namespace MultiZonePlayer {
 			get { return m_zoneEvents; }
 		}
 
+		public UserPresence UserPresence {
+			get { return MultiZonePlayer.UserPresence.Instance; }
+		}
+
+		public User User {
+			get { return (User)MultiZonePlayer.User.StaticInstance; }
+		}
+
+		public UtilityCost UtilityCost {
+			get { return (UtilityCost)MultiZonePlayer.UtilityCost.StaticInstance; }
+		}
+
+		
+
+		
+
 		public List<User> UserList {
 			get { return User.StaticInstance.ValueList.Select(x => (User) x).ToList(); }
 		}
@@ -494,8 +498,20 @@ namespace MultiZonePlayer {
 			get { return UtilityCost.StaticInstance.ValueList.Select(x => (UtilityCost)x).ToList(); }
 		}
 
+		public LightSensor LightSensor {
+			get { return (LightSensor)MultiZonePlayer.LightSensor.StaticInstance; }
+		}
 		public List<LightSensor> LightSensorList {
 			get { return LightSensor.StaticInstance.ValueList.Select(x => (LightSensor)x).ToList(); }
+		}
+
+		public ScriptingRule ScriptingRule {
+			get {
+				return (ScriptingRule)MultiZonePlayer.ScriptingRule.StaticInstance(typeof(MultiZonePlayer.ScriptingRule));
+			}
+		}
+		public List<ScriptingRule> ScriptingRuleList {
+			get { return ScriptingRule.ValueList.Select(x => (ScriptingRule)x).ToList(); }
 		}
 
 		public List<IMZPDevice> DeviceList {

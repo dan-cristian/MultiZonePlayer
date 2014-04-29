@@ -228,7 +228,7 @@ namespace MultiZonePlayer {
 
 				LastClosureEventDateTime = DateTime.Now;
 				if (m_isClosureContactMade != m_isClosureContactMadeLast) {
-					Rules.ExecuteRule(this, "isclosurecontact=" + m_isClosureContactMade);
+					ScriptingRule.ExecuteRule(this, "isclosurecontact=" + m_isClosureContactMade);
 					m_isClosureContactMadeLast= m_isClosureContactMade;
 				}
 			}
@@ -281,7 +281,7 @@ namespace MultiZonePlayer {
 					unitsPerMinute = unitCountPerMissedFrame / PulseSampleMinutesFrequency;
 					if (MaxUtilityUnitsPerMinute > -1 && unitsPerMinute > MaxUtilityUnitsPerMinute) {
 						Alert.CreateAlert("Large utility units consumption registered, possible error, skipping, for zone="+ZoneName
-							+" units per minute="+unitsPerMinute+", limit is="+MaxUtilityUnitsPerMinute);
+							+" units per minute="+unitsPerMinute+", limit is="+MaxUtilityUnitsPerMinute, false);
 					}
 					else
 					do {
@@ -369,7 +369,7 @@ namespace MultiZonePlayer {
 				if (value == MultiZonePlayer.ZoneState.Running)
 					m_lastRunningDateTime = DateTime.Now;
 				if (m_zoneState != m_zoneStateLast) {
-					Rules.ExecuteRule(this, "zonestate=" + m_zoneState);
+					ScriptingRule.ExecuteRule(this, "zonestate=" + m_zoneState);
 					m_zoneStateLast = m_zoneState;
 				}
 			}
@@ -382,7 +382,7 @@ namespace MultiZonePlayer {
 			set {
 				m_movementAlert = value;
 				if (m_movementAlert != m_movementAlertLast) {
-					Rules.ExecuteRule(this, "movement=" + m_movementAlert);
+					ScriptingRule.ExecuteRule(this, "movement=" + m_movementAlert);
 					m_movementAlertLast = m_movementAlert;
 				}
 			}
@@ -661,7 +661,7 @@ namespace MultiZonePlayer {
 				if (Temperature != value) {
 					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
 						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString());
-					Rules.ExecuteRule(this, "temp=" + value);
+					ScriptingRule.ExecuteRule(this, "temp=" + value);
 					//m_temperatureLast = m_temperature;
 				}
 
@@ -700,7 +700,7 @@ namespace MultiZonePlayer {
 				if (Humidity != value) {
 					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
 						Constants.CAPABILITY_HUM, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString());
-					Rules.ExecuteRule(this, "humid=" + value);
+					ScriptingRule.ExecuteRule(this, "humid=" + value);
 				}
 				m_humidity = value;
 				m_lastHumSet = DateTime.Now;
@@ -1008,7 +1008,7 @@ namespace MultiZonePlayer {
 			double lastVal;
 			LightSensor light = MZPState.Instance.LightSensorList.Find(x=>x.IsActive && x.ApplyForZoneId == ZoneId);
 			if (light == null)
-				Alert.CreateAlert("No light sensor (active) found for zone "+ ZoneName);
+				Alert.CreateAlert("No light sensor (active) found for zone "+ ZoneName, false);
 
 			lastVal = m_voltage[voltageIndex];
 			if (lastVal != value) {

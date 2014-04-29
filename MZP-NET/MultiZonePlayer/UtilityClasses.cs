@@ -1290,7 +1290,7 @@ namespace MultiZonePlayer
 			get { return m_areaState; }
 			set { m_areaState = value;
 				if (m_areaState != m_areaStateLast)
-					Rules.ExecuteRule(this, "areastate="+m_areaState);
+					ScriptingRule.ExecuteRule(this, "areastate=" + m_areaState);
 				m_areaStateLast = m_areaState;
 			}
 		}
@@ -1404,7 +1404,9 @@ namespace MultiZonePlayer
 			UserAcknowledged = false;
 		}
 
-		public static Alert CreateAlert(String cause) {
+		public static Alert CreateAlert(String cause, bool writeToLog) {
+			if (writeToLog)
+				MLog.Log(cause);
 			return CreateAlert(cause, null, false);
 		}
 
