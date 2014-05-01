@@ -813,7 +813,7 @@ namespace MultiZonePlayer
 			MAXIMUM_PROPERTY = 0x00000013,
 		}
 
-		[DllImport("setupapi.dll", SetLastError = true)]
+		[DllImport("setupapi.dll", SetLastError = true, CharSet=CharSet.Auto)]
 		static extern bool SetupDiClassGuidsFromName(string ClassName,
 			ref Guid ClassGuidArray1stItem, UInt32 ClassGuidArraySize,
 			out UInt32 RequiredSize);

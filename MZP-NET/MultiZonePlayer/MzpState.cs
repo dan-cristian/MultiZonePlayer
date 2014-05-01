@@ -313,7 +313,7 @@ namespace MultiZonePlayer {
 
 		public static void RestartComputer(String reason) {
 			MLog.Log(null, "RESTARTING COMPUTER for reason " + reason);
-			Alert.CreateAlert("RESTARTING COMPUTER for reason " + reason, null, false,
+			Alert.CreateAlert("RESTARTING COMPUTER for reason " + reason, null, false,null,
 				Alert.NotificationFlags.NeedsImmediateUserAck, 1);
 			//MZPState.Instance.LogEvent(MZPEvent.EventSource.System, "RESTARTING COMPUTER for reason " + reason, MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical,null);
 			Thread.Sleep(3000);
@@ -1388,12 +1388,14 @@ namespace MultiZonePlayer {
 			//MLog.Log(this, "Internet Connection state is " + istate);
 
 			if (UserPresence.UserIsNearList.Count == 0
-			    && !SystemAlarm.IsArmed
-			    && MultiZonePlayer.ZoneDetails.HasImmediateMove_All.Find(x => x.AlarmAreaId == SystemAlarm.AreaId) == null
-			    && MultiZonePlayer.ZoneDetails.HasRecentMove_All.Find(x => x.AlarmAreaId == SystemAlarm.AreaId) == null) {
-				Alert.CreateAlert("Safe Area not armed when all family members are out", null, false,
-					Alert.NotificationFlags.NeedsImmediateUserAck, 120);
+				&& !SystemAlarm.IsArmed
+				&& MultiZonePlayer.ZoneDetails.HasImmediateMove_All.Find(x => x.AlarmAreaId == SystemAlarm.AreaId) == null
+				&& MultiZonePlayer.ZoneDetails.HasRecentMove_All.Find(x => x.AlarmAreaId == SystemAlarm.AreaId) == null) {
+				Alert.CreateAlert("Safe Area not armed when all family members are out", false);
+				SystemAlarm.UsersAtHome = false;
 			}
+			else
+				SystemAlarm.UsersAtHome = true;
 		}
 
 		private void CleanTempFiles() {

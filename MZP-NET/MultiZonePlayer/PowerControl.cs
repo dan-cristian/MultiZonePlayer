@@ -327,7 +327,7 @@ namespace MultiZonePlayer
             if (!ev.WaitOne(3000))
 			{
 				th.Abort();
-				Alert.CreateAlert("Denkovi Running async power off ALL ERROR", null, false);
+				Alert.CreateAlert("Denkovi Running async power off ALL ERROR", null, false, null);
 				//Reinitialise();
 			};
         }

@@ -539,7 +539,7 @@ namespace MultiZonePlayer
 			return res;
 		}
 	}
-
+	/*
 	public static class Rules_OLD
 	{
 		private static List<RuleEntry> m_ruleList;
@@ -656,7 +656,7 @@ namespace MultiZonePlayer
 						//else
 						//	MLog.Log(null, "No instance variable found for jscode, var=" + variable);
 					}
-				}*/
+				} 
 
 				try
 				{
@@ -697,7 +697,7 @@ namespace MultiZonePlayer
 			}
 		}
 	}
-
+*/
 	public class ReflectionInterface
 	{
 		#region used for HTML data
@@ -1022,9 +1022,6 @@ namespace MultiZonePlayer
 			};"), Editor("textarea","60,10")]
 		public string JSCode;
 
-		public new List<ScriptingRule> ValueList_old {
-			get { return base.ValueList.Select(x => (ScriptingRule)x).ToList(); }
-		}
 
 		public static new List<ScriptingRule> ValueList {
 			get {
@@ -1048,47 +1045,6 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public void LoadFromIni_old() {
-			//m_ruleList = new List<RuleEntry>();
-			string fileContent = Utilities.ReadFile(IniFile.CurrentPath() + IniFile.RULES_FILE);
-			string[] rules = fileContent.Split(new String[] { "};" }, StringSplitOptions.RemoveEmptyEntries);
-			string[] atoms;
-			ScriptingRule entry;
-			foreach (string rule in rules) {
-				try {
-					entry = new ScriptingRule();
-
-					atoms = rule.Split(new String[] { "={" }, StringSplitOptions.RemoveEmptyEntries);
-					entry.Name = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");//.ToLower();
-
-					atoms = atoms[1].Split('|');
-					entry.Trigger = atoms[0].Trim().Replace("\r\n", "").Replace("\t", "");
-					string[] vars = entry.Trigger.Split(';');
-					if (vars.Length > 1) {
-						entry.Trigger = vars[0];
-						string[] fields = vars[1].Split('=');
-						if (fields.Length > 1) {
-							entry.FilterFieldName = fields[0];
-							entry.FilterFieldValue = fields[1];
-						}
-					}
-					entry.JSCode = atoms[1];
-					//find variables in js code
-					MatchCollection matchList;
-					matchList = Regex.Matches(entry.JSCode, @"\[(.*?)\]");//Not clear what?
-					if (matchList.Count > 0) entry.VariableList = new List<string>();
-					foreach (Match m in matchList) {
-						entry.VariableList.Add(m.Groups[1].Value);
-					}
-					Add(entry);
-				}
-				catch (Exception ex) {
-					MLog.Log(ex, "Error, rule was not loaded, rule=" + rule);
-				}
-			}
-			MLog.Log(null, "Loaded " + ValueList.Count + " rules");
-		}
-
 
 		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
 		public static void ExecuteRule(object callingInstance, params String[] values) {
@@ -1110,7 +1066,7 @@ namespace MultiZonePlayer
 					triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
 				}
 				else {
-					MLog.Log(null, "Error no triggername found calling method=" + callingMethod.Name);
+					Alert.CreateAlert("No triggername found calling method=" + callingMethod.Name, true);
 					return;
 				}
 			}

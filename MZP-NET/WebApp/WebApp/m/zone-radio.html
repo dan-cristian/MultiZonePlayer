@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html><html lang="en">
+<head><meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Radio #Zones,%_zoneid.ZoneName#</title>
+<script type="text/JavaScript" src="basic.js"></script> 
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<meta http-equiv="content-type" content="text/html;charset=UTF-8;" />
+</head>
+<body style="width: 100%;text-align:center" onload="refresh(45000,'?zoneid=%_zoneid')">
+<button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Running"%>" onclick="ajaxCall('result','cmd.html?command=play&zoneid=%_zoneid', true)"><b>></b></button>
+<button class="Small" onclick="ajaxCall('result','cmd.html?command=next&zoneid=%_zoneid', true)"><b>>></b></button>
+<button class="Small" onclick="ajaxCall('result','cmd.html?command=stop&zoneid=%_zoneid', true)">■</button>
+<button class="Small Pressed<%?;"#Zones,%_zoneid.ZoneState#"=="Paused"%>" onclick="ajaxCall('result','cmd.html?command=pause&zoneid=%_zoneid', true)"><b>||</b></button>
+<button class="Small" onclick="ajaxCall('result','cmd.html?command=previous&zoneid=%_zoneid', true)"><b><<</b></button>
+<button class="Small" onclick="ajaxCall('result','cmd.html?command=volumedown&zoneid=%_zoneid', true)"><b>-</b></button>
+<button class="Small" onclick="ajaxCall('result','cmd.html?command=volumeup&zoneid=%_zoneid', true)"><b>+</b></button>
+<button class="Caption">#Zones,%_zoneid.VolumeLevel#</button>
+<meter value="#Zones,%_zoneid.PositionPercent#" min="0" max="100">#Zones,%_zoneid.ZoneState# #Zones,%_zoneid.PositionPercent#%</meter>
+<hr />
+#Zones,%_zoneid.Title# | #Zones,%_zoneid.Author# | #Zones,%_zoneid.Genre#
+<hr />
+<button onclick="window.open('zone-main.html?zoneid=%_zoneid', '_self')">Back</button>
+<div id="result"></div>
+</body>
+</html>

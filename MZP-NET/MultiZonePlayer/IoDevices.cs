@@ -1221,7 +1221,10 @@ namespace MultiZonePlayer {
 								zone.HasOneWireTemperatureSensor = true;
 								SetResolution(element, zone, dev, tempVal);
 								if (tempVal != TEMP_DEFAULT) {
-									zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
+									if (zone.TemperatureResolutionDigits >= 0)
+										zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
+									else
+										zone.Temperature = tempVal;
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
@@ -1372,7 +1375,10 @@ namespace MultiZonePlayer {
 								SetResolution(element, zone, dev, tempVal);
 								
 								if (tempVal != TEMP_DEFAULT) {
-									zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
+									if (zone.TemperatureResolutionDigits >= 0)
+										zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
+									else
+										zone.Temperature = tempVal;
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp via ds2438 in zone " + zone.ZoneName);

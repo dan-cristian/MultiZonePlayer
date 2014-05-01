@@ -10,7 +10,7 @@
 <body onload="refresh(60000)" onerror="refresh(60000)" style="text-align:center">
 <%if;#Zones,%_zoneid.HasSpeakers#%>
 <button class="Music#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-music.html?command=music&zoneid=%_zoneid','_self')">Music</button>
-<button class="Radio#Zones,%_zoneid.ActivityType#" onclick="window.open('streammp3.html?command=radio&zoneid=%_zoneid','_self')">Radio</button>
+<button class="Radio#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-radio.html?command=radio&zoneid=%_zoneid','_self')">Radio</button>
 <%%>
 <%if;#Zones,%_zoneid.HasDisplay#%>
 <button class="TV#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-tv.html?zoneid=%_zoneid','_self')">TV</button>
@@ -54,7 +54,6 @@
 <%if;#Zones,%_zoneid.ScheduledHeatActive#%>
 <img src="schedule.png" />
 <%%>
-
 <%if;#Zones,%_zoneid.HasOneWireVoltageSensor#%><button class="Small" onclick="ajaxCall('voltage','zone-graph-voltage.html?command=generategraph&zoneid=%_zoneid&interval=48&type=voltage', false)">Voltage</button><%%>
 <div id="camera"></div>
 <div id="temp-hum"></div>

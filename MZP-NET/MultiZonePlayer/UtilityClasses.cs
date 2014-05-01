@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using fastJSON;
+using System.Diagnostics;
 
 namespace MultiZonePlayer
 {
@@ -1262,7 +1263,9 @@ namespace MultiZonePlayer
         public DateTime LastAlarmEventDateTime = DateTime.MinValue;
         public DateTime LastAreaStateChange = DateTime.MinValue;
 		//private bool m_isArmed = false, m_isArmedLast=false;
+		private Boolean m_usersAtHome = true;
 
+		
 		public bool IsArmed
 		{
 			get {
@@ -1298,6 +1301,17 @@ namespace MultiZonePlayer
         {
             AreaId = areaid;
         }
+
+		public Boolean UsersAtHome {
+			get { return m_usersAtHome; }
+			set {
+				if (m_usersAtHome != value) {
+					m_usersAtHome = value;
+					ScriptingRule.ExecuteRule(this, "usersathome=" + m_usersAtHome);
+				}
+			}
+		}
+
     }
 	public class CamAlert
 	{
@@ -1407,7 +1421,7 @@ namespace MultiZonePlayer
 		public static Alert CreateAlert(String cause, bool writeToLog) {
 			if (writeToLog)
 				MLog.Log(cause);
-			return CreateAlert(cause, null, false);
+			return CreateAlert(cause, null, false, new StackTrace(1, false));
 		}
 
 		public static void CreateAlertOnce(String cause) {
@@ -1418,10 +1432,14 @@ namespace MultiZonePlayer
 				alert.OccurenceCount++;
 		}
 
-		public static Alert CreateAlert(String cause, ZoneDetails zone, Boolean dismissPrevAlert, params Object[] flagVars)
+		public static Alert CreateAlert(String cause, ZoneDetails zone, Boolean dismissPrevAlert, StackTrace stack, params Object[] flagVars)
 		{
 			//MLog.Log(null, "ALERT: "+cause);
-			var callingFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+			StackFrame callingFrame;
+			if (stack == null) {
+				callingFrame = new System.Diagnostics.StackTrace(1, false).GetFrame(0);
+			}
+			else callingFrame = stack.GetFrame(0);
 			String uniqueId = "Native-" + callingFrame.GetNativeOffset() + "-IL-" + callingFrame.GetILOffset();
 			Alert alert = m_alertList.Find(x => x.UniqueId == uniqueId && !x.Archived);
 			if (dismissPrevAlert && alert != null)

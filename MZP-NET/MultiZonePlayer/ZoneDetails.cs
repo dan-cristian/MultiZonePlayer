@@ -268,7 +268,7 @@ namespace MultiZonePlayer {
 					{
 						Alert.CreateAlert("Long pulse counter period detected, minutes=" + lapsedMinutes
 							+ " counterdelta=" + PulseCountInTimeSample,
-							this, false, Alert.NotificationFlags.NotifyUserAfterXOccurences, 10);
+							this, false, null, Alert.NotificationFlags.NotifyUserAfterXOccurences, 10);
 					}
 					UtilityCost utilCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType));
 						
@@ -279,9 +279,9 @@ namespace MultiZonePlayer {
 					double totalLoggedPulses = 0, pulseIncrement = 0;
 					unitCountPerMissedFrame = PulseLastMainUnitsCount / missedFrames;
 					unitsPerMinute = unitCountPerMissedFrame / PulseSampleMinutesFrequency;
-					if (MaxUtilityUnitsPerMinute > -1 && unitsPerMinute > MaxUtilityUnitsPerMinute) {
+					if (MaxUtilityUnitsPerMinute != -1 && unitsPerMinute > MaxUtilityUnitsPerMinute) {
 						Alert.CreateAlert("Large utility units consumption registered, possible error, skipping, for zone="+ZoneName
-							+" units per minute="+unitsPerMinute+", limit is="+MaxUtilityUnitsPerMinute, false);
+							+" units per minute="+unitsPerMinute+", limit is="+MaxUtilityUnitsPerMinute, true);
 					}
 					else
 					do {
@@ -694,13 +694,13 @@ namespace MultiZonePlayer {
 
 				if (Temperature > TemperatureMaxAlarm) {
 					Alert.CreateAlert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
-						+ ZoneName + ", temp is " + Temperature, this, false,
+						+ ZoneName + ", temp is " + Temperature, this, false, null,
 						Alert.NotificationFlags.NotifyUserAfterXHours, 1);
 				}
 				else
 					if (Temperature < TemperatureMinAlarm) {
 						Alert.CreateAlert("Min temperature [" + TemperatureMinAlarm + "] exceeded on zone "
-							+ ZoneName + ", temp is " + Temperature, this, false,
+							+ ZoneName + ", temp is " + Temperature, this, false, null,
 							Alert.NotificationFlags.NotifyUserAfterXHours, 1);
 					}
 			}

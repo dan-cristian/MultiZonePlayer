@@ -190,7 +190,8 @@ namespace MultiZonePlayer
 							{
 								case Alarm.EnumAreaState.alarm:
 								case Alarm.EnumAreaState.sirenon:
-									Alert.CreateAlert(action + " AreaEvent " + areastate.ToString() + " is " + state, null, false, Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
+									Alert.CreateAlert(action + " AreaEvent " + areastate.ToString() + " is " + state, null, false, null,
+										Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
 									break;
 							}
 							
@@ -198,7 +199,8 @@ namespace MultiZonePlayer
                             //    MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, null);
                             break;
                         case Alarm.EnumScope.trouble:
-							Alert.CreateAlert(action + " TroubleEvent " + state, null, false, Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
+							Alert.CreateAlert(action + " TroubleEvent " + state, null, false, null,
+								Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
                             //MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " TroubleEvent " + state, MZPEvent.EventType.Security,
                             //    MZPEvent.EventImportance.Informative, null);
                             break;

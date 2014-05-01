@@ -216,7 +216,7 @@ namespace MultiZonePlayer {
 					String camId = vals.GetValue(GlobalParams.oid);
 					string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
 					if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.IsArmed) {
-						Alert.CreateAlert(message, m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+						Alert.CreateAlert(message, m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
 					}
 					//MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, 
 					//	MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, m_zoneDetails);
@@ -248,7 +248,7 @@ namespace MultiZonePlayer {
 						Alert.CreateAlert(
 							vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " +
 							vals.GetValue(GlobalParams.status),
-							m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+							m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
 					}
 					//MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm,
 					//        vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " + vals.GetValue(GlobalParams.status),
@@ -418,7 +418,7 @@ namespace MultiZonePlayer {
 				case GlobalCommands.doorring:
 					List<ZoneDetails> zonesToNotify = MultiZonePlayer.ZoneDetails.ZoneWithPotentialUserPresence_All;
 					//int sourcezoneid = Convert.ToInt16(vals.GetValue(GlobalParams.sourcezoneid));
-					Alert.CreateAlert("Entry Door Ring", m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 120);
+					Alert.CreateAlert("Entry Door Ring", m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 120);
 					if (m_zoneDetails.HasCamera) {
 						SaveCurrentPicture(EventSource.Closure);
 					}
@@ -852,7 +852,7 @@ namespace MultiZonePlayer {
 						if (isContactMade) {
 							if (m_zoneDetails.IsArmed ||
 								(MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId == m_zoneDetails.AlarmAreaId)) {
-								Alert.CreateAlert(message, m_zoneDetails, false, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+								Alert.CreateAlert(message, m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
 							}
 						}	
 						break;
@@ -944,7 +944,7 @@ namespace MultiZonePlayer {
 
 		public void TickSlow() {
 			if (m_zoneDetails.HasTemperatureSensor && m_zoneDetails.TemperatureAge.TotalMinutes > 5) {
-				Alert.CreateAlert("Lost contact with temp sensor", m_zoneDetails, false);
+				Alert.CreateAlert("Lost contact with temp sensor", m_zoneDetails, false, null);
 			}
 		}
 

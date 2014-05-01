@@ -34,6 +34,7 @@ namespace MultiZonePlayer
 				}
 				if (kd.Device == "") {
 					MLog.Log("Command received from unknown keyboard device, ignoring");
+					return;
 				}
 
 				ValueList val = new ValueList(GlobalParams.zoneid, zoneId.ToString(), CommandSources.rawinput);
@@ -51,8 +52,7 @@ namespace MultiZonePlayer
 					th.Name = "RawInput Closure Key " + kd.Key;
 					th.Start();
 				}
-				else
-				{
+				else{
 					//normally let only key down message to pass through
 					if (kd.IsKeyUp)
 					{
@@ -282,7 +282,7 @@ namespace MultiZonePlayer
                             if (MZPState.Instance.IsPowerFailure != failure)
                             {
                                 MZPState.Instance.IsPowerFailure = failure;
-								Alert.CreateAlert("Power Failure state is " + failure, null, !failure, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
+								Alert.CreateAlert("Power Failure state is " + failure, null, !failure, null, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
                                 //MZPState.Instance.LogEvent(MZPEvent.EventSource.Environment, "Power Failure state is " + failure + " at " + datetime, 
                                 //    MZPEvent.EventType.Security, MZPEvent.EventImportance.Critical, null);
                             }

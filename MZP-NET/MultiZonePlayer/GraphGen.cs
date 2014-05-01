@@ -178,6 +178,7 @@ namespace MultiZonePlayer
 				}
 				chart1.ChartAreas[0].AxisY.Maximum= maxY;
 				chart1.ChartAreas[0].AxisY.Minimum= minY;
+				chart1.ChartAreas[0].AxisY.LabelStyle.Format = "N3";
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
 				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
