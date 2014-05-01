@@ -580,6 +580,30 @@ namespace MultiZonePlayer {
 				}
 			}
 		}
+		public String RequirePowerDetails {
+			get{
+				int closeperiod = Convert.ToInt16(IniFile.PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD[1]);
+				String res = "powerforced=" + RequirePowerForced;
+				res += " isactive="+IsActive;
+				res +=" lastmoveagemin="+LastMovementAge.TotalMinutes;
+				res +=" closeperiod="+closeperiod;
+				res +=" lastcomandsec="+LastLocalCommandAgeInSeconds;
+				res +=" zonestate="+ZoneState;
+				res +=" hadrecentrun="+HadRecentRunState;
+				res +=" activity="+ActivityType;
+				res +=" type="+Type;
+
+				bool powerforparentheat = false;
+				if (Type == ZoneType.Heat) {//for zones with child heat component
+					ZoneDetails parent = ZoneDetails.GetZoneById(ParentZoneId);
+					if (parent!=null)
+						powerforparentheat = parent.RequireHeat;
+				}
+				res +=" powerforparentheat="+powerforparentheat;
+				res += " haspowercapab=" + HasPowerCapabilities;
+				return res;	
+			}
+		}
 		public Boolean RequirePower {
 			get {
 				int closeperiod = Convert.ToInt16(IniFile.PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD[1]);
@@ -1088,10 +1112,12 @@ namespace MultiZonePlayer {
 				if (fastActions) {
 					//turn on or off power
 					if (zone.RequirePower && !zone.IsPowerOn) {
+						MLog.Log("Powering on zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
 						MZPState.Instance.PowerControlOn(zone.ZoneId);
 					}
 
 					if (!zone.RequirePower && zone.IsPowerOn) {
+						MLog.Log("Powering off zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
 						MZPState.Instance.PowerControlOff(zone.ZoneId);
 					}
 				}

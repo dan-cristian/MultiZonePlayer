@@ -107,6 +107,7 @@ namespace MultiZonePlayer
         {
             m_vlcControl.Stop();
             m_tickCount = 0;
+			UpdateZoneState();
             //m_zoneDetails.RequirePower = false;
 			//m_zoneDetails.IsActive = false;
         }
@@ -170,10 +171,11 @@ namespace MultiZonePlayer
 
             if (!m_url.Equals(""))
             {
-                MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+                //MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
                 var media = new PathMedia(m_url);
                 m_vlcControl.Media = media;
-                //m_zoneDetails.RequirePower = true;
+				UpdateZoneState();
+				//m_zoneDetails.RequirePower = true;
 				//m_zoneDetails.IsActive = true;
             }
             else
@@ -183,6 +185,7 @@ namespace MultiZonePlayer
 		public override void Pause()
         {
             m_vlcControl.Pause();
+			UpdateZoneState();
         }
 
 		public override void Mute()
@@ -215,11 +218,13 @@ namespace MultiZonePlayer
                     return ZoneState.NotStarted;
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Paused:
                     return ZoneState.Paused;
+				case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Opening:
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Playing:
                     return ZoneState.Running;
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Error:
                     return ZoneState.Error;
                 default:
+					MLog.Log(this, "UNKOWN VLC state=" + m_vlcControl.State);
                     return ZoneState.NotInitialised;
             }
         }
@@ -259,17 +264,20 @@ namespace MultiZonePlayer
             return m_url;
         }
 
+		private void UpdateZoneState() {
+			if (m_vlcControl != null && m_vlcControl.Media != null) {
+				m_zoneDetails.ActivityType = GlobalCommands.radio;
+				m_zoneDetails.Title = m_vlcControl.Media.Metadatas.NowPlaying;
+				m_zoneDetails.Genre = m_vlcControl.Media.Metadatas.Genre;
+				m_zoneDetails.Author = m_vlcControl.Media.Metadatas.Title;
+				m_zoneDetails.SourceURL = m_vlcControl.Media.MRL;
+				m_zoneDetails.ZoneState = GetState();
+				m_tickCount++;
+			}
+		}
 		public override void Tick()
         {
-            if (m_vlcControl != null && m_vlcControl.Media != null)
-            {
-				m_zoneDetails.ActivityType = GlobalCommands.radio;
-                m_zoneDetails.Title = m_vlcControl.Media.Metadatas.NowPlaying;
-                m_zoneDetails.Genre = m_vlcControl.Media.Metadatas.Genre;
-                m_zoneDetails.Author = m_vlcControl.Media.Metadatas.Title;
-                m_zoneDetails.SourceURL = m_vlcControl.Media.MRL;
-                m_tickCount++;
-            }
+			UpdateZoneState();
         }
     }
 }
