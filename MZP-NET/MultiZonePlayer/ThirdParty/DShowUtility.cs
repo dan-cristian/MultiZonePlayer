@@ -73,7 +73,7 @@ namespace MultiZonePlayer
                     Marshal.ThrowExceptionForHR(hr);
                 string ret = val as string;
                 if ((ret == null) || (ret.Length < 1))
-                    throw new NotImplementedException("Device FriendlyName");
+                    throw new NotImplementedException("SensorDevice FriendlyName");
                 return ret;
             }
             catch (Exception)
@@ -106,7 +106,7 @@ namespace MultiZonePlayer
             try
             {
                 Type srvType = Type.GetTypeFromCLSID(Clsid_SystemDeviceEnum);
-                if (srvType == null) throw new NotImplementedException("System Device Enumerator");
+                if (srvType == null) throw new NotImplementedException("System SensorDevice Enumerator");
 
 
 

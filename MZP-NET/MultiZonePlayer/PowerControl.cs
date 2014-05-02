@@ -701,11 +701,11 @@ namespace MultiZonePlayer
 
             for (i = 0; i < 10; i++)
             {
-                String deviceNameFile = Utilities.IniReadValue("Device #" + i, "DeviceName",IniFile.PARAM_POWER_CONTROL_STATUS_FILE_GEMBIRD[1]);
+                String deviceNameFile = Utilities.IniReadValue("SensorDevice #" + i, "DeviceName",IniFile.PARAM_POWER_CONTROL_STATUS_FILE_GEMBIRD[1]);
                 if (m_deviceName.Equals(deviceNameFile)) break;
             }
 
-            String status = Utilities.IniReadValue("Device #" + i, "Socket" + socketIndex + "SwitchState", 
+            String status = Utilities.IniReadValue("SensorDevice #" + i, "Socket" + socketIndex + "SwitchState", 
                     IniFile.PARAM_POWER_CONTROL_STATUS_FILE_GEMBIRD[1]);
             MLog.Log(null,"Status for devicename=" +m_deviceName+" deviceindex=" + i + " socketindex=" + socketIndex + " status=" + status);
             return status;
@@ -741,7 +741,7 @@ namespace MultiZonePlayer
 			string result = "SwitchOff OK";
 			lock (device)
 			{
-				device = new Device();
+				device = new HE853.Device();
 				try
 				{
 					device.Open();
@@ -762,7 +762,7 @@ namespace MultiZonePlayer
 			string result = "SwitchOn OK";
 			lock (device)
 			{
-				device = new Device();
+				device = new HE853.Device();
 				try
 				{
 					device.Open();
@@ -783,7 +783,7 @@ namespace MultiZonePlayer
 			string result = "AdjustDim OK";
 			lock (device)
 			{
-				device = new Device();
+				device = new HE853.Device();
 				try
 				{
 					device.Open();

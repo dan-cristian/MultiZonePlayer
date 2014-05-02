@@ -54,7 +54,9 @@ button.Radioradio {background-image:url('radio-metal-2-icon.png');background-col
 button.TVtv {background-image:url('television-04-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
 button.Sensor {min-width:80px;text-align:right;padding:5px 5px;background-color:antiquewhite;color:black;background-repeat:no-repeat;background-position:2px 21px}
 button.Temperature {background-image:url('temperature.png');}
+button.TemperatureHumidity {background-image:url('bubbles-icon.png'),url('thermometer-icon-tiny.png');background-position:2px 24px,26px 32px;}
 button.TemperatureVoltage {background-image:url('light-icon.png'),url('thermometer-icon-tiny.png');background-position:0px 24px,32px 32px;}
 button.Closure {background-image:url('plug-icon.png');background-position:0px 18px;}
 button.Counter {min-width:80px;background-image:url('Numbers-icon.png');}
 button.Voltage {background-image:url('light-icon.png');}
+meter.SmallVertical {width:10px;height:8px;transform: rotate(180deg);}

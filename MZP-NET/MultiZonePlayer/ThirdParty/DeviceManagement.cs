@@ -23,7 +23,7 @@
                     structure.dbcc_name = new char[length + 1];
                     Marshal.PtrToStructure(m.LParam, structure);
                     string strA = new string(structure.dbcc_name, 0, length);
-                    Debug.WriteLine("Device Name = " + strA);
+                    Debug.WriteLine("SensorDevice Name = " + strA);
                     Debug.WriteLine("");
                     if (string.Compare(strA, mydevicePathName, true) == 0)
                     {
@@ -78,8 +78,8 @@
                         flag3 = DeviceManagementApiDeclarations.SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref deviceInterfaceData, ptr, requiredSize, ref requiredSize, IntPtr.Zero);
                         IntPtr ptr3 = new IntPtr(ptr.ToInt32() + IntPtr.Size);
                         devicePathName[memberIndex] = Marshal.PtrToStringAuto(ptr3);
-                        Debug.WriteLine("Device Path = " + devicePathName[memberIndex]);
-                        Debug.WriteLine("Device Path Length = " + devicePathName[memberIndex].Length);
+                        Debug.WriteLine("SensorDevice Path = " + devicePathName[memberIndex]);
+                        Debug.WriteLine("SensorDevice Path Length = " + devicePathName[memberIndex].Length);
                         Marshal.FreeHGlobal(ptr);
                         flag = true;
                     }

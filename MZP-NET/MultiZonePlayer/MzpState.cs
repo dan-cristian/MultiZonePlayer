@@ -66,7 +66,9 @@ namespace MultiZonePlayer {
 
 		private OneWire m_oneWire;
 
-		
+		public List<SensorDevice> SensorDeviceList{
+			get { return SensorDevice.DeviceList; }
+		}
 
 		public OneWire OneWire {
 			get { return m_oneWire; }

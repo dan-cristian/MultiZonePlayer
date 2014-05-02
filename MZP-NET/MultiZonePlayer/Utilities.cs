@@ -867,7 +867,7 @@ namespace MultiZonePlayer
 						status = ftdiDevice.OpenBySerialNumber(serial);
 						if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_OK) {
 							ftdiDevice.GetCOMPort(out com);
-							MLog.Log(null, "FTDI Device opened ok, COM=" + com);
+							MLog.Log(null, "FTDI SensorDevice opened ok, COM=" + com);
 
 							if (deviceNode[i].Description.ToLower().Equals(description)) {
 								MLog.Log(null, "Found FTDI device " + description + " at com port " + com);

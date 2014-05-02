@@ -87,7 +87,7 @@ namespace MultiZonePlayer
 
             foreach (var usbDevice in usbDevices)
             {
-                txt.AppendText(String.Format("Device ID: {0}, PNP Device ID: {1}, Description: {2}, Friendly {3} \n",
+                txt.AppendText(String.Format("SensorDevice ID: {0}, PNP SensorDevice ID: {1}, Description: {2}, Friendly {3} \n",
                     usbDevice.DeviceID, usbDevice.PnpDeviceID, usbDevice.Description, usbDevice.FriendlyName));
             }
         }
@@ -192,8 +192,8 @@ namespace MultiZonePlayer
                {
                    txt.AppendText(" | Manufacturer = "                        + mobj["Manufacturer"].ToString());
                }
-               txt.AppendText(" | Device Version ID & Vendor ID = " + arrDeviceID[1]);
-               txt.AppendText(" | Device ID = " + arrDeviceID[2].Trim('{', '}'));
+               txt.AppendText(" | SensorDevice Version ID & Vendor ID = " + arrDeviceID[1]);
+               txt.AppendText(" | SensorDevice ID = " + arrDeviceID[2].Trim('{', '}'));
            }
        }
    }

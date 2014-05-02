@@ -91,9 +91,9 @@ namespace MultiZonePlayer
 
                 public void outputDeviceInfo()
                 {
-                    Console.WriteLine("Device Name: {0}", deviceName);
-                    Console.WriteLine("Device Type: {0}", deviceType);
-                    Console.WriteLine("Device Handle: {0}\n", deviceHandle);
+                    Console.WriteLine("SensorDevice Name: {0}", deviceName);
+                    Console.WriteLine("SensorDevice Type: {0}", deviceType);
+                    Console.WriteLine("SensorDevice Handle: {0}\n", deviceHandle);
                 }
             }
             #endregion defined types
@@ -186,7 +186,7 @@ namespace MultiZonePlayer
                                 string DeviceDesc = ReadReg(deviceName);
 
                                 dInfo.deviceName = DeviceDesc;
-                                Console.WriteLine("Device {0}:", i);
+                                Console.WriteLine("SensorDevice {0}:", i);
                                 dInfo.outputDeviceInfo();
                             }
                             Marshal.FreeHGlobal(pData);

@@ -877,7 +877,7 @@ namespace MultiZonePlayer
 		/// </summary>
 		/// <param Name="DeviceInfoSet">Handle to the device information set that contains the interface and its underlying device.</param>
 		/// <param Name="DeviceInfoData">Pointer to an SP_DEVINFO_DATA structure that defines the device instance.</param>
-		/// <param Name="Property">Device property to be retrieved. SEE MSDN</param>
+		/// <param Name="Property">SensorDevice property to be retrieved. SEE MSDN</param>
 		/// <param Name="PropertyRegDataType">Pointer to a variable that receives the registry data Type. This parameter can be NULL.</param>
 		/// <param Name="PropertyBuffer">Pointer to a buffer that receives the requested device property.</param>
 		/// <param Name="PropertyBufferSize">Size of the buffer, in bytes.</param>

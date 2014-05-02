@@ -7,30 +7,36 @@
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
 <body style="text-align:left">
-	<%for;i;0;++;#S.OneWire.DeviceList.Count#;%>
-        <button class="Sensor #S.OneWire.DeviceList.?,%i.Type#" onclick="window.open('zone-main.html?zoneid=#S.OneWire.DeviceList.?,%i.Zone.ZoneId#', '_self')">
-            <span title=" Target/Min/Max #S.OneWire.DeviceList.?,%i.Zone.TemperatureTarget#/#S.OneWire.DeviceList.?,%i.Zone.TemperatureMinAlarm#/#S.OneWire.DeviceList.?,%i.Zone.TemperatureMaxAlarm#">#S.OneWire.DeviceList.?,%i.DisplayValue#</span>
+	<%for;i;0;++;#S.SensorDeviceList.Count#;%>
+        <button class="Sensor #S.SensorDeviceList.?,%i.Type#" onclick="window.open('zone-main.html?zoneid=#S.SensorDeviceList.?,%i.Zone.ZoneId#', '_self')">
+            <span title=" Target/Min/Max #S.SensorDeviceList.?,%i.Zone.TemperatureTarget#/#S.SensorDeviceList.?,%i.Zone.TemperatureMinAlarm#/#S.SensorDeviceList.?,%i.Zone.TemperatureMaxAlarm#">#S.SensorDeviceList.?,%i.DisplayValue#</span>
             <br /><br />
-            <span style="font-size:x-small;text-align:right" title="#S.OneWire.DeviceList.?,%i.Summary#">#S.OneWire.DeviceList.?,%i.Zone.ZoneName#</span>
-            <~if;#S.OneWire.DeviceList.?,%i.HealthPercent#==100~>
+            <span style="font-size:x-small;text-align:right" title="#S.SensorDeviceList.?,%i.Summary# #S.SensorDeviceList.?,%i.OtherInfo#">#S.SensorDeviceList.?,%i.Zone.ZoneName#</span>
+            <~if;#S.SensorDeviceList.?,%i.HealthPercent#==100~>
             <span style="color:green" title="Healthy">▄</span>
             <~~>
-            <~if;#S.OneWire.DeviceList.?,%i.HealthPercent#==99~>
-            <span style="color:orange" title="#S.OneWire.DeviceList.?,%i.HealthPercent#% #S.OneWire.DeviceList.?,%i.ErrorCount#">▄</span>
+            <~if;#S.SensorDeviceList.?,%i.HealthPercent#==99~>
+            <span style="color:orange" title="#S.SensorDeviceList.?,%i.HealthPercent#% #S.SensorDeviceList.?,%i.ErrorCount#">▄</span>
             <~~>
-            <~if;#S.OneWire.DeviceList.?,%i.HealthPercent#<99&&#S.OneWire.DeviceList.?,%i.HealthPercent#>85~>
-            <span style="color:lightcoral" title="#S.OneWire.DeviceList.?,%i.HealthPercent#% #S.OneWire.DeviceList.?,%i.ErrorCount#">▄</span>
+            <~if;#S.SensorDeviceList.?,%i.HealthPercent#<99&&#S.SensorDeviceList.?,%i.HealthPercent#>85~>
+            <span style="color:lightcoral" title="#S.SensorDeviceList.?,%i.HealthPercent#% #S.SensorDeviceList.?,%i.ErrorCount#">▄</span>
             <~~>
-            <~if;#S.OneWire.DeviceList.?,%i.HealthPercent#<85~>
-            <span style="color:red" title="#S.OneWire.DeviceList.?,%i.HealthPercent#% #S.OneWire.DeviceList.?,%i.ErrorCount#">▄</span>
+            <~if;#S.SensorDeviceList.?,%i.HealthPercent#<85~>
+            <span style="color:red" title="#S.SensorDeviceList.?,%i.HealthPercent#% #S.SensorDeviceList.?,%i.ErrorCount#">▄</span>
             <~~>
-            <~if;#S.OneWire.DeviceList.?,%i.LastReadAgeInMinutes#>5~>
-            <span style="color:red" title="Last read #S.OneWire.DeviceList.?,%i.LastReadAge#">◙</span>
+            <~if;#S.SensorDeviceList.?,%i.LastReadAgeInMinutes#>5~>
+            <span style="color:red" title="Last read #S.SensorDeviceList.?,%i.LastReadAge#">◙</span>
+            <~~>
+            <~if;#S.SensorDeviceList.?,%i.Battery#>-1~>
+            <span><meter class="SmallVertical" value="#S.SensorDeviceList.?,%i.Battery#" min="0" max="10" low="5" title="Battery #S.SensorDeviceList.?,%i.Battery#"></meter></span>
+            <~~>
+            <~if;#S.SensorDeviceList.?,%i.Signal#>-1~>
+            <span><meter class="SmallVertical" value="#S.SensorDeviceList.?,%i.Signal#" min="0" max="10" low="5" title="Signal #S.SensorDeviceList.?,%i.Signal#"></meter></span>
             <~~>
         </button>
 	<%%>
 <br />  
-#S.OneWire.DeviceList.Count# Sensors
+#S.SensorDeviceList.Count# Sensors
 <br />
 <button onclick="window.open('start.html', '_self')">Back</button>
 </body>

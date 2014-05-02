@@ -15,6 +15,216 @@ using com.dalsemi.onewire.container;
 using com.dalsemi.onewire.application.monitor;
 
 namespace MultiZonePlayer {
+
+	public class SensorDevice {
+		public const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
+		public const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
+		public const string ONEWIRE_IO_NAME = "DS2406";
+		public const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
+		public const string ONEWIRE_COUNTER_NAME = "DS2423";
+		public enum DeviceTypeEnum { OneWire, RFX };
+
+		public String Name;
+		public String Address;
+		public String Family;
+		public ZoneDetails Zone;
+		public DateTime LastRead = DateTime.MinValue;
+		public double Temperature;
+		public int TemperatureResolutionIndex = -1;//-1 for non initialised
+		public double Humidity;
+		public double[] Voltage = new double[3];
+		public double[] Counter = new double[2];
+		public Boolean[] Activity = new Boolean[2];
+		public Boolean[] Level = new Boolean[2];
+		public Boolean[] Latch = new Boolean[2];
+		public Boolean IOHigh = false, IOAlarm = false;
+		public Boolean TempResolutionCanBeSet = true;
+		public DeviceTypeEnum DeviceType;
+		public String OtherInfo;
+		public int Signal = -1;
+		public int Battery = -1;
+		private int m_errorCount = 0, m_successCount = 0;
+		private Boolean m_isCounter = false, m_hasTemp = false, m_hasHum=false, m_hasVoltage = false, m_hasClosure = false;
+		private DateTime m_startProc = DateTime.Now;
+		private TimeSpan m_lastProcessingDuration = TimeSpan.MinValue;
+		private TimeSpan m_minProcessingDuration = TimeSpan.MaxValue;
+		private TimeSpan m_maxProcessingDuration = TimeSpan.MinValue;
+		private DateTime m_lastHealthResetDateTime = DateTime.Now;
+
+		private static List<SensorDevice> m_deviceList = new List<SensorDevice>();
+
+		public static List<SensorDevice> DeviceList {
+			get { return SensorDevice.m_deviceList; }
+		}
+
+		public SensorDevice(String name, String address, String family, ZoneDetails zone, DeviceTypeEnum devtype, String otherInfo ) {
+			Name = name;
+			Address = address;
+			Family = family;
+			Zone = zone;
+			LastRead = DateTime.Now;
+			DeviceType = devtype;
+			OtherInfo = otherInfo;
+
+			switch (devtype ) {
+				case (DeviceTypeEnum.OneWire):
+					switch (name) {
+						case ONEWIRE_COUNTER_NAME:
+							m_isCounter = true;
+							break;
+						case ONEWIRE_TEMPDEV_NAME:
+							m_hasTemp = true;
+							break;
+						case ONEWIRE_SMARTBATDEV_NAME:
+							m_hasVoltage = true;
+							m_hasTemp = true;
+							break;
+						case ONEWIRE_IO_NAME:
+							m_hasClosure = true;
+							break;
+						default:
+							Alert.CreateAlert("Unknown one wire device name " + name, true);
+							break;
+					}
+					break;
+				case DeviceTypeEnum.RFX:
+					if (family == RFXDeviceDefinition.DeviceTypeEnum.temp_hum.ToString()){
+						m_hasTemp = true;
+						m_hasHum = true;
+					}
+					else {
+						Alert.CreateAlert("Unknown RFX device name " + name, true);
+					}
+					break;
+			}
+		}
+
+		public static void Clear(DeviceTypeEnum devtype) {
+			m_deviceList.RemoveAll(x => x.DeviceType == devtype);
+		}
+
+		public static SensorDevice GetDevice(String name, String address, String family, ZoneDetails zone, DeviceTypeEnum devtype, String otherInfo) {
+			SensorDevice dev = m_deviceList.Find(x => x.Address == address&& x.DeviceType == devtype);
+			if (dev == null) {
+				dev = new SensorDevice(name, address, family, zone, devtype, otherInfo);
+				m_deviceList.Add(dev);
+			}
+			dev.LastRead = DateTime.Now;
+			return dev;
+		}
+		public String Summary {
+			get {
+				String zone = Zone != null ? Zone.ZoneName : "zoneN/A";
+				String s = Name + "-" + Address + ", err=" + ErrorCount + ", " + zone;
+				s += ", " + Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead)) + " ago, speed=" + Math.Round(m_lastProcessingDuration.TotalSeconds, 2) + "s";
+				//s += " min=" + m_minProcessingDuration.TotalSeconds + "s" + " max=" + m_maxProcessingDuration.TotalSeconds + "s"; 
+				if (m_hasTemp)
+					s += ", temp=" + Temperature +" hum=" + Humidity;
+				if (m_isCounter)
+					s += " cnt1=" + Counter[0] + " cnt2=" + Counter[1];
+				if (m_hasClosure)
+					s += " actA=" + Activity[0] + ", actB=" + Activity[1] + (Level[0] ? " IsLevelA" : "") + (Level[1] ? " IsLevelB" : "")
+						+ (Latch[0] ? " IsLatchA" : "") + (Latch[1] ? " IsLatchB" : "") + (IOHigh ? " IsHigh" : "") + (IOAlarm ? " IsAlarm" : "");
+				if (m_hasVoltage)
+					s += " V1=" + Voltage[0] + " V2=" + Voltage[1] + " V3=" + Voltage[2];
+				if (DeviceType == DeviceTypeEnum.RFX) {
+					s += " battery=" + Battery + " signal=" + Signal;
+				}
+				return s;
+			}
+		}
+
+		public String DisplayValue {
+			get {
+				String val = "";
+				if (m_isCounter)
+					val = Counter[0] + ":" + Counter[1];
+				if (m_hasVoltage)
+					val = Voltage[0] + "/" + Voltage[1] + "/" + Voltage[2];
+				if (m_hasClosure)
+					val = (Activity[0] ? "1" : "0") + ":" + (Activity[1] ? "1" : "0") + ":" + (Level[0] ? "1" : "0") + ":" + (Level[1] ? "1" : "0");
+				if (m_hasHum)
+					val = Humidity.ToString()+"%";
+				if (m_hasTemp) {
+					if (val != "")
+						val += " ";
+					val += Temperature.ToString() + "°";
+				}
+				if (val == "") val = "n/a";
+				return val;
+			}
+		}
+		public String LastReadAge {
+			get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead)); }
+		}
+
+		public double LastReadAgeInMinutes {
+			get { return DateTime.Now.Subtract(LastRead).TotalMinutes; }
+		}
+
+		public String Type {
+			get { return (HasTemp ? "Temperature" : "") + (HasHumidity ? "Humidity" : "") + (IsCounter ? "Counter" : "") 
+				+ (HasVoltage ? "Voltage" : "") + (HasClosure ? "Closure" : ""); }
+		}
+
+		public Boolean HasClosure {
+			get { return m_hasClosure; }
+		}
+
+		public Boolean HasVoltage {
+			get { return m_hasVoltage; }
+		}
+
+		public Boolean HasTemp {
+			get { return m_hasTemp; }
+		}
+		public Boolean HasHumidity {
+			get { return m_hasHum; }
+		}
+
+		public Boolean IsCounter {
+			get { return m_isCounter; }
+		}
+
+		public int SuccessCount {
+			get { return m_successCount; }
+		}
+
+		public int ErrorCount {
+			get { return m_errorCount; }
+		}
+
+		public void RecordError(Exception ex) {
+			m_errorCount++;
+		}
+		public void RecordSuccess() {
+			m_successCount++;
+		}
+
+		public int HealthPercent {
+			get {
+				if (m_successCount + m_errorCount > 0)
+					return 100 * m_successCount / (m_successCount + m_errorCount);
+				else
+					return 0;
+			}
+		}
+		public void StartProcessing() {
+			if (DateTime.Now.Subtract(m_lastHealthResetDateTime).TotalHours >= 24) {
+				m_successCount = 0;
+				m_errorCount = 0;
+				m_lastHealthResetDateTime = DateTime.Now;
+			}
+			m_startProc = DateTime.Now;
+		}
+
+		public void EndProcessing() {
+			m_lastProcessingDuration = DateTime.Now.Subtract(m_startProc);
+			m_maxProcessingDuration = m_lastProcessingDuration > m_maxProcessingDuration ? m_lastProcessingDuration : m_maxProcessingDuration;
+			m_minProcessingDuration = m_lastProcessingDuration < m_minProcessingDuration ? m_lastProcessingDuration : m_minProcessingDuration;
+		}
+	}
+
 	public class GenericModem : SerialBase, IMessenger {
 		public enum ModemCommandsEnum {
 			[Description("ATD ")] MODEM_CALL,
@@ -244,6 +454,7 @@ namespace MultiZonePlayer {
 			IniFile.PARAM_RFXCOM_PORT[1] = Utilities.FindFTDIComPortFromDesc(IniFile.PARAM_RFX_DEVICE_NAME[1].ToLower(), true);
 			MLog.Log(this, "Initialise RFX on COM " + IniFile.PARAM_RFXCOM_PORT[1]);
 			Initialise("38400", "None", "One", "8", IniFile.PARAM_RFXCOM_PORT[1], CommunicationManager.TransmissionType.Text);
+			SensorDevice.Clear(SensorDevice.DeviceTypeEnum.RFX);
 			//comm = new CommunicationManager("38400", "None", "One", "8", 
 			//	IniFile.PARAM_RFXCOM_PORT[1], this.handler);
 			//comm.OpenPort();
@@ -263,6 +474,16 @@ namespace MultiZonePlayer {
 			return status;
 		}
 
+		public List<SensorDevice> DeviceList {
+			get {
+				if (SensorDevice.DeviceList.Count > 0)
+					//return only devices that were read ok once
+					return SensorDevice.DeviceList.FindAll(y => y.SuccessCount > 0 && y.DeviceType == SensorDevice.DeviceTypeEnum.RFX).OrderByDescending(x => x.Type).ToList();
+				else
+					return SensorDevice.DeviceList;
+			}
+		}
+
 		protected override void ReceiveSerialResponse(string response) {
 			string origResponse = response;
 			//MLog.Log(this, "RFXCOMM: " + response);
@@ -273,15 +494,22 @@ namespace MultiZonePlayer {
 					               + " for response:[" + origResponse + "] is " + dev.DisplayValues());
 					if (dev.ZoneId != -1) {
 						ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
+						
+						SensorDevice devsensor = SensorDevice.GetDevice(dev.DeviceName, dev.DeviceId, dev.DeviceType.ToString(), zone, 
+							SensorDevice.DeviceTypeEnum.RFX, dev.DisplayValues());
+						
 						switch (dev.DeviceType) {
 							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
-								decimal temp, hum, lasttemp, lasthum;
-								temp =
-									Convert.ToDecimal(
+								decimal temp, hum, lasttemp, lasthum, signal, battery;
+								temp = Convert.ToDecimal(
 										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value)/10;
-								hum =
-									Convert.ToDecimal(
+								hum = Convert.ToDecimal(
 										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value);
+								signal = Convert.ToDecimal(
+										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.signal.ToString()).Value);
+								battery = Convert.ToDecimal(
+										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.battery.ToString()).Value);
+
 								lasttemp = Convert.ToDecimal(zone.Temperature);
 								lasthum = Convert.ToDecimal(zone.Humidity);
 
@@ -289,6 +517,11 @@ namespace MultiZonePlayer {
 								lasthum = lasthum == 0 ? 0.1m : lasthum;
 								zone.Temperature = (double) temp;
 								zone.Humidity = (double) hum;
+								devsensor.Temperature = (double) temp;
+								devsensor.Humidity = (double)hum;
+								devsensor.Signal = (int)signal;
+								devsensor.Battery = (int)battery;
+								devsensor.RecordSuccess();
 								break;
 							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
 
@@ -729,180 +962,23 @@ namespace MultiZonePlayer {
 		private List<DSPortAdapter> m_adapterList = new List<DSPortAdapter>();
 		//private DeviceMonitor dMonitor;
 		//private Thread m_searchThread;
-		private List<Device> m_deviceList = new List<Device>();
-		private const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
-		private const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
-		private const string ONEWIRE_IO_NAME = "DS2406";
-		private const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
-		private const string ONEWIRE_COUNTER_NAME = "DS2423";
+		
+		
 		private double TEMP_DEFAULT = 85;
 		private DateTime m_lastOKRead = DateTime.Now;
 		private Dictionary<string, string> m_deviceAttributes = new Dictionary<string, string>();
 		private int m_initErrors = 0;
 
-		public List<Device> DeviceList {
+		public List<SensorDevice> DeviceList {
 			get {
-				if (m_deviceList.Count > 0)
+				if (SensorDevice.DeviceList.Count > 0)
 					//return only devices that were read ok once
-					return m_deviceList.FindAll(y=>y.SuccessCount>0).OrderByDescending(x => x.Type).ToList();
+					return SensorDevice.DeviceList.FindAll(y => y.SuccessCount > 0 && y.DeviceType==SensorDevice.DeviceTypeEnum.OneWire).OrderByDescending(x => x.Type).ToList();
 				else
-					return m_deviceList;
+					return SensorDevice.DeviceList;
 			}
 		}
 
-		public class Device {
-			public String Name;
-			public String Address;
-			public String Family;
-			public ZoneDetails Zone;
-			public DateTime LastRead = DateTime.MinValue;
-			public double Temperature;
-			public int TemperatureResolutionIndex = -1;//-1 for non initialised
-			public double Humidity;
-			public double[] Voltage = new double[3];
-			public double[] Counter = new double[2];
-			public Boolean[] Activity = new Boolean[2];
-			public Boolean[] Level = new Boolean[2];
-			public Boolean[] Latch= new Boolean[2];
-			public Boolean IOHigh = false, IOAlarm=false;
-			public Boolean TempResolutionCanBeSet = true;
-			private int m_errorCount = 0, m_successCount = 0;
-			private Boolean m_isCounter = false, m_hasTemp = false, m_hasVoltage = false, m_hasClosure = false;
-			private DateTime m_startProc = DateTime.Now;
-			private TimeSpan m_lastProcessingDuration = TimeSpan.MinValue;
-			private TimeSpan m_minProcessingDuration = TimeSpan.MaxValue;
-			private TimeSpan m_maxProcessingDuration = TimeSpan.MinValue;
-			private DateTime m_lastHealthResetDateTime = DateTime.Now;
-
-			public Device(String name, String address, String family, ZoneDetails zone) {
-				Name = name;
-				Address = address;
-				Family = family;
-				Zone = zone;
-				LastRead = DateTime.Now;
-				switch (name) {
-					case ONEWIRE_COUNTER_NAME:
-						m_isCounter = true;
-						break;
-					case ONEWIRE_TEMPDEV_NAME:
-						m_hasTemp = true;
-						break;
-					case ONEWIRE_SMARTBATDEV_NAME:
-						m_hasVoltage = true;
-						m_hasTemp = true;
-						break;
-					case ONEWIRE_IO_NAME:
-						m_hasClosure = true;
-						break;
-					default:
-						Alert.CreateAlert("Unknown one wire device name " + name, true);
-						break;
-				}
-			}
-
-			public String Summary {
-				get {
-					String zone = Zone != null ? Zone.ZoneName : "zoneN/A";
-					String s = Name + "-" + Address + ", err=" + ErrorCount + ", " + zone;
-					s += ", " + Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead)) + " ago, speed=" + Math.Round(m_lastProcessingDuration.TotalSeconds, 2) + "s";
-					//s += " min=" + m_minProcessingDuration.TotalSeconds + "s" + " max=" + m_maxProcessingDuration.TotalSeconds + "s"; 
-					if (m_hasTemp)
-						s += ", temp=" + Temperature;
-					if (m_isCounter)
-						s += " cnt1=" + Counter[0] + " cnt2=" + Counter[1];
-					if (m_hasClosure)
-						s += " actA=" + Activity[0] + ", actB=" + Activity[1] + (Level[0]?" IsLevelA":"") + (Level[1]?" IsLevelB":"") 
-							+ (Latch[0]?" IsLatchA":"") + (Latch[1]?" IsLatchB":"") + (IOHigh?" IsHigh":"") + (IOAlarm?" IsAlarm":"");
-					if (m_hasVoltage)
-						s+= " V1="+Voltage[0]+" V2="+Voltage[1] + " V3=" + Voltage[2];
-					return s;
-				}
-			}
-
-			public String DisplayValue {
-				get {
-					String val = "";
-					if (m_isCounter)
-						val = Counter[0] + ":" + Counter[1];
-					if (m_hasVoltage)
-						val = Voltage[0] + "/" + Voltage[1] + "/"+Voltage[2];
-					if (m_hasClosure)
-						val = (Activity[0] ? "1" : "0") + ":" + (Activity[1] ? "1" : "0") + ":" + (Level[0] ? "1" : "0") + ":" + (Level[1] ? "1" : "0");
-					if (m_hasTemp) {
-						if (val != "")
-							val += " ";
-						val += Temperature.ToString();
-					}
-					if (val == "") val = "n/a";
-					return val;
-				}
-			}
-			public String LastReadAge {
-				get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead));}
-			}
-
-			public double LastReadAgeInMinutes {
-				get { return DateTime.Now.Subtract(LastRead).TotalMinutes; }
-			}
-
-			public String Type {
-				get { return (HasTemp ? "Temperature" : "") + (IsCounter ? "Counter" : "") + (HasVoltage ? "Voltage" : "") + (HasClosure ? "Closure" : ""); }
-			}
-
-			public Boolean HasClosure {
-				get { return m_hasClosure; }
-			}
-
-			public Boolean HasVoltage {
-				get { return m_hasVoltage; }
-			}
-
-			public Boolean HasTemp {
-				get { return m_hasTemp; }
-			}
-
-			public Boolean IsCounter {
-				get { return m_isCounter; }
-			}
-
-			public int SuccessCount {
-				get { return m_successCount; }
-			}
-
-			public int ErrorCount {
-				get { return m_errorCount; }
-			}
-
-			public void RecordError(Exception ex) {
-				m_errorCount++;
-			}
-			public void RecordSuccess() {
-				m_successCount++;
-			}
-
-			public int HealthPercent {
-				get {
-					if (m_successCount + m_errorCount > 0)
-						return 100 * m_successCount / (m_successCount + m_errorCount);
-					else
-						return 0;
-				}
-			}
-			public void StartProcessing() {
-				if (DateTime.Now.Subtract(m_lastHealthResetDateTime).TotalHours >= 24) {
-					m_successCount = 0;
-					m_errorCount = 0;
-					m_lastHealthResetDateTime = DateTime.Now;
-				}
-				m_startProc = DateTime.Now;
-			}
-
-			public void EndProcessing() {
-				m_lastProcessingDuration = DateTime.Now.Subtract(m_startProc);
-				m_maxProcessingDuration = m_lastProcessingDuration > m_maxProcessingDuration? m_lastProcessingDuration:m_maxProcessingDuration;
-				m_minProcessingDuration = m_lastProcessingDuration < m_minProcessingDuration ? m_lastProcessingDuration : m_minProcessingDuration;
-			}
-		}
 
 		public OneWire() {
 			Reinitialise();
@@ -923,7 +999,7 @@ namespace MultiZonePlayer {
 
 		public void Reinitialise() {
 			try {
-				m_deviceList.Clear();
+				SensorDevice.Clear(SensorDevice.DeviceTypeEnum.OneWire);
 				foreach (DSPortAdapter adapter in m_adapterList){
 					try { adapter.freePort(); }
 					catch (Exception) { }
@@ -940,7 +1016,7 @@ namespace MultiZonePlayer {
 					m_adapterList.Add(adapterVar);
 					MLog.Log("Found onewire Default adapter " + adapterVar.getAdapterName());
 				}
-				catch (Exception ex) {
+				catch (Exception) {
 					if (m_initErrors < 5) {
 						MLog.Log(this, "Unable to init onewire default adapter");
 					}
@@ -955,7 +1031,7 @@ namespace MultiZonePlayer {
 						MLog.Log("Found onewire port based adapter " + adapterVar.getAdapterName());
 					}
 				}
-				catch (Exception ex) {
+				catch (Exception) {
 					if (m_initErrors < 5) {
 						MLog.Log(this, "Unable to init onewire adapter name=" + IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1] 
 							+ " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
@@ -1018,7 +1094,7 @@ namespace MultiZonePlayer {
 		
 		}
 
-		public void SetResolution(OneWireContainer tempelement, ZoneDetails zone, Device dev, double readTemperature) {
+		public void SetResolution(OneWireContainer tempelement, ZoneDetails zone, SensorDevice dev, double readTemperature) {
 			try {
 				if (zone.TemperatureResolutionDigits == -1 || !dev.TempResolutionCanBeSet)
 					return;//default setting is wanted, or temp resolution cannot be set, just exit
@@ -1132,20 +1208,13 @@ namespace MultiZonePlayer {
 					DateTime start = DateTime.Now;
 					int elementCount = 0, errCount = 0;
 					String address;
-					Device dev;
+					SensorDevice dev;
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer) containers.nextElement();
 						address = element.getAddressAsString();
-						dev = m_deviceList.Find(x => x.Address == address);
 						zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
 						zone = zoneList.Count > 0 ? zoneList[0] : null;
-						if (dev == null) {
-							dev = new Device(element.getName(), address, familyString, zone);
-							m_deviceList.Add(dev);
-						}
-						else {
-							dev.LastRead = DateTime.Now;
-						}
+						dev = SensorDevice.GetDevice(element.getName(), address, familyString, zone, SensorDevice.DeviceTypeEnum.OneWire, "");
 						dev.StartProcessing();
 						if (!ProcessElement(zoneList, element, dev)) {
 							errCount++;
@@ -1181,10 +1250,10 @@ namespace MultiZonePlayer {
 								Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", true);
 								Reinitialise();
 							}
-							ProcessFamily(ONEWIRE_TEMPDEV_NAME, adapter, false, false, 0x28); //DS18B20 = temp
-							ProcessFamily(ONEWIRE_SMARTBATDEV_NAME, adapter, false, false, 0x26); //DS2438 = Smart Battery Monitor
+							ProcessFamily(SensorDevice.ONEWIRE_TEMPDEV_NAME, adapter, false, false, 0x28); //DS18B20 = temp
+							ProcessFamily(SensorDevice.ONEWIRE_SMARTBATDEV_NAME, adapter, false, false, 0x26); //DS2438 = Smart Battery Monitor
 						}
-						ProcessFamily(ONEWIRE_IO_NAME + " & " + ONEWIRE_COUNTER_NAME, adapter, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
+						ProcessFamily(SensorDevice.ONEWIRE_IO_NAME + " & " + SensorDevice.ONEWIRE_COUNTER_NAME, adapter, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
 						i++;
 						Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
 					}
@@ -1196,7 +1265,7 @@ namespace MultiZonePlayer {
 			MLog.Log(this, "OneWire LoopReadSlow exit");
 		}
 
-		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element, Device dev) {
+		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element, SensorDevice dev) {
 			sbyte[] state;
 			Boolean result = true;
 			TemperatureContainer temp;
@@ -1206,7 +1275,7 @@ namespace MultiZonePlayer {
 				String zoneName = zoneList.Count > 0 ? zoneList[0].ZoneName + ", totalzonecount=" + zoneList.Count : "no zone exist";
 				try {
 					switch (element.getName()) {
-						case ONEWIRE_TEMPDEV_NAME:
+						case SensorDevice.ONEWIRE_TEMPDEV_NAME:
 							temp = (TemperatureContainer) element;
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
@@ -1232,7 +1301,7 @@ namespace MultiZonePlayer {
 							}
 							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
 							break;
-						case ONEWIRE_IO_NAME:
+						case SensorDevice.ONEWIRE_IO_NAME:
 							SwitchContainer swd = (SwitchContainer) element;
 							state = swd.readDevice();
 							//bool latchA = swd.getLatchState(0, state);
@@ -1331,7 +1400,7 @@ namespace MultiZonePlayer {
 							//int ilevel = o05.(0, state);
 							//MLog.Log(null, "ilevel=" + level + "latch=" + latch + " sensed=" + sensed);
 							break;
-						case ONEWIRE_SMARTBATDEV_NAME:
+						case SensorDevice.ONEWIRE_SMARTBATDEV_NAME:
 							ADContainer adc = (ADContainer) element;
 							int maxNumChan = adc.getNumberADChannels();
 							// array to determine whether a specific channel has been selected
@@ -1386,7 +1455,7 @@ namespace MultiZonePlayer {
 							}
 							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
 							break;
-						case ONEWIRE_COUNTER_NAME:
+						case SensorDevice.ONEWIRE_COUNTER_NAME:
 							OneWireContainer1D counter = (OneWireContainer1D) element;
 							long c1, c2;
 							c1 = counter.readCounter(14);
@@ -1424,7 +1493,7 @@ namespace MultiZonePlayer {
 				}
 			}
 			else {
-				if (element.getName() != ONEWIRE_CONTROLLER_NAME) {
+				if (element.getName() != SensorDevice.ONEWIRE_CONTROLLER_NAME) {
 					String err = "UNNALOCATED OneWire device addr=" + element.getAddressAsString() + " name=" + element.getName() +
 					             " desc=" + element.getDescription();
 					Performance.Create(err, true, "");
@@ -1464,7 +1533,7 @@ namespace MultiZonePlayer {
 
 		public void Close() {
 /*
-			// end the 1-Wire network Device Monitor
+			// end the 1-Wire network SensorDevice Monitor
 			if (dMonitor.isMonitorRunning())
 			{
 				//SetText("Killing deviceMonitor" + Environment.NewLine);
@@ -2087,7 +2156,7 @@ namespace MultiZonePlayer {
 
 			public override bool Equals(object obj) {
 				if (!(obj is Bluetooth.Device)) {
-					throw new ArgumentException("obj is not an Bluetooth.Device");
+					throw new ArgumentException("obj is not an Bluetooth.SensorDevice");
 				}
 				var dev = obj as Bluetooth.Device;
 				if (dev == null) {

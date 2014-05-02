@@ -383,7 +383,7 @@ namespace MultiZonePlayer
             try
             {
 
-                // Example Device Identification string
+                // Example SensorDevice Identification string
                 // @"\??\ACPI#PNP0303#3&13c0b0c5&0#{884b96c3-56ef-11d1-bc8c-00a0c91405dd}";
 
                 // remove the \??\

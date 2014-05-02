@@ -240,7 +240,7 @@
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(98, 17);
             this.label6.TabIndex = 1;
-            this.label6.Text = "Output Device";
+            this.label6.Text = "Output SensorDevice";
             // 
             // txtOutputDevice
             // 
@@ -521,7 +521,7 @@
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(86, 17);
             this.label15.TabIndex = 1;
-            this.label15.Text = "Input Device";
+            this.label15.Text = "Input SensorDevice";
             // 
             // txtAppHandle
             // 
@@ -779,7 +779,7 @@
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(100, 17);
             this.label19.TabIndex = 1;
-            this.label19.Text = "Control Device";
+            this.label19.Text = "Control SensorDevice";
             // 
             // txtControlDevice
             // 

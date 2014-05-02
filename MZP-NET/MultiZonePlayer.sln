@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiZonePlayer", "MultiZonePlayer\MultiZonePlayer.csproj", "{308C26B0-F067-4A8A-B275-24A430FA01E4}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -165,7 +165,6 @@ Global
 		{0E7413FF-EB9E-4714-ACF2-BE3A6A7B2FFD}.Release|x86.ActiveCfg = Release|Any CPU
 		{0746C19D-05FC-4B2C-B6BE-DA2E21AEFD05}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{0746C19D-05FC-4B2C-B6BE-DA2E21AEFD05}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{0746C19D-05FC-4B2C-B6BE-DA2E21AEFD05}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{0746C19D-05FC-4B2C-B6BE-DA2E21AEFD05}.Debug|x64.ActiveCfg = Debug|x86
 		{0746C19D-05FC-4B2C-B6BE-DA2E21AEFD05}.Debug|x86.ActiveCfg = Debug|x86
 		{0746C19D-05FC-4B2C-B6BE-DA2E21AEFD05}.Debug|x86.Build.0 = Debug|x86

@@ -997,7 +997,9 @@ namespace MultiZonePlayer
 		public enum DeviceAttributes
 		{
 			temperature,
-			humidity
+			humidity,
+			signal,
+			battery
 		}
 
 		public static List<RFXDevice> DeviceList;

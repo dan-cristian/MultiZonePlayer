@@ -362,7 +362,7 @@ namespace MultiZonePlayer
 
 
                         //
-                        // Device is about to be removed
+                        // SensorDevice is about to be removed
                         // Any application can cancel the removal
                         //
                     case DBT_DEVICEQUERYREMOVE:
@@ -409,7 +409,7 @@ namespace MultiZonePlayer
 
 
                         //
-                        // Device has been removed
+                        // SensorDevice has been removed
                         //
                     case DBT_DEVICEREMOVECOMPLETE:
 

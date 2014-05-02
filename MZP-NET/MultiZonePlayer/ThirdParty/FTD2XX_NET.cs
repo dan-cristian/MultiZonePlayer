@@ -277,11 +277,11 @@ namespace FTD2XX_NET
 			/// </summary>
 			FT_INVALID_HANDLE,
 			/// <summary>
-			/// Device not found
+			/// SensorDevice not found
 			/// </summary>
 			FT_DEVICE_NOT_FOUND,
 			/// <summary>
-			/// Device is not open
+			/// SensorDevice is not open
 			/// </summary>
 			FT_DEVICE_NOT_OPENED,
 			/// <summary>
@@ -301,11 +301,11 @@ namespace FTD2XX_NET
 			/// </summary>
 			FT_INVALID_BAUD_RATE,
 			/// <summary>
-			/// Device not opened for erase
+			/// SensorDevice not opened for erase
 			/// </summary>
 			FT_DEVICE_NOT_OPENED_FOR_ERASE,
 			/// <summary>
-			/// Device not poened for write
+			/// SensorDevice not poened for write
 			/// </summary>
 			FT_DEVICE_NOT_OPENED_FOR_WRITE,
 			/// <summary>
@@ -329,7 +329,7 @@ namespace FTD2XX_NET
 			/// </summary>
 			FT_EEPROM_NOT_PRESENT,
 			/// <summary>
-			/// Device EEPROM is blank
+			/// SensorDevice EEPROM is blank
 			/// </summary>
 			FT_EEPROM_NOT_PROGRAMMED,
 			/// <summary>
@@ -821,7 +821,7 @@ namespace FTD2XX_NET
 			public const byte FT_DRIVE_CURRENT_16MA	= 16;
 		}
 
-		// Device type identifiers for FT_GetDeviceInfoDetail and FT_GetDeviceInfo
+		// SensorDevice type identifiers for FT_GetDeviceInfoDetail and FT_GetDeviceInfo
 		/// <summary>
 		/// ValueList of FTDI device types
 		/// </summary>
@@ -1074,7 +1074,7 @@ namespace FTD2XX_NET
 		struct FT_EEPROM_HEADER
 		{
 			public UInt32 deviceType;		// FTxxxx device type to be programmed
-			// Device descriptor options
+			// SensorDevice descriptor options
 			public UInt16 VendorId;				// 0x0403
 			public UInt16 ProductId;				// 0x6001
 			public byte SerNumEnable;			// non-zero if serial number to be used
@@ -1159,11 +1159,11 @@ namespace FTD2XX_NET
 			/// </summary>
 			public string ManufacturerID = "FT";
 			/// <summary>
-			/// Device description string
+			/// SensorDevice description string
 			/// </summary>
 			public string Description = "USB-Serial Converter";
 			/// <summary>
-			/// Device serial number string
+			/// SensorDevice serial number string
 			/// </summary>
 			public string SerialNumber = "";
 			/// <summary>
@@ -2995,7 +2995,7 @@ namespace FTD2XX_NET
 		//**************************************************************************
 		// Intellisense comments
 		/// <summary>
-		/// Causes the system to check for USB hardware changes.  This is equivalent to clicking on the "Scan for hardware changes" button in the Device Manager.
+		/// Causes the system to check for USB hardware changes.  This is equivalent to clicking on the "Scan for hardware changes" button in the SensorDevice Manager.
 		/// </summary>
 		/// <returns>FT_STATUS value from FT_Rescan in FTD2XX.DLL</returns>
 		public FT_STATUS Rescan()

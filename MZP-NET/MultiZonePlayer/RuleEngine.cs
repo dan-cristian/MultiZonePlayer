@@ -361,8 +361,8 @@ namespace MultiZonePlayer
 											if (value.ToString().Contains(typeof(User).ToString()))
 												value = ((List<User>)value)[Convert.ToInt32(parameters[0])];
 											else
-												if (value.ToString().Contains(typeof(OneWire.Device).ToString()))
-													value = ((List<OneWire.Device>)value)[Convert.ToInt32(parameters[0])];
+												if (value.ToString().Contains(typeof(SensorDevice).ToString()))
+													value = ((List<SensorDevice>)value)[Convert.ToInt32(parameters[0])];
 												else
 													if (value.ToString().Contains(typeof(Singleton).ToString()))
 														value = ((List<Singleton>)value)[Convert.ToInt32(parameters[0])];
