@@ -60,3 +60,12 @@ button.Closure {background-image:url('plug-icon.png');background-position:0px 18
 button.Counter {min-width:80px;background-image:url('Numbers-icon.png');}
 button.Voltage {background-image:url('light-icon.png');}
 meter.SmallVertical {width:10px;height:8px;transform: rotate(180deg);}
+span.Title {
+	background-color:limegreen;color:white;border:1px solid #33842a;/*give the button curved corners, alter the size as required*/
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	/*give the button a drop shadow*/
+	-webkit-box-shadow: 0 0 4px rgba(0,0,0, .75);
+	-moz-box-shadow: 0 0 4px rgba(0,0,0, .75);
+	box-shadow: 0 0 4px rgba(0,0,0, .75);}

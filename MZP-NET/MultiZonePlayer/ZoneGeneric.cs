@@ -400,19 +400,22 @@ namespace MultiZonePlayer {
 				case GlobalCommands.generategraph:
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
 					string type = vals.GetValue(GlobalParams.type).ToLower();
-					SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == "voltage", 
-						type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER);
+					SimpleGraph graph = new SimpleGraph(type == "temphum", type == Constants.EVENT_TYPE_CLOSURE, type == Constants.CAPABILITY_VOLTAGE,
+						type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type == Constants.CAPABILITY_ERROR);
 					if (type == "temphum") {
 						graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
 					}
-					if (type == "closure") {
+					if (type == Constants.EVENT_TYPE_CLOSURE) {
 						graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours);
 					}
-					if (type == "voltage") {
+					if (type == Constants.CAPABILITY_VOLTAGE) {
 						graph.ShowVoltageGraph(m_zoneDetails.ZoneId, ageHours);
 					}
 					if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
 						graph.ShowUtilitiesGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type);
+					}
+					if (type == Constants.CAPABILITY_ERROR) {
+						graph.ShowErrorGraph(ageHours, m_zoneDetails.ZoneId, false);
 					}
 					break;
 				case GlobalCommands.doorring:

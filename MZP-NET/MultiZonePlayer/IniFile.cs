@@ -27,6 +27,7 @@ namespace MultiZonePlayer
 			public const String CSV_CLOSURES = "\\closures.csv";
 			public const String CSV_UTILITIES = "\\utilities.csv";
 			public const String CSV_VOLTAGE = "\\voltage.csv";
+			public const String CSV_DEVICEERRORS = "\\device-errors.csv";
 			public const String SYSLOG_FILE = "syslog.csv";
 			public const String LOG_GENERAL_FILE = "MultiZonePlayer.log";
             public const String LOG_EVENTS_FILE = "\\MultiZonePlayerEvents.log";

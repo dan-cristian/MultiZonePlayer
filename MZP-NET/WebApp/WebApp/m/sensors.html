@@ -6,7 +6,7 @@
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
-<body style="text-align:left">
+<body style="text-align:left" onload="refresh(15000,'sensors.html')">
 	<%for;i;0;++;#S.SensorDeviceList.Count#;%>
         <button class="Sensor #S.SensorDeviceList.?,%i.Type#" onclick="window.open('zone-main.html?zoneid=#S.SensorDeviceList.?,%i.Zone.ZoneId#', '_self')">
             <span title=" Target/Min/Max #S.SensorDeviceList.?,%i.Zone.TemperatureTarget#/#S.SensorDeviceList.?,%i.Zone.TemperatureMinAlarm#/#S.SensorDeviceList.?,%i.Zone.TemperatureMaxAlarm#">#S.SensorDeviceList.?,%i.DisplayValue#</span>

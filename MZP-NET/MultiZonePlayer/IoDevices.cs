@@ -109,12 +109,25 @@ namespace MultiZonePlayer {
 				dev = new SensorDevice(name, address, family, zone, devtype, otherInfo);
 				m_deviceList.Add(dev);
 			}
+			else {
+				dev.Name = name;
+				dev.Zone = zone;
+				dev.Family = family;
+				dev.OtherInfo = otherInfo;
+			}
 			dev.LastRead = DateTime.Now;
 			return dev;
 		}
+
+		private String GetZoneName {
+			get { return Zone != null ? Zone.ZoneName : "zoneN/A"; }
+		}
+		private int GetZoneId {
+			get { return Zone != null ? Zone.ZoneId : -1; }
+		}
 		public String Summary {
 			get {
-				String zone = Zone != null ? Zone.ZoneName : "zoneN/A";
+				String zone = GetZoneName;
 				String s = Name + "-" + Address + ", err=" + ErrorCount + ", " + zone;
 				s += ", " + Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastRead)) + " ago, speed=" + Math.Round(m_lastProcessingDuration.TotalSeconds, 2) + "s";
 				//s += " min=" + m_minProcessingDuration.TotalSeconds + "s" + " max=" + m_maxProcessingDuration.TotalSeconds + "s"; 
@@ -196,6 +209,8 @@ namespace MultiZonePlayer {
 
 		public void RecordError(Exception ex) {
 			m_errorCount++;
+			Utilities.AppendToCsvFile(IniFile.CSV_DEVICEERRORS, ",", GetZoneId.ToString(), DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), 
+				Address, Name, GetZoneName, DeviceType.ToString(), ex.Message);
 		}
 		public void RecordSuccess() {
 			m_successCount++;
@@ -1212,7 +1227,9 @@ namespace MultiZonePlayer {
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer) containers.nextElement();
 						address = element.getAddressAsString();
-						zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
+						zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.ToLower().Contains(address.ToLower()));
+						if (zoneList.Count == 0)
+							Alert.CreateAlertOnce("Onewire device not associate, adress="+address+" name="+element.getName());
 						zone = zoneList.Count > 0 ? zoneList[0] : null;
 						dev = SensorDevice.GetDevice(element.getName(), address, familyString, zone, SensorDevice.DeviceTypeEnum.OneWire, "");
 						dev.StartProcessing();

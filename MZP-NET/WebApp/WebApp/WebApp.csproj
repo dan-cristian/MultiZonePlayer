@@ -126,6 +126,7 @@
     <Content Include="m\leap.js" />
     <Content Include="m\graphs.html" />
     <Content Include="m\zone-radio.html" />
+    <Content Include="m\zone-error-event.html" />
     <Content Include="m\zone-utility-event.html" />
     <Content Include="m\zone-graph-voltage.html" />
     <Content Include="m\zone-cam-video.html" />

@@ -5,8 +5,15 @@
 <title>System Info</title>
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
+    <script type="text/JavaScript">
+	function loadAll()
+	{
+		
+		ajaxCall('error', 'zone-error-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=error&targetdiv=error');
+	}
+</script>
 </head>
-<body style="text-align:left">
+<body style="text-align:left" onload="loadAll()">
 <button onclick="window.open('start.html', '_self')">Back</button>
 <br />
 <%for;i;0;++;#S.DeviceList.Count#;%>
@@ -25,6 +32,7 @@
     <%for;i;0;++;#S.ZoneTypesAvailable.Count#;%>
 		<button class="Small" onclick="window.open('zone-type.html?type=#S.ZoneTypesAvailableByIndex,%i#','_self')">#S.ZoneTypesAvailableByIndex,%i#</button>
 		<%%>
+<div id="error"></div>
 <table border="1" style="border-width:1px;border-color:Black;border-style:inset;">
 <tr class="Header">
 <td>Cause</td>

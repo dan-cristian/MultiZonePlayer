@@ -6,7 +6,7 @@ function refresh(interval, url) {
 	setTimeout(function () { reload(url) }, interval);
 }
 function reload() {
-	window.location.reload();
+	parent.window.location.reload(true);
 }
 function reload(url) {
 	window.open(url, "_self");

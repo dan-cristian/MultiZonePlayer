@@ -1,0 +1,10 @@
+<img src="tmp/%_type-%_zoneid-%_interval.gif?r=#R.Random#;"/><br />
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-error-event.html?command=%_command&zoneid=%_zoneid&interval=1&type=%_type&targetdiv=%_targetdiv', false)">Hour</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-error-event.html?command=%_command&zoneid=%_zoneid&interval=8&type=%_type&targetdiv=%_targetdiv', false)">8 Hours</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-error-event.html?command=%_command&zoneid=%_zoneid&interval=24&type=%_type&targetdiv=%_targetdiv', false)">Day</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-error-event.html?command=%_command&zoneid=%_zoneid&interval=168&type=%_type&targetdiv=%_targetdiv', false)">Week</a>&nbsp
+<a href="#" onclick="ajaxCall('%_targetdiv','zone-error-event.html?command=%_command&zoneid=%_zoneid&interval=744&type=%_type&targetdiv=%_targetdiv', false)">Month</a>
+<%if;"%_zoneid"!="-1"%>
+<br/>Total #Zones,%_zoneid.ZoneName#
+<%%>
+<br />

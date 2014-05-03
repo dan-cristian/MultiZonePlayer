@@ -17,10 +17,11 @@ namespace MultiZonePlayer
 		private List<Tuple<int, DateTime, double, int, double>> m_voltageHistoryList;
 		private List<Tuple<int, DateTime, double, double, double, String>> m_utilitiesHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
+		private List<Tuple<int, DateTime, String, String, String, String, String>> m_errorHistoryList;
 		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
 
 
-		public SimpleGraph(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities)
+		public SimpleGraph(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities, bool needErrors)
 		{
 			InitializeComponent();
 			m_colors[0] = System.Drawing.Color.OrangeRed;
@@ -33,7 +34,7 @@ namespace MultiZonePlayer
 			m_colors[7] = System.Drawing.Color.PaleVioletRed;
 			m_colors[8] = System.Drawing.Color.LightSalmon;
 			m_colors[9] = System.Drawing.Color.MediumSlateBlue;
-			LoadHistory(needTempHum, needClosure, needVoltage, needUtilities);
+			LoadHistory(needTempHum, needClosure, needVoltage, needUtilities, needErrors);
 		}
 
 		
@@ -189,6 +190,8 @@ namespace MultiZonePlayer
 			}
 		}
 
+		
+
 		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType) {
 			try {
 
@@ -321,6 +324,59 @@ namespace MultiZonePlayer
 			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
 				+ "temp-hum-all-" + ageHours + ".gif", ChartImageFormat.Gif);
 		}
+
+
+		public void ShowErrorGraph(int ageHours, int zoneId, bool showallzones) {
+			//double lastMinY = double.MaxValue, minY = double.MaxValue;
+			PrepareGraph("Errors @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+			String color;
+			List<int> zoneIdList;
+			List<ZoneDetails> zoneList = new List<ZoneDetails>();
+			if (showallzones) {
+				zoneIdList = m_errorHistoryList.Select(x => x.Item1).Distinct().ToList();
+				foreach (int id in zoneIdList) {
+					zoneList.Add(ZoneDetails.GetZoneById(id));
+				}
+			}
+			else { 
+				zoneList.Add(ZoneDetails.GetZoneById(zoneId));
+			}
+
+			foreach (ZoneDetails zone in zoneList) {
+				color = zone.Color != null ? zone.Color : "Black";
+				List<Tuple<int, DateTime, String, String, String, String, String>> errValues = m_errorHistoryList.FindAll(x => x.Item1 == zone.ZoneId
+					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+				if (errValues.Count > 0) {
+					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+						Name = "Errors in " + zone.Description,
+						Color = System.Drawing.Color.FromName(color),
+						IsVisibleInLegend = true,
+						IsXValueIndexed = false,
+						ChartType = SeriesChartType.Point,
+						BorderWidth = 1
+					};
+					this.chart1.Series.Add(series1);
+					//double total = 0, min = double.MaxValue, max = double.MinValue;
+					foreach (var point in errValues) {
+						series1.Points.AddXY(point.Item2, zone.ZoneId);
+					}
+					series1.Name += " Count=" + errValues.Count;
+				}
+
+				//double minT;
+				//minT = errValues.Count > 0 ? errValues.Min(x => x.Item2) : 0;
+				//minY = errValues.Count > 0 ? minT : double.MaxValue;
+				//lastMinY = Math.Min(lastMinY, minY);
+			}
+			chart1.ChartAreas[0].AxisY.MajorGrid.LineWidth = 0;
+			chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
+			//chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
+			chart1.ChartAreas[0].RecalculateAxesScale();
+			chart1.Invalidate();
+			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+				+ Constants.CAPABILITY_ERROR+"-"+zoneId+"-" + ageHours + ".gif", ChartImageFormat.Gif);
+		}
+
 		public void ShowEventGraph(int zoneId, int ageHours)
 		{
 			PrepareGraph("Events @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
@@ -472,12 +528,14 @@ namespace MultiZonePlayer
 			this.ResumeLayout(false);
 		}
 
-		private void LoadHistory(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities){
+		private void LoadHistory(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities, bool needErrors){
 			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
 			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int, double>>();
 			m_utilitiesHistoryList = new List<Tuple<int, DateTime, double, double, double, String>>();
+			m_errorHistoryList = new List<Tuple<int, DateTime, string, string, string, string, string>>();
+
 			string[] allLines;
 
 			try {
@@ -581,6 +639,27 @@ namespace MultiZonePlayer
 					}
 					MLog.Log(this, "End reading Utilities");
 				}
+				if (needErrors) {
+					MLog.Log(this, "START reading error list");
+					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_DEVICEERRORS);
+					var query = from line in allLines
+								let data = line.Split(',')
+								select new {
+									ZoneId = GetInt(data[0]),
+									Date = GetDate(data[1]),
+									DeviceAddress = data[2],
+									DeviceName = data[3],
+									ZoneName = data[4],
+									DeviceType = data[5],
+									ErrorMessage = data[6]
+								};
+					MLog.Log(this, "Processing error list");
+					foreach (var line in query) {
+						m_errorHistoryList.Add(new Tuple<int, DateTime, String, String, String, String, String>
+							(line.ZoneId, line.Date, line.DeviceAddress, line.DeviceName,line.ZoneName, line.DeviceType, line.ErrorMessage));
+					}
+					MLog.Log(this, "End reading error list");
+				}
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "Error loading history for graph");
@@ -603,6 +682,14 @@ namespace MultiZonePlayer
 			if (!double.TryParse(doubl, out val)) {
 				val = 0;
 				Alert.CreateAlertOnce("Error converting double in graph load @" + doubl);
+			}
+			return val;
+		}
+		private int GetInt(String valueint) {
+			int val;
+			if (!int.TryParse(valueint, out val)) {
+				val = 0;
+				Alert.CreateAlertOnce("Error converting int in graph load @" + valueint);
 			}
 			return val;
 		}
