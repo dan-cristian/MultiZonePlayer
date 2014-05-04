@@ -1504,8 +1504,8 @@ namespace MultiZonePlayer {
 				}
 				catch (Exception ex) {
 					String err = "Err reading OneWire zone=" + zoneName+ " err=" + ex.Message;
-					Performance.Create(err, true, zoneName, Performance.PerformanceFlags.IsError, 1);
-					MLog.Log(this, err);
+					Performance.Create(err, false, zoneName, Performance.PerformanceFlags.IsError, 1);
+					//MLog.Log(this, err);
 					dev.RecordError(ex);
 					result = false;
 				}
