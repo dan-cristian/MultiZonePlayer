@@ -13,7 +13,7 @@ namespace MultiZonePlayer {
 		//private static List<ZoneDetails> m_valueList = new List<ZoneDetails>();
 		public int ZoneId = 0;
 		[Category("Edit")]
-		public String Description;
+		public String Description="";
 		//public Boolean IsActive = false;
 		//public int MinutesUntilSleep = -1;
 		[Category("Edit")]
@@ -629,6 +629,51 @@ namespace MultiZonePlayer {
 			}
 		}
 
+		public Boolean IsInactiveToBeStopped {
+			get { 
+				Boolean toBeStopped = false;
+				int duration = 0;
+				int musicInactivity = 60, videoInactivity = 60, tvInactivity = 60, inactiveZone = 1; //default values
+				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_MUSIC[1], out musicInactivity);
+				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_VIDEO[1], out videoInactivity);
+				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_TV[1], out tvInactivity);
+				int.TryParse(IniFile.PARAM_CLOSE_INACTIVE_ZONE[1], out inactiveZone);
+
+				//close if no recent activity detected on an active zone, except tv & video
+				if (ActivityType != GlobalCommands.nul) {
+					if (IsActive) {
+						switch (ActivityType) {
+							case GlobalCommands.xbmc:
+								duration = videoInactivity;
+								break;
+							case GlobalCommands.tv:
+								duration = tvInactivity;
+								break;
+							case GlobalCommands.music:
+							case GlobalCommands.streammp3:
+							case GlobalCommands.radio:
+								duration = musicInactivity;
+								break;
+							default:
+								duration = 60;
+								break;
+						}
+						if (DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes >= duration) {
+							toBeStopped = true;
+							MLog.Log(this, "zone to be CLOSED as active but for too long than duration mins="+duration);
+						}
+					}
+
+					if (!HadRecentRunState && !IsActive) {
+						if (DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes >= inactiveZone){
+							toBeStopped = true;
+							MLog.Log(this,"zone to be CLOSED as not recent and not active");
+						}
+					}
+				}
+				return toBeStopped;
+			}
+		}
 		public int MacroCount {
 			get {
 				List<MacroEntry> macros = MZPState.Instance.GetZoneMacros(ZoneId);

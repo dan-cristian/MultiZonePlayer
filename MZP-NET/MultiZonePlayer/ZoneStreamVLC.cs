@@ -214,11 +214,11 @@ namespace MultiZonePlayer
             switch (m_vlcControl.State)
             {
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Stopped:
-                case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Buffering:
                     return ZoneState.NotStarted;
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Paused:
                     return ZoneState.Paused;
 				case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Opening:
+				case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Buffering:
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Playing:
                     return ZoneState.Running;
                 case Vlc.DotNet.Core.Interops.Signatures.LibVlc.Media.States.Error:

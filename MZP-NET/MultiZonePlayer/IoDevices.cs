@@ -54,7 +54,7 @@ namespace MultiZonePlayer {
 		private static List<SensorDevice> m_deviceList = new List<SensorDevice>();
 
 		public static List<SensorDevice> DeviceList {
-			get { return SensorDevice.m_deviceList; }
+			get { return SensorDevice.m_deviceList.FindAll(x=>x.SuccessCount>0); }
 		}
 
 		public SensorDevice(String name, String address, String family, ZoneDetails zone, DeviceTypeEnum devtype, String otherInfo ) {
@@ -140,6 +140,7 @@ namespace MultiZonePlayer {
 						+ (Latch[0] ? " IsLatchA" : "") + (Latch[1] ? " IsLatchB" : "") + (IOHigh ? " IsHigh" : "") + (IOAlarm ? " IsAlarm" : "");
 				if (m_hasVoltage)
 					s += " V1=" + Voltage[0] + " V2=" + Voltage[1] + " V3=" + Voltage[2];
+				s += "success="+SuccessCount + " errors="+ErrorCount;
 				if (DeviceType == DeviceTypeEnum.RFX) {
 					s += " battery=" + Battery + " signal=" + Signal;
 				}
@@ -493,7 +494,7 @@ namespace MultiZonePlayer {
 			get {
 				if (SensorDevice.DeviceList.Count > 0)
 					//return only devices that were read ok once
-					return SensorDevice.DeviceList.FindAll(y => y.SuccessCount > 0 && y.DeviceType == SensorDevice.DeviceTypeEnum.RFX).OrderByDescending(x => x.Type).ToList();
+					return SensorDevice.DeviceList.FindAll(y=>y.DeviceType == SensorDevice.DeviceTypeEnum.RFX).OrderByDescending(x => x.Type).ToList();
 				else
 					return SensorDevice.DeviceList;
 			}
@@ -988,7 +989,7 @@ namespace MultiZonePlayer {
 			get {
 				if (SensorDevice.DeviceList.Count > 0)
 					//return only devices that were read ok once
-					return SensorDevice.DeviceList.FindAll(y => y.SuccessCount > 0 && y.DeviceType==SensorDevice.DeviceTypeEnum.OneWire).OrderByDescending(x => x.Type).ToList();
+					return SensorDevice.DeviceList.FindAll(y=>y.DeviceType==SensorDevice.DeviceTypeEnum.OneWire).OrderByDescending(x => x.Type).ToList();
 				else
 					return SensorDevice.DeviceList;
 			}

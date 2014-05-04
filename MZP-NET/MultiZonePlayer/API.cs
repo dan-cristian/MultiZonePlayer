@@ -528,7 +528,7 @@ namespace MultiZonePlayer
             catch (Exception ex)
             {
                 MLog.Log(ex, "Error DoCommand");
-                cmdresult.ErrorMessage += "Exception DoCommand " + ex.Message;
+				cmdresult.ErrorMessage += "Exception DoCommand " + ex.Message;
 				cmdresult.Result = ResultEnum.ERR;
             }
             return cmdresult;

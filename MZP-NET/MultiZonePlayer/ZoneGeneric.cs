@@ -975,50 +975,16 @@ namespace MultiZonePlayer {
 					m_closurePatern = "";
 				}
 				CheckForSleep();
-
-				int musicInactivity = 60, videoInactivity = 60, tvInactivity = 60, inactiveZone = 1; //default values
-				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_MUSIC[1], out musicInactivity);
-				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_VIDEO[1], out videoInactivity);
-				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_TV[1], out tvInactivity);
-				int.TryParse(IniFile.PARAM_CLOSE_INACTIVE_ZONE[1], out inactiveZone);
-				Boolean toBeClosed = false;
-				int duration = 0;
-				//close if no recent activity detected on an active zone, except tv & video
-				if (m_zoneDetails.ActivityType != GlobalCommands.nul) {
-					if (m_zoneDetails.IsActive) {
-						switch (m_zoneDetails.ActivityType) {
-							case GlobalCommands.xbmc:
-								duration = videoInactivity;
-								break;
-							case GlobalCommands.tv:
-								duration = tvInactivity;
-								break;
-							case GlobalCommands.music:
-								duration = musicInactivity;
-								break;
-							default:
-								duration = 60;
-								break;
-						}
-						if (DateTime.Now.Subtract(m_zoneDetails.LastLocalCommandDateTime).TotalMinutes >= duration)
-							toBeClosed = true;
-					}
-
-					if (!m_zoneDetails.IsActive) {
-						if (DateTime.Now.Subtract(m_zoneDetails.LastLocalCommandDateTime).TotalMinutes >= inactiveZone)
-							toBeClosed = true;
-					}
-					if (toBeClosed) {
-						MLog.Log(this, "Zone " + m_zoneDetails.ZoneName + " active=" + m_zoneDetails.IsActive +
-						               " closed due to inactivity lapse, type=" + m_zoneDetails.ActivityType.ToString() + " lastcmd=" +
-						               m_zoneDetails.LastLocalCommandDateTime);
-						m_zoneDetails.Close();
-						if (m_zoneForm != null) {
-							m_zoneForm.CloseFormSafe();
-						}
+				Boolean toBeClosed = m_zoneDetails.IsInactiveToBeStopped;
+				if (toBeClosed) {
+					MLog.Log(this, "Zone " + m_zoneDetails.ZoneName + " active=" + m_zoneDetails.IsActive +
+						            " closed due to inactivity lapse, type=" + m_zoneDetails.ActivityType.ToString() + " lastcmd=" +
+						            m_zoneDetails.LastLocalCommandDateTime);
+					m_zoneDetails.Close();
+					if (m_zoneForm != null) {
+						m_zoneForm.CloseFormSafe();
 					}
 				}
-
 				if (m_zoneForm != null) {
 					m_zoneForm.RefreshState();
 				}

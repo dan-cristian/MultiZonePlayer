@@ -327,54 +327,64 @@ namespace MultiZonePlayer
 
 
 		public void ShowErrorGraph(int ageHours, int zoneId, bool showallzones) {
-			//double lastMinY = double.MaxValue, minY = double.MaxValue;
-			PrepareGraph("Errors @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-			String color;
-			List<int> zoneIdList;
-			List<ZoneDetails> zoneList = new List<ZoneDetails>();
-			if (showallzones) {
-				zoneIdList = m_errorHistoryList.Select(x => x.Item1).Distinct().ToList();
-				foreach (int id in zoneIdList) {
-					zoneList.Add(ZoneDetails.GetZoneById(id));
-				}
-			}
-			else { 
-				zoneList.Add(ZoneDetails.GetZoneById(zoneId));
-			}
-
-			foreach (ZoneDetails zone in zoneList) {
-				color = zone.Color != null ? zone.Color : "Black";
-				List<Tuple<int, DateTime, String, String, String, String, String>> errValues = m_errorHistoryList.FindAll(x => x.Item1 == zone.ZoneId
-					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
-				if (errValues.Count > 0) {
-					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
-						Name = "Errors in " + zone.Description,
-						Color = System.Drawing.Color.FromName(color),
-						IsVisibleInLegend = true,
-						IsXValueIndexed = false,
-						ChartType = SeriesChartType.Point,
-						BorderWidth = 1
-					};
-					this.chart1.Series.Add(series1);
-					//double total = 0, min = double.MaxValue, max = double.MinValue;
-					foreach (var point in errValues) {
-						series1.Points.AddXY(point.Item2, zone.ZoneId);
+			try {
+				//double lastMinY = double.MaxValue, minY = double.MaxValue;
+				PrepareGraph("Errors @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				String color;
+				List<int> zoneIdList; 
+				List<ZoneDetails> zoneList = new List<ZoneDetails>();
+				if (showallzones) {
+					ZoneDetails zonetemp;
+					zoneIdList = m_errorHistoryList.Select(x => x.Item1).Distinct().ToList();
+					foreach (int id in zoneIdList) {
+						zonetemp = ZoneDetails.GetZoneById(id);
+						if (zonetemp != null)
+							zoneList.Add(zonetemp);
+						else
+							MLog.Log(this, "Unexpected unknown zone in err graph id="+id);
 					}
-					series1.Name += " Count=" + errValues.Count;
+				}
+				else {
+					zoneList.Add(ZoneDetails.GetZoneById(zoneId));
 				}
 
-				//double minT;
-				//minT = errValues.Count > 0 ? errValues.Min(x => x.Item2) : 0;
-				//minY = errValues.Count > 0 ? minT : double.MaxValue;
-				//lastMinY = Math.Min(lastMinY, minY);
+				foreach (ZoneDetails zone in zoneList) {
+					color = zone.Color != null ? zone.Color : "Black";
+					List<Tuple<int, DateTime, String, String, String, String, String>> errValues = m_errorHistoryList.FindAll(x => x.Item1 == zone.ZoneId
+						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+					if (errValues.Count > 0) {
+						var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+							Name = "Errors in " + zone.ZoneName,
+							Color = System.Drawing.Color.FromName(color),
+							IsVisibleInLegend = true,
+							IsXValueIndexed = false,
+							ChartType = SeriesChartType.Point,
+							BorderWidth = 1
+						};
+						this.chart1.Series.Add(series1);
+						//double total = 0, min = double.MaxValue, max = double.MinValue;
+						foreach (var point in errValues) {
+							series1.Points.AddXY(point.Item2, zone.ZoneId);
+						}
+						series1.Name += " Count=" + errValues.Count;
+					}
+
+					//double minT;
+					//minT = errValues.Count > 0 ? errValues.Min(x => x.Item2) : 0;
+					//minY = errValues.Count > 0 ? minT : double.MaxValue;
+					//lastMinY = Math.Min(lastMinY, minY);
+				}
+				chart1.ChartAreas[0].AxisY.MajorGrid.LineWidth = 0;
+				chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
+				//chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
+				chart1.ChartAreas[0].RecalculateAxesScale();
+				chart1.Invalidate();
+				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+					+ Constants.CAPABILITY_ERROR + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 			}
-			chart1.ChartAreas[0].AxisY.MajorGrid.LineWidth = 0;
-			chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
-			//chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
-			chart1.ChartAreas[0].RecalculateAxesScale();
-			chart1.Invalidate();
-			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-				+ Constants.CAPABILITY_ERROR+"-"+zoneId+"-" + ageHours + ".gif", ChartImageFormat.Gif);
+			catch (Exception ex) {
+				MLog.Log(ex, this, "Error generating err graph zoneid="+zoneId+"  age="+ageHours);
+			}
 		}
 
 		public void ShowEventGraph(int zoneId, int ageHours)
