@@ -177,8 +177,10 @@ namespace MultiZonePlayer
 
             public static String[] PARAM_GTALK_USERNAME = new String[] { "PARAM_GTALK_USERNAME", "antonio.gaudi33@gmail.com" };
             public static String[] PARAM_GTALK_USERPASS = new String[] { "PARAM_GTALK_USERPASS", "S9mRs4vm" };
+			public static String[] PARAM_GTALK_USERNAME_EMAILNAME = new String[] { "PARAM_GTALK_USERNAME_EMAILNAME", "Antonio Gaudi 33" };
             //public static String[] PARAM_GTALK_SERVER = new String[] { "PARAM_GTALK_SERVER", "gmail.com" };
             public static String[] PARAM_GTALK_TARGETUSER = new String[] { "PARAM_GTALK_TARGETUSER", "dan.cristian@gmail.com" };
+			public static String[] PARAM_GTALK_TARGETUSERNAME = new String[] { "PARAM_GTALK_TARGETUSERNAME", "Dan Cristian" };
             public static String[] PARAM_SMS_TARGETNUMBER = new String[] { "PARAM_SMS_TARGETNUMBER", "0040726159521" };
             public static String[] PARAM_SMS_COMPORT = new String[] { "PARAM_SMS_COMPORT", "COM3" };
             public static String[] PARAM_SMS_AT_LINES_COUNT = new String[] { "PARAM_SMS_AT_LINES_COUNT", "2", "Number of new lines expected to be received after an AT command" };
@@ -307,6 +309,7 @@ namespace MultiZonePlayer
                 PARAM_GTALK_USERPASS,
                 //PARAM_GTALK_SERVER,
                 PARAM_GTALK_TARGETUSER,
+				PARAM_GTALK_TARGETUSERNAME,
                 PARAM_SMS_TARGETNUMBER,
                 PARAM_SMS_COMPORT,
                 PARAM_SMS_AT_LINES_COUNT,

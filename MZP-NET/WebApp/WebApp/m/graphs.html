@@ -10,6 +10,8 @@
 	{
 		ajaxCall('electricity', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=electricity&targetdiv=electricity');
 		ajaxCall('water', 'zone-utility-event.html?command=generatefullgraph&zoneid=-1&interval=24&type=water&targetdiv=water');
+		ajaxCall('voltage', 'zone-graph-general.html?command=generatefullgraph&zoneid=-1&interval=24&type=voltage&targetdiv=voltage');
+		ajaxCall('temphum', 'zone-graph-general.html?command=generatefullgraph&zoneid=27,34&interval=24&type=temphum&targetdiv=temphum');
 	}
 </script>
 </head>
@@ -17,9 +19,9 @@
 <button onclick="window.open('start.html', '_self')">Back</button>
 <br />
 <div id="camera"></div>
-<div id="temp-hum"></div>
 <div id="electricity"></div>
 <div id="water"></div>
+<div id="temphum"></div>
 <div id="voltage"></div>
 <br />
 <button onclick="window.open('start.html', '_self')">Back</button>

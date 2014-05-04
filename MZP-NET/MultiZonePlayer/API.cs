@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Windows.Forms;
-using System.Collections.Generic;
-using System.Collections;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization;
-using System.ComponentModel;
 using fastJSON;
-using java.lang;
+using System.Collections.Generic;
 using Boolean = System.Boolean;
 using Exception = System.Exception;
 using Thread = System.Threading.Thread;
@@ -20,15 +13,11 @@ namespace MultiZonePlayer
         {
 			int zoneId = -1;
 			ZoneDetails zoneDetails;
-			try
-            {
-				
+			try {
 				RemotePipiCommand cmdRemote;
-				
 				zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device, kd.Key);
 				//ignore console KEYBOARD commands
-				if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1])	&& zoneId == -1)
-				{
+				if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1])	&& zoneId == -1){
 					//MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
 					return;
 				}
@@ -41,8 +30,7 @@ namespace MultiZonePlayer
 				val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 				zoneDetails = ZoneDetails.GetZoneById(zoneId);
 				if (zoneDetails != null && zoneDetails.RelayType != EnumRelayType.Undefined
-					&& zoneDetails.ClosureIdList==kd.Key)
-				{
+					&& zoneDetails.ClosureIdList==kd.Key){
 					val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
 					val.Add(GlobalParams.id, kd.Key);
 					val.Add(GlobalParams.iscontactmade, kd.IsKeyDown.ToString());
@@ -54,8 +42,7 @@ namespace MultiZonePlayer
 				}
 				else{
 					//normally let only key down message to pass through
-					if (kd.IsKeyUp)
-					{
+					if (kd.IsKeyUp){
 						return;
 					}
 
@@ -65,10 +52,8 @@ namespace MultiZonePlayer
 					MLog.Log("DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
 						+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId + " macroid="+macroId);
 					
-					if (cmdRemote == null || macroId != -1)
-					{
-						if (macroId != -1)
-						{
+					if (cmdRemote == null || macroId != -1){
+						if (macroId != -1){
 							MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);
 							MZPState.Instance.ExecuteMacro(macroId);
 						}
@@ -103,21 +88,12 @@ namespace MultiZonePlayer
             return DoCommand(vals);
         }
 
-        /*public static String DoCommandFromWeb(Metadata.ValueList vals)
-        {
-            return JsonResult(DoCommand(vals));
-        }*/
-
 		public static String DoCommandDirect(GlobalCommands cmd, params string[] paramNameValuePair)
 		{
-			ValueList vals = new ValueList(GlobalParams.command,
-								cmd.ToString(), CommandSources.system);
-
-			for (int i = 0; i < paramNameValuePair.Length; i=i+2)
-			{
+			ValueList vals = new ValueList(GlobalParams.command,cmd.ToString(), CommandSources.system);
+			for (int i = 0; i < paramNameValuePair.Length; i=i+2){
 				vals.Add(paramNameValuePair[i], paramNameValuePair[i + 1]);
 			}
-
 			return JsonResult(DoCommand(vals));
 		}
 
@@ -165,8 +141,7 @@ namespace MultiZonePlayer
                     switch (apicmd)
                     {
                         case GlobalCommands.help:
-                            foreach (String item in Enum.GetNames(typeof(GlobalCommands)))
-                            {
+                            foreach (String item in Enum.GetNames(typeof(GlobalCommands))){
                                detailedStatus += item + ";" ;
                             }
 							cmdresult.OutputMessage = "Available commands: " + detailedStatus;
@@ -178,6 +153,9 @@ namespace MultiZonePlayer
                             result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                          */
+						case GlobalCommands.sendmessage:
+							MZPState.Instance.SendMessageToOwners(vals.GetValue(GlobalParams.text));
+							break;
                         case GlobalCommands.cameraevent:
                             //we don't have zoneid, add it from camera id
                             int oid = Convert.ToInt16(vals.GetValue(GlobalParams.oid));
@@ -242,8 +220,7 @@ namespace MultiZonePlayer
                         case GlobalCommands.setnotify:
                             String action;
                             action = vals.GetValue(GlobalParams.action);
-                            switch (action)
-                            {
+                            switch (action){
                                 case "enablegtalk":
                                 case "disablegtalk":
                                     MZPState.Instance.NotifyState.GTalkEnabled = (action == "enablegtalk");
@@ -361,24 +338,27 @@ namespace MultiZonePlayer
 							string type = vals.GetValue(GlobalParams.type).ToLower();
 							SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == Constants.CAPABILITY_VOLTAGE,
 								type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type==Constants.CAPABILITY_ERROR);
-
-							//string[] zones = vals.GetValue(GlobalParams.zoneidlist).Split(',');
-							/*
-							foreach (string _zone in zones)
-							{
-								_zoneid = Convert.ToInt16(_zone);
-								zoneIdList.Add(ZoneDetails.GetZoneById(_zoneid));
+							String zoneStringList = vals.GetValue(GlobalParams.zoneid);
+							List<int> zoneIdList = new List<int>();
+							if (zoneStringList != null && zoneStringList.Contains(",")) {
+								string[] zones = zoneStringList.Split(',');
+								foreach (string _zone in zones) {
+									zoneIdList.Add(Convert.ToInt16(_zone));
+								}
 							}
+							
 							if (type == "temphum") {
-								graph.ShowTempHumGraph(ZoneDetails.ZoneDetailsList, ageHours);
+								graph.ShowTempGraph(zoneStringList, zoneIdList, ageHours, zoneStringList == "-1");
 							}
+							/*
 							if (type == "closure") {
 								graph.ShowEventGraph(zoneIdList, ageHours);
 							}
-							if (type == Constants.CAPABILITY_VOLTAGE) {
-								graph.ShowVoltageGraph(zoneIdList, ageHours);
-							}
 							 */
+							if (type == Constants.CAPABILITY_VOLTAGE) {
+								graph.ShowVoltageGraph(zoneId.ToString(), zoneIdList, ageHours, zoneId == -1);
+							}
+							 
 							if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
 								graph.ShowUtilitiesGraph(-1, "all", ageHours, type);
 							}
@@ -413,7 +393,7 @@ namespace MultiZonePlayer
 								case "ScriptingRule":
 									ScriptingRule rule = new ScriptingRule();
 									rule.Name = "Default Rule";
-									ScriptingRule.Add(rule);
+									ScriptingRule.Add(rule, IniFile.INI_SECTION_SCRIPTINGRULES);
 									break;
 								default:
 										Alert.CreateAlert("Error, classname not recognised on create field, class=" + classname 
@@ -453,7 +433,12 @@ namespace MultiZonePlayer
 									break;
 							}
 							if (Reflect.SetFieldValue(ref fieldObj, field, text)) {
-								((Singleton)fieldObj).SaveEntryToIni();
+								try { ((Singleton)fieldObj).SaveEntryToIni();
+								}
+								catch (Exception) {
+									((PersistentObject)fieldObj).SaveEntryToIni();
+								}
+								
 								cmdresult.OutputMessage += "Field " + field + " set to " + text + " for id="+id;
 								MLog.Log(null, cmdresult.OutputMessage);
 							}

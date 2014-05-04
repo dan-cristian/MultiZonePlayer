@@ -117,6 +117,10 @@ namespace MultiZonePlayer {
 		public double TemperatureTarget = -1000;
 		[Category("Edit"), Description("Number of digits for temp reading. Set -1 for default device settings.")]
 		public int TemperatureResolutionDigits = -1;
+
+		[Category("Edit"), Description("Index of voltage to be tracked, usually=2 in a DS2438 1 wire index")]
+		public int VoltageSensorIndex = 2;
+
 		public Boolean ScheduledHeatActive = false;
 		public String CronSchedule = "";
 		[Category("Edit")]
@@ -889,6 +893,7 @@ namespace MultiZonePlayer {
 					MaxUtilityUnitsPerMinute = zonestorage.MaxUtilityUnitsPerMinute;
 					CounterPageNameToInclude = zonestorage.CounterPageNameToInclude;
 					ClosureLevelNameToInclude = zonestorage.ClosureLevelNameToInclude;
+					VoltageSensorIndex = zonestorage.VoltageSensorIndex;
 
 					LocationName = zonestorage.LocationName;
 

@@ -395,6 +395,15 @@ namespace MultiZonePlayer {
 			}
 			Type = presenceType;
 		}
+
+		public String UserName { 
+			get {
+				if (User != null)
+					return User.Name;
+				else
+					return "";
+			}
+		}
 		public static Boolean AddPresence(User user, PresenceType type, DateTime presenceDate, String location) {
 			bool added = false;
 			if (presenceDate==null || DateTime.Now.Subtract(presenceDate).TotalMinutes > 10) {
@@ -410,12 +419,16 @@ namespace MultiZonePlayer {
 					MLog.Log(null, "NEW " + type + " DEVICE FOUND User: " + user.Name + " location=" + location);
 					switch (type) {
 						case PresenceType.Bluetooth:
-							m_presenceList.Add(new UserPresence(user, PresenceType.Bluetooth));
+							up = new UserPresence(user, PresenceType.Bluetooth);
 							break;
 						case PresenceType.Wifi:
-							m_presenceList.Add(new UserPresence(user, PresenceType.Wifi));
+							up = new UserPresence(user, PresenceType.Wifi);
+							break;
+						default:
+							MLog.Log("Unknown presence type " + type);
 							break;
 					}
+					m_presenceList.Add(up);
 					added = true;
 					ScriptingRule.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
 				}
@@ -847,9 +860,11 @@ namespace MultiZonePlayer {
 		private class ListStored{
 			public String ObjectName;
 			public List<PersistentObject> ObjectList = new List<PersistentObject>();
+			public String IniSectionName;
 		}
 		private static List<ObjectStored> m_objectIdList = new List<ObjectStored>();
 		private static List<ListStored> m_objectList = new List<ListStored>();
+
 		[Category("Edit")]
 		public int Id = -1;
 		public PersistentObject() {
@@ -876,7 +891,7 @@ namespace MultiZonePlayer {
 			return new PersistentObject();
 			
 		}
-		public static void Add(PersistentObject newobj){
+		public static void Add(PersistentObject newobj, String iniSectionName){
 			if (newobj.Id == -1) {
 				int maxId = m_objectList.Find(x => x.ObjectName == newobj.GetType().Name).ObjectList.Select(x=>x.Id).Max();
 				newobj.Id = maxId+1;
@@ -888,6 +903,7 @@ namespace MultiZonePlayer {
 				list = new ListStored();
 				list.ObjectName = newobj.GetType().Name;
 				list.ObjectList = new List<PersistentObject>();
+				list.IniSectionName = iniSectionName;
 				m_objectList.Add(list);
 			}
 			list.ObjectList.Add(newobj);
@@ -917,7 +933,7 @@ namespace MultiZonePlayer {
 			try {
 				foreach (String json in values.Values) {
 					item = (PersistentObject)fastJSON.JSON.Instance.ToObject(json, this.GetType());
-					Add(item);
+					Add(item, iniSectionName);
 				}
 			}
 			catch (Exception ex) {
@@ -927,17 +943,17 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public void SaveEntryToIni(String iniSectionName) {
+		public void SaveEntryToIni() {
 			String json;
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 			param.UseExtensions = false;
 			json = fastJSON.JSON.Instance.ToJSON(this, param);
-			IniFile.IniWriteValuetoTemp(iniSectionName, this.Id.ToString(), json);
+			IniFile.IniWriteValuetoTemp(GetList(this).IniSectionName, this.Id.ToString(), json);
 		}
 		
-		public void SaveAllToIni(String iniSectionName) {
+		public void SaveAllToIni() {
 			foreach (PersistentObject item in ValueList) {
-				item.SaveEntryToIni(iniSectionName);
+				item.SaveEntryToIni();
 			}
 		}
 	}

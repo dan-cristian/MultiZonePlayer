@@ -130,7 +130,7 @@ namespace MultiZonePlayer
 		}
 
 		
-		public void ShowVoltageGraph(int zoneId, int ageHours) {
+		public void ShowVoltageGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAll) {
 			try {
 				
 				PrepareGraph("Voltage @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
@@ -139,14 +139,30 @@ namespace MultiZonePlayer
 				double minY = double.MaxValue, maxY = double.MinValue;
 				double unitsTotalValue = 0, voltageTotalValue=0; double minutesElapsed;
 				DateTime lastPointTaken = DateTime.MinValue; double lastUnitsValue = 0, lastVoltageValue=0;
+				List<ZoneDetails> zoneList = new List<ZoneDetails>();
+				ZoneDetails tempZone;
+				int index = 0;
+				if (showAll) {
+					List<int> tempzoneIdList = m_voltageHistoryList.Select(x => x.Item1).Distinct().ToList();
+					foreach (int id in tempzoneIdList) {
+						tempZone = ZoneDetails.GetZoneById(id);
+						if (tempZone != null)
+							zoneList.Add(tempZone);
+						else
+							MLog.Log(this, "Unexpected unknown zone in voltage graph id=" + id);
+					}
+				}
+				else {
+					zoneList = GetZoneList(zoneIdList);
+				}
                 //only index 2 seems relevant on my sensor
-				for (int index = 2; index <= maxIndex; index++) {
-					List<Tuple<int, DateTime, double, int, double>> tempValues = m_voltageHistoryList.FindAll(
-						x => x.Item1 == zoneId
-						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == index);
-					if (tempValues.Count > 0) {
+				foreach (ZoneDetails zone in zoneList) {
+					List<Tuple<int, DateTime, double, int, double>> voltValues = m_voltageHistoryList.FindAll(
+						x => x.Item1 == zone.ZoneId
+						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == zone.VoltageSensorIndex);
+					if (voltValues.Count > 0) {
 						series[index] = new System.Windows.Forms.DataVisualization.Charting.Series {
-							Name = "Voltage" + index,
+							Name = "Voltage " + zone.ZoneName,
 							Color = m_colors[index],
 							IsVisibleInLegend = true,
 							IsXValueIndexed = false,
@@ -155,10 +171,10 @@ namespace MultiZonePlayer
 							MarkerSize = 3
 						};
 						this.chart1.Series.Add(series[index]);
-						foreach (var point in tempValues) {
+						foreach (var point in voltValues) {
 							series[index].Points.AddXY(point.Item2, point.Item3);
-							minY = Math.Min(minY, tempValues.Min(x => x.Item3));
-							maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
+							minY = Math.Min(minY, voltValues.Min(x => x.Item3));
+							maxY = Math.Max(maxY, voltValues.Max(x => x.Item3));
 							if (lastPointTaken != DateTime.MinValue){
 								minutesElapsed = point.Item2.Subtract(lastPointTaken).TotalMinutes;
 								unitsTotalValue += minutesElapsed * lastUnitsValue;
@@ -172,10 +188,11 @@ namespace MultiZonePlayer
 								lastVoltageValue = point.Item3;
 							}
 						}
-						minutesElapsed = tempValues[tempValues.Count - 1].Item2.Subtract(tempValues[0].Item2).TotalMinutes;
+						minutesElapsed = voltValues[voltValues.Count - 1].Item2.Subtract(voltValues[0].Item2).TotalMinutes;
 						series[index].Name += " min=" + minY + " max=" + maxY + "\navg volt/min="+ Math.Round(voltageTotalValue/minutesElapsed, 4)
 							+" units/min="+ Math.Round(unitsTotalValue/minutesElapsed, 4);
 					}
+					index++;
 				}
 				chart1.ChartAreas[0].AxisY.Maximum= maxY;
 				chart1.ChartAreas[0].AxisY.Minimum= minY;
@@ -183,14 +200,13 @@ namespace MultiZonePlayer
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
 				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-					+ "voltage-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+					+ "voltage-" + uniqueId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "Err gen voltage graph");
 			}
 		}
 
-		
 
 		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType) {
 			try {
@@ -274,12 +290,38 @@ namespace MultiZonePlayer
 			}
 		}
 
-		public void ShowTempGraph(int ageHours, List<ZoneDetails> zones)
+		private List<ZoneDetails> GetZoneList(List<int> zoneIdList) {
+			List<ZoneDetails> zoneList = new List<ZoneDetails>();
+			ZoneDetails tempZone;
+			foreach (int id in zoneIdList) {
+				tempZone = ZoneDetails.GetZoneById(id);
+				if (tempZone != null)
+					zoneList.Add(tempZone);
+			}
+			return zoneList;
+		}
+		public void ShowTempGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAllZones)
 		{
 			double lastMinY=double.MaxValue, minY=double.MaxValue;
 			PrepareGraph("Temperature @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			String color;
-			foreach (ZoneDetails zone in zones)
+			List<ZoneDetails> zoneList = new List<ZoneDetails>();
+			ZoneDetails tempZone;
+			if (showAllZones) {
+				List<int> tempzoneIdList = m_tempHistoryList.Select(x => x.Item1).Distinct().ToList();
+				foreach (int id in tempzoneIdList) {
+					tempZone = ZoneDetails.GetZoneById(id);
+					if (tempZone != null)
+						zoneList.Add(tempZone);
+					else
+						MLog.Log(this, "Unexpected unknown zone in temp graph id=" + id);
+				}
+			}
+			else {
+				zoneList = GetZoneList(zoneIdList);
+			}
+
+			foreach (ZoneDetails zone in zoneList)
 			{
 				color = zone.Color != null ? zone.Color : "Black";
 				List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zone.ZoneId 
@@ -288,7 +330,7 @@ namespace MultiZonePlayer
 				{
 					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
 					{
-						Name = "Temp " + zone.Description,
+						Name = "Temp " + zone.ZoneName,
 						Color = System.Drawing.Color.FromName(color),
 						IsVisibleInLegend = true,
 						IsXValueIndexed = false,
@@ -322,7 +364,7 @@ namespace MultiZonePlayer
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			chart1.Invalidate();
 			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-				+ "temp-hum-all-" + ageHours + ".gif", ChartImageFormat.Gif);
+				+ "temphum-" + uniqueId + "-" +ageHours + ".gif", ChartImageFormat.Gif);
 		}
 
 

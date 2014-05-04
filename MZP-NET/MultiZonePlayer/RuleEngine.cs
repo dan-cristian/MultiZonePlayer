@@ -1019,7 +1019,9 @@ namespace MultiZonePlayer
 				result ='command=music;zonename=buca';<br/>
 			else<br/>
 				result='';<br/>
-			};"), Editor("textarea","60,10")]
+			};
+			%rule_message% as parameter
+			"), Editor("textarea","60,10")]
 		public string JSCode;
 
 
@@ -1066,8 +1068,17 @@ namespace MultiZonePlayer
 					triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
 				}
 				else {
-					Alert.CreateAlert("No triggername found calling method=" + callingMethod.Name, true);
+					triggerName = callingMethod.Name;
+					/*
+					String parameters="";
+					if (values != null) {
+						foreach (String val in values) {
+							parameters += values + ",";
+						}
+					}
+					Alert.CreateAlert("No triggername found calling method=" + callingMethod.Name + " instance="+callingInstance+" parameters="+parameters, true);
 					return;
+					 */
 				}
 			}
 
@@ -1080,9 +1091,13 @@ namespace MultiZonePlayer
 				if (filteredList != null) {
 					object val;
 					foreach (ScriptingRule r in filteredList) {
-						val = Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
-						if (val != null && r.FilterFieldValue == val.ToString())
+						if (r.FilterFieldName == "")
 							ruleList.Add(r);
+						else {
+							val = Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
+							if (val != null && r.FilterFieldValue == val.ToString())
+								ruleList.Add(r);
+						}
 					}
 				}
 
@@ -1104,15 +1119,18 @@ namespace MultiZonePlayer
 					}*/
 
 					try {
-						Reflect.GenericReflect(ref  parsedCode);
-						String JSResult = ExpressionEvaluator.EvaluateToString(parsedCode);
 						String displayValues = "";
 						if (values != null) {
 							foreach (String v in values) {
 								displayValues += v + ";";
 							}
 						}
-						MLog.Log(null, "Script " + rule.Name + " values=" + displayValues + " returned result=[" + JSResult + "]");
+						displayValues = displayValues.Replace("=", ":").Replace(";",":");
+						parsedCode = parsedCode.Replace("%rule_message%", displayValues);
+						Reflect.GenericReflect(ref  parsedCode);
+						String JSResult = ExpressionEvaluator.EvaluateToString(parsedCode);
+						
+						MLog.Log("Script " + rule.Name + " values=" + displayValues + " returned result=[" + JSResult + "]");
 						string[] pairs = JSResult.Split(';');
 						string[] entry;
 						ValueList vals = new ValueList();

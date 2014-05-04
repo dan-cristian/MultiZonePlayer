@@ -1124,8 +1124,8 @@ namespace MultiZonePlayer
 							text += " err=" + ((Exception)e).Message + " method: "
 								+ callingMethod
 								+ " errline=" + stack.GetFrame(0).GetFileLineNumber()
-								+ " errcol=" + stack.GetFrame(0).GetFileColumnNumber();
-						//+" stack=" + ((Exception)e).StackTrace.to
+								+ " errcol=" + stack.GetFrame(0).GetFileColumnNumber()
+								+ " stack=" + ((Exception)e).StackTrace.Replace('\n',' ');
 						else
 							text += " method: " + callingMethod + " sender=" + e.ToString();
 					}

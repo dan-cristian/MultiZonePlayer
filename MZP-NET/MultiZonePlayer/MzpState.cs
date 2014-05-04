@@ -298,7 +298,7 @@ namespace MultiZonePlayer {
 				}
 				UtilityCost.SaveAllToIni();
 				LightSensor.SaveAllToIni();
-				m_rule.SaveAllToIni(IniFile.INI_SECTION_SCRIPTINGRULES);
+				m_rule.SaveAllToIni();
 				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
 			}
@@ -1065,6 +1065,12 @@ namespace MultiZonePlayer {
 			return result;
 		}
 
+		public void SendMessageToOwners(String message) {
+			EmailNotifier.SendEmail(message);
+			foreach (IMessenger m in m_messengerList){
+					m.SendMessageToTarget(message);
+			}
+		}
 		public void MessengerMakeBuzz() {
 			double lastBuzz = DateTime.Now.Subtract(m_lastBuzzDateTime).TotalSeconds;
 

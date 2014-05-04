@@ -142,6 +142,7 @@ namespace MultiZonePlayer
 		rfxcmd,
 		r,//repeat last command
 		notifyuser,
+		sendmessage,
 		closure,
 		closurearm,
 		closuredisarm,
@@ -284,6 +285,7 @@ namespace MultiZonePlayer
 			new CommandSyntax(GlobalCommands.doorentry,			GlobalParams.zoneid),
 			new CommandSyntax(GlobalCommands.setfield,			GlobalParams.id, GlobalParams.field, GlobalParams.text, GlobalParams.classname),
 			new CommandSyntax(GlobalCommands.userlist,			GlobalParams.field),
+			new CommandSyntax(GlobalCommands.sendmessage,		GlobalParams.text),
 			/*
             genrelist,
             setgenrelist,
