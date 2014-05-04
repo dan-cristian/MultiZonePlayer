@@ -748,6 +748,7 @@ namespace MultiZonePlayer
 			CAPABILITY_VOLTAGE="voltage", CAPABILITY_ELECTRICITY="electricity", CAPABILITY_WATER="water", CAPABILITY_ERROR="error";
 		public const string EVENT_TYPE_CAMALERT = "cam", EVENT_TYPE_SENSORALERT = "sensor", EVENT_TYPE_CLOSURE = "closure", 
 			EVENT_TYPE_ELECTRICITY = "Electricity", EVENT_TYPE_WATER = "Water", EVENT_TYPE_GAS = "Gas" ;
+		public const int NOT_SET = -1;
 	}
 
 
@@ -1428,12 +1429,15 @@ namespace MultiZonePlayer
 			return CreateAlert(cause, null, false, new StackTrace(1, false));
 		}
 
-		public static void CreateAlertOnce(String cause) {
-			Alert alert = m_alertList.Find(x => x.InitialCause== cause);
+		public static void CreateAlertOnce(String cause, String uniqueId) {
+			Alert alert = m_alertList.Find(x => x.UniqueId== uniqueId);
 			if (alert == null)
-				m_alertList.Add(new Alert(cause, null, DateTime.Now.ToLongTimeString()));
-			else
+				m_alertList.Add(new Alert(cause, null, uniqueId));
+			else {
 				alert.OccurenceCount++;
+				alert.LastCause = cause;
+				alert.LastOccurence = DateTime.Now;
+			}
 		}
 
 		public static Alert CreateAlert(String cause, ZoneDetails zone, Boolean dismissPrevAlert, StackTrace stack, params Object[] flagVars)
@@ -1453,15 +1457,12 @@ namespace MultiZonePlayer
 				alert.AcknowledgeDate = DateTime.Now;
 				alert.InitialCause += "AUTO DISMISSED";
 			}
-			else
-			{
-				if (alert == null)
-				{
+			else{
+				if (alert == null){
 					alert = new Alert(cause, zone, uniqueId, flagVars);
 					m_alertList.Add(alert);
 				}
-				else
-				{
+				else{
 					alert.Update(cause, zone);
 				}
 			}

@@ -340,17 +340,14 @@ namespace MultiZonePlayer
 		public static Boolean SendEmail(string messageText)
 		{
 			Boolean result = false;
-			try
-			{
-
+			try{
 				var fromAddress = new MailAddress(IniFile.PARAM_GTALK_USERNAME[1], IniFile.PARAM_GTALK_USERNAME_EMAILNAME[1]);
-				var toAddress = new MailAddress(IniFile.PARAM_GTALK_TARGETUSERNAME[1].Split(';')[0], "");
+				var toAddress = new MailAddress(IniFile.PARAM_GTALK_TARGETUSER[1].Split(';')[0], "");
 				string fromPassword = IniFile.PARAM_GTALK_USERPASS[1];
 				string subject = messageText;
 				string body = MZPState.Instance.GetZonesStatus();
 
-				var smtp = new SmtpClient
-				{
+				var smtp = new SmtpClient{
 					Host = "smtp.gmail.com",
 					Port = 587,
 					EnableSsl = true,

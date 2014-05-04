@@ -22,11 +22,11 @@ namespace MultiZonePlayer {
 		public String ZoneName;
 		private ZoneState m_zoneState, m_zoneStateLast = MultiZonePlayer.ZoneState.Undefined;
 		[Category("Edit")]
-		public int ParentZoneId = -1;
+		public int ParentZoneId = Constants.NOT_SET;
 		[Category("Edit")]
 		public String LocationName = "Default Location";
 		[Category("Edit")]
-		public int PowerIndex = -1;
+		public int PowerIndex = Constants.NOT_SET;
 		public String PowerType;
 		[Category("Edit")]
 		public int PowerOnDelay;
@@ -50,9 +50,9 @@ namespace MultiZonePlayer {
 		//public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
 		[Category("Edit"), Description("ID from winload/paradox system")]
-		public int AlarmZoneId = -1;
+		public int AlarmZoneId = Constants.NOT_SET;
 		[Category("Edit"), Description("ID used to arm an entire area")]
-		public int AlarmAreaId = -1;
+		public int AlarmAreaId = Constants.NOT_SET;
 		public Boolean HasMotionSensor = false;
 		public Boolean HasMicrophone = false;
 		public Boolean HasDisplay = false;
@@ -101,8 +101,8 @@ namespace MultiZonePlayer {
 		//private DateTime m_lastCounterSamplingStart = DateTime.Now;
 		[Category("Edit")]
 		public String PulseMainUnitType = "";
-		[Category("Edit"), Description("Maximum number of utility units that can be consumed per minute. This is a safety check in case false records occur due to 1-wire malfunctioning. Set to -1 if limit is not enabled.")]
-		public int MaxUtilityUnitsPerMinute = -1;
+		[Category("Edit"), Description("Max number of utility units that can be consumed / minute. Safety check for malfunctioning 1-wire. -1 if limit disabled.")]
+		public int MaxUtilityUnitsPerMinute = Constants.NOT_SET;
 
 		[Category("Edit")]
 		public String TemperatureDeviceId;
@@ -116,10 +116,16 @@ namespace MultiZonePlayer {
 		[Category("Edit")]
 		public double TemperatureTarget = -1000;
 		[Category("Edit"), Description("Number of digits for temp reading. Set -1 for default device settings.")]
-		public int TemperatureResolutionDigits = -1;
+		public int TemperatureResolutionDigits = Constants.NOT_SET;
+		[Category("Edit"), Description("Max number of temp units variation / minute. Safety check for malfunctioning 1-wire. -1 if limit disabled.")]
+		public int MaxTempUnitsVariationBetweenReads = Constants.NOT_SET;
 
 		[Category("Edit"), Description("Index of voltage to be tracked, usually=2 in a DS2438 1 wire index")]
 		public int VoltageSensorIndex = 2;
+		[Category("Edit"), Description("Min expected voltage value, anything else is ignored. usefull to prevent 1 wire errors. default = -1")]
+		public double MinAllowedVoltageValue = Constants.NOT_SET;
+		[Category("Edit"), Description("Max expected voltage value, anything else is ignored. usefull to prevent 1 wire errors. default = -1")]
+		public double MaxAllowedVoltageValue = Constants.NOT_SET;
 
 		public Boolean ScheduledHeatActive = false;
 		public String CronSchedule = "";
@@ -154,7 +160,7 @@ namespace MultiZonePlayer {
 		
 		public DateTime LastNotifyZoneEventTriggered = DateTime.MinValue;
 
-		private double[] m_voltage = new double[5];
+		private double[] m_voltage = new double[5] { Constants.NOT_SET, Constants.NOT_SET, Constants.NOT_SET, Constants.NOT_SET, Constants.NOT_SET};
 		protected const double DEFAULT_TEMP_HUM = -1000;
 
 		protected double m_temperature = DEFAULT_TEMP_HUM, m_humidity = DEFAULT_TEMP_HUM;
@@ -271,7 +277,7 @@ namespace MultiZonePlayer {
 					if (lapsedMinutes > 2 * PulseSampleMinutesFrequency)
 					{
 						Alert.CreateAlert("Long pulse counter period detected, minutes=" + lapsedMinutes
-							+ " counterdelta=" + PulseCountInTimeSample,
+							+ " counterdelta=" + PulseCountInTimeSample + " in zone " + ZoneName,
 							this, false, null, Alert.NotificationFlags.NotifyUserAfterXOccurences, 10);
 					}
 					UtilityCost utilCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType));
@@ -731,13 +737,18 @@ namespace MultiZonePlayer {
 		public double Temperature {
 			get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
 			set {
+				if (m_temperature != DEFAULT_TEMP_HUM &&  MaxTempUnitsVariationBetweenReads!=Constants.NOT_SET) {
+					if (Math.Abs(m_temperature - value) > MaxTempUnitsVariationBetweenReads)
+						Alert.CreateAlert("Too big variance in temperature detected, last val="+m_temperature+" current="+value
+							+ " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
+						return;
+				}
 				if (Temperature != value) {
 					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
 						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString());
 					ScriptingRule.ExecuteRule(this, "temp=" + value);
 					//m_temperatureLast = m_temperature;
 				}
-
 				m_temperature = value;
 				m_lastTempSet = DateTime.Now;
 
@@ -878,6 +889,7 @@ namespace MultiZonePlayer {
 					TemperatureMaxAlarm = zonestorage.TemperatureMaxAlarm;
 					TemperatureMinAlarm = zonestorage.TemperatureMinAlarm;
 					TemperatureResolutionDigits = zonestorage.TemperatureResolutionDigits;
+					MaxTempUnitsVariationBetweenReads = zonestorage.MaxTempUnitsVariationBetweenReads;
 					Color = zonestorage.Color;
 					//Temperature = "1";
 
@@ -894,6 +906,8 @@ namespace MultiZonePlayer {
 					CounterPageNameToInclude = zonestorage.CounterPageNameToInclude;
 					ClosureLevelNameToInclude = zonestorage.ClosureLevelNameToInclude;
 					VoltageSensorIndex = zonestorage.VoltageSensorIndex;
+					MinAllowedVoltageValue = zonestorage.MinAllowedVoltageValue;
+					MaxAllowedVoltageValue = zonestorage.MaxAllowedVoltageValue;
 
 					LocationName = zonestorage.LocationName;
 
@@ -1079,6 +1093,16 @@ namespace MultiZonePlayer {
 		}
 
 		public void SetVoltage(int voltageIndex, double value) {
+			if (voltageIndex == VoltageSensorIndex) {
+				if (MaxAllowedVoltageValue != Constants.NOT_SET && value > MaxAllowedVoltageValue) {
+					Alert.CreateAlertOnce("Recorded voltage " + value + " higher than max " + MaxAllowedVoltageValue + " in zone " + ZoneName, "MaxVoltageZone"+ZoneName);
+					return;
+				}
+				if (MinAllowedVoltageValue != Constants.NOT_SET && value < MinAllowedVoltageValue) {
+					Alert.CreateAlertOnce("Recorded voltage " + value + " lower than min " + MinAllowedVoltageValue + " in zone " + ZoneName, "MinVoltageZone" + ZoneName);
+					return;
+				}
+			}
 			double lastVal;
 			LightSensor light = MZPState.Instance.LightSensorList.Find(x=>x.IsActive && x.ApplyForZoneId == ZoneId);
 			if (light == null)

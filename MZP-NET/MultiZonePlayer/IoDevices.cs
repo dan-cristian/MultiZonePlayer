@@ -1230,7 +1230,7 @@ namespace MultiZonePlayer {
 						address = element.getAddressAsString();
 						zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.ToLower().Contains(address.ToLower()));
 						if (zoneList.Count == 0)
-							Alert.CreateAlertOnce("Onewire device not associate, adress="+address+" name="+element.getName());
+							Alert.CreateAlertOnce("Onewire device not associate, adress=" + address + " name=" + element.getName(), "OneWire"+address);
 						zone = zoneList.Count > 0 ? zoneList[0] : null;
 						dev = SensorDevice.GetDevice(element.getName(), address, familyString, zone, SensorDevice.DeviceTypeEnum.OneWire, "");
 						dev.StartProcessing();

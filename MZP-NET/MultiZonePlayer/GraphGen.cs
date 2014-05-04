@@ -173,8 +173,6 @@ namespace MultiZonePlayer
 						this.chart1.Series.Add(series[index]);
 						foreach (var point in voltValues) {
 							series[index].Points.AddXY(point.Item2, point.Item3);
-							minY = Math.Min(minY, voltValues.Min(x => x.Item3));
-							maxY = Math.Max(maxY, voltValues.Max(x => x.Item3));
 							if (lastPointTaken != DateTime.MinValue){
 								minutesElapsed = point.Item2.Subtract(lastPointTaken).TotalMinutes;
 								unitsTotalValue += minutesElapsed * lastUnitsValue;
@@ -188,6 +186,8 @@ namespace MultiZonePlayer
 								lastVoltageValue = point.Item3;
 							}
 						}
+						minY = Math.Min(minY, voltValues.Min(x => x.Item3));
+						maxY = Math.Max(maxY, voltValues.Max(x => x.Item3));
 						minutesElapsed = voltValues[voltValues.Count - 1].Item2.Subtract(voltValues[0].Item2).TotalMinutes;
 						series[index].Name += " min=" + minY + " max=" + maxY + "\navg volt/min="+ Math.Round(voltageTotalValue/minutesElapsed, 4)
 							+" units/min="+ Math.Round(unitsTotalValue/minutesElapsed, 4);
@@ -210,20 +210,16 @@ namespace MultiZonePlayer
 
 		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType) {
 			try {
-
 				PrepareGraph(zoneName + " " + utilityType + " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-				
 				List<int> zoneList = m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneId || zoneId == -1)
 					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType)).Select(x => x.Item1).Distinct().OrderBy(x=>x).ToList();
 				int zoneCount=zoneList.Count;
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[zoneCount];
 				System.Windows.Forms.DataVisualization.Charting.Series series1;
-
 				for (int i = 0; i < zoneCount; i++) {
 					List<Tuple<int, DateTime, double, double, double, String>> tempValues=m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneList[i])
 						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType));
 					double minY = double.MaxValue, maxY = double.MinValue;
-
 					if (tempValues.Count > 0) {
 						series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
 							//Name = Constants.CAPABILITY_ELECTRICITY,
@@ -237,15 +233,13 @@ namespace MultiZonePlayer
 							YAxisType = AxisType.Primary
 						};
 						this.chart1.Series.Add(series1);
-
 						double value = 0, cost = 0, minwatts = double.MaxValue, maxwatts = double.MinValue, totalwatts = 0, avgwatts;
+						double minValue = double.MaxValue, maxValue = double.MinValue;
 						foreach (var point in tempValues) {
 							switch (utilityType) {
 								case Constants.CAPABILITY_ELECTRICITY:
 									series1.Points.AddXY(point.Item2, point.Item5);
 									value += point.Item3;
-									minY = Math.Min(minY, tempValues.Min(x => x.Item5));
-									maxY = Math.Max(maxY, tempValues.Max(x => x.Item5));
 									totalwatts += point.Item5;
 									if (point.Item5 != 0)
 										minwatts = Math.Min(minwatts, point.Item5);
@@ -254,8 +248,6 @@ namespace MultiZonePlayer
 								case Constants.CAPABILITY_WATER:
 									series1.Points.AddXY(point.Item2, point.Item3);
 									value += point.Item3;
-									minY = Math.Min(minY, tempValues.Min(x => x.Item3));
-									maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
 									break;
 								
 							}
@@ -263,11 +255,17 @@ namespace MultiZonePlayer
 						}
 						switch (utilityType) {
 							case Constants.CAPABILITY_ELECTRICITY:
+								minY = Math.Min(minY, tempValues.Min(x => x.Item5));
+								maxY = Math.Max(maxY, tempValues.Max(x => x.Item5));
+								minValue = tempValues.Min(x => x.Item3);
+								maxValue = tempValues.Max(x => x.Item3);
 								avgwatts = totalwatts / series1.Points.Count;
-								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2)
-									+ " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
+								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min=" + Math.Round(minValue,2)+" max="+Math.Round(maxValue,2)
+									+ "\n watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
 								break;
 							case Constants.CAPABILITY_WATER:
+								minY = Math.Min(minY, tempValues.Min(x => x.Item3));
+								maxY = Math.Min(minY, tempValues.Max(x => x.Item3));
 								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min="+minY + " max="+maxY;
 								break;
 						}
@@ -278,7 +276,6 @@ namespace MultiZonePlayer
 						maxY = 1;
 						minY = 0;
 					}
-
 				}
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
@@ -725,7 +722,7 @@ namespace MultiZonePlayer
 			//culture = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
 			if (!DateTime.TryParse(date, /*culture, styles,*/out datetime)) {
 				datetime = DateTime.Now;
-				Alert.CreateAlertOnce("Error converting datetime in graph load @" + datetime);
+				Alert.CreateAlertOnce("Error converting datetime in graph load @" + datetime, "GraphGetDate");
 			}
 			return datetime;
 		}
@@ -733,7 +730,7 @@ namespace MultiZonePlayer
 			double val;
 			if (!double.TryParse(doubl, out val)) {
 				val = 0;
-				Alert.CreateAlertOnce("Error converting double in graph load @" + doubl);
+				Alert.CreateAlertOnce("Error converting double in graph load @" + doubl, "GraphGetDouble");
 			}
 			return val;
 		}
@@ -741,7 +738,7 @@ namespace MultiZonePlayer
 			int val;
 			if (!int.TryParse(valueint, out val)) {
 				val = 0;
-				Alert.CreateAlertOnce("Error converting int in graph load @" + valueint);
+				Alert.CreateAlertOnce("Error converting int in graph load @" + valueint, "GraphGetInt");
 			}
 			return val;
 		}

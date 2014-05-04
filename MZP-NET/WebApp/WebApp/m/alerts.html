@@ -10,19 +10,19 @@
 <table style="border-width:1px;border-color:Black;border-style:inset">
 <tr class="Header">
 <td>Action</td>
-<td>Zone</td>
 <td>Cause</td>
 <td>Count</td>
 <td>First</td>
 <td>Last</td>
+<td>Zone</td>
 </tr>
 <%for;i;0;++;#S.ActiveAlertList.Count#;%>
 <tr><td><button class="Small" onclick="window.open('?command=dismissalert&id=#S.ActiveAlertList.?,%i.Id#','_self')">Delete</button></td>
-<td>#S.ActiveAlertList.?,%i.Zone.ZoneName#</td>
 <td>#S.ActiveAlertList.?,%i.InitialCause#; #S.ActiveAlertList.?,%i.LastCause#</td>
 <td>#S.ActiveAlertList.?,%i.OccurenceCount#</td>
 <td>#S.ActiveAlertList.?,%i.FirstOccurence#</td>
 <td>#S.ActiveAlertList.?,%i.LastOccurence#</td>
+<td>#S.ActiveAlertList.?,%i.Zone.ZoneName#</td>
 </tr>
 <%%>
 </table>
