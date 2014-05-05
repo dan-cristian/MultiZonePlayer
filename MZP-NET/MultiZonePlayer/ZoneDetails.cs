@@ -738,10 +738,11 @@ namespace MultiZonePlayer {
 			get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
 			set {
 				if (m_temperature != DEFAULT_TEMP_HUM &&  MaxTempUnitsVariationBetweenReads!=Constants.NOT_SET) {
-					if (Math.Abs(m_temperature - value) > MaxTempUnitsVariationBetweenReads)
-						Alert.CreateAlert("Too big variance in temperature detected, last val="+m_temperature+" current="+value
+					if (Math.Abs(m_temperature - value) > MaxTempUnitsVariationBetweenReads) {
+						Alert.CreateAlert("Too big variance in temperature detected, last val=" + m_temperature + " current=" + value
 							+ " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
 						return;
+					}
 				}
 				if (Temperature != value) {
 					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,

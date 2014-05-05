@@ -270,7 +270,7 @@ namespace MultiZonePlayer
 								break;
 						}
 						if (zoneId == -1)
-							series1.Name = "zoneid=" + zoneList[i] + " " + series1.Name;
+							series1.Name = ZoneDetails.GetZoneById(zoneList[i]).ZoneName + " " + series1.Name;
 					}
 					else {
 						maxY = 1;
