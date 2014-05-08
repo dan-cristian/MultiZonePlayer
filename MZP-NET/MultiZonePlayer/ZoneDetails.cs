@@ -550,9 +550,10 @@ namespace MultiZonePlayer {
 
 		public Boolean HasTemperatureSensor {
 			get {
+				double tempAge = DateTime.Now.Subtract(m_lastTempSet).TotalHours;
 				RFXDeviceDefinition.RFXDevice device = RFXDeviceDefinition.GetDevice(ZoneId);
-				return (HasOneWireTemperatureSensor ||
-						(device != null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum));
+				return (tempAge<=1 && (HasOneWireTemperatureSensor ||
+						(device != null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum)));
 			}
 		}
 		public Boolean HasHumiditySensor {

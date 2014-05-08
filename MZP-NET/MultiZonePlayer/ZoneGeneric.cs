@@ -400,24 +400,27 @@ namespace MultiZonePlayer {
 				case GlobalCommands.generategraph:
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
 					string type = vals.GetValue(GlobalParams.type).ToLower();
+					int direction = 0;
+							if (vals.GetValue(GlobalParams.direction) != null)
+								direction = Convert.ToInt16(vals.GetValue(GlobalParams.direction));
 					SimpleGraph graph = new SimpleGraph(type == "temphum", type == Constants.EVENT_TYPE_CLOSURE, type == Constants.CAPABILITY_VOLTAGE,
 						type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type == Constants.CAPABILITY_ERROR);
 					List<int> zoneIdList = new List<int>();
 					zoneIdList.Add(m_zoneDetails.ZoneId);
 					if (type == "temphum") {
-						graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours);
+						graph.ShowTempHumGraph(m_zoneDetails.ZoneId, ageHours, direction);
 					}
 					if (type == Constants.EVENT_TYPE_CLOSURE) {
-						graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours);
+						graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours, direction);
 					}
 					if (type == Constants.CAPABILITY_VOLTAGE) {
-						graph.ShowVoltageGraph( m_zoneDetails.ZoneId.ToString(), zoneIdList, ageHours, false);
+						graph.ShowVoltageGraph( m_zoneDetails.ZoneId.ToString(), zoneIdList, ageHours, false, direction);
 					}
 					if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
-						graph.ShowUtilitiesGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type);
+						graph.ShowUtilitiesGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type, direction);
 					}
 					if (type == Constants.CAPABILITY_ERROR) {
-						graph.ShowErrorGraph(ageHours, m_zoneDetails.ZoneId, false);
+						graph.ShowErrorGraph(ageHours, m_zoneDetails.ZoneId, false, direction);
 					}
 					break;
 				case GlobalCommands.doorring:

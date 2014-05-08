@@ -19,7 +19,11 @@ namespace MultiZonePlayer
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
 		private List<Tuple<int, DateTime, String, String, String, String, String>> m_errorHistoryList;
 		System.Drawing.Color[] m_colors = new System.Drawing.Color[10];
-
+		private static DateTime m_lastTempHumReference = DateTime.MinValue;
+		private static DateTime m_lastVoltageReference = DateTime.MinValue;
+		private static DateTime m_lastUtilityReference = DateTime.MinValue;
+		private static DateTime m_lastErrorReference = DateTime.MinValue;
+		private static DateTime m_lastEventReference = DateTime.MinValue;
 
 		public SimpleGraph(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities, bool needErrors)
 		{
@@ -67,10 +71,11 @@ namespace MultiZonePlayer
 			//chart1.ChartAreas[0].AxisY2.MajorGrid.Enabled = false;
 		}
 
-		public void ShowTempHumGraph(int zoneId, int ageHours)
+		public void ShowTempHumGraph(int zoneId, int ageHours, int hoursSupplement)
 		{
-			PrepareGraph("Temperature & Humidity @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-			List<Tuple<int, DateTime,double>> tempValues = m_tempHistoryList.FindAll(x=>x.Item1==zoneId && DateTime.Now.Subtract(x.Item2).TotalHours<=ageHours);
+			m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
+			PrepareGraph("Temperature & Humidity @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+			List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zoneId && m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours);
 			if (tempValues.Count > 0)
 			{
 				var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -94,7 +99,7 @@ namespace MultiZonePlayer
 				series1.Name += " Avg=" + Math.Round(total / series1.Points.Count, 2) + " Min=" + min + " Max=" + max;
 			}
 
-			List<Tuple<int, DateTime, double>> humValues = m_humHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+			List<Tuple<int, DateTime, double>> humValues = m_humHistoryList.FindAll(x => x.Item1 == zoneId && m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours);
 			//chart1.ChartAreas[0].RecalculateAxesScale();
 			if (humValues.Count > 0)
 			{
@@ -125,15 +130,18 @@ namespace MultiZonePlayer
 			chart1.ChartAreas[0].AxisY.Minimum = minY;
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			chart1.Invalidate();
-			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER 
-				+ "temp-hum-" + zoneId + "-"+ageHours+".gif", ChartImageFormat.Gif);
+			SaveGraph(chart1, zoneId.ToString(), ageHours, "temphum");
 		}
 
-		
-		public void ShowVoltageGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAll) {
+		private void SaveGraph(Chart chart, String zoneId, int ageHours, String type) {
+
+			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+				+ type+"-"+ zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+		}
+		public void ShowVoltageGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAll, int hoursSupplement) {
 			try {
-				
-				PrepareGraph("Voltage @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				m_lastVoltageReference = GetDateReference(m_lastVoltageReference, hoursSupplement);
+				PrepareGraph("Voltage @ " + m_lastVoltageReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
 				double minY = double.MaxValue, maxY = double.MinValue;
@@ -159,7 +167,7 @@ namespace MultiZonePlayer
 				foreach (ZoneDetails zone in zoneList) {
 					List<Tuple<int, DateTime, double, int, double>> voltValues = m_voltageHistoryList.FindAll(
 						x => x.Item1 == zone.ZoneId
-						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == zone.VoltageSensorIndex);
+						&& m_lastVoltageReference.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == zone.VoltageSensorIndex);
 					if (voltValues.Count > 0) {
 						series[index] = new System.Windows.Forms.DataVisualization.Charting.Series {
 							Name = "Voltage " + zone.ZoneName,
@@ -199,20 +207,21 @@ namespace MultiZonePlayer
 				chart1.ChartAreas[0].AxisY.LabelStyle.Format = "N3";
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
-				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-					+ "voltage-" + uniqueId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+				SaveGraph(chart1, uniqueId, ageHours, "voltage");
+				//chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+				//	+ "voltage-" + uniqueId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "Err gen voltage graph");
 			}
 		}
 
-
-		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType) {
+		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType, int hoursSupplement) {
 			try {
-				PrepareGraph(zoneName + " " + utilityType + " @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				m_lastUtilityReference = GetDateReference(m_lastUtilityReference, hoursSupplement);
+				PrepareGraph(zoneName + " " + utilityType + " @ " + m_lastUtilityReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				List<int> zoneList = m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneId || zoneId == -1)
-					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType)).Select(x => x.Item1).Distinct().OrderBy(x=>x).ToList();
+					&& m_lastUtilityReference.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType)).Select(x => x.Item1).Distinct().OrderBy(x => x).ToList();
 				int zoneCount=zoneList.Count;
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[zoneCount];
 				System.Windows.Forms.DataVisualization.Charting.Series series1;
@@ -279,8 +288,9 @@ namespace MultiZonePlayer
 				}
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
-				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-					+ utilityType + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+				SaveGraph(chart1, zoneId.ToString(), ageHours, utilityType);
+				//chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+				//	+ utilityType + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "Err gen utility graph");
@@ -297,10 +307,11 @@ namespace MultiZonePlayer
 			}
 			return zoneList;
 		}
-		public void ShowTempGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAllZones)
+		public void ShowTempGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAllZones, int hoursSupplement)
 		{
 			double lastMinY=double.MaxValue, minY=double.MaxValue;
-			PrepareGraph("Temperature @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+			m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
+			PrepareGraph("Temperature @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			String color;
 			List<ZoneDetails> zoneList = new List<ZoneDetails>();
 			ZoneDetails tempZone;
@@ -318,11 +329,10 @@ namespace MultiZonePlayer
 				zoneList = GetZoneList(zoneIdList);
 			}
 
-			foreach (ZoneDetails zone in zoneList)
-			{
+			foreach (ZoneDetails zone in zoneList){
 				color = zone.Color != null ? zone.Color : "Black";
 				List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zone.ZoneId 
-					&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+					&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours);
 				if (tempValues.Count > 0)
 				{
 					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -360,15 +370,24 @@ namespace MultiZonePlayer
 			chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			chart1.Invalidate();
-			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-				+ "temphum-" + uniqueId + "-" +ageHours + ".gif", ChartImageFormat.Gif);
+			SaveGraph(chart1, uniqueId, ageHours, "temphum");
+			//chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+			//	+ "temphum-" + uniqueId + "-" +ageHours + ".gif", ChartImageFormat.Gif);
 		}
 
 
-		public void ShowErrorGraph(int ageHours, int zoneId, bool showallzones) {
+		public void ShowErrorGraph(int ageHours, int zoneId, bool showallzones, int hoursSupplement) {
 			try {
 				//double lastMinY = double.MaxValue, minY = double.MaxValue;
-				PrepareGraph("Errors @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				if (m_lastErrorReference == DateTime.MinValue)
+					m_lastErrorReference = DateTime.Now;
+				else {
+					if (hoursSupplement == 0)
+						m_lastErrorReference = DateTime.Now;
+					else
+						m_lastErrorReference = m_lastErrorReference.AddHours(hoursSupplement);
+				}
+				PrepareGraph("Errors @ " + m_lastErrorReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				String color;
 				List<int> zoneIdList; 
 				List<ZoneDetails> zoneList = new List<ZoneDetails>();
@@ -390,7 +409,7 @@ namespace MultiZonePlayer
 				foreach (ZoneDetails zone in zoneList) {
 					color = zone.Color != null ? zone.Color : "Black";
 					List<Tuple<int, DateTime, String, String, String, String, String>> errValues = m_errorHistoryList.FindAll(x => x.Item1 == zone.ZoneId
-						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours);
+						&& m_lastErrorReference.Subtract(x.Item2).TotalHours <= ageHours);
 					if (errValues.Count > 0) {
 						var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
 							Name = "Errors in " + zone.ZoneName,
@@ -418,31 +437,33 @@ namespace MultiZonePlayer
 				//chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
 				chart1.ChartAreas[0].RecalculateAxesScale();
 				chart1.Invalidate();
-				chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-					+ Constants.CAPABILITY_ERROR + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+				SaveGraph(chart1, zoneId.ToString(), ageHours, Constants.CAPABILITY_ERROR);
+				//chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+				//	+ Constants.CAPABILITY_ERROR + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, this, "Error generating err graph zoneid="+zoneId+"  age="+ageHours);
 			}
 		}
 
-		public void ShowEventGraph(int zoneId, int ageHours)
+		public void ShowEventGraph(int zoneId, int ageHours, int hoursSupplement)
 		{
-			PrepareGraph("Events @ " + DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+			m_lastEventReference = GetDateReference(m_lastEventReference, hoursSupplement);
+			PrepareGraph("Events @ " + m_lastEventReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			List<Tuple<int, DateTime, int, String, String>> closureValues, sensorValues, camValues, powerValues;
 
-			List<String> distinctClosureIdentifiers = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+			List<String> distinctClosureIdentifiers = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && m_lastEventReference.Subtract(x.Item2).TotalHours <= ageHours
 				&& x.Item4 == Constants.EVENT_TYPE_CLOSURE).Select(y => y.Item5).Distinct().ToList();
-			sensorValues =  m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours 
+			sensorValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && m_lastEventReference.Subtract(x.Item2).TotalHours <= ageHours 
 				&& x.Item4==Constants.EVENT_TYPE_SENSORALERT && x.Item3!=0);
-			camValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+			camValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && m_lastEventReference.Subtract(x.Item2).TotalHours <= ageHours
 				&& x.Item4 == Constants.EVENT_TYPE_CAMALERT && x.Item3 != 0);
-			powerValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+			powerValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && m_lastEventReference.Subtract(x.Item2).TotalHours <= ageHours
 				&& x.Item4 == Constants.EVENT_TYPE_POWER);
 			int i = 0;
 			Random r = new Random();
 			foreach (String closureIdentifier in distinctClosureIdentifiers) {
-				closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours
+				closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && m_lastEventReference.Subtract(x.Item2).TotalHours <= ageHours
 					&& x.Item4 == Constants.EVENT_TYPE_CLOSURE && x.Item5 == closureIdentifier);
 				if (closureValues.Count > 0) {
 					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
@@ -528,10 +549,23 @@ namespace MultiZonePlayer
 			chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
 			chart1.ChartAreas[0].RecalculateAxesScale();
 			chart1.Invalidate();
-			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-				+ "event-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+			SaveGraph(chart1, zoneId.ToString(), ageHours, "event");
+			//chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+			//	+ "event-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 		}
 
+		private DateTime GetDateReference(DateTime lastDate, int hoursSupplement) {
+			DateTime result;
+			if (lastDate == DateTime.MinValue)
+				result = DateTime.Now;
+			else {
+				if (hoursSupplement == 0)
+					result = DateTime.Now;
+				else
+					result = lastDate.AddHours(hoursSupplement);
+			}
+			return result;
+		}
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && (components != null))

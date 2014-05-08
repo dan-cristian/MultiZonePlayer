@@ -204,6 +204,7 @@ namespace MultiZonePlayer
 		type,zoneidlist,
 		classname,index,
 		source,
+		direction,
 		r//random no
 	}
 	public class CommandSyntax

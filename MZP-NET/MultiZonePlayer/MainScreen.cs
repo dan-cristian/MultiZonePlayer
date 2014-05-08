@@ -167,7 +167,7 @@ namespace MultiZonePlayer
 			SimpleGraph form = new SimpleGraph(true, true, true, true, true);
 			form.MdiParent = this;
 			form.Show();
-			form.ShowEventGraph(19,24);
+			//form.ShowEventGraph(19,24);
 			SimpleGraph form2 = new SimpleGraph(true, true, true, true, true);
 			form2.MdiParent = this;
 			form2.Show();

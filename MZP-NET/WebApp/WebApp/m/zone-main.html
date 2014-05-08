@@ -40,10 +40,12 @@
 <%if;"#Zones,%_zoneid.UtilityType#"=="Water"%>
 <button class="small" onclick="ajaxCall('water','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=water&targetdiv=water', false)">Water</button>
 <%%>
-<%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum', false)" title="Target #Zones,%_zoneid.TemperatureTarget#°">#Zones,%_zoneid.Temperature#°</button>
+<%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption" 
+    onclick="ajaxCall('temp-hum', 'zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum&targetdiv=temp-hum', false)" title="Target #Zones,%_zoneid.TemperatureTarget#°">#Zones,%_zoneid.Temperature#°</button>
 #Zones,%_zoneid.ClosureCount#
 <%%>
-<%if;#Zones,%_zoneid.HasHumiditySensor#%><button class="Caption" onclick="ajaxCall('temp-hum','zone-graph.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum', false)">#Zones,%_zoneid.Humidity#%</button><%%>
+<%if;#Zones,%_zoneid.HasHumiditySensor#%><button class="Caption" 
+    onclick="ajaxCall('temp-hum','zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum&targetdiv=temp-hum', false)">#Zones,%_zoneid.Humidity#%</button><%%>
 <%if;#Zones,%_zoneid.HasPowerCapabilities#%>
 <button class="Pressed#Zones,%_zoneid.IsPowerOn#" 
 	onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid', true)">Power</button>
@@ -55,7 +57,7 @@
 <%if;#Zones,%_zoneid.ScheduledHeatActive#%>
 <img src="schedule.png" />
 <%%>
-<%if;#Zones,%_zoneid.HasOneWireVoltageSensor#%><button class="Small" onclick="ajaxCall('voltage','zone-graph-voltage.html?command=generategraph&zoneid=%_zoneid&interval=48&type=voltage', false)">Voltage</button><%%>
+<%if;#Zones,%_zoneid.HasOneWireVoltageSensor#%><button class="Small" onclick="ajaxCall('voltage','zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=voltage', false)">Voltage</button><%%>
 <div id="camera"></div>
 <div id="temp-hum"></div>
 <div id="event"></div>
