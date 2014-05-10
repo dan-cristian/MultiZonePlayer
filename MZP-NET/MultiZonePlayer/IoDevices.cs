@@ -20,6 +20,7 @@ namespace MultiZonePlayer {
 		public const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
 		public const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
 		public const string ONEWIRE_IO_NAME = "DS2406";
+		public const string ONEWIRE_IO8_NAME = "DS2408";
 		public const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
 		public const string ONEWIRE_COUNTER_NAME = "DS2423";
 		public enum DeviceTypeEnum { OneWire, RFX };
@@ -34,10 +35,12 @@ namespace MultiZonePlayer {
 		public double Humidity;
 		public double[] Voltage = new double[3];
 		public double[] Counter = new double[2];
-		public Boolean[] Activity = new Boolean[2];
-		public Boolean[] Level = new Boolean[2];
-		public Boolean[] Latch = new Boolean[2];
+		public Boolean[] Activity = new Boolean[8];
+		public Boolean[] Level = new Boolean[8];
+		public Boolean[] Latch = new Boolean[8];
 		public Boolean IOHigh = false, IOAlarm = false;
+		public int IONumberChannels = 2;
+		public Boolean IOHasVCC = false;
 		public Boolean TempResolutionCanBeSet = true;
 		public DeviceTypeEnum DeviceType;
 		public String OtherInfo;
@@ -80,6 +83,7 @@ namespace MultiZonePlayer {
 							m_hasTemp = true;
 							break;
 						case ONEWIRE_IO_NAME:
+						case ONEWIRE_IO8_NAME:
 							m_hasClosure = true;
 							break;
 						default:
@@ -135,9 +139,12 @@ namespace MultiZonePlayer {
 					s += ", temp=" + Temperature +" hum=" + Humidity;
 				if (m_isCounter)
 					s += " cnt1=" + Counter[0] + " cnt2=" + Counter[1];
-				if (m_hasClosure)
-					s += " actA=" + Activity[0] + ", actB=" + Activity[1] + (Level[0] ? " IsLevelA" : "") + (Level[1] ? " IsLevelB" : "")
-						+ (Latch[0] ? " IsLatchA" : "") + (Latch[1] ? " IsLatchB" : "") + (IOHigh ? " IsHigh" : "") + (IOAlarm ? " IsAlarm" : "");
+				if (m_hasClosure) {
+					for (int i = 0; i < IONumberChannels; i++) {
+						s += " act"+i+":" + (Activity[i]?"1":"0") + " lev"+i+":"+(Level[i]?"1":"0")	+ " latch"+i+":"+(Latch[i]?"1":"0");
+					}
+					s += " vcc=" + IOHasVCC;
+				}
 				if (m_hasVoltage)
 					s += " V1=" + Voltage[0] + " V2=" + Voltage[1] + " V3=" + Voltage[2];
 				s += "success="+SuccessCount + " errors="+ErrorCount;
@@ -155,8 +162,10 @@ namespace MultiZonePlayer {
 					val = Counter[0] + ":" + Counter[1];
 				if (m_hasVoltage)
 					val = Voltage[0] + "/" + Voltage[1] + "/" + Voltage[2];
-				if (m_hasClosure)
-					val = (Activity[0] ? "1" : "0") + ":" + (Activity[1] ? "1" : "0") + ":" + (Level[0] ? "1" : "0") + ":" + (Level[1] ? "1" : "0");
+				if (m_hasClosure) {
+					for (int i = 0; i < IONumberChannels;i++ )
+						val += (Activity[i] ? "1" : "0") + (Level[i] ? "1" : "0") + (Latch[i] ? "1" : "0")+"/";
+				}
 				if (m_hasHum)
 					val = Humidity.ToString()+"%";
 				if (m_hasTemp) {
@@ -1272,6 +1281,7 @@ namespace MultiZonePlayer {
 							ProcessFamily(SensorDevice.ONEWIRE_SMARTBATDEV_NAME, adapter, false, false, 0x26); //DS2438 = Smart Battery Monitor
 						}
 						ProcessFamily(SensorDevice.ONEWIRE_IO_NAME + " & " + SensorDevice.ONEWIRE_COUNTER_NAME, adapter, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
+						ProcessFamily(SensorDevice.ONEWIRE_IO8_NAME, adapter, false, false, 0x29); //DS2408
 						i++;
 						Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
 					}
@@ -1319,21 +1329,40 @@ namespace MultiZonePlayer {
 							}
 							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
 							break;
+						case SensorDevice.ONEWIRE_IO8_NAME:
+							OneWireContainer29 io = (OneWireContainer29)element;
+							state = io.readDevice();
+							sbyte[] register = io.readRegister();
+							int channels = io.getNumberChannels(state);
+							bool activity, level, latch;
+							bool vcc = io.getVCC(register);
+							dev.IONumberChannels = 8;
+							dev.IOHasVCC = vcc;
+							for (int i = 0; i < channels; i++) {
+								activity = io.getSensedActivity(i, state);
+								level = io.getLevel(i, state);
+								latch = io.getLatchState(i, state);
+								dev.Activity[i] = activity;
+								dev.Level[i] = level;
+								dev.Latch[i] = latch;
+							}
+							break;
 						case SensorDevice.ONEWIRE_IO_NAME:
 							SwitchContainer swd = (SwitchContainer) element;
 							state = swd.readDevice();
-							//bool latchA = swd.getLatchState(0, state);
+							dev.IONumberChannels = 2;
+							bool latchA = swd.getLatchState(0, state);
 							bool lastLevelA, levelA = swd.getLevel(0, state);
 							bool activityA = swd.getSensedActivity(0, state);
-							//bool latchB = swd.getLatchState(1, state);
+							bool latchB = swd.getLatchState(1, state);
 							bool lastLevelB, levelB = swd.getLevel(1, state);
 							bool activityB = swd.getSensedActivity(1, state);
 							//bool high = swd.isHighSideSwitch();
 							//bool alarm = element.isAlarming();
 							dev.Activity[0] = activityA;
 							dev.Activity[1] = activityB;
-							//dev.Latch[0] = latchA;
-							//dev.Latch[1] = latchB;
+							dev.Latch[0] = latchA;
+							dev.Latch[1] = latchB;
 							dev.Level[0] = levelA;
 							dev.Level[1] = levelB;
 							//dev.IOHigh = high;
