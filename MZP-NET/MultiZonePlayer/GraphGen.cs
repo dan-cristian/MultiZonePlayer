@@ -75,7 +75,8 @@ namespace MultiZonePlayer
 		{
 			m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
 			PrepareGraph("Temperature & Humidity @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-			List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zoneId && m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours);
+			List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zoneId
+				&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastTempHumReference.Subtract(x.Item2).TotalHours>=0);
 			if (tempValues.Count > 0)
 			{
 				var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -138,6 +139,21 @@ namespace MultiZonePlayer
 			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
 				+ type+"-"+ zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
 		}
+
+		private void UpdateUnitsAndTotal(DateTime valueDate, double value, ref double totalUnits, ref DateTime lastValueDate, ref double lastValue) {
+			double minutesElapsed;
+			if (lastValueDate != DateTime.MinValue) {
+				minutesElapsed = valueDate.Subtract(lastValueDate).TotalMinutes;
+				totalUnits += minutesElapsed * lastValue;
+				lastValueDate = valueDate;
+				lastValue = value;
+			}
+
+			if (lastValueDate == DateTime.MinValue) {
+				lastValueDate = valueDate;
+				lastValue = value;
+			}
+		}
 		public void ShowVoltageGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAll, int hoursSupplement) {
 			try {
 				m_lastVoltageReference = GetDateReference(m_lastVoltageReference, hoursSupplement);
@@ -145,8 +161,8 @@ namespace MultiZonePlayer
 				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
 				double minY = double.MaxValue, maxY = double.MinValue;
-				double unitsTotalValue = 0, voltageTotalValue=0; double minutesElapsed;
-				DateTime lastPointTaken = DateTime.MinValue; double lastUnitsValue = 0, lastVoltageValue=0;
+				double voltageTotalValue=0,minutesElapsed;//,unitsTotalValue = 0, ;
+				DateTime lastPointTaken = DateTime.MinValue; double lastVoltageValue=0;//,lastUnitsValue = 0, ;
 				List<ZoneDetails> zoneList = new List<ZoneDetails>();
 				ZoneDetails tempZone;
 				int index = 0;
@@ -167,7 +183,8 @@ namespace MultiZonePlayer
 				foreach (ZoneDetails zone in zoneList) {
 					List<Tuple<int, DateTime, double, int, double>> voltValues = m_voltageHistoryList.FindAll(
 						x => x.Item1 == zone.ZoneId
-						&& m_lastVoltageReference.Subtract(x.Item2).TotalHours <= ageHours && x.Item4 == zone.VoltageSensorIndex);
+						&& m_lastVoltageReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastVoltageReference.Subtract(x.Item2).TotalHours >=0
+						&& x.Item4 == zone.VoltageSensorIndex);
 					if (voltValues.Count > 0) {
 						series[index] = new System.Windows.Forms.DataVisualization.Charting.Series {
 							Name = "Voltage " + zone.ZoneName,
@@ -181,7 +198,8 @@ namespace MultiZonePlayer
 						this.chart1.Series.Add(series[index]);
 						foreach (var point in voltValues) {
 							series[index].Points.AddXY(point.Item2, point.Item3);
-							if (lastPointTaken != DateTime.MinValue){
+							UpdateUnitsAndTotal(point.Item2, point.Item3, ref voltageTotalValue, ref lastPointTaken, ref lastVoltageValue);
+							/*if (lastPointTaken != DateTime.MinValue){
 								minutesElapsed = point.Item2.Subtract(lastPointTaken).TotalMinutes;
 								unitsTotalValue += minutesElapsed * lastUnitsValue;
 								voltageTotalValue += minutesElapsed * lastVoltageValue;
@@ -192,13 +210,13 @@ namespace MultiZonePlayer
 								lastPointTaken = point.Item2;
 								lastUnitsValue = point.Item5;
 								lastVoltageValue = point.Item3;
-							}
+							}*/
 						}
 						minY = Math.Min(minY, voltValues.Min(x => x.Item3));
 						maxY = Math.Max(maxY, voltValues.Max(x => x.Item3));
 						minutesElapsed = voltValues[voltValues.Count - 1].Item2.Subtract(voltValues[0].Item2).TotalMinutes;
-						series[index].Name += " min=" + minY + " max=" + maxY + "\navg volt/min="+ Math.Round(voltageTotalValue/minutesElapsed, 4)
-							+" units/min="+ Math.Round(unitsTotalValue/minutesElapsed, 4);
+						series[index].Name += " min=" + minY + " max=" + Math.Round(maxY,4) + " V/min="+ Math.Round(voltageTotalValue/minutesElapsed, 4)
+							;// +" units/min=" + Math.Round(unitsTotalValue / minutesElapsed, 4);
 					}
 					index++;
 				}
@@ -227,7 +245,8 @@ namespace MultiZonePlayer
 				System.Windows.Forms.DataVisualization.Charting.Series series1;
 				for (int i = 0; i < zoneCount; i++) {
 					List<Tuple<int, DateTime, double, double, double, String>> tempValues=m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneList[i])
-						&& DateTime.Now.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType));
+						&& m_lastUtilityReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastUtilityReference.Subtract(x.Item2).TotalHours>=0
+						&& (x.Item6 == utilityType));
 					double minY = double.MaxValue, maxY = double.MinValue;
 					if (tempValues.Count > 0) {
 						series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
@@ -332,7 +351,7 @@ namespace MultiZonePlayer
 			foreach (ZoneDetails zone in zoneList){
 				color = zone.Color != null ? zone.Color : "Black";
 				List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zone.ZoneId 
-					&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours);
+					&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastTempHumReference.Subtract(x.Item2).TotalHours>=0);
 				if (tempValues.Count > 0)
 				{
 					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
@@ -346,6 +365,8 @@ namespace MultiZonePlayer
 					};
 					this.chart1.Series.Add(series1);
 					double total = 0, min = double.MaxValue, max = double.MinValue;
+					double tempTotalValue=0, lastTempValue=0;
+					DateTime lastPointTaken = DateTime.MinValue;
 					foreach (var point in tempValues)
 					{
 						series1.Points.AddXY(point.Item2, point.Item3);
@@ -353,9 +374,10 @@ namespace MultiZonePlayer
 						min = Math.Min(min,point.Item3);
 						max = Math.Max(max, point.Item3);
 						total += point.Item3;
+						UpdateUnitsAndTotal(point.Item2, point.Item3, ref tempTotalValue, ref lastPointTaken, ref lastTempValue);
 					}
-
-					series1.Name += " Avg="+Math.Round(total/series1.Points.Count,2)+" Min="+min+" Max="+max;
+					double minutesElapsed = tempValues[tempValues.Count - 1].Item2.Subtract(tempValues[0].Item2).TotalMinutes;
+					series1.Name += " min="+min+" max="+max	+ " °C/min=" + Math.Round(tempTotalValue / minutesElapsed, 1);
 				}
 				
 				double minT;
@@ -409,7 +431,7 @@ namespace MultiZonePlayer
 				foreach (ZoneDetails zone in zoneList) {
 					color = zone.Color != null ? zone.Color : "Black";
 					List<Tuple<int, DateTime, String, String, String, String, String>> errValues = m_errorHistoryList.FindAll(x => x.Item1 == zone.ZoneId
-						&& m_lastErrorReference.Subtract(x.Item2).TotalHours <= ageHours);
+						&& m_lastErrorReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastErrorReference.Subtract(x.Item2).TotalHours>=0);
 					if (errValues.Count > 0) {
 						var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
 							Name = "Errors in " + zone.ZoneName,
@@ -464,6 +486,7 @@ namespace MultiZonePlayer
 			Random r = new Random();
 			foreach (String closureIdentifier in distinctClosureIdentifiers) {
 				closureValues = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && m_lastEventReference.Subtract(x.Item2).TotalHours <= ageHours
+					&& m_lastEventReference.Subtract(x.Item2).TotalHours>=0
 					&& x.Item4 == Constants.EVENT_TYPE_CLOSURE && x.Item5 == closureIdentifier);
 				if (closureValues.Count > 0) {
 					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
