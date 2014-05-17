@@ -238,8 +238,11 @@ namespace MultiZonePlayer
 			try {
 				m_lastUtilityReference = GetDateReference(m_lastUtilityReference, hoursSupplement);
 				PrepareGraph(zoneName + " " + utilityType + " @ " + m_lastUtilityReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-				List<int> zoneList = m_utilitiesHistoryList.FindAll(x => (x.Item1 == zoneId || zoneId == -1)
-					&& m_lastUtilityReference.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType)).Select(x => x.Item1).Distinct().OrderBy(x => x).ToList();
+				List<int> zoneList;
+				if (zoneId != -1)
+					zoneList = new List<int>() { zoneId};
+				else
+					zoneList = m_utilitiesHistoryList.FindAll(x => m_lastUtilityReference.Subtract(x.Item2).TotalHours <= ageHours && (x.Item6 == utilityType)).Select(x => x.Item1).Distinct().OrderBy(x => x).ToList();
 				int zoneCount=zoneList.Count;
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[zoneCount];
 				System.Windows.Forms.DataVisualization.Charting.Series series1;
@@ -293,7 +296,7 @@ namespace MultiZonePlayer
 								break;
 							case Constants.CAPABILITY_WATER:
 								minY = Math.Min(minY, tempValues.Min(x => x.Item3));
-								maxY = Math.Min(minY, tempValues.Max(x => x.Item3));
+								maxY = Math.Max(maxY, tempValues.Max(x => x.Item3));
 								series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min="+minY + " max="+maxY;
 								break;
 						}

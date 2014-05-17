@@ -38,7 +38,7 @@
 <button class="small" onclick="ajaxCall('electricity','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=electricity&targetdiv=electricity', false)">Electricity</button>
 <%%>
 <%if;"#Zones,%_zoneid.UtilityType#"=="Water"%>
-<button class="small" onclick="ajaxCall('water','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=water&targetdiv=water', false)">Water</button>
+<button class="small" onclick="ajaxCall('water', 'zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=water&targetdiv=water', false)">Water</button>
 <%%>
 <%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption" 
     onclick="ajaxCall('temp-hum', 'zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum&targetdiv=temp-hum', false)" title="Target #Zones,%_zoneid.TemperatureTarget#°">#Zones,%_zoneid.Temperature#°</button>
