@@ -1071,6 +1071,11 @@ namespace MultiZonePlayer {
 					m.SendMessageToTarget(message);
 			}
 		}
+		public void SendChatToOwners(String message) {
+			foreach (IMessenger m in m_messengerList) {
+				m.SendMessageToTarget(message);
+			}
+		}
 		public void MessengerMakeBuzz() {
 			double lastBuzz = DateTime.Now.Subtract(m_lastBuzzDateTime).TotalSeconds;
 

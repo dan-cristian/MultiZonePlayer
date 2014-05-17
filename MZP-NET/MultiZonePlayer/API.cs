@@ -156,6 +156,9 @@ namespace MultiZonePlayer
 						case GlobalCommands.sendmessage:
 							MZPState.Instance.SendMessageToOwners(vals.GetValue(GlobalParams.text));
 							break;
+						case GlobalCommands.sendchat:
+							MZPState.Instance.SendChatToOwners(vals.GetValue(GlobalParams.text));
+							break;
                         case GlobalCommands.cameraevent:
                             //we don't have zoneid, add it from camera id
                             int oid = Convert.ToInt16(vals.GetValue(GlobalParams.oid));

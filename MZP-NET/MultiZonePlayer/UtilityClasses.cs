@@ -143,6 +143,7 @@ namespace MultiZonePlayer
 		r,//repeat last command
 		notifyuser,
 		sendmessage,
+		sendchat,
 		closure,
 		closurearm,
 		closuredisarm,

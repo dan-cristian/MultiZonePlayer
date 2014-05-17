@@ -544,6 +544,8 @@ namespace MultiZonePlayer {
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
 				foreach (String url in urllist) {
 					try {
+						if (MZPState.Instance == null)
+							break;
 						String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_BT_STATUS_FILE[1]);
 						String[] btlist = webdata.Split(new char[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
 						var query1 = from line in btlist
@@ -651,6 +653,8 @@ namespace MultiZonePlayer {
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
 				foreach (String url in urllist) {
 					try {
+						if (MZPState.Instance == null)
+							break;
 						String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_WIFI_STATUS_FILE[1]);
 						String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 						var query1 = from line in btlist
@@ -682,12 +686,12 @@ namespace MultiZonePlayer {
 						 */
 					}
 					catch (Exception e) {
-						MLog.Log(null, "Download remote BT file for url=" + url + " error=" + e.Message);
+						MLog.Log(null, "Download remote WIFI file for url=" + url + " error=" + e.Message);
 					}
 				}
 			}
 			catch (Exception ex) {
-				MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
+				MLog.Log(null, "CheckRemote Wifi error " + ex.Message);
 			}
 		}
 	}
