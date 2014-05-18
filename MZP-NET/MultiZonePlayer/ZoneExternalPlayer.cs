@@ -21,7 +21,7 @@ namespace MultiZonePlayer
         private String CMD_URL = "/jsonrpc?SendRemoteKey";
 		private String GET_URL = "/jsonrpc?";
 		//private bool m_bringToForegroundOnce = false;
-		private bool m_isXBMCProcessOn, m_isXBMCPlayerRunning;
+		private bool m_isXBMCProcessOn, m_isXBMCPlayerRunning, m_isXBMCProcessStarting=false;
 		//private Display m_display;
 		private int m_displayOffCount = 0;
 
@@ -87,8 +87,8 @@ namespace MultiZonePlayer
 			m_zoneDetails.ZoneState = ZoneState.NotStarted;
 			m_zoneDetails.Genre = "video";
 
-			if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1]))
-			{
+			if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1])){
+				m_isXBMCProcessStarting = true;
 				//start minimized to force an app placement on 2nd screem
 				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1],
 					System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.AboveNormal);
@@ -98,12 +98,13 @@ namespace MultiZonePlayer
 				MLog.Log(this, "XBMC launched iteration="+i);
 			}
 			FixDisplay();
+			m_isXBMCProcessStarting = false;
         }
 
 		private void FixDisplay()
 		{
 			m_display = MZPState.Instance.DisplayList.Find(x => x.ZoneDetails.ParentZoneId == m_zoneDetails.ZoneId && x.ZoneDetails.HasDisplay);
-			if (m_zoneDetails.ZoneState!=ZoneState.NotInitialised && m_display != null)
+			if (/*m_zoneDetails.ZoneState!=ZoneState.NotInitialised && */m_display != null)
 			{
 				if (!m_display.IsOnCached)
 				{
@@ -359,7 +360,7 @@ namespace MultiZonePlayer
             XBMCResponse resp;
             XBMCSimpleResponse sresp;
 
-            if (!Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1])) {
+            if (!m_isXBMCProcessStarting && !Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1])) {
 				m_isXBMCProcessOn = false;
                 Close();
             }

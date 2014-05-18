@@ -107,7 +107,7 @@ namespace MultiZonePlayer {
 			m_deviceList.RemoveAll(x => x.DeviceType == devtype);
 		}
 
-		public static SensorDevice GetDevice(String name, String address, String family, ZoneDetails zone, DeviceTypeEnum devtype, String otherInfo) {
+		public static SensorDevice UpdateGetDevice(String name, String address, String family, ZoneDetails zone, DeviceTypeEnum devtype, String otherInfo) {
 			SensorDevice dev = m_deviceList.Find(x => x.Address == address&& x.DeviceType == devtype);
 			if (dev == null) {
 				dev = new SensorDevice(name, address, family, zone, devtype, otherInfo);
@@ -129,6 +129,16 @@ namespace MultiZonePlayer {
 		private int GetZoneId {
 			get { return Zone != null ? Zone.ZoneId : -1; }
 		}
+		public static SensorDevice GetDevice(String deviceAddress) {
+			List<SensorDevice> dev = m_deviceList.FindAll(x => x.Address.ToLower() == deviceAddress.ToLower());
+			if (dev == null || dev.Count==0)
+				return null;
+			else{
+				if (dev.Count > 1)
+					Alert.CreateAlert("Unexpected multiple sensors with same address", true);
+				return dev[0];
+			}
+		}
 		public String Summary {
 			get {
 				String zone = GetZoneName;
@@ -143,11 +153,11 @@ namespace MultiZonePlayer {
 					for (int i = 0; i < IONumberChannels; i++) {
 						s += " act"+i+":" + (Activity[i]?"1":"0") + " lev"+i+":"+(Level[i]?"1":"0")	+ " latch"+i+":"+(Latch[i]?"1":"0");
 					}
-					s += " vcc=" + IOHasVCC;
+					s += " vcc=" + IOHasVCC + " high="+IOHigh;
 				}
 				if (m_hasVoltage)
 					s += " V1=" + Voltage[0] + " V2=" + Voltage[1] + " V3=" + Voltage[2];
-				s += "success="+SuccessCount + " errors="+ErrorCount;
+				s += " success="+SuccessCount + " errors="+ErrorCount;
 				if (DeviceType == DeviceTypeEnum.RFX) {
 					s += " battery=" + Battery + " signal=" + Signal;
 				}
@@ -520,7 +530,7 @@ namespace MultiZonePlayer {
 					if (dev.ZoneId != -1) {
 						ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
 						
-						SensorDevice devsensor = SensorDevice.GetDevice(dev.DeviceName, dev.DeviceId, dev.DeviceType.ToString(), zone, 
+						SensorDevice devsensor = SensorDevice.UpdateGetDevice(dev.DeviceName, dev.DeviceId, dev.DeviceType.ToString(), zone, 
 							SensorDevice.DeviceTypeEnum.RFX, dev.DisplayValues());
 						
 						switch (dev.DeviceType) {
@@ -1088,17 +1098,12 @@ namespace MultiZonePlayer {
 					//sbyte[] state;
 					while (containers.hasMoreElements()) {
 						element = (OneWireContainer)containers.nextElement();
-						List<ZoneDetails> zoneList =
-							ZoneDetails.ZoneDetailsList.FindAll(
-								x => x.TemperatureDeviceId.ToLower().Contains(element.getAddressAsString().ToLower()));
-
+						List<ZoneDetails> zoneList = ZoneDetails.GetZonesWithOneWire(element.getAddressAsString());
 						String zonename = zoneList.Count > 0 ? zoneList[0].ZoneName + ", zonecount=" + zoneList.Count : "ZONE NOT ASSOCIATED";
 						MLog.Log(this, "OneWire device found adapter="+adapter.getAdapterName()+" zone=" + zonename + ", addr=" + element.getAddressAsString()
 									   + " name=" + element.getName() + " altname=" + element.getAlternateNames()
 									   + " speed=" + element.getMaxSpeed()
 									   + " desc=" + element.getDescription());
-
-
 					}
 					adapter.endExclusive();
 
@@ -1237,11 +1242,11 @@ namespace MultiZonePlayer {
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer) containers.nextElement();
 						address = element.getAddressAsString();
-						zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.ToLower().Contains(address.ToLower()));
+						zoneList = ZoneDetails.GetZonesWithOneWire(address);
 						if (zoneList.Count == 0)
 							Alert.CreateAlertOnce("Onewire device not associate, adress=" + address + " name=" + element.getName(), "OneWire"+address);
 						zone = zoneList.Count > 0 ? zoneList[0] : null;
-						dev = SensorDevice.GetDevice(element.getName(), address, familyString, zone, SensorDevice.DeviceTypeEnum.OneWire, "");
+						dev = SensorDevice.UpdateGetDevice(element.getName(), address, familyString, zone, SensorDevice.DeviceTypeEnum.OneWire, "");
 						dev.StartProcessing();
 						if (!ProcessElement(zoneList, element, dev)) {
 							errCount++;
@@ -1333,31 +1338,147 @@ namespace MultiZonePlayer {
 							OneWireContainer29 io = (OneWireContainer29)element;
 							state = io.readDevice();
 							sbyte[] register = io.readRegister();
-							int channels = io.getNumberChannels(state);
-							bool activity, level, latch;
+							int channels8 = io.getNumberChannels(state);
+							bool activity8, level8, latch8, isOn8;
 							bool vcc = io.getVCC(register);
 							dev.IONumberChannels = 8;
 							dev.IOHasVCC = vcc;
-							for (int i = 0; i < channels; i++) {
-								activity = io.getSensedActivity(i, state);
-								level = io.getLevel(i, state);
-								latch = io.getLatchState(i, state);
-								dev.Activity[i] = activity;
-								dev.Level[i] = level;
-								dev.Latch[i] = latch;
+							for (int i = 0; i < channels8; i++) {
+								activity8 = io.getSensedActivity(i, state);
+								level8 = io.getLevel(i, state);
+								latch8 = io.getLatchState(i, state);
+								dev.Activity[i] = activity8;
+								dev.Level[i] = level8;
+								dev.Latch[i] = latch8;
+								isOn8 = latch8;
+
+								foreach (ZoneDetails zone in zoneList) {
+									zone.HasOneWireIODevice = true;
+									zone.SetClosureStateIO(i, latch8);
+									if (zone.IsClosureCmdIOOn(i)) {
+										if (!isOn8) {
+											MLog.Log(this, "OPENING IO closure that is off, id=" + i + " in zone=" + zone.ZoneName);
+											io.setLatchState(i, true, false, state);
+										}
+									}
+									else {
+										if (isOn8) {
+											MLog.Log(this, "CLOSING IO closure that is on, id=" + i + " in zone=" + zone.ZoneName);
+											io.setLatchState(i, false, false, state);
+										}
+									}
+								}
 							}
 							break;
 						case SensorDevice.ONEWIRE_IO_NAME:
+							// state is False for contact set to off, True for contact set to on
+							// level is True for no contact, False for contact
+							// activity set to true when contact state and level has changed
+
 							SwitchContainer swd = (SwitchContainer) element;
+							
+							/*MemoryBank mem;
+							string s="";
+							int imem = 0;
+							sbyte[] buf;
+							java.util.Enumeration mems = element.getMemoryBanks();
+							while (mems.hasMoreElements()) {
+								mem = (MemoryBank)mems.nextElement();
+								s += mem.getBankDescription() + imem;
+								if (mem.isReadWrite()){
+									buf = new sbyte[mem.getSize()];
+									mem.read(mem.getStartPhysicalAddress(), true, buf, 0, buf.Length);
+									buf[0] = (sbyte)'d';
+									buf[1] = (sbyte)'a';
+									mem.write(mem.getStartPhysicalAddress(), buf, 0, buf.Length);
+								}
+								s += "\n";
+								imem++;
+							}
+							*/
+
 							state = swd.readDevice();
-							dev.IONumberChannels = 2;
+							int channels2 = swd.getNumberChannels(state);
+							bool activity2, level2, latch2, isHigh2, isOn2, lastlevel2;
+							dev.IONumberChannels = channels2;
+							isHigh2 = swd.isHighSideSwitch();
+							ValueList val;
+							for (int i = 0; i < channels2; i++) {
+								activity2 = swd.getSensedActivity(i, state);
+								level2 = swd.getLevel(i, state);
+								latch2 = swd.getLatchState(i, state);
+								dev.IOHigh = isHigh2;
+								dev.Activity[i] = activity2;
+								dev.Level[i] = level2;
+								dev.Latch[i] = latch2;
+								isOn2 = latch2;
+								
+								if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "Level" + i)) {
+									lastlevel2 = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "Level" + i]);
+								}
+								else {
+									lastlevel2 = !level2;//force an initial state update
+								}
+								m_deviceAttributes[element.getAddressAsString() + "Level" + i] = level2.ToString();
+								if (activity2 || level2) {
+									swd.clearActivity();
+								}
+
+								foreach (ZoneDetails zone in zoneList){
+									zone.HasOneWireIODevice = true;
+									zone.SetClosureStateIO(i, latch2);
+									if (zone.IsClosureCmdIOOn(i)){
+										if (!isOn2) {
+											MLog.Log(this, "OPENING IO closure that is off, id="+i+" in zone="+ zone.ZoneName);
+											swd.setLatchState(i, true, false, state);
+										}
+									}
+									else {
+										if (isOn2){
+											MLog.Log(this, "CLOSING IO closure that is on, id="+i+" in zone="+ zone.ZoneName);
+											swd.setLatchState(i, false, false, state);
+										}
+									}
+								}
+								
+								/*if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelB")) {
+									lastLevelB = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelB"]);
+								}
+								else {
+									lastLevelB = !levelB;//force an initial state update
+								}*/
+								
+								//m_deviceAttributes[element.getAddressAsString() + "LevelB"] = levelB.ToString();
+
+								//swd.setLatchState(0, !latchA, false, state);
+
+								swd.writeDevice(state);
+								swd.readDevice();
+
+								if (lastlevel2 != level2 || activity2) {
+									foreach (ZoneDetails zone in zoneList) {
+										zone.HasOneWireIODevice = true;
+										MLog.Log(this, "Event closure change on id="+i+" zone=" + zone.ZoneName
+													   + " count=" + zone.ClosureCount + " level=" + level2 + " lastlevel=" + lastlevel2 + " activity=" + activity2);
+										//if (!activityB)
+										//	Alert.CreateAlert("No Activity A on level change");
+										val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+										//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+										val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+										val.Add(GlobalParams.id, i.ToString());
+										val.Add(GlobalParams.iscontactmade, ((level2 == false)).ToString()); //normal close
+										API.DoCommand(val);
+									}
+								}
+							}
+							/*
 							bool latchA = swd.getLatchState(0, state);
 							bool lastLevelA, levelA = swd.getLevel(0, state);
 							bool activityA = swd.getSensedActivity(0, state);
 							bool latchB = swd.getLatchState(1, state);
 							bool lastLevelB, levelB = swd.getLevel(1, state);
 							bool activityB = swd.getSensedActivity(1, state);
-							//bool high = swd.isHighSideSwitch();
+							bool high = swd.isHighSideSwitch();
 							//bool alarm = element.isAlarming();
 							dev.Activity[0] = activityA;
 							dev.Activity[1] = activityB;
@@ -1365,49 +1486,15 @@ namespace MultiZonePlayer {
 							dev.Latch[1] = latchB;
 							dev.Level[0] = levelA;
 							dev.Level[1] = levelB;
-							//dev.IOHigh = high;
+							dev.IOHigh = high;
 							//dev.IOAlarm = alarm;
+							*/
+							
 
-							ValueList val;
+							
 
-							if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelA")) {
-								lastLevelA = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelA"]);
-							}
-							else {
-								lastLevelA = !levelA;//force an initial state update
-							}
-							if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelB")) {
-								lastLevelB = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelB"]);
-							}
-							else {
-								lastLevelB = !levelB;//force an initial state update
-							}
-							m_deviceAttributes[element.getAddressAsString() + "LevelA"] = levelA.ToString();
-							m_deviceAttributes[element.getAddressAsString() + "LevelB"] = levelB.ToString();
-
-							if (activityA || activityB || levelA || levelB) {
-								swd.clearActivity();
-								swd.writeDevice(state);
-								swd.readDevice();
-							}
-
-							if (lastLevelA != levelA || activityA) {
-								foreach (ZoneDetails zone in zoneList) {
-									zone.HasOneWireIODevice = true;
-									MLog.Log(this, "Event closure change A on " + zone.ZoneName
-												   + " count=" + zone.ClosureCount + " level=" + levelA
-												   + " lastlevel=" + lastLevelA + " activity=" + activityA);
-									//if (!activityB)
-									//	Alert.CreateAlert("No Activity A on level change");
-									val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
-									//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
-									val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-									val.Add(GlobalParams.id, "1");
-									val.Add(GlobalParams.iscontactmade, ((levelA == false)).ToString()); //normal close
-									API.DoCommand(val);
-								}
-							}
-
+							
+							/*
 							if (lastLevelB != levelB || activityB) {
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireIODevice = true;
@@ -1423,7 +1510,7 @@ namespace MultiZonePlayer {
 									val.Add(GlobalParams.iscontactmade, ((levelB == false)).ToString()); //normal close
 									API.DoCommand(val);
 								}
-							}
+							}*/
 
 							/*
 							if (levelA || activityA) {
@@ -1510,7 +1597,7 @@ namespace MultiZonePlayer {
 							dev.Counter[0] = c1;
 							dev.Counter[1] = c2;
 							foreach (ZoneDetails zone in zoneList) {
-								zone.HasOneWireIODevice = true;
+								zone.HasOneWireCounterDevice = true;
 
 								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
 								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());

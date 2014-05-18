@@ -31,6 +31,10 @@
 <%if;"#Zones,%_zoneid.ClosureType#"=="Contact"%>
 <button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Closure #Zones,%_zoneid.ClosureState# #Zones,%_zoneid.IsClosureContactMade#</button>
 <%%>
+<%if;#Zones,%_zoneid.HasOneWireIODevice#%>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,0#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=0', true)">IO 0 On=#Zones,%_zoneid.IsClosureStateIOOn,0#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,1#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=1', true)">IO 1 On=#Zones,%_zoneid.IsClosureStateIOOn,1#</button>
+<%%>
 <%if;"#Zones,%_zoneid.ClosureType#"=="PresenceContact"%>
 <button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Presence #Zones,%_zoneid.IsClosureContactMade#</button>
 <%%>

@@ -368,6 +368,18 @@ namespace MultiZonePlayer {
 					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " closure armed status=" +
 					                           m_zoneDetails.IsClosureArmed;
 					break;
+				case GlobalCommands.closureopen:
+					int closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
+					m_zoneDetails.SetClosureCmdIO(closureid, true);
+					break;
+				case GlobalCommands.closureclose:
+					closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
+					m_zoneDetails.SetClosureCmdIO(closureid, false);
+					break;
+				case GlobalCommands.closuretoggle:
+					closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
+					m_zoneDetails.SetClosureCmdIO(closureid, !m_zoneDetails.IsClosureCmdIOOn(closureid));
+					break;
 				case GlobalCommands.counter:
 					ulong counter = 0;
 					string id;

@@ -90,8 +90,10 @@ namespace MultiZonePlayer {
 		//public double CounterMainUnitsCount = 0;//main units, e.g. 4 kwh
 		[Category("Edit")]
 		public string CounterPageNameToInclude = "1";//counter page name to consider, ignore rest (e.g. 1)
-		[Category("Edit")]
-		public string ClosureLevelNameToInclude = "1,2";//counter page name to consider, ignore rest (e.g. 1,2)
+		[Category("Edit"), Description("IO IDs to include when checking for contact state (so not OUTPUT), comma separated. DS2406 has 2 ports, so value can be 0,1. Rest are ignored")]
+		public string ClosureLevelNameToInclude = "0,1";//counter page name/ID to consider, ignore rest (e.g. 0,1)
+		private string m_closuresCmdContactOnList = "";//list of commands to be executed with closure IDs that must be kept open, comma separated, e.g. for ds2406.
+		private string m_closuresContactStateOnList = "";//list of closure state IDs that are read from device as open, comma separated, e.g. for ds2406.
 		[Category("Edit")]
 		public DateTime PulseMainUnitsStartDate = DateTime.Now;
 		public double PulseLastMainUnitsCount = 0;
@@ -105,7 +107,9 @@ namespace MultiZonePlayer {
 		public int MaxUtilityUnitsPerMinute = Constants.NOT_SET;
 
 		[Category("Edit")]
-		public String TemperatureDeviceId;
+		public String TemperatureDeviceId="";
+		[Category("Edit"), Description("OneWire device id for devices that supports IO operations. E.g. DS2406, DS2408")]
+		public String OneWireIODeviceId="";
 		//[Category("Edit")]
 		//public String OtherOneWireDeviceIdList;//separated by ;
 
@@ -171,7 +175,7 @@ namespace MultiZonePlayer {
 		// not serializable, hidden from json
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
 		protected static new List<Singleton> m_valueList = new List<Singleton>();
-		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false;
+		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false,m_hasOneWireCounterDevice=false;
 
 		protected ZoneGeneric m_zoneGeneric;
 
@@ -243,6 +247,35 @@ namespace MultiZonePlayer {
 				}
 			}
 		}
+
+		public Boolean IsClosureCmdIOOn(int id) {
+			return m_closuresCmdContactOnList.Contains(id + ",");
+		}
+
+
+		public void SetClosureCmdIO(int id, Boolean setOn){
+			if (setOn && !IsClosureCmdIOOn(id)) {
+				m_closuresCmdContactOnList += id + ",";
+			}
+			else
+				if (!setOn && IsClosureCmdIOOn(id))
+					m_closuresCmdContactOnList = m_closuresCmdContactOnList.Replace(id + ",", "");
+		}
+
+		public Boolean IsClosureStateIOOn(int id) {
+			return m_closuresContactStateOnList.Contains(id + ",");
+		}
+
+
+		public void SetClosureStateIO(int id, Boolean stateOn) {
+			if (stateOn && !IsClosureStateIOOn(id)) {
+				m_closuresContactStateOnList += id + ",";
+			}
+			else
+				if (!stateOn && IsClosureStateIOOn(id))
+					m_closuresContactStateOnList = m_closuresContactStateOnList.Replace(id + ",", "");
+		}
+
 
 		public void RecordPulse(string level) {
 			if (ClosureLevelNameToInclude.Contains(level)) {
@@ -542,6 +575,10 @@ namespace MultiZonePlayer {
 			get { return m_hasOneWireIODevice; }
 			set { m_hasOneWireIODevice = value; }
 		}
+		public Boolean HasOneWireCounterDevice {
+			get { return m_hasOneWireCounterDevice; }
+			set { m_hasOneWireCounterDevice = value; }
+		}
 
 		public Boolean HasOneWireVoltageSensor {
 			get { return m_hasOneWireVoltageSensor; }
@@ -610,33 +647,49 @@ namespace MultiZonePlayer {
 					if (parent!=null)
 						powerforparentheat = parent.RequireHeat;
 				}
+				bool powerforchild = false;
+				List<ZoneDetails> childs = ZoneDetails.ZoneDetailsList.FindAll(x => x.ParentZoneId == ZoneId && x.ZoneState == ZoneState.Running);
+				if (childs != null && childs.Count>0)
+					powerforchild = true;
+
 				res +=" powerforparentheat="+powerforparentheat;
+				res += " powerforchild=" + powerforchild;
 				res += " haspowercapab=" + HasPowerCapabilities;
 				return res;	
 			}
 		}
 		public Boolean RequirePower {
 			get {
-				int closeperiod = Convert.ToInt16(IniFile.PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD[1]);
-				bool powerfortoolong = (RequirePowerForced || IsActive) 
-					&& (LastMovementAge.TotalMinutes>closeperiod)
-					&& (LastLocalCommandAgeInSeconds > 60 * closeperiod);
-				
-				bool powerforparentheat = false;
+				if (HasPowerCapabilities) {
+					int closeperiod = Convert.ToInt16(IniFile.PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD[1]);
+					bool powerfortoolong = (RequirePowerForced || IsActive)
+						&& (LastMovementAge.TotalMinutes > closeperiod)
+						&& (LastLocalCommandAgeInSeconds > 60 * closeperiod);
 
-				if (Type == ZoneType.Heat) {//for zones with child heat component
-					ZoneDetails parent = ZoneDetails.GetZoneById(ParentZoneId);
-					if (parent!=null)
-						powerforparentheat = parent.RequireHeat;
+					bool powerforparentheat = false;
+
+					if (Type == ZoneType.Heat) {//for zones with child heat component
+						ZoneDetails parent = ZoneDetails.GetZoneById(ParentZoneId);
+						if (parent != null)
+							powerforparentheat = parent.RequireHeat;
+					}
+					bool powerforchild = false;
+					List<ZoneDetails> childs = ZoneDetails.ZoneDetailsList.FindAll(x => x.ParentZoneId == ZoneId && x.ZoneState == ZoneState.Running);
+					if (childs != null && childs.Count > 0)
+						powerforchild = true;
+
+					bool regularstate = powerforparentheat
+						|| (ZoneState == MultiZonePlayer.ZoneState.Running)
+						|| HadRecentRunState
+						|| RequirePowerForced
+						|| powerforchild;
+
+					bool keepOn = (ActivityType != GlobalCommands.tv) || (Type == ZoneType.Heat);
+
+					return regularstate && ((!powerfortoolong) || keepOn);
 				}
-				bool regularstate = powerforparentheat
-					|| (ZoneState == MultiZonePlayer.ZoneState.Running)
-					|| HadRecentRunState
-					|| RequirePowerForced;
-
-				bool keepOn = (ActivityType != GlobalCommands.tv) || (Type == ZoneType.Heat);
-
-				return HasPowerCapabilities && regularstate && ((!powerfortoolong) || keepOn);
+				else
+					return false;
 			}
 		}
 
@@ -884,6 +937,7 @@ namespace MultiZonePlayer {
 					if (NearbyZonesIdList.Length > 0 && NearbyZonesIdList[NearbyZonesIdList.Length - 1] != ';')
 						NearbyZonesIdList += ";";
 					TemperatureDeviceId = zonestorage.TemperatureDeviceId;
+					OneWireIODeviceId = zonestorage.OneWireIODeviceId;
 					PowerType = zonestorage.PowerType;
 					Type = zonestorage.Type;
 					CronSchedule = zonestorage.CronSchedule;
@@ -1136,6 +1190,11 @@ namespace MultiZonePlayer {
 		}
 		public static ZoneDetails GetZoneByInternalId(int Id) {
 			return (ZoneDetails)m_valueList.Find(item => ((ZoneDetails)item).Id == Id);
+		}
+		public static List<ZoneDetails> GetZonesWithOneWire(string deviceaddress) {
+			string devaddlower = deviceaddress.ToLower();
+			return m_valueList.FindAll(x => ((ZoneDetails)x).TemperatureDeviceId.ToLower().Contains(devaddlower) 
+				|| ((ZoneDetails)x).OneWireIODeviceId.ToLower().Contains(devaddlower)).Select(x => (ZoneDetails)x).ToList(); 
 		}
 		public static TimeSpan LastMovementAge_Min {
 			get {

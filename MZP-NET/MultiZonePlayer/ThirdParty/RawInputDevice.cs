@@ -728,7 +728,7 @@ namespace MultiZonePlayer
 
         #endregion ProcessInputCommand( Message message )
 
-        #region DeviceType GetDevice( int param )
+        #region DeviceType UpdateGetDevice( int param )
 
         /// <summary>
         /// Determines what type of device triggered a WM_INPUT message.
@@ -756,7 +756,7 @@ namespace MultiZonePlayer
             return deviceType;
         }
 
-        #endregion DeviceType GetDevice( int param )
+        #endregion DeviceType UpdateGetDevice( int param )
 
         public static Hashtable GetDeviceList()
         {

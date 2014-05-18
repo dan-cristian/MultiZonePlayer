@@ -540,26 +540,34 @@ namespace MultiZonePlayer {
 				//68:ED:43:08:10:40 Dan,2013-12-04 23:01:28
 				//
 				MyWebClient web = new MyWebClient();
+				System.Net.NetworkInformation.Ping pingSender = new System.Net.NetworkInformation.Ping();
+				System.Net.NetworkInformation.PingReply pingReply;
+				string host;
+
 				DateTime presenceDate;
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
 				foreach (String url in urllist) {
 					try {
 						if (MZPState.Instance == null)
 							break;
-						String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_BT_STATUS_FILE[1]);
-						String[] btlist = webdata.Split(new char[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
-						var query1 = from line in btlist
-									 let data = line.Split(',')
-									 select new {
-										 BTAddress = data[0].Split(' ')[0],
-										 Date = data[1]
-									 };
-						List<String> currentList = query1.Select(x=>x.BTAddress).ToList();
-						if (query1.ToList().Count > 0)
-							presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
-						else
-							presenceDate = DateTime.Now;
-						UpdateBTDevices(currentList, presenceDate, url);
+						host = new Uri(url).Host;
+						pingReply = pingSender.Send(host,1000);
+						if (pingReply.Status == System.Net.NetworkInformation.IPStatus.Success) {
+							String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_BT_STATUS_FILE[1]);
+							String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+							var query1 = from line in btlist
+										 let data = line.Split(',')
+										 select new {
+											 BTAddress = data[0].Split(' ')[0],
+											 Date = data[1]
+										 };
+							List<String> currentList = query1.Select(x => x.BTAddress).ToList();
+							if (query1.ToList().Count > 0)
+								presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
+							else
+								presenceDate = DateTime.Now;
+							UpdateBTDevices(currentList, presenceDate, url);
+						}
 					}
 					catch (Exception e) {
 						MLog.Log(null, "Download remote BT file for url="+url+" error=" + e.Message);
@@ -649,41 +657,48 @@ namespace MultiZonePlayer {
 				//
 				List<String> addedIncrement, removedIncrement;
 				MyWebClient web = new MyWebClient();
+				System.Net.NetworkInformation.Ping pingSender = new System.Net.NetworkInformation.Ping();
+				System.Net.NetworkInformation.PingReply pingReply;
+				string host;
 				//DateTime presenceDate;
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
 				foreach (String url in urllist) {
 					try {
 						if (MZPState.Instance == null)
 							break;
-						String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_WIFI_STATUS_FILE[1]);
-						String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-						var query1 = from line in btlist
-									 let data = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-									 select new {
-										 Time = data[0],
-										 Interface = data[1],
-										 Action = data[2],
-										 Address = data[3].SplitTwo("node:")[data[3].SplitTwo("node:").Length-1]
-									 };
-						
-						addedIncrement = query1.ToList().FindAll(x => x.Action == "Registered")
-								.OrderByDescending(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
-						removedIncrement = query1.ToList().FindAll(x => x.Action == "Expired")
-								.OrderBy(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
+						host = new Uri(url).Host;
+						pingReply = pingSender.Send(host,1000);
+						if (pingReply.Status == System.Net.NetworkInformation.IPStatus.Success) {
+							String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_WIFI_STATUS_FILE[1]);
+							String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+							var query1 = from line in btlist
+										 let data = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+										 select new {
+											 Time = data[0],
+											 Interface = data[1],
+											 Action = data[2],
+											 Address = data[3].SplitTwo("node:")[data[3].SplitTwo("node:").Length - 1]
+										 };
 
-						List<String> currentList;
-						if (addedIncrement != null)
-							currentList = addedIncrement.Except(removedIncrement).ToList();
-						else
-							currentList = new List<String>();
-						UpdateWifiDevices(currentList, DateTime.Now, url);
-						/*List<String> currentList = query1.Select(x => x.BTAddress).ToList();
-						if (query1.ToList().Count > 0)
-							presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
-						else
-							presenceDate = DateTime.Now;
-						UpdateBTDevices(currentList, presenceDate, url);
-						 */
+							addedIncrement = query1.ToList().FindAll(x => x.Action == "Registered")
+									.OrderByDescending(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
+							removedIncrement = query1.ToList().FindAll(x => x.Action == "Expired")
+									.OrderBy(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
+
+							List<String> currentList;
+							if (addedIncrement != null)
+								currentList = addedIncrement.Except(removedIncrement).ToList();
+							else
+								currentList = new List<String>();
+							UpdateWifiDevices(currentList, DateTime.Now, url);
+							/*List<String> currentList = query1.Select(x => x.BTAddress).ToList();
+							if (query1.ToList().Count > 0)
+								presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
+							else
+								presenceDate = DateTime.Now;
+							UpdateBTDevices(currentList, presenceDate, url);
+							 */
+						}
 					}
 					catch (Exception e) {
 						MLog.Log(null, "Download remote WIFI file for url=" + url + " error=" + e.Message);
