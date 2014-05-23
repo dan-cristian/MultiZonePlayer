@@ -417,7 +417,9 @@ namespace MultiZonePlayer
         public override void Tick()
         {
             if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 10) {
-				FixDisplay();
+				if (m_zoneDetails.ZoneState == ZoneState.Running) {
+					FixDisplay();
+				}
                 GetXBMCStatus();
                 m_lastSlowTickDateTime = DateTime.Now;
             }
