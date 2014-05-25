@@ -29,22 +29,22 @@
 <button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Motion</button>
 <%%>
 <%if;"#Zones,%_zoneid.ClosureType#"=="Contact"%>
-<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove# Closed#Zones,%_zoneid.IsRelayInNormalState#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Closure #Zones,%_zoneid.ClosureState#</button>
+<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove# Closed#Zones,%_zoneid.IsRelayInNormalState#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">#Zones,%_zoneid.ClosureState#</button>
 <%%>
 <%if;"#Zones,%_zoneid.HasOneWireIODevice##Zones,%_zoneid.OneWireIOPortCount#"=="True2"%>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,0# Closed#Zones,%_zoneid.IsRelayInNormalState#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=0', true)">IO 0 On=#Zones,%_zoneid.IsClosureStateIOOn,0#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,1# Closed#Zones,%_zoneid.IsRelayInNormalState#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=1', true)">IO 1 On=#Zones,%_zoneid.IsClosureStateIOOn,1#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,0#  Closed#Zones,%_zoneid.IsClosureRelayInNormalState,0#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=0', true)">IO 0 On=#Zones,%_zoneid.IsClosureStateIOOn,0#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,1#  Closed#Zones,%_zoneid.IsClosureRelayInNormalState,1#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=1', true)">IO 1 On=#Zones,%_zoneid.IsClosureStateIOOn,1#</button>
 
 <%%>
 <%if;"#Zones,%_zoneid.HasOneWireIODevice##Zones,%_zoneid.OneWireIOPortCount#"=="True8"%>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,0#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=0', true)">IO 0 On=#Zones,%_zoneid.IsClosureStateIOOn,0#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,1#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=1', true)">IO 1 On=#Zones,%_zoneid.IsClosureStateIOOn,1#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,2#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=2', true)">IO 2 On=#Zones,%_zoneid.IsClosureStateIOOn,2#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,3#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=3', true)">IO 3 On=#Zones,%_zoneid.IsClosureStateIOOn,3#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,4#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=4', true)">IO 4 On=#Zones,%_zoneid.IsClosureStateIOOn,4#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,5#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=5', true)">IO 5 On=#Zones,%_zoneid.IsClosureStateIOOn,5#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,6#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=6', true)">IO 6 On=#Zones,%_zoneid.IsClosureStateIOOn,6#</button>
-<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,7#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=7', true)">IO 7 On=#Zones,%_zoneid.IsClosureStateIOOn,7#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,0# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,0#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=0', true)">IO 0 On=#Zones,%_zoneid.IsClosureStateIOOn,0#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,1# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,1#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=1', true)">IO 1 On=#Zones,%_zoneid.IsClosureStateIOOn,1#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,2# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,2#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=2', true)">IO 2 On=#Zones,%_zoneid.IsClosureStateIOOn,2#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,3# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,3#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=3', true)">IO 3 On=#Zones,%_zoneid.IsClosureStateIOOn,3#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,4# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,4#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=4', true)">IO 4 On=#Zones,%_zoneid.IsClosureStateIOOn,4#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,5# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,5#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=5', true)">IO 5 On=#Zones,%_zoneid.IsClosureStateIOOn,5#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,6# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,6#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=6', true)">IO 6 On=#Zones,%_zoneid.IsClosureStateIOOn,6#</button>
+<button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,7# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,7#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=7', true)">IO 7 On=#Zones,%_zoneid.IsClosureStateIOOn,7#</button>
 <%%>
 <%if;"#Zones,%_zoneid.ClosureType#"=="PresenceContact"%>
 <button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Presence #Zones,%_zoneid.IsClosureContactMade#</button>

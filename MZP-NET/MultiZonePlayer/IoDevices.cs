@@ -1306,6 +1306,7 @@ namespace MultiZonePlayer {
 			m_lastOKRead = DateTime.Now;
 			if (zoneList != null) {
 				String zoneName = zoneList.Count > 0 ? zoneList[0].ZoneName + ", totalzonecount=" + zoneList.Count : "no zone exist";
+				
 				try {
 					switch (element.getName()) {
 						case SensorDevice.ONEWIRE_TEMPDEV_NAME:
@@ -1410,6 +1411,7 @@ namespace MultiZonePlayer {
 							for (int i = 0; i < channels2; i++) {
 								activity2 = swd.getSensedActivity(i, state);
 								level2 = swd.getLevel(i, state);
+								level2 = !level2;//TODO: why level is diff than 8 IO device?
 								latch2 = swd.getLatchState(i, state);
 								dev.Activity[i] = activity2;
 								dev.Level[i] = level2;
@@ -1462,7 +1464,6 @@ namespace MultiZonePlayer {
 								if (lastlevel2 != level2 || activity2) {
 									foreach (ZoneDetails zone in zoneList) {
 										zone.HasOneWireIODevice = true;
-										
 										MLog.Log(this, "Event closure change on id="+i+" zone=" + zone.ZoneName
 													   + " count=" + zone.ClosureCount + " level=" + level2 + " lastlevel=" + lastlevel2 + " activity=" + activity2);
 										//if (!activityB)
@@ -1471,7 +1472,7 @@ namespace MultiZonePlayer {
 										//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 										val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
 										val.Add(GlobalParams.id, i.ToString());
-										val.Add(GlobalParams.iscontactmade, ((level2 == false)).ToString()); //normal close
+										val.Add(GlobalParams.iscontactmade, (level2).ToString());
 										API.DoCommand(val);
 										
 									}
@@ -1621,6 +1622,9 @@ namespace MultiZonePlayer {
 						default:
 							MLog.Log(this, "Unknown onewire device " + element.getName());
 							break;
+					}
+					foreach (ZoneDetails zone in zoneList) {
+						zone.AddSensor(dev);
 					}
 					dev.RecordSuccess();
 				}

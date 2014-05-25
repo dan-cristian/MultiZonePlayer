@@ -73,7 +73,6 @@ namespace MultiZonePlayer {
 		public EnumClosureType ClosureType = EnumClosureType.Undefined;
 		private Boolean m_isClosureContactMade = false, m_isClosureContactMadeLast = false;
 		public EnumRelayState RelayState = EnumRelayState.Undefined;
-		public bool IsRelayInNormalState = false;
 		[Category("Edit")]
 		public EnumRelayType RelayType = EnumRelayType.Undefined;
 
@@ -179,6 +178,9 @@ namespace MultiZonePlayer {
 		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false,m_hasOneWireCounterDevice=false;
 		protected int m_OneWireIOPortCount = 0;
 		protected ZoneGeneric m_zoneGeneric;
+		private List<SensorDevice> m_sensorList = new List<SensorDevice>();
+
+		
 
 		public ZoneDetails() {
 			//ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
@@ -228,6 +230,24 @@ namespace MultiZonePlayer {
 			set { m_notifyZoneEventTriggered = value; }
 		}
 
+		public List<SensorDevice> SensorList {
+			get { return m_sensorList; }
+			//set { m_sensorList = value; }
+		}
+
+		public void AddSensor(SensorDevice sensor) {
+			if (m_sensorList.Find(x => x == sensor) == null)
+				m_sensorList.Add(sensor);
+		}
+
+		public void RemoveSensor(SensorDevice sensor) {
+			m_sensorList.Remove(sensor);
+		}
+		public Boolean IsRelayInNormalState {
+			get {
+				return GetClosureIsRelayInNormalState(m_isClosureContactMade);
+			}
+		}
 		public Boolean IsClosureContactMade {
 			get { return m_isClosureContactMade; }
 			set {
@@ -235,11 +255,9 @@ namespace MultiZonePlayer {
 				ClosureCount++;
 				if (value && RelayType==EnumRelayType.NormalOpen) {
 					RelayState = EnumRelayState.ContactClosed;
-					IsRelayInNormalState = false;
 				}
 				else {
 					RelayState = EnumRelayState.ContactOpen;
-					IsRelayInNormalState = true;
 				}
 				MLog.Log(this, "Contact event=" + value + " on zone="+ ZoneName +" relaystate=" + RelayState + " relaytype="+RelayType);
 
@@ -279,7 +297,22 @@ namespace MultiZonePlayer {
 					m_closuresContactStateOnList = m_closuresContactStateOnList.Replace(id + ",", "");
 		}
 
-
+		private Boolean GetClosureIsRelayInNormalState(Boolean contactMade) {
+			if (contactMade && RelayType == EnumRelayType.NormalOpen) {
+				return false;
+			}
+			else
+				return true;
+		}
+		public Boolean IsClosureRelayInNormalState(int id) {
+			SensorDevice dev = m_sensorList.Find(x => x.HasClosure);
+			if (dev != null) {
+				bool level = dev.Level[id];
+				return GetClosureIsRelayInNormalState(level);
+			}
+			else
+				return false;
+		}
 		public void RecordPulse(string level) {
 			if (ClosureLevelNameToInclude.Contains(level)) {
 				if (DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes >= PulseSampleMinutesFrequency) {
