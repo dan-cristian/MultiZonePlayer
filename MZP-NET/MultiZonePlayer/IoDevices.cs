@@ -1341,6 +1341,8 @@ namespace MultiZonePlayer {
 							int channels8 = io.getNumberChannels(state);
 							bool activity8, level8, latch8, isOn8;
 							bool vcc = io.getVCC(register);
+							bool isHigh8 = io.isHighSideSwitch();
+							dev.IOHigh = isHigh8;
 							dev.IONumberChannels = 8;
 							dev.IOHasVCC = vcc;
 							for (int i = 0; i < channels8; i++) {
@@ -1353,6 +1355,7 @@ namespace MultiZonePlayer {
 								isOn8 = latch8;
 
 								foreach (ZoneDetails zone in zoneList) {
+									zone.OneWireIOPortCount = channels8;
 									zone.HasOneWireIODevice = true;
 									zone.SetClosureStateIO(i, latch8);
 									if (zone.IsClosureCmdIOOn(i)) {
@@ -1402,12 +1405,12 @@ namespace MultiZonePlayer {
 							bool activity2, level2, latch2, isHigh2, isOn2, lastlevel2;
 							dev.IONumberChannels = channels2;
 							isHigh2 = swd.isHighSideSwitch();
+							dev.IOHigh = isHigh2;
 							ValueList val;
 							for (int i = 0; i < channels2; i++) {
 								activity2 = swd.getSensedActivity(i, state);
 								level2 = swd.getLevel(i, state);
 								latch2 = swd.getLatchState(i, state);
-								dev.IOHigh = isHigh2;
 								dev.Activity[i] = activity2;
 								dev.Level[i] = level2;
 								dev.Latch[i] = latch2;
@@ -1425,6 +1428,7 @@ namespace MultiZonePlayer {
 								}
 
 								foreach (ZoneDetails zone in zoneList){
+									zone.OneWireIOPortCount = channels2;
 									zone.HasOneWireIODevice = true;
 									zone.SetClosureStateIO(i, latch2);
 									if (zone.IsClosureCmdIOOn(i)){
@@ -1458,6 +1462,7 @@ namespace MultiZonePlayer {
 								if (lastlevel2 != level2 || activity2) {
 									foreach (ZoneDetails zone in zoneList) {
 										zone.HasOneWireIODevice = true;
+										
 										MLog.Log(this, "Event closure change on id="+i+" zone=" + zone.ZoneName
 													   + " count=" + zone.ClosureCount + " level=" + level2 + " lastlevel=" + lastlevel2 + " activity=" + activity2);
 										//if (!activityB)
@@ -1468,6 +1473,7 @@ namespace MultiZonePlayer {
 										val.Add(GlobalParams.id, i.ToString());
 										val.Add(GlobalParams.iscontactmade, ((level2 == false)).ToString()); //normal close
 										API.DoCommand(val);
+										
 									}
 								}
 							}

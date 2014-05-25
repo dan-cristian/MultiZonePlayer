@@ -59,6 +59,8 @@ button.TemperatureVoltage {background-image:url('light-icon.png'),url('thermomet
 button.Closure {background-image:url('plug-icon.png');background-position:0px 18px;}
 button.Counter {min-width:80px;background-image:url('Numbers-icon.png');}
 button.Voltage {background-image:url('light-icon.png');}
+button.ClosedTrue {background-image:url('door-closed-icon.png');background-repeat:no-repeat;background-position:left}
+button.ClosedFalse {background-image:url('door-open-icon.png');background-repeat:no-repeat;background-position:left}
 meter.SmallVertical {width:10px;height:8px;transform: rotate(180deg);}
 span.Title {
 	background-color:limegreen;color:white;border:1px solid #33842a;/*give the button curved corners, alter the size as required*/

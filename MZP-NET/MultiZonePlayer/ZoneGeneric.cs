@@ -350,8 +350,44 @@ namespace MultiZonePlayer {
 							m_closurePatern += "-";
 						}
 					}
+
 					//MLog.Log(this, "Closure Patern="+m_closurePatern + " on zone " + m_zoneDetails.ZoneName);
-					ClosureEvent(vals.GetValue(GlobalParams.id), contactMade);
+					String key = vals.GetValue(GlobalParams.id);
+					MLog.Log(this, "ClosureEvent zone=" + m_zoneDetails.ZoneName + " key=" + key + " contactmade=" + contactMade);
+					Boolean isContactMadeLast = m_zoneDetails.IsClosureContactMade;
+					m_zoneDetails.IsClosureContactMade = contactMade;
+					m_zoneDetails.MovementAlert = true;
+					ZoneOpenActions();
+
+					switch (m_zoneDetails.ClosureType) {
+							case EnumClosureType.PresenceContact:
+							case EnumClosureType.Contact:
+
+
+								string msg = "Closure contact state " + key + " is " + contactMade
+									 + " on zone " + m_zoneDetails.ZoneName;
+								MLog.Log(this, msg);
+								Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key,
+									DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), m_zoneDetails.RelayState.ToString(),
+									m_zoneDetails.ZoneId.ToString(), Constants.EVENT_TYPE_CLOSURE, key);
+
+								if (contactMade) {
+									if (m_zoneDetails.IsArmed ||
+										(MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId == m_zoneDetails.AlarmAreaId)) {
+										Alert.CreateAlert(msg, m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
+									}
+								}	
+								break;
+							case EnumClosureType.Pulse:
+								m_zoneDetails.RecordPulse(key);
+								break;
+						default:
+							MLog.Log(this, "Error, undefined closure type for zone="+m_zoneDetails.ZoneName);
+							break;
+					}
+			
+					m_zoneDetails.MovementAlert = false;
+					//ClosureEvent(vals.GetValue(GlobalParams.id), contactMade);
 					User user = User.UserList.Find(x => x.GetMacroNameByPattern(m_closurePatern, m_zoneDetails.ZoneId) != null);
 					if (user != null) {
 						String macro = user.GetMacroNameByPattern(m_closurePatern, m_zoneDetails.ZoneId);
@@ -610,7 +646,7 @@ namespace MultiZonePlayer {
 								m_mainZoneActivity = null;
 							}
 
-							if (m_mainZoneActivity == null && m_zoneDetails.HasVideoPlayer) {
+							if (m_zoneDetails.ZoneState==ZoneState.NotInitialised || m_mainZoneActivity == null && m_zoneDetails.HasVideoPlayer) {
 								InitZonePlayerXBMC();
 							}
 							else {
@@ -850,41 +886,10 @@ namespace MultiZonePlayer {
 				p_zoneDetails.LastNotifyZoneEventTriggered = DateTime.Now;
 			}
 		}
-
+		/*
 		public void ClosureEvent(string key, Boolean isContactMade) // KeyDetail kd)
 		{
-			MLog.Log(this, "ClosureEvent zone=" + m_zoneDetails.ZoneName + " key=" + key + " contactmade=" + isContactMade);
-			Boolean isContactMadeLast = m_zoneDetails.IsClosureContactMade;
-			m_zoneDetails.IsClosureContactMade = isContactMade;
-			m_zoneDetails.MovementAlert = true;
-			ZoneOpenActions();
-
-			switch (m_zoneDetails.ClosureType) {
-					case EnumClosureType.PresenceContact:
-					case EnumClosureType.Contact:
-						string message = "Closure contact state " + key + " is " + isContactMade
-			                 + " on zone " + m_zoneDetails.ZoneName;
-						MLog.Log(this, message);
-						Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key,
-							DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), m_zoneDetails.RelayState.ToString(),
-							m_zoneDetails.ZoneId.ToString(), Constants.EVENT_TYPE_CLOSURE, key);
-
-						if (isContactMade) {
-							if (m_zoneDetails.IsArmed ||
-								(MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId == m_zoneDetails.AlarmAreaId)) {
-								Alert.CreateAlert(message, m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
-							}
-						}	
-						break;
-					case EnumClosureType.Pulse:
-						m_zoneDetails.RecordPulse(key);
-						break;
-				default:
-					MLog.Log(this, "Error, undefined closure type for zone="+m_zoneDetails.ZoneName);
-					break;
-			}
 			
-			m_zoneDetails.MovementAlert = false;
 
 			/*ClosureOpenCloseRelay lastState = m_zoneDetails.ClosureOpenCloseRelay;
 
@@ -919,8 +924,8 @@ namespace MultiZonePlayer {
 			}
 			m_zoneDetails.MovementAlert = false;
 			 */
-		}
-
+		//}
+	
 		public void CounterEvent(string id, ulong counter)
 		{
 			//MLog.Log(this, "CounterEvent zone=" + m_zoneDetails.ZoneName + " id=" + id+ " count=" + counter);

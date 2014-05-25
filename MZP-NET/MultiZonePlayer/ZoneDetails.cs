@@ -73,6 +73,7 @@ namespace MultiZonePlayer {
 		public EnumClosureType ClosureType = EnumClosureType.Undefined;
 		private Boolean m_isClosureContactMade = false, m_isClosureContactMadeLast = false;
 		public EnumRelayState RelayState = EnumRelayState.Undefined;
+		public bool IsRelayInNormalState = false;
 		[Category("Edit")]
 		public EnumRelayType RelayType = EnumRelayType.Undefined;
 
@@ -176,7 +177,7 @@ namespace MultiZonePlayer {
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
 		protected static new List<Singleton> m_valueList = new List<Singleton>();
 		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false,m_hasOneWireCounterDevice=false;
-
+		protected int m_OneWireIOPortCount = 0;
 		protected ZoneGeneric m_zoneGeneric;
 
 		public ZoneDetails() {
@@ -234,9 +235,11 @@ namespace MultiZonePlayer {
 				ClosureCount++;
 				if (value && RelayType==EnumRelayType.NormalOpen) {
 					RelayState = EnumRelayState.ContactClosed;
+					IsRelayInNormalState = false;
 				}
 				else {
 					RelayState = EnumRelayState.ContactOpen;
+					IsRelayInNormalState = true;
 				}
 				MLog.Log(this, "Contact event=" + value + " on zone="+ ZoneName +" relaystate=" + RelayState + " relaytype="+RelayType);
 
@@ -575,6 +578,11 @@ namespace MultiZonePlayer {
 			get { return m_hasOneWireIODevice; }
 			set { m_hasOneWireIODevice = value; }
 		}
+		public int OneWireIOPortCount {
+			get { return m_OneWireIOPortCount; }
+			set { m_OneWireIOPortCount = value; }
+		}
+
 		public Boolean HasOneWireCounterDevice {
 			get { return m_hasOneWireCounterDevice; }
 			set { m_hasOneWireCounterDevice = value; }
