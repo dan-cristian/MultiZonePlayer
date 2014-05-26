@@ -1285,7 +1285,8 @@ namespace MultiZonePlayer {
 							ProcessFamily(SensorDevice.ONEWIRE_TEMPDEV_NAME, adapter, false, false, 0x28); //DS18B20 = temp
 							ProcessFamily(SensorDevice.ONEWIRE_SMARTBATDEV_NAME, adapter, false, false, 0x26); //DS2438 = Smart Battery Monitor
 						}
-						ProcessFamily(SensorDevice.ONEWIRE_IO_NAME + " & " + SensorDevice.ONEWIRE_COUNTER_NAME, adapter, false, true, 0x12, 0x1D); //DS2406/DS2407 and DS2423
+						ProcessFamily(SensorDevice.ONEWIRE_IO_NAME, adapter, false, true, 0x12);//DS2406/DS2407
+						ProcessFamily(SensorDevice.ONEWIRE_COUNTER_NAME, adapter, false, true, 0x1D); //DS2423
 						ProcessFamily(SensorDevice.ONEWIRE_IO8_NAME, adapter, false, false, 0x29); //DS2408
 						i++;
 						Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
@@ -1299,7 +1300,7 @@ namespace MultiZonePlayer {
 		}
 
 		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element, SensorDevice dev) {
-			sbyte[] state;
+			sbyte[] state, initialState;
 			Boolean result = true;
 			TemperatureContainer temp;
 			double tempVal;
@@ -1338,9 +1339,10 @@ namespace MultiZonePlayer {
 						case SensorDevice.ONEWIRE_IO8_NAME:
 							OneWireContainer29 io = (OneWireContainer29)element;
 							state = io.readDevice();
+							initialState = (sbyte[])state.Clone();
 							sbyte[] register = io.readRegister();
 							int channels8 = io.getNumberChannels(state);
-							bool activity8, level8, latch8, isOn8;
+							bool activity8, level8, latch8, isOn8, lastlevel8, activityWasDetected8=false;
 							bool vcc = io.getVCC(register);
 							bool isHigh8 = io.isHighSideSwitch();
 							dev.IOHigh = isHigh8;
@@ -1354,6 +1356,18 @@ namespace MultiZonePlayer {
 								dev.Level[i] = level8;
 								dev.Latch[i] = latch8;
 								isOn8 = latch8;
+
+								if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "Level" + i)) {
+									lastlevel8 = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "Level" + i]);
+								}
+								else {
+									lastlevel8 = !level8;//force an initial state update
+								}
+								m_deviceAttributes[element.getAddressAsString() + "Level" + i] = level8.ToString();
+								if (activity8 || level8) {
+									activityWasDetected8 = true;
+									
+								}
 
 								foreach (ZoneDetails zone in zoneList) {
 									zone.OneWireIOPortCount = channels8;
@@ -1372,6 +1386,28 @@ namespace MultiZonePlayer {
 										}
 									}
 								}
+								
+								if (lastlevel8 != level8 || activity8) {
+									foreach (ZoneDetails zone in zoneList) {
+										MLog.Log(this, "Event closure8 change on id=" + i + " zone=" + zone.ZoneName
+													   + " count=" + zone.ClosureCount + " level=" + level8 + " lastlevel=" + lastlevel8 + " activity=" + activity8);
+										//if (!activityB)
+										//	Alert.CreateAlert("No Activity A on level change");
+										ValueList val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+										//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+										val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+										val.Add(GlobalParams.id, i.ToString());
+										val.Add(GlobalParams.iscontactmade, (level8).ToString());
+										API.DoCommand(val);
+									}
+								}	
+
+							}
+							if (activityWasDetected8)
+								io.clearActivity();
+
+							if (!state.ArraysEqual(initialState)) {
+								io.writeDevice(state);
 							}
 							break;
 						case SensorDevice.ONEWIRE_IO_NAME:
@@ -1400,14 +1436,13 @@ namespace MultiZonePlayer {
 								imem++;
 							}
 							*/
-
 							state = swd.readDevice();
+							initialState = (sbyte[])state.Clone();
 							int channels2 = swd.getNumberChannels(state);
-							bool activity2, level2, latch2, isHigh2, isOn2, lastlevel2;
+							bool activity2, level2, latch2, isHigh2, isOn2, lastlevel2, activityWasDetected2=false;
 							dev.IONumberChannels = channels2;
 							isHigh2 = swd.isHighSideSwitch();
 							dev.IOHigh = isHigh2;
-							ValueList val;
 							for (int i = 0; i < channels2; i++) {
 								activity2 = swd.getSensedActivity(i, state);
 								level2 = swd.getLevel(i, state);
@@ -1426,7 +1461,7 @@ namespace MultiZonePlayer {
 								}
 								m_deviceAttributes[element.getAddressAsString() + "Level" + i] = level2.ToString();
 								if (activity2 || level2) {
-									swd.clearActivity();
+									activityWasDetected2 = true;
 								}
 
 								foreach (ZoneDetails zone in zoneList){
@@ -1446,100 +1481,29 @@ namespace MultiZonePlayer {
 										}
 									}
 								}
-								
-								/*if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "LevelB")) {
-									lastLevelB = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "LevelB"]);
-								}
-								else {
-									lastLevelB = !levelB;//force an initial state update
-								}*/
-								
-								//m_deviceAttributes[element.getAddressAsString() + "LevelB"] = levelB.ToString();
-
-								//swd.setLatchState(0, !latchA, false, state);
-
-								swd.writeDevice(state);
-								swd.readDevice();
 
 								if (lastlevel2 != level2 || activity2) {
 									foreach (ZoneDetails zone in zoneList) {
 										zone.HasOneWireIODevice = true;
-										MLog.Log(this, "Event closure change on id="+i+" zone=" + zone.ZoneName
+										MLog.Log(this, "Event closure2 change on id="+i+" zone=" + zone.ZoneName
 													   + " count=" + zone.ClosureCount + " level=" + level2 + " lastlevel=" + lastlevel2 + " activity=" + activity2);
 										//if (!activityB)
 										//	Alert.CreateAlert("No Activity A on level change");
-										val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+										ValueList val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
 										//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 										val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
 										val.Add(GlobalParams.id, i.ToString());
 										val.Add(GlobalParams.iscontactmade, (level2).ToString());
 										API.DoCommand(val);
-										
 									}
 								}
 							}
-							/*
-							bool latchA = swd.getLatchState(0, state);
-							bool lastLevelA, levelA = swd.getLevel(0, state);
-							bool activityA = swd.getSensedActivity(0, state);
-							bool latchB = swd.getLatchState(1, state);
-							bool lastLevelB, levelB = swd.getLevel(1, state);
-							bool activityB = swd.getSensedActivity(1, state);
-							bool high = swd.isHighSideSwitch();
-							//bool alarm = element.isAlarming();
-							dev.Activity[0] = activityA;
-							dev.Activity[1] = activityB;
-							dev.Latch[0] = latchA;
-							dev.Latch[1] = latchB;
-							dev.Level[0] = levelA;
-							dev.Level[1] = levelB;
-							dev.IOHigh = high;
-							//dev.IOAlarm = alarm;
-							*/
-							
-
-							
-
-							
-							/*
-							if (lastLevelB != levelB || activityB) {
-								foreach (ZoneDetails zone in zoneList) {
-									zone.HasOneWireIODevice = true;
-									MLog.Log(this, "Event closure change B on " + zone.ZoneName
-												   + " count=" + zone.ClosureCount + " level=" + levelB
-												   + " lastlevel=" + lastLevelB + " activity=" + activityB);
-									//if (!activityB)
-									//	Alert.CreateAlert("No Activity B on level change");
-									val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
-									//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
-									val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
-									val.Add(GlobalParams.id, "2");
-									val.Add(GlobalParams.iscontactmade, ((levelB == false)).ToString()); //normal close
-									API.DoCommand(val);
-								}
-							}*/
-
-							/*
-							if (levelA || activityA) {
-								zone.ClosureCounts++;
-								MLog.Log(this, "Event closure A on "+zone.ZoneName+" count=" + zone.ClosureCounts);
+							if (activityWasDetected2)
+								swd.clearActivity();
+							if (!state.ArraysEqual(initialState)) {
+								swd.writeDevice(state);
+								//swd.readDevice();
 							}
-
-							if (levelB || activityB) {
-								zone.ClosureCounts++;
-								MLog.Log(this, "Event closure B on " + zone.ZoneName + " count=" + zone.ClosureCounts);
-							}*/
-							
-							//swd.setLatchState(0, true, false, state);
-
-							//MLog.Log(null, "\n\nLEVEL=" + level + "  latch=" + latch + " activity=" + activity
-							//	+ " highside=" + high + "  alarming=" + alarm);
-							//OneWireContainer12 o12 = (OneWireContainer12)element;
-							//o12.setSearchConditions(0, OneWireContainer12.SOURCE_PIO, OneWireContainer12.POLARITY_ONE, state);
-							//o12.writeDevice(state);
-							//OneWireContainer05 o05 = (OneWireContainer05)element;
-							//int ilevel = o05.(0, state);
-							//MLog.Log(null, "ilevel=" + level + "latch=" + latch + " sensed=" + sensed);
 							break;
 						case SensorDevice.ONEWIRE_SMARTBATDEV_NAME:
 							ADContainer adc = (ADContainer) element;
@@ -1606,7 +1570,7 @@ namespace MultiZonePlayer {
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireCounterDevice = true;
 
-								val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
+								ValueList val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.events);
 								val.Add(GlobalParams.command, GlobalCommands.counter.ToString());
 								val.Add(GlobalParams.id, "1");
 								val.Add(GlobalParams.count, c1.ToString()); //normal close

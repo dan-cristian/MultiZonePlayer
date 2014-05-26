@@ -305,7 +305,7 @@ namespace MultiZonePlayer {
 				return true;
 		}
 		public Boolean IsClosureRelayInNormalState(int id) {
-			SensorDevice dev = m_sensorList.Find(x => x.HasClosure);
+			SensorDevice dev = m_sensorList.Find(x => x.HasClosure && x.Zone.ZoneId==ZoneId);
 			if (dev != null) {
 				bool level = dev.Level[id];
 				return GetClosureIsRelayInNormalState(level);
