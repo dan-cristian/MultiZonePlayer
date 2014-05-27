@@ -1403,11 +1403,13 @@ namespace MultiZonePlayer {
 								}	
 
 							}
-							if (activityWasDetected8)
-								io.clearActivity();
-
+							
 							if (!state.ArraysEqual(initialState)) {
 								io.writeDevice(state);
+							}
+							if (activityWasDetected8) {
+								io.clearActivity();
+								io.readDevice();
 							}
 							break;
 						case SensorDevice.ONEWIRE_IO_NAME:
@@ -1498,12 +1500,15 @@ namespace MultiZonePlayer {
 									}
 								}
 							}
-							if (activityWasDetected2)
-								swd.clearActivity();
 							if (!state.ArraysEqual(initialState)) {
 								swd.writeDevice(state);
 								//swd.readDevice();
 							}
+							if (activityWasDetected2) {
+								swd.clearActivity();
+								swd.readDevice();
+							}
+							
 							break;
 						case SensorDevice.ONEWIRE_SMARTBATDEV_NAME:
 							ADContainer adc = (ADContainer) element;
