@@ -244,7 +244,7 @@ namespace MultiZonePlayer {
 					DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(GlobalParams.datetime));
 					m_zoneDetails.LastAlarmMovementDateTime = eventDateTime;
 
-					if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.IsArmed) {
+					if (m_zoneDetails.IsArmed || (MZPState.Instance.SystemAlarm.IsArmed && m_zoneDetails.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId)) {
 						Alert.CreateAlert(
 							vals.GetValue(GlobalParams.action) + " ZoneEvent " + m_zoneDetails.ZoneName + " is " +
 							vals.GetValue(GlobalParams.status),
