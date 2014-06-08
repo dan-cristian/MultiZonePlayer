@@ -36,6 +36,8 @@ namespace MultiZonePlayer
 			//ScriptingRule rules = new ScriptingRule();
 			//rules.LoadFromIni("Rules");
 			//if (rules.Values != null) { };
+
+			
 		}
 
        // VlcControl vlcControl1;
@@ -258,10 +260,9 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
-			Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
-			Utilities.InternetGetConnectedState(ref istate, 0);
-			MLog.Log(this, "Internet Connection state is " + istate);
+		  MZPState.Instance.SystemAlarm.AreaState = Alarm.EnumAreaState.armed;
 
+		  MZPState.Instance.SystemAlarm.AreaState = Alarm.EnumAreaState.disarmed;
 
       }
 	  

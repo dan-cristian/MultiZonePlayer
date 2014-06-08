@@ -383,8 +383,8 @@ namespace MultiZonePlayer
 							switch (classname) {
 								case "ZoneDetails":
 									ZoneDetails zone = new ZoneDetails();
-									zone.ZoneName = "Default Zone";
-									ZoneDetails.ZoneDetailsList.Add(zone);
+									zone.ZoneName = "Default Zone " + zone.ZoneId;
+									ZoneDetails.Add(zone);
 									break;
 								case "User":
 									User.Add(new User());

@@ -60,6 +60,10 @@ namespace MultiZonePlayer {
 		private SysLog m_syslog;
 		private ScriptingRule m_rule = new ScriptingRule();
 
+		public ScriptingRule ScriptRule {
+			get { return m_rule; }
+		}
+
 		public WDIO WDIO {
 			get { return m_wdio; }
 		}
@@ -378,10 +382,16 @@ namespace MultiZonePlayer {
 			public String EditorSize = "";
 			public String EditorSize1 = "";
 			public String EditorSize2 = "";
-
+			//public String Value = "";
 
 		}
 		public List<EditableField> GetEditableFieldList(String className) {
+			return GetParamFieldList(className, "Edit");
+		}
+		public List<EditableField> GetDisplayFieldList(String className) {
+			return GetParamFieldList(className, "Display");
+		}
+		private List<EditableField> GetParamFieldList(String className, String categoryName) {
 			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
 				System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
 			Object p = handle.Unwrap();
@@ -391,7 +401,7 @@ namespace MultiZonePlayer {
 					(x.GetCustomAttributes(typeof(CategoryAttribute), false) != null) &&
 					(x.GetCustomAttributes(typeof(CategoryAttribute), false).Length > 0)
 					&&
-					(((CategoryAttribute[])x.GetCustomAttributes(typeof(CategoryAttribute), false))[0].Category == "Edit"))
+					(((CategoryAttribute[])x.GetCustomAttributes(typeof(CategoryAttribute), false))[0].Category == categoryName))
 					).ToList();//.Select(y => y.Name).ToList();
 				EditableField newfld;
 				List<EditableField> fldList = new List<EditableField>();

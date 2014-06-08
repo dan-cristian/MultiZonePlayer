@@ -11,7 +11,7 @@ namespace MultiZonePlayer {
 
 	public class ZoneDetails : Singleton{
 		//private static List<ZoneDetails> m_valueList = new List<ZoneDetails>();
-		public int ZoneId = 0;
+		public int ZoneId = -1;
 		[Category("Edit")]
 		public String Description="";
 		//public Boolean IsActive = false;
@@ -186,6 +186,7 @@ namespace MultiZonePlayer {
 			//ClosureOpenCloseRelay = new ClosureOpenCloseRelay(false);
 			if (m_zoneGeneric == null)
 				m_zoneGeneric = new ZoneGeneric(this);
+			ZoneId = base.Id;
 		}
 
 		public ZoneDetails(int p_zoneId, String p_zoneName) {
@@ -1222,7 +1223,9 @@ namespace MultiZonePlayer {
 		/*public static List<ZoneDetails> ValueList {
 			get { return ZoneDetails.ValueList.Select(x=>(ZoneDetails)x).ToList(); }
 		}*/
-
+		public static void Add(ZoneDetails zone) {
+			m_valueList.Add(zone);
+		}
 		public static List<ZoneDetails> ZoneDetailsList {
 			get { return m_valueList.Select(x => (ZoneDetails)x).ToList(); }
 		}

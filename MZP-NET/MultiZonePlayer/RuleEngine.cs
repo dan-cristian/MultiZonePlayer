@@ -1000,7 +1000,8 @@ namespace MultiZonePlayer
 	}
 
 	public class ScriptingRule : PersistentObject {
-		//private static List<RuleEntry> m_ruleList;
+		[Category("Display"), Description("List of triggers available to create rules. List might not be complete.")]
+		public static List<String> TriggerList = new List<string>();
 		[Category("Edit")]
 		public string Name;
 		[Category("Edit"), Description("Name of property that will change and will trigger the event")]
@@ -1081,7 +1082,9 @@ namespace MultiZonePlayer
 					 */
 				}
 			}
-
+			if (TriggerList.Find(x => x == triggerName) == null) {
+				TriggerList.Add(triggerName);
+			}
 
 			List<ScriptingRule> ruleList, filteredList;
 			if (ValueList != null) {
