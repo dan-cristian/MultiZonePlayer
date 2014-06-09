@@ -212,10 +212,11 @@ namespace MultiZonePlayer {
 				case GlobalCommands.cameraevent: //video camera event
 					ZoneOpenActions();
 					m_zoneDetails.MovementAlert = true;
+					m_zoneDetails.IncreaseCameraCountIfArmed();
 					MZPState.Instance.ZoneEvents.AddCamAlert(vals);
 					String camId = vals.GetValue(GlobalParams.oid);
 					string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
-					if (m_zoneDetails.IsArmed || MZPState.Instance.SystemAlarm.IsArmed) {
+					if (m_zoneDetails.IsArmed || (MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId==m_zoneDetails.AlarmAreaId)) {
 						Alert.CreateAlert(message, m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
 					}
 					//MZPState.Instance.LogEvent(MZPEvent.EventSource.Cam, message, 
@@ -239,8 +240,9 @@ namespace MultiZonePlayer {
 				case GlobalCommands.alarmevent: //alarm sensor event
 					ZoneOpenActions();
 					m_zoneDetails.MovementAlert = true;
+					m_zoneDetails.IncreaseAlarmsensorCountIfArmed();
 					String zonestate = vals.GetValue(GlobalParams.status);
-					m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());
+					m_zoneDetails.MovementAlert = zonestate.Equals(Alarm.EnumZoneState.opened.ToString());//sensor is first opened then closed
 					DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(GlobalParams.datetime));
 					m_zoneDetails.LastAlarmMovementDateTime = eventDateTime;
 
@@ -357,13 +359,12 @@ namespace MultiZonePlayer {
 					Boolean isContactMadeLast = m_zoneDetails.IsClosureContactMade;
 					m_zoneDetails.IsClosureContactMade = contactMade;
 					m_zoneDetails.MovementAlert = true;
+					m_zoneDetails.IncreaseClosureCountIfArmed();
 					ZoneOpenActions();
 
 					switch (m_zoneDetails.ClosureType) {
 							case EnumClosureType.PresenceContact:
 							case EnumClosureType.Contact:
-
-
 								string msg = "Closure contact state " + key + " is " + contactMade
 									 + " on zone " + m_zoneDetails.ZoneName;
 								MLog.Log(this, msg);

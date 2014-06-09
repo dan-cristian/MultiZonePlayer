@@ -10,7 +10,7 @@
 <button onclick="window.open('%_source.html?zoneid=%_id', '_self')">Back</button>
 <table>
 <%for;j;0;++;#S.GetEditableFieldList,%_classname.Count#;%>
-<tr><td class="grid">
+<tr><td class="grid" >
 <form id="param" action="?id=%_id&classname=%_classname&index=%_index&source=%_source" method="post">
 <input name="command" type="hidden" value="setfield"/>
 <input id="Submit#S.GetEditableFieldList,%_classname.?,%j.Name#" type="submit" value="Set" />

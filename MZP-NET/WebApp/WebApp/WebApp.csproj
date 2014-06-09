@@ -121,6 +121,7 @@
     <Content Include="m\basic.js" />
     <Content Include="m\sensors.html" />
     <Content Include="m\singleton.html" />
+    <Content Include="m\summary.html" />
     <Content Include="m\test.html" />
     <Content Include="m\JSONViewer.html" />
     <Content Include="m\leap.js" />

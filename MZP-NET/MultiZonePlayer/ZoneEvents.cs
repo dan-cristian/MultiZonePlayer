@@ -128,17 +128,14 @@ namespace MultiZonePlayer
             //MLog.Log(this, "New data received parse completed");
         }
         // action=Restore/New, scope=area/zone, state=Opened/Closed
-        private void NewMotionAction_PARADOX(String date, String time, String action, String scope, String alarmzoneid, String state, int eventsBulkCount)
-        {
-            try
-            {
+        private void NewMotionAction_PARADOX(String date, String time, String action, String scope, String alarmzoneid, String state, int eventsBulkCount){
+            try {
                 DateTime eventDateTime = Convert.ToDateTime(date + " " + time);
 				if (MZPState.Instance.IsWinloadLoading)
 					MZPState.Instance.IsWinloadLoading = false;
 
                 if (DateTime.Now.Subtract(eventDateTime).TotalMinutes < 15)//ignore older events
-                {
-
+				{
                     Alarm.EnumScope sc = (Alarm.EnumScope)Enum.Parse(typeof(Alarm.EnumScope), scope);
                     ValueList vals;
 
@@ -150,53 +147,37 @@ namespace MultiZonePlayer
                     {
                         case Alarm.EnumScope.zone:
                             int zoneId = MZPState.Instance.GetZoneIdByAlarmZoneId(Convert.ToInt16(alarmzoneid));
-                            if (zoneId != -1)
-                            {
-                                vals = new ValueList(GlobalParams.command, GlobalCommands.alarmevent.ToString(), CommandSources.events);
-                                vals.Add(GlobalParams.zoneid, zoneId.ToString());
-                                vals.Add(GlobalParams.datetime, date + " " + time);
-                                vals.Add(GlobalParams.action, action);
-                                vals.Add(GlobalParams.status, state);
-                                vals.Add(GlobalParams.scope, scope);
-                                vals.Add(GlobalParams.alertsource, IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[0]);
-                                API.DoCommand(vals);
+							if (zoneId != -1) {
+								vals = new ValueList(GlobalParams.command, GlobalCommands.alarmevent.ToString(), CommandSources.events);
+								vals.Add(GlobalParams.zoneid, zoneId.ToString());
+								vals.Add(GlobalParams.datetime, date + " " + time);
+								vals.Add(GlobalParams.action, action);
+								vals.Add(GlobalParams.status, state);
+								vals.Add(GlobalParams.scope, scope);
+								vals.Add(GlobalParams.alertsource, IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[0]);
+								API.DoCommand(vals);
 
-                                //if (eventsBulkCount < 10)
-                                //    MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " ZoneEvent " + MZPState.Instance.GetZoneById(zoneId).ZoneName + " is " + state,
-                                //        MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative);
-                            }
-
+								//if (eventsBulkCount < 10)
+								//    MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " ZoneEvent " + MZPState.Instance.GetZoneById(zoneId).ZoneName + " is " + state,
+								//        MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative);
+							}
+							else Alert.CreateAlert("Unknown zone for alarm event action=" + action + " scope=" + scope + " alarmzone="+alarmzoneid, true);
                             break;
                         case Alarm.EnumScope.area:
 							Alarm.EnumAreaState areastate;
 							if (!Enum.TryParse<Alarm.EnumAreaState>(state, out areastate))
 							{
-								MLog.Log(this, "Unknown area state "+state);
+								Alert.CreateAlert("Unknown area state "+state, true);
 								areastate = Alarm.EnumAreaState.UNKNOWN;
 							}
-                            //areastate = (Alarm.EnumAreaState)Enum.Parse(typeof(Alarm.EnumAreaState), state);
-                            MZPState.Instance.SystemAlarm.AreaState = areastate;
-                            MZPState.Instance.SystemAlarm.LastAreaStateChange = eventDateTime;
-							/*switch (areastate)
-							{
-								case Alarm.EnumAreaState.armed:
-									MZPState.Instance.SystemAlarm.IsArmed = true;
-									break;
-								case Alarm.EnumAreaState.entrydelayfinished:
-									MZPState.Instance.SystemAlarm.IsArmed = false;
-									break;
-							}*/
-							switch (areastate)
-							{
-								case Alarm.EnumAreaState.alarm:
-								case Alarm.EnumAreaState.sirenon:
-									Alert.CreateAlert(action + " AreaEvent " + areastate.ToString() + " is " + state, null, false, null,
-										Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
-									break;
-							}
+							 vals = new ValueList(GlobalParams.command, GlobalCommands.alarmareaevent.ToString(), CommandSources.events);
+                                vals.Add(GlobalParams.datetime, date + " " + time);
+                                vals.Add(GlobalParams.areastate, areastate.ToString());
+								vals.Add(GlobalParams.action, action);
+								vals.Add(GlobalParams.status, state);
+                                vals.Add(GlobalParams.alertsource, IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[0]);
+                                API.DoCommand(vals);
 							
-                            //MZPState.Instance.LogEvent(eventDateTime, MZPEvent.EventSource.Alarm, action + " AreaEvent " + areastate.ToString() + " is " + state, 
-                            //    MZPEvent.EventType.Security, MZPEvent.EventImportance.Informative, null);
                             break;
                         case Alarm.EnumScope.trouble:
 							Alert.CreateAlert(action + " TroubleEvent " + state, null, false, null,
@@ -205,7 +186,7 @@ namespace MultiZonePlayer
                             //    MZPEvent.EventImportance.Informative, null);
                             break;
                         default:
-                            MLog.Log(this, "unknown alarm scope " + scope + " action=" + action + " state=" + state);
+                            Alert.CreateAlert("unknown alarm scope " + scope + " action=" + action + " state=" + state, true);
                             break;
                     }
                 }

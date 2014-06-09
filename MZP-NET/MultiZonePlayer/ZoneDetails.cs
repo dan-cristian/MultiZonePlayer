@@ -161,6 +161,8 @@ namespace MultiZonePlayer {
 		public DateTime LastLocalCommandDateTime = DateTime.MinValue;
 		public DateTime LastClosureEventDateTime = DateTime.MinValue;
 		private ZoneNotifyState m_notifyZoneEventTriggered = ZoneNotifyState.Closed;
+		private int m_closureCountSinceArmed = 0, m_alarmsensorCountSinceArmed = 0, m_cameraCountSinceArmed = 0;
+
 		
 		public DateTime LastNotifyZoneEventTriggered = DateTime.MinValue;
 
@@ -456,6 +458,34 @@ namespace MultiZonePlayer {
 		}
 		public Boolean HasCamera {
 			get { return CameraId != ""; }
+		}
+		public int CameraCountSinceArmed {
+			get { return m_cameraCountSinceArmed; }
+		}
+
+		public int AlarmsensorCountSinceArmed {
+			get { return m_alarmsensorCountSinceArmed; }
+		}
+
+		public int ClosureCountSinceArmed {
+			get { return m_closureCountSinceArmed; }
+		}
+		public void IncreaseCameraCountIfArmed() {
+			if (MZPState.Instance.SystemAlarm.IsArmed)
+				m_cameraCountSinceArmed++;
+		}
+		public void IncreaseAlarmsensorCountIfArmed() {
+			if (MZPState.Instance.SystemAlarm.IsArmed)
+				m_alarmsensorCountSinceArmed++;
+		}
+		public void IncreaseClosureCountIfArmed() {
+			if (MZPState.Instance.SystemAlarm.IsArmed)
+				m_closureCountSinceArmed++;
+		}
+		public void AreaArmedActions() {
+			m_closureCountSinceArmed = 0;
+			m_cameraCountSinceArmed = 0;
+			m_alarmsensorCountSinceArmed = 0;
 		}
 		public Boolean MovementAlert {
 			get { return m_movementAlert; }
@@ -1286,6 +1316,14 @@ namespace MultiZonePlayer {
 			return ZoneDetailsList.Find(x => x.RequireHeat && x.ZoneId!=exceptedZoneId) != null;
 		}
 
+		public static List<ZoneDetails> ZoneWithLockContact_All {
+			get {
+				return ZoneDetailsList.FindAll(x => x.HasClosures && x.ClosureType==EnumClosureType.LockZoneContact)
+					.OrderByDescending(x => x.LastClosureEventDateTime).ToList();
+			}
+		}
+
+
 		public static void ProcessAllZones(bool fastActions, bool slowActions) {
 			foreach (ZoneDetails zone in ZoneDetailsList) {
 				if (fastActions) {
@@ -1346,7 +1384,8 @@ namespace MultiZonePlayer {
 		Contact = 0,
 		Pulse = 1,
 		Counter = 2,
-		PresenceContact = 3
+		PresenceContact = 3,
+		LockZoneContact = 4
 	}
 	public enum EnumUtilityType {
 		Undefined = -1,

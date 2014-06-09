@@ -260,10 +260,9 @@ namespace MultiZonePlayer
 
       private void button6_Click(object sender, EventArgs e)
       {
-		  MZPState.Instance.SystemAlarm.AreaState = Alarm.EnumAreaState.armed;
-
 		  MZPState.Instance.SystemAlarm.AreaState = Alarm.EnumAreaState.disarmed;
-
+		  MZPState.Instance.SystemAlarm.AreaState = Alarm.EnumAreaState.armed;
+		  UserPresence.AddPresence(User.GetUser(1), UserPresence.PresenceType.Wifi, DateTime.Now, "test location");
       }
 	  
       private void button7_Click(object sender, EventArgs e)

@@ -197,7 +197,7 @@ namespace MultiZonePlayer
                         MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
 						int loop = 0;
 						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50)
-						{
+						{//usefull for HDMI devices
 							MLog.Log(this, "Waiting, device not yet available for zone " + m_zoneDetails.ZoneName);
 							System.Threading.Thread.Sleep(500);
 							loop++;
@@ -220,7 +220,7 @@ namespace MultiZonePlayer
                     else
                     {
                         MLog.Log(this, "At Play, File does not exist, name=" + musicFile);
-                        Next();
+                        //Next();
                     }
                 }
                 else

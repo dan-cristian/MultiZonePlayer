@@ -134,7 +134,7 @@ namespace MultiZonePlayer
                     if (!CommandSyntax.Validate(vals))
                     {
 						cmdresult.ErrorMessage = "ERROR, potential invalid command";
-                        MLog.Log(null, cmdresult.ErrorMessage);
+                        MLog.Log(cmdresult.ErrorMessage);
                     }
 					cmdresult.Result = ResultEnum.OK;
                     //global commands are processed here, zone based commands are delegated to m_valueList
@@ -207,6 +207,27 @@ namespace MultiZonePlayer
                             cmdresult = MZPState.Instance.ZoneEvents.SendCommand_PARADOX(ZoneEvents.EnumParadoxCommands.Stay, vals.GetValue(GlobalParams.areaid));
                             //result = JsonResult(cmdres.Result, cmdres.ErrorMessage, null);
                             break;
+						case GlobalCommands.alarmareaevent:
+							string action = vals.GetValue(GlobalParams.action);
+							string areastate = vals.GetValue(GlobalParams.areastate);
+							string state = vals.GetValue(GlobalParams.status);
+							DateTime eventDateTime = Convert.ToDateTime(vals.GetValue(GlobalParams.datetime)); 
+							Alarm.EnumAreaState alarmstate = (Alarm.EnumAreaState)Enum.Parse(typeof(Alarm.EnumAreaState), areastate);
+							MZPState.Instance.SystemAlarm.AreaState = alarmstate;
+							MZPState.Instance.SystemAlarm.LastAreaStateChange = eventDateTime;
+
+							switch (alarmstate) {
+								case Alarm.EnumAreaState.alarm:
+								case Alarm.EnumAreaState.sirenon:
+									Alert.CreateAlert(action + " AreaEvent " + areastate.ToString() + " is " + state, null, false, null,
+										Alert.NotificationFlags.NotifyUserAfterXSeconds, 1);
+									break;
+							}
+							if (alarmstate == Alarm.EnumAreaState.armed) {
+								List<ZoneDetails> zones = ZoneDetails.ZoneDetailsList.FindAll(x => x.AlarmAreaId == MZPState.Instance.SystemAlarm.AreaId);
+								foreach (ZoneDetails zone in zones) { zone.AreaArmedActions(); }
+							}
+							break;
                         case GlobalCommands.restartispy:
                             Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
 							MZPState.RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], 
@@ -221,7 +242,6 @@ namespace MultiZonePlayer
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
                         case GlobalCommands.setnotify:
-                            String action;
                             action = vals.GetValue(GlobalParams.action);
                             switch (action){
                                 case "enablegtalk":

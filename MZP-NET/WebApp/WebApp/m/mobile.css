@@ -30,40 +30,32 @@ box-shadow: 0 0 4px rgba(0,0,0, .75);
 /*style the text*/
 color:#f3f3f3;
 font-size:1em;
+background-repeat:no-repeat;background-position:left;
 }
-/***NOW STYLE THE BUTTON'S HOVER AND FOCUS STATES***/
-/*button:hover, button:focus, button.PressedTrue{*/
-/*make the background a little darker*/
-/*background-color :#399630;*/ 
-/*reduce the drop shadow size to give a pushed button effect*/
-/*-webkit-box-shadow: 0 0 1px rgba(0,0,0, .75);
--moz-box-shadow: 0 0 1px rgba(0,0,0, .75);
-box-shadow: 0 0 1px rgba(0,0,0, .75);
-}*/
 button.Small{min-width:20px;}
 button.PressedTrue,button.Pressedtrue{background-color: Red;}
 button.VisibleTrue {display:inline-block;}
 button.VisibleFalse {display:none;}
-button.ActionTrue,button.Actiontrue {background-image:url('wheel-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.MoveTrue {background-image:url('walk-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.ActiveFalse {background-image:url('mic.png');background-repeat:no-repeat;background-position:right;}
+button.ActionTrue,button.Actiontrue {background-image:url('img/wheel-icon.png');background-color:Orange;}
+button.MoveTrue {background-image:url('img/walk-icon.png');background-color:Orange;}
+button.ActiveFalse {background-image:url('img/mic.png');background-position:right;}
 button.Caption {background-color:transparent;color:Black;min-width:50px;}
-button.Videoxbmc {background-image:url('Bande-video-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.Musicmusic {background-image:url('Music-Library-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.Radioradio {background-image:url('radio-metal-2-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.TVtv {background-image:url('television-04-icon.png');background-color:Orange;background-repeat:no-repeat;background-position:left}
-button.Sensor {min-width:80px;text-align:right;padding:5px 5px;background-color:antiquewhite;color:black;background-repeat:no-repeat;background-position:2px 21px}
-button.Temperature {background-image:url('temperature.png');}
-button.TemperatureHumidity {background-image:url('bubbles-icon.png'),url('thermometer-icon-tiny.png');background-position:2px 24px,26px 32px;}
-button.TemperatureVoltage {background-image:url('light-icon.png'),url('thermometer-icon-tiny.png');background-position:0px 24px,32px 32px;}
-button.Closure {background-image:url('plug-icon.png');background-position:0px 18px;}
-button.Counter {min-width:80px;background-image:url('Numbers-icon.png');}
-button.Voltage {background-image:url('light-icon.png');}
-button.ClosedTrue {background-image:url('door-closed-icon.png');background-repeat:no-repeat;background-position:left}
-button.ClosedFalse {background-image:url('door-open-icon.png');background-repeat:no-repeat;background-position:left}
+button.Videoxbmc {background-image:url('img/Bande-video-icon.png');background-color:Orange;}
+button.Musicmusic {background-image:url('img/Music-Library-icon.png');background-color:Orange;}
+button.Radioradio {background-image:url('img/radio-metal-2-icon.png');background-color:Orange;}
+button.TVtv {background-image:url('img/television-04-icon.png');background-color:Orange;}
+button.Sensor {min-width:80px;text-align:right;padding:5px 5px;background-color:antiquewhite;color:black;background-position:2px 21px}
+button.Temperature {background-image:url('img/temperature.png');}
+button.TemperatureHumidity {background-image:url('img/bubbles-icon.png'),url('img/thermometer-icon-tiny.png');background-position:2px 24px,26px 32px;}
+button.TemperatureVoltage {background-image:url('img/light-icon.png'),url('img/thermometer-icon-tiny.png');background-position:0px 24px,32px 32px;}
+button.Closure {background-image:url('img/plug-icon.png');background-position:0px 18px;}
+button.Counter {min-width:80px;background-image:url('img/Numbers-icon.png');}
+button.Voltage {background-image:url('img/light-icon.png');}
+button.ClosedTrue {background-image:url('img/door-closed-icon.png');}
+button.ClosedFalse {background-image:url('img/door-open-icon.png');}
 meter.SmallVertical {width:10px;height:8px;transform: rotate(180deg);}
 span.Title {
-	background-color:limegreen;color:white;border:1px solid #33842a;/*give the button curved corners, alter the size as required*/
+	background-color:limegreen;color:white;border:1px solid #33842a;
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
 	border-radius: 10px;
@@ -71,3 +63,12 @@ span.Title {
 	-webkit-box-shadow: 0 0 4px rgba(0,0,0, .75);
 	-moz-box-shadow: 0 0 4px rgba(0,0,0, .75);
 	box-shadow: 0 0 4px rgba(0,0,0, .75);}
+button.User {
+	background-color:transparent;color:black;min-width:90px;text-align:right;border:none;
+	background-image:url('img/User-blue-icon.png');
+}
+button.Clean{background-color:transparent;color:black;min-width:90px;min-height:40px;text-align:right;border:none;padding:4px 15px;}
+button.AlarmTrue{background-image:url('img/Lock-Lock-icon.png');background-color:green}
+button.AlarmFalse{background-image:url('img/Lock-Unlock-icon.png');background-color:yellow}
+button.ContactLockTrue{background-image:url('img/Lock-Lock-icon-small.png');background-color:limegreen}
+button.ContactLockFalse{background-image:url('img/Lock-Unlock-icon-small.png');background-color:yellowgreen}

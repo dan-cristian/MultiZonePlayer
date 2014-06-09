@@ -1,0 +1,47 @@
+﻿<!doctype html>
+<html lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="robots" content="index, follow, noodp" />
+<meta name="HandheldFriendly" content="True" />
+<!--meta name="viewport" content="width=360, user-scalable=no" /-->
+<meta name="viewport" content="width=device-width, initial-scale=0.95, user-scalable=yes">
+<title>Start</title>
+<link href="mobile.css" rel="stylesheet" type="text/css" />
+<script type="text/JavaScript" src="basic.js"></script> 
+<script type="text/JavaScript">
+    var serverDate = new Date("#S.ServerDateTime#");
+    var auto_refresh_time = setInterval(
+		function () {
+		    showTimeDiff("Time");
+		}, 5000);
+    function initialise() {
+        refresh(60000);
+    }
+    function showTimeDiff(targetDiv) {
+        var minElapsed = DateDiff.inMinutes(new Date(), serverDate);
+        showText(targetDiv, minElapsed);
+        if (minElapsed <= 5)
+            document.getElementById(targetDiv).style.backgroundColor = "Green";
+        else
+            document.getElementById(targetDiv).style.backgroundColor = "Red";
+    }
+</script>
+</head>
+<body onload="javascript:initialise()" onerror="refresh(60000)" style="text-align:left">
+<div style="position:relative;width:100px" id="Time"></div><br />
+<%for;i1;0;++;#S.UserIsNearList.Count#;%>
+<button class="Clean User">#S.UserIsNearList.?,%i1.Name#
+<br /><br /><span style="font-size:xx-small">#S.UserIsNearList.?,%i1.NearbyPresentAgeAsTimeSpan#</span></button>
+<%%>
+<button class="Clean Alarm#SystemAlarm.IsArmed#">#SystemAlarm.AreaState#
+    <span style="font-size:xx-small"><br /><br />#SystemAlarm.LastAreaStateChangeAge#</span></button>
+<%if;#SystemAlarm.IsArmed#%>
+    <~for;i2;0;++;#Z.ZoneWithLockContact_All.Count#;~>
+	<button class="Clean ContactLock#Z.ZoneWithLockContact_All.?,%i2.IsClosureArmed#">#Z.ZoneWithLockContact_All.?,%i2.ZoneName#<br /><br />
+    <span style="font-size:xx-small">
+        #Z.ZoneWithLockContact_All.?,%i2.ClosureCountSinceArmed#/#Z.ZoneWithLockContact_All.?,%i2.AlarmsensorCountSinceArmed#/#Z.ZoneWithLockContact_All.?,%i2.CameraCountSinceArmed#
+        </span></button>
+	<~~>
+<%%>
+</body>
+</html>

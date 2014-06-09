@@ -344,6 +344,11 @@ namespace MultiZonePlayer {
 			get { return m_sysState; }
 		}
 
+		public static String ServerDateTime {
+			get {
+				return DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT);
+			}
+		}
 		public ZoneDetails ZoneDetails {
 			get { return MultiZonePlayer.ZoneDetails.StaticInstance; } //.ValueList.Select(x => (ZoneDetails)x).ToList(); }
 		}
@@ -436,7 +441,7 @@ namespace MultiZonePlayer {
 				return null;
 			}
 		}
-
+		/*
 		public List<String> GetFieldList(String className) {
 			System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
 				System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + className);
@@ -449,7 +454,15 @@ namespace MultiZonePlayer {
 				return null;
 			}
 		}
-
+		public String ListClassMembers(String className, String separator) {
+			List<String> members;
+			String result = "";
+			members = GetFieldList(className);
+			foreach (String member in members) {
+				result += member + separator;
+			}
+			return result;
+		}*/
 		public ZoneDetails ZoneWithType(ZoneType type, int index) {
 			List<ZoneDetails> zones;
 			zones = ZoneDetails.ZoneDetailsList.FindAll(x => x.Type == type);

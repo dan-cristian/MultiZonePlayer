@@ -276,8 +276,7 @@ namespace MultiZonePlayer
 				}
 				
 				value = ReflectLine(instance, complexLine);
-				if (value == null)
-				{
+				if (value == null){
 					//don't do anything as expressions with variables should not be altered
 				}
 				else
@@ -286,12 +285,18 @@ namespace MultiZonePlayer
 						fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 						param.UseExtensions = false;
 						switch (value.GetType().Name) { 
-						case "List`1":
-							res = fastJSON.JSON.Instance.ToJSON(value, param);
-							break;
-						default:
-							res = value.ToString();
-							break;
+							case "Int32":
+							case "String":
+							case "Boolean":
+								res = value.ToString();
+								break;
+							default:
+								if (value.GetType().BaseType.Name=="Enum")
+									res = value.ToString();
+								else {
+									res = fastJSON.JSON.Instance.ToJSON(value, param);
+								}
+								break;
 						}
 						result = result.Replace("#" + line + "#", res);
 					}
@@ -307,8 +312,7 @@ namespace MultiZonePlayer
 			string runMethod;
 			methodAtoms = atom.Split(new String[] { "." }, StringSplitOptions.RemoveEmptyEntries);
 			value = instance;
-			foreach (String method in methodAtoms)
-			{
+			foreach (String method in methodAtoms){
 				paramAtoms = method.Split(new String[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 				if (paramAtoms.Length > 1)
 				{//first param will be method name
@@ -317,8 +321,7 @@ namespace MultiZonePlayer
 						parameters[i] = paramAtoms[i + 1];
 					runMethod = paramAtoms[0];
 				}
-				else
-				{//only method name exist
+				else {//only method name exist
 					parameters = null;
 					runMethod = method;
 				}
@@ -332,8 +335,7 @@ namespace MultiZonePlayer
 			//	return null;
 		}
 
-		public static Object GetPropertyField(object instance, string propName, params object[] parameters)
-		{
+		public static Object GetPropertyField(object instance, string propName, params object[] parameters){
 			PropertyInfo propInfo;
 			FieldInfo fieldInfo;
 			MethodInfo methInfo;
@@ -348,18 +350,15 @@ namespace MultiZonePlayer
 				//garbage, exit
 				return null;
 
-			try
-			{
+			try {
 				propInfo = Type.GetType(instance.GetType().FullName).GetProperty(propName);
-				if (propInfo != null || propName=="?")
-				{
+				if (propInfo != null || propName=="?"){
 					if (propInfo != null)
 						value = propInfo.GetValue(instance, null);
 					else
 						value = instance;
 
-					if (parameters != null && parameters.Length > 0)
-					{
+					if (parameters != null && parameters.Length > 0){
 						//MLog.Log(null, "Warning, Property called with parameters");
 						if (value.GetType().Name == "List`1")
 						{//WARNING - Order Long class name first - contains is not failproof
@@ -415,8 +414,7 @@ namespace MultiZonePlayer
 										value = new Exception(exception);
 									}
 						}
-						else
-						{
+						else{
 							exception = "Unknown main type for property index " + Clean(propName) + " type=" + value.ToString();
 							MLog.Log(exception);
 							value = new Exception(exception);
@@ -483,8 +481,7 @@ namespace MultiZonePlayer
 					}
 				}
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex){
 				exception = "Error reflecting on prop="+Clean(propName);
 				MLog.Log(ex, exception);
 				value = new Exception(exception);
@@ -493,8 +490,7 @@ namespace MultiZonePlayer
 			return value;
 		}
 
-		private static string GetMethodNoFields(object instance, string methodName)
-		{
+		private static string GetMethodNoFields(object instance, string methodName){
 			string value = null, method;
 			String[] parameters;
 			MethodInfo methInfo;
@@ -544,7 +540,6 @@ namespace MultiZonePlayer
 
 		public static String ListTypeValues(Type type, String separator) {
 			String res = "";
-
 			try {
 				switch (type.BaseType.Name) {
 					case "Enum":
@@ -561,9 +556,10 @@ namespace MultiZonePlayer
 			catch (Exception e) {
 				throw e;
 			}
-
 			return res;
 		}
+
+		
 	}
 	/*
 	public static class Rules_OLD
@@ -808,6 +804,9 @@ namespace MultiZonePlayer
 			get { return MZPState.Instance; }
 		}
 
+		public ZoneDetails Z {
+			get { return ZoneDetails.StaticInstance; }
+		}
 		public ReflectionInterface R
 		{
 			get { return this; }

@@ -46,3 +46,16 @@ function showDiv(targetDiv) {
 function hideDiv(targetDiv) {
 	document.getElementById(targetDiv).style.display = "none";
 }
+
+var DateDiff = {
+    inDays: function (d1, d2) {
+        var t2 = d2.getTime();
+        var t1 = d1.getTime();
+        return parseInt((t1 - t2) / (24 * 3600 * 1000));
+    },
+    inMinutes: function (d1, d2) {
+    var t2 = d2.getTime();
+    var t1 = d1.getTime();
+    return parseInt((t1 - t2) / (60 * 60 * 1000));
+}
+}

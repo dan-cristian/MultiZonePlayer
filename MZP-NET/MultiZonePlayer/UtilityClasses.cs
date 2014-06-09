@@ -113,6 +113,7 @@ namespace MultiZonePlayer
 		searchmediaitem,
 		musicalarm,
 		alarmevent,
+		alarmareaevent,
 		alarmarm,
 		alarmdisarm,
 		alarmkeypadbeep,
@@ -193,6 +194,7 @@ namespace MultiZonePlayer
 		scope,
 		status,
 		areaid,
+		areastate,
 		weekday,
 		cmdsource,
 		contenttype,
@@ -1386,6 +1388,9 @@ namespace MultiZonePlayer
 			}
 		}
 
+		public String LastAreaStateChangeAge {
+			get { return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(LastAreaStateChange)); }
+		}
     }
 	public class CamAlert
 	{
