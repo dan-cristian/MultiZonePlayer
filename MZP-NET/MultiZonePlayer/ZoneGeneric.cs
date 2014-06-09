@@ -392,7 +392,7 @@ namespace MultiZonePlayer {
 					if (user != null) {
 						String macro = user.GetMacroNameByPattern(m_closurePatern, m_zoneDetails.ZoneId);
 						MLog.Log(this, "User " + user.Name + " executed macro from closure " + macro);
-						MZPState.Instance.ExecuteMacro(macro);
+						MacroEntry.ExecuteMacro(macro);
 					}
 					if (m_zoneDetails.HasCamera) {
 						SaveCurrentPicture(EventSource.Closure);

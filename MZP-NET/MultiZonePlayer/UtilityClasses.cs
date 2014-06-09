@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using fastJSON;
 using System.Diagnostics;
+using System.Threading;
 
 namespace MultiZonePlayer
 {
@@ -621,24 +622,35 @@ namespace MultiZonePlayer
 		public MacroShortcut() { }
 	}
 
-	public class MacroEntry
-	{
-		public int Id;
+	public class MacroEntry:PersistentObject{
+		//public int Id;
+		[Category("Edit")]
 		public String Name;
+		[Category("Edit"), Description("List of months when macro executes, e.g. JunJulAug, or " + Constants.ALL + ", or empty")]
 		public String RepeatMonth;
+		[Category("Edit"), Description("e.g. MoTuWeThFr, or "+Constants.ALL+", or empty for none")]
 		public String RepeatWeekDay;
+		[Category("Edit"), Description("HH:mm format")]
 		public String RepeatTime;
+		[Category("Edit"), Editor("textarea", "60,5"), Description("")]
 		public List<MacroShortcut> ShortcutList;
+		[Category("Edit"), Editor("textarea", "60,5")]
 		public List<MacroEntryCommand> CommandList;
+		[Category("Edit"), Editor("textarea", "60,5")]
 		public List<String> AllowUserList;
-		public DateTime ExecutedDateTime;
-		public MacroEntry()
-		{}
+		public DateTime ExecutedDateTime = DateTime.MinValue;
+		//public MacroEntry()
+		//{}
+		public static new List<MacroEntry> ValueList {
+			get {
+				if (GetValueList(typeof(MacroEntry)) != null)
+					return GetValueList(typeof(MacroEntry)).Select(x => (MacroEntry)x).ToList();
+				else return null;
+			}
+		}
 
-		public String Description
-		{
-			get
-			{
+		public String Description{
+			get{
 				if (ShortcutList != null && ShortcutList.Count > 0)
 					return ShortcutList[0].Shortcut;
 				else
@@ -648,10 +660,8 @@ namespace MultiZonePlayer
 						return Id.ToString();
 			}
 		}
-		public String Details
-		{
-			get
-			{
+		public String Details{
+			get{
 				String result="";
 				if (RepeatMonth != "" || RepeatWeekDay != "" || RepeatTime != "")
 					result = "Schedule Month="+RepeatMonth + " WeekDay="+RepeatWeekDay+ " Time="+RepeatTime;
@@ -659,7 +669,56 @@ namespace MultiZonePlayer
 				return result;
 			}
 		}
-		public static void SaveToIni(List<MacroEntry> list)
+		public static int GetMacroIdByShortcut(string shortcut, string deviceName) {
+			if (shortcut != null) {
+				shortcut = shortcut.ToLower();
+				deviceName = deviceName.ToLower();
+				MacroEntry entry = ValueList.Find(x =>
+					x.ShortcutList != null
+					&& x.ShortcutList.Find(y => y.Shortcut == shortcut) != null
+					&& (x.ShortcutList.Find(y => deviceName.Contains(y.DeviceName)) != null));
+				if (entry != null) {
+					return entry.Id;
+				}
+			}
+			return -1;
+		}
+
+		public static CommandResult ExecuteMacro(string macroName) {
+			MacroEntry entry = ValueList.Find(x => x.Name == macroName);
+			return ExecuteMacro(entry.Id);
+		}
+
+		public static CommandResult ExecuteMacro(int macroId) {
+			CommandResult cmdresult = new CommandResult();
+			cmdresult.Result = ResultEnum.ERR;
+			MacroEntry entry = ValueList.Find(x => x.Id == macroId);
+			if (entry != null) {
+				cmdresult.ErrorMessage = "macro found but empty command list";
+				foreach (MacroEntryCommand cmd in entry.CommandList) {
+					MLog.Log("Executing macro event " + cmd.Command + " in zone=" + cmd.ZoneName);
+					ValueList val = new ValueList(GlobalParams.command,
+						cmd.Command.ToString(), CommandSources.system);
+					ZoneDetails zone = MZPState.Instance.GetZoneIdByContainsName(cmd.ZoneName);
+					if (zone != null) {
+						val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
+					}
+					//parameters
+					MacroEntry.AddParams(cmd.ParameterValueList, ref val);
+					cmdresult = API.DoCommand(val);
+					if (cmd.DelayMiliSec != 0) {
+						Thread.Sleep(cmd.DelayMiliSec);
+					}
+				}
+			}
+			else {
+				cmdresult.ErrorMessage = "Macro not found id=" + macroId;
+				MLog.Log(cmdresult.ErrorMessage);
+			}
+			return cmdresult;
+		}
+
+		/*public static void SaveToIni(List<MacroEntry> list)
 		{
 			String json;
 			int line = 0;
@@ -670,8 +729,9 @@ namespace MultiZonePlayer
 				Utilities.WritePrivateProfileString(IniFile.SCHEDULER_SECTION_MAIN, line.ToString(),
 					json, IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 			}
-		}
+		}*/
 
+		/*
 		public static List<MacroEntry> LoadFromIni()
 		{
 			String json;
@@ -695,7 +755,7 @@ namespace MultiZonePlayer
 			MLog.Log(null, "Loaded " + (line-1) +" scheduler events");
 			return list;
 		}
-
+		*/
 		public static void AddParams(String parameters, ref ValueList vals)
 		{
 			if (parameters != null && parameters != "")
@@ -757,6 +817,7 @@ namespace MultiZonePlayer
 		public const string EVENT_TYPE_CAMALERT = "cam", EVENT_TYPE_SENSORALERT = "sensor", EVENT_TYPE_CLOSURE = "closure", 
 			EVENT_TYPE_ELECTRICITY = "Electricity", EVENT_TYPE_WATER = "Water", EVENT_TYPE_GAS = "Gas" ;
 		public const int NOT_SET = -1;
+		public const string ALL = "ALL";
 	}
 
 

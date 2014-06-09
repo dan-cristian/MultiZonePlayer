@@ -281,8 +281,20 @@ namespace MultiZonePlayer
 					//don't do anything as expressions with variables should not be altered
 				}
 				else
-					if (value.GetType() != typeof(Exception))
-						result = result.Replace("#" + line + "#", value.ToString());
+					if (value.GetType() != typeof(Exception)) {
+						string res="";
+						fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+						param.UseExtensions = false;
+						switch (value.GetType().Name) { 
+						case "List`1":
+							res = fastJSON.JSON.Instance.ToJSON(value, param);
+							break;
+						default:
+							res = value.ToString();
+							break;
+						}
+						result = result.Replace("#" + line + "#", res);
+					}
 			}
 		}
 
@@ -327,8 +339,13 @@ namespace MultiZonePlayer
 			MethodInfo methInfo;
 			object value;
 			Boolean varFound = false;
-
+			String exception;
 			if (instance == null)
+				return null;
+			if (propName.Trim()=="" || propName.Contains('/') || propName.Contains('\\') || propName.Contains(',') || propName.Contains(';') 
+				|| propName.Contains("!") || propName.Contains('=') || propName.Contains('\r') || propName.Contains('\n')
+				|| propName.Contains('(') || propName.Contains("'"))
+				//garbage, exit
 				return null;
 
 			try
@@ -388,16 +405,21 @@ namespace MultiZonePlayer
 																				if (value.ToString().Contains(typeof(ScriptingRule).ToString()))
 																					value = ((List<ScriptingRule>)value)[Convert.ToInt32(parameters[0])];
 																				else
+																					if (value.ToString().Contains(typeof(MacroEntry).ToString()))
+																						value = ((List<MacroEntry>)value)[Convert.ToInt32(parameters[0])];
+																					else
 									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
-										MLog.Log(null, "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString());
-										value = new Exception();
+										exception = "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString();
+										MLog.Log(exception);
+										value = new Exception(exception);
 									}
 						}
 						else
 						{
-							MLog.Log(null, "Unknown main type for property index " + Clean(propName) + " type=" + value.ToString());
-							value = new Exception();
+							exception = "Unknown main type for property index " + Clean(propName) + " type=" + value.ToString();
+							MLog.Log(exception);
+							value = new Exception(exception);
 						}
 					}
 					
@@ -416,8 +438,7 @@ namespace MultiZonePlayer
 							int parsLen = parameters != null ? parameters.Length : 0;
 
 							if (methInfo.GetParameters().Length == parsLen){
-								for (int p = 0; p < parsLen; p++)//setting param types
-								{
+								for (int p = 0; p < parsLen; p++) {//setting param types
 									try{
 										Type paramType = methInfo.GetParameters()[p].ParameterType;
 										if (parameters[p].ToString().StartsWith("%"))
@@ -429,8 +450,9 @@ namespace MultiZonePlayer
 											parameters[p] = Convert.ChangeType(parameters[p], paramType);
 									}
 									catch (Exception e){
-										MLog.Log(null, "Unable to cast prop=" + Clean(propName) + " param="+parameters[p] + " err="+e.Message);
-										value = new Exception();
+										exception = "Unable to cast prop=" + Clean(propName) + " param=" + parameters[p] + " err=" + e.Message;
+										MLog.Log(exception);
+										value = new Exception(exception);
 										break;
 									}
 								}
@@ -438,8 +460,9 @@ namespace MultiZonePlayer
 									value = methInfo.Invoke(instance, parameters);
 								}
 								catch (Exception ex){
-									MLog.Log(ex, "Err invoking method " + Clean(propName));
-									value = new Exception();
+									exception = "Err invoking method " + Clean(propName);
+									MLog.Log(ex, exception);
+									value = new Exception(exception);
 								}
 								if (value == null && !varFound){
 									MLog.Log(null, "Warning, null result returned on prop=" + Clean(propName));
@@ -454,7 +477,6 @@ namespace MultiZonePlayer
 						}
 						else{
 							//Must be garbage if reaches this point, cannot be reflected
-
 							value = new Exception("unknown method info type for prop=" + Clean(propName)); 
 							//MLog.Log(null, );
 						}
@@ -463,8 +485,9 @@ namespace MultiZonePlayer
 			}
 			catch (Exception ex)
 			{
-				MLog.Log(ex, "Error reflecting on prop="+Clean(propName));
-				value = new Exception();
+				exception = "Error reflecting on prop="+Clean(propName);
+				MLog.Log(ex, exception);
+				value = new Exception(exception);
 			}
 
 			return value;
@@ -500,18 +523,18 @@ namespace MultiZonePlayer
 				object obj;
 				paramType = fieldInfo.FieldType;
 				switch (paramType.BaseType.Name) {
-					case "List`1":
-						obj = "NONE";
-						MLog.Log(null, "Unsuported set operation");
-						break;
 					case "Enum":
 						obj = Enum.Parse(paramType, value);
 						break;
 					default:
-						obj = Convert.ChangeType(value, paramType);
+						try {
+							obj = Convert.ChangeType(value, paramType);
+						}
+						catch (Exception) {
+							obj = fastJSON.JSON.Instance.ToObject(value, paramType);
+						}
 						break;
 				}
-				
 				fieldInfo.SetValue(fieldInstance, obj);
 				return true;
 			}
@@ -530,6 +553,9 @@ namespace MultiZonePlayer
 							res += en + separator;
 						}
 						break;
+				}
+				if (type.Name == "List`1") {
+					res = "["+type.GetGenericArguments()[0].Name+"]";
 				}
 			}
 			catch (Exception e) {

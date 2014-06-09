@@ -7,6 +7,11 @@
 <script type="text/JavaScript" src="basic.js"></script> 
 </head>
 <body style="text-align:left" onload="refresh(30000)">
+<form id="Form1" action="?id=%_id&classname=%_classname&source=%_source" method="post">
+<input name="command" type="hidden" value="createfield"/>
+<input id="Submit1" type="submit" value="Create" />
+</form>
+<p></p>
 <%for;i;0;++;#S.%_classname.ValueList.Count#;%>
 <button class="Small" onclick="window.open('zone-param.html?classname=%_classname&index=#S.%_classname.ValueList.?,%i.Index#&id=#S.%_classname.ValueList.?,%i.Id#&source=%_source','_self')">
 #S.%_classname.ValueList.?,%i.Name#</button>

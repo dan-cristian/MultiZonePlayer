@@ -47,7 +47,7 @@ namespace MultiZonePlayer
 					}
 
 					cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
-					int macroId = MZPState.Instance.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
+					int macroId = MacroEntry.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
 
 					MLog.Log("DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
 						+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId + " macroid="+macroId);
@@ -55,7 +55,7 @@ namespace MultiZonePlayer
 					if (cmdRemote == null || macroId != -1){
 						if (macroId != -1){
 							MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);
-							MZPState.Instance.ExecuteMacro(macroId);
+							MacroEntry.ExecuteMacro(macroId);
 						}
 						return;
 					}
@@ -311,7 +311,7 @@ namespace MultiZonePlayer
 							break;
 						case GlobalCommands.macro:
 							string shortcut = vals.GetValue(GlobalParams.singleparamvalue);
-							macroid = MZPState.Instance.GetMacroIdByShortcut(shortcut, "");
+							macroid = MacroEntry.GetMacroIdByShortcut(shortcut, "");
 							if (macroid == -1)
 							{
 								temp = vals.GetValue(GlobalParams.id);
@@ -319,7 +319,7 @@ namespace MultiZonePlayer
 							}
 							if (macroid != -1)
 							{
-								cmdresult = MZPState.Instance.ExecuteMacro(macroid);
+								cmdresult = MacroEntry.ExecuteMacro(macroid);
 								cmdresult.OutputMessage += "macro id=" + macroid;
 								//result = JsonResult(Metadata.ResultEnum.OK, "macro id=" + macroid, null);
 							}
@@ -398,12 +398,16 @@ namespace MultiZonePlayer
 									break;
 								case "ScriptingRule":
 									ScriptingRule rule = new ScriptingRule();
-									rule.Name = "Default Rule";
+									rule.Name = "Default Rule "+rule.Id;
 									ScriptingRule.Add(rule, IniFile.INI_SECTION_SCRIPTINGRULES);
 									break;
+								case "MacroEntry":
+									MacroEntry macr = new MacroEntry();
+									MacroEntry.Add(macr, IniFile.INI_SECTION_MACRO);
+									macr.Name = "Default Macro " + macr.Id;
+									break;
 								default:
-										Alert.CreateAlert("Error, classname not recognised on create field, class=" + classname 
-											, true);
+									Alert.CreateAlert("Error, classname not recognised on create field, class=" + classname, true);
 									break;
 							}
 							break;
@@ -502,10 +506,10 @@ namespace MultiZonePlayer
 				}
                 else
                 {//looking if this is a macro name
-					macroid = MZPState.Instance.GetMacroIdByShortcut(cmdName, "");
+					macroid = MacroEntry.GetMacroIdByShortcut(cmdName, "");
 					if (macroid != -1)
 					{
-						cmdresult = MZPState.Instance.ExecuteMacro(macroid);
+						cmdresult = MacroEntry.ExecuteMacro(macroid);
 						cmdresult.OutputMessage += "macro2 id=" + macroid;
 					}
 					else

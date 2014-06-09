@@ -50,7 +50,7 @@ namespace MultiZonePlayer {
 		private DateTime m_lastBuzzDateTime = DateTime.Now;
 		private List<Display> m_displayList = new List<Display>();
 		private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
-		private List<MacroEntry> m_macroList;
+		//private List<MacroEntry> m_macroList;
 		private List<GenericUPS> m_upsList;
 		private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 		private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
@@ -59,6 +59,7 @@ namespace MultiZonePlayer {
 		private Bluetooth m_bt;
 		private SysLog m_syslog;
 		private ScriptingRule m_rule = new ScriptingRule();
+		private MacroEntry m_macro = new MacroEntry();
 
 		public ScriptingRule ScriptRule {
 			get { return m_rule; }
@@ -89,9 +90,10 @@ namespace MultiZonePlayer {
 			set { m_displayList = value; }
 		}
 
+		/*
 		public List<MacroEntry> MacroList {
 			get { return m_macroList; }
-		}
+		}*/
 
 		public NotifyState NotifyState {
 			get { return m_notifyState; }
@@ -146,6 +148,7 @@ namespace MultiZonePlayer {
 			m_musicScheduleList = new List<MusicScheduleEntry>();
 			MusicScheduleEntry.LoadFromIni(ref m_musicScheduleList);
 			m_rule.LoadFromIni(IniFile.INI_SECTION_SCRIPTINGRULES);
+			m_macro.LoadFromIni(IniFile.INI_SECTION_MACRO);
 			//MultiZonePlayer.ScriptingRule.LoadFromIni(IniFile.INI_SECTION_SCRIPTINGRULES, typeof(MultiZonePlayer.ScriptingRule));
 
 			MLog.Log(this, "Retrieving system audio input devices details");
@@ -239,7 +242,7 @@ namespace MultiZonePlayer {
 		private void LoadMacrosandRules() {
 			DateTime fileModified = System.IO.File.GetLastWriteTime(IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 			if (fileModified != m_lastScheduleFileModifiedDate) {
-				m_macroList = MacroEntry.LoadFromIni();
+				//m_macroList = MacroEntry.LoadFromIni();
 				RFXDeviceDefinition.LoadFromIni();
 				MLog.LoadFromIni();
 				m_lastScheduleFileModifiedDate = fileModified;
@@ -256,8 +259,8 @@ namespace MultiZonePlayer {
 		public List<MacroEntry> GetZoneMacros(int zoneId) {
 			List<MacroEntry> macros = null;
 			String zoneName = MultiZonePlayer.ZoneDetails.GetZoneById(zoneId).ZoneName;
-			if (m_macroList != null) {
-				macros = m_macroList.FindAll(x =>
+			//if (m_macroList != null) {
+				macros = MacroEntry.ValueList.FindAll(x =>
 					x.CommandList != null && x.CommandList.Find(y => y.ZoneName == zoneName) != null
 					||
 					x.CommandList != null &&
@@ -266,7 +269,7 @@ namespace MultiZonePlayer {
 					                            || z.ParameterValueList.ToLower().Contains("zoneid=" + zoneId + "\"")
 					                            || z.ParameterValueList.ToLower().Contains("zonename=" + zoneName))) != null
 					);
-			}
+			//}
 			return macros;
 		}
 
@@ -524,6 +527,16 @@ namespace MultiZonePlayer {
 		}
 		public List<ScriptingRule> ScriptingRuleList {
 			get { return ScriptingRule.ValueList.Select(x => (ScriptingRule)x).ToList(); }
+		}
+
+		public MacroEntry MacroEntry{
+			get {
+				return (MacroEntry)MultiZonePlayer.MacroEntry.StaticInstance(typeof(MultiZonePlayer.MacroEntry));
+			}
+		}
+		public List<MacroEntry> MacroEntryList {
+			get { 
+				return MacroEntry.ValueList.Select(x => (MacroEntry)x).ToList(); }
 		}
 
 		public List<IMZPDevice> DeviceList {
@@ -1128,39 +1141,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public CommandResult ExecuteMacro(string macroName) {
-			MacroEntry entry = m_macroList.Find(x => x.Name == macroName);
-			return ExecuteMacro(entry.Id);
-		}
-
-		public CommandResult ExecuteMacro(int macroId) {
-			CommandResult cmdresult = new CommandResult();
-			cmdresult.Result = ResultEnum.ERR;
-			MacroEntry entry = m_macroList.Find(x => x.Id == macroId);
-			if (entry != null) {
-				cmdresult.ErrorMessage = "macro found but empty command list";
-				foreach (MacroEntryCommand cmd in entry.CommandList) {
-					MLog.Log(this, "Executing macro event " + cmd.Command + " in zone=" + cmd.ZoneName);
-					ValueList val = new ValueList(GlobalParams.command,
-						cmd.Command.ToString(), CommandSources.system);
-					ZoneDetails zone = GetZoneIdByContainsName(cmd.ZoneName);
-					if (zone != null) {
-						val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
-					}
-					//parameters
-					MacroEntry.AddParams(cmd.ParameterValueList, ref val);
-					cmdresult = API.DoCommand(val);
-					if (cmd.DelayMiliSec != 0) {
-						Thread.Sleep(cmd.DelayMiliSec);
-					}
-				}
-			}
-			else {
-				cmdresult.ErrorMessage = "Macro not found id=" + macroId;
-				MLog.Log(this, cmdresult.ErrorMessage);
-			}
-			return cmdresult;
-		}
+		
 
 		public CommandResult ExecuteRFXCmd(string cmd) {
 			CommandResult cmdresult = new CommandResult();
@@ -1201,15 +1182,15 @@ namespace MultiZonePlayer {
 			String hrmin = DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT);
 			String weekday = DateTime.Now.DayOfWeek.ToString().Substring(0, 2).ToUpper();
 			string month = DateTime.Now.Month.ToString(IniFile.DATETIME_MONTH_FORMAT).ToUpper();
-			foreach (MacroEntry entry in m_macroList) {
+			foreach (MacroEntry entry in MacroEntry.ValueList) {
 				entrymonth = entry.RepeatMonth != null ? entry.RepeatMonth.ToUpper() : "";
 				entryday = entry.RepeatWeekDay != null ? entry.RepeatWeekDay.ToUpper() : "";
-				if ((entrymonth == "ALL" || entrymonth == month)
-				    && (entryday == "ALL" || entryday.Contains(weekday))
+				if ((entrymonth == Constants.ALL || entrymonth == month)
+					&& (entryday == Constants.ALL || entryday.Contains(weekday))
 				    && (entry.RepeatTime == hrmin)
 				    && (DateTime.Now.Subtract(entry.ExecutedDateTime).TotalSeconds > 60)) {
-					ExecuteMacro(entry.Id);
-					entry.ExecutedDateTime = DateTime.Now;
+						MacroEntry.ExecuteMacro(entry.Id);
+						entry.ExecutedDateTime = DateTime.Now;
 				}
 			}
 		}
@@ -1248,20 +1229,7 @@ namespace MultiZonePlayer {
 		}*/
 		}
 
-		public int GetMacroIdByShortcut(string shortcut, string deviceName) {
-			if (shortcut != null) {
-				shortcut = shortcut.ToLower();
-				deviceName = deviceName.ToLower();
-				MacroEntry entry = m_macroList.Find(x =>
-					x.ShortcutList != null
-					&& x.ShortcutList.Find(y => y.Shortcut == shortcut) != null
-					&& (x.ShortcutList.Find(y => deviceName.Contains(y.DeviceName)) != null));
-				if (entry != null) {
-					return entry.Id;
-				}
-			}
-			return -1;
-		}
+		
 
 		public void CheckForAlarm() {
 			MZPState.Instance.SystemAlarm.IsMonitoringActive = Utilities.IsProcAlive("WinLoad");

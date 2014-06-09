@@ -202,10 +202,10 @@ namespace MultiZonePlayer
 				if (atoms.Length > 0)
 				{
 					cmdName = atoms[0].ToLower();
-					int macroId = MZPState.Instance.GetMacroIdByShortcut(cmdName, "");
+					int macroId = MacroEntry.GetMacroIdByShortcut(cmdName, "");
 					if (!isPowerUser)
 					{
-						MacroEntry entry = MZPState.Instance.MacroList.Find(x => x.Id == macroId);
+						MacroEntry entry = MacroEntry.ValueList.Find(x => x.Id == macroId);
 						if (entry == null || !entry.AllowUserList.Contains(sender))
 						{
 							replymessage = "Not authorised gtalk sender " + sender;

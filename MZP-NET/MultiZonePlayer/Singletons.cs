@@ -887,7 +887,6 @@ namespace MultiZonePlayer {
 		[Category("Edit")]
 		public int Id = -1;
 		public PersistentObject() {
-			
 		}
 		public int Index {
 			get { return ValueList.IndexOf(this); }
@@ -907,18 +906,23 @@ namespace MultiZonePlayer {
 			if (list != null)
 				if (list.ObjectList!=null)
 				return list.ObjectList[0];
-			return new PersistentObject();
+			return null;
+			//Activator.CreateInstance(null, objType.AssemblyQualifiedName + "." + objType.Name);
+				//new PersistentObject();
 			
 		}
 		public static void Add(PersistentObject newobj, String iniSectionName){
+			ListStored list;
 			if (newobj.Id == -1) {
-				int maxId = m_objectList.Find(x => x.ObjectName == newobj.GetType().Name).ObjectList.Select(x=>x.Id).Max();
+				list = m_objectList.Find(x => x.ObjectName == newobj.GetType().Name);
+				int maxId = -1;
+				if (list != null)
+					maxId = list.ObjectList.Select(x=>x.Id).Max();
 				newobj.Id = maxId+1;
 			}
 
-			ListStored list = GetList(newobj);
-			if (list==null)
-			{
+			list = GetList(newobj);
+			if (list==null){
 				list = new ListStored();
 				list.ObjectName = newobj.GetType().Name;
 				list.ObjectList = new List<PersistentObject>();
