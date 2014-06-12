@@ -32,6 +32,8 @@ namespace MultiZonePlayer {
 		private static int maxRemotes = 10;
 		private List<ControlDevice> m_systemAvailableControlDevices = new List<ControlDevice>();
 		private static BasePowerControl m_powerControlDenkovi, m_powerControlNumato;
+
+		
 		private Hashtable m_zoneInputDeviceNames = null;
 		private Hashtable m_playListOLD = null; //list with all songs from current playlist
 		public Boolean IsShuttingDown = false;
@@ -609,70 +611,15 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public void PowerControlOn(int zoneid) {
-			ZoneDetails zone = MultiZonePlayer.ZoneDetails.GetZoneById(zoneid);
-			bool switchedOn = false;
-			String powerdevice;
-			if (zone.HasPowerCapabilities) {
-				if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString()) {
-					if (!m_powerControlDenkovi.IsPowerOn(zoneid)) {
-						switchedOn = true;
-					}
-					m_powerControlDenkovi.PowerOn(zoneid);
-					powerdevice = "Denkovi";
-				}
-				else {
-					if (!m_powerControlNumato.IsPowerOn(zoneid)) {
-						switchedOn = true;
-					}
-					if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Numato.ToString()) {
-						m_powerControlNumato.PowerOn(zoneid);
-					}
-					powerdevice = "Numato";
-				}
-				if (switchedOn) {
-					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, powerdevice,
-						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOn", zoneid.ToString(),
-						Constants.EVENT_TYPE_POWER);
-				}
-			}
-			else {
-				MLog.Log(this, "Error, Power ON command sent to zone without power cap: " + zone.ZoneName);
-			}
+		public BasePowerControl PowerControlNumato {
+			get { return m_powerControlNumato; }
 		}
 
-		public void PowerControlOff(int zoneid) {
-			ZoneDetails zone = MultiZonePlayer.ZoneDetails.GetZoneById(zoneid);
-			bool switchedOff = false;
-			String powerdevice;
-
-			if (zone.HasPowerCapabilities) {
-				if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString()) {
-					if (m_powerControlDenkovi.IsPowerOn(zoneid)) {
-						switchedOff = true;
-					}
-					m_powerControlDenkovi.PowerOff(zoneid);
-					powerdevice = "Denkovi";
-				}
-				else {
-					if (m_powerControlNumato.IsPowerOn(zoneid)) {
-						switchedOff = true;
-					}
-					if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Numato.ToString()) {
-						m_powerControlNumato.PowerOff(zoneid);
-					}
-					powerdevice = "Numato";
-				}
-				if (switchedOff) {
-					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", zone.ZoneName, powerdevice,
-						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOff", zoneid.ToString(),
-						Constants.EVENT_TYPE_POWER);
-				}
-			}
-			else {
-				MLog.Log(this, "Error, Power OFF command sent to zone without power cap: " + zone.ZoneName);
-			}
+		public BasePowerControl PowerControlDenkovi {
+			get { return m_powerControlDenkovi; }
 		}
+
+		
 
 		public void PowerControlOff() {
 			//m_powerControlDenkovi.PowerOff();
@@ -681,7 +628,7 @@ namespace MultiZonePlayer {
 				if ((zone.ActivityType != GlobalCommands.xbmc) || (!zone.IsActive)) {
 					MLog.Log(this, "Powering off zone " + zone.ZoneName + " activity=" + zone.ActivityType + " active=" + zone.IsActive
 					               + " reqpower=" + zone.RequirePower);
-					this.PowerControlOff(zone.ZoneId);
+					zone.PowerControlOff();
 				}
 			}
 		}

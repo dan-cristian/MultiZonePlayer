@@ -820,6 +820,7 @@ namespace MultiZonePlayer
 			EVENT_TYPE_ELECTRICITY = "Electricity", EVENT_TYPE_WATER = "Water", EVENT_TYPE_GAS = "Gas" ;
 		public const int NOT_SET = -1;
 		public const string ALL = "ALL";
+		public const string POWER_TYPE_DENKOVI = "Denkovi", POWER_TYPE_NUMATO= "Numato";
 	}
 
 

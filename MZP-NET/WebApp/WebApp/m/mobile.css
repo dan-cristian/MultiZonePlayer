@@ -72,3 +72,4 @@ button.AlarmTrue{background-image:url('img/Lock-Lock-icon.png');background-color
 button.AlarmFalse{background-image:url('img/Lock-Unlock-icon.png');background-color:yellow}
 button.ContactLockTrue{background-image:url('img/Lock-Lock-icon-small.png');background-color:limegreen}
 button.ContactLockFalse{background-image:url('img/Lock-Unlock-icon-small.png');background-color:yellowgreen}
+button.PowerTrue {background-image:url('img/light-icon.png');background-color:orangered}

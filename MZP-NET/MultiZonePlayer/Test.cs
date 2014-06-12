@@ -263,6 +263,9 @@ namespace MultiZonePlayer
 		  MZPState.Instance.SystemAlarm.AreaState = Alarm.EnumAreaState.disarmed;
 		  MZPState.Instance.SystemAlarm.AreaState = Alarm.EnumAreaState.armed;
 		  UserPresence.AddPresence(User.GetUser(1), UserPresence.PresenceType.Wifi, DateTime.Now, "test location");
+		  ValueList val = new ValueList(GlobalParams.command, GlobalCommands.cameraevent.ToString(), CommandSources.system);
+		  val.Add(GlobalParams.oid, "4");
+		  API.DoCommand(val);
       }
 	  
       private void button7_Click(object sender, EventArgs e)

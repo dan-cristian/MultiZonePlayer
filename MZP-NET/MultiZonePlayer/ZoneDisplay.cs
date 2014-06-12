@@ -127,7 +127,7 @@ namespace MultiZonePlayer
                     {
                         MLog.Log(this, "Powering on display zone id " + m_zoneDetails.ZoneId 
 							+ " for LGTV child " + m_zoneDetails.ZoneName);
-                        MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+                        m_zoneDetails.PowerControlOn();
                     }
                 }
                 else

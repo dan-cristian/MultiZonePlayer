@@ -194,7 +194,7 @@ namespace MultiZonePlayer
                         //init amp power if needed
 						//m_zoneDetails.RequirePower = true;
 						//m_zoneDetails.IsActive = true;
-                        MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+                        m_zoneDetails.PowerControlOn();
 						int loop = 0;
 						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50)
 						{//usefull for HDMI devices
@@ -246,7 +246,7 @@ namespace MultiZonePlayer
                 int volume = m_zoneForm.GetVolumeLevel();
 				//m_zoneDetails.RequirePower = true;
 				if (!MZPState.Instance.PowerControlIsOn(m_zoneForm.ZoneDetails.ZoneId)) {
-					MZPState.Instance.PowerControlOn(m_zoneForm.ZoneDetails.ZoneId);
+					m_zoneForm.ZoneDetails.PowerControlOn();
 					System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
 				}
 				DCPlayer tempPlay = new DCPlayer(m_zoneForm, IniFile.CurrentPath()+ filePathName, volume);
@@ -916,7 +916,7 @@ namespace MultiZonePlayer
             {
 				m_cloneSourceZone.MainZoneActivity.SetVolumeLevel(m_cloneSourceZone.ZoneDetails.GetDefaultVolume());
 				//m_zoneDetails.RequirePower = true;
-                MZPState.Instance.PowerControlOn(m_parentZoneForm.ZoneDetails.ZoneId);
+				m_parentZoneForm.ZoneDetails.PowerControlOn();
                 m_cloneSourceZone.AddClonedZone(this.ZoneDetails);
                 m_clonedZoneMusic = (MusicActivity)m_cloneSourceZone.GetCurrentActivity();
                 m_clonedZoneMusic.UpdateOutputDevices();
@@ -967,7 +967,7 @@ namespace MultiZonePlayer
         {
             if ((m_cloneSourceZone != null) && (m_cloneSourceZone.GetCurrentActivity() != null))
             {
-                MZPState.Instance.PowerControlOn(m_parentZoneForm.ZoneDetails.ZoneId);
+				m_parentZoneForm.ZoneDetails.PowerControlOn();
                 m_cloneSourceZone.GetCurrentActivity().Play();
                 m_zoneState = ZoneState.Running;
             }

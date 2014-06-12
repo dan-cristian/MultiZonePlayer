@@ -29,12 +29,10 @@ namespace MultiZonePlayer
             {
                 CamAlert alarm = new CamAlert(vals.GetValue(GlobalParams.alertsource),
                     vals.GetValue(GlobalParams.msg), camId, zone.ZoneId, zone.CameraAlertActive);
-                zone.LastCamAlertDateTime = alarm.AlarmTime;
                 m_camAlarmList.Add(alarm);
-                
             }
             else
-                MLog.Log(this, "error zone not found for camalert, oid="+camId);
+                Alert.CreateAlert("Error zone not found for camalert, oid="+camId, true);
         }
 
         public void DismissAlert(ValueList vals)

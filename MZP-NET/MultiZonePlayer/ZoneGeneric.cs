@@ -213,6 +213,7 @@ namespace MultiZonePlayer {
 					ZoneOpenActions();
 					m_zoneDetails.MovementAlert = true;
 					m_zoneDetails.IncreaseCameraCountIfArmed();
+					m_zoneDetails.LastCamAlertDateTime = DateTime.Now;
 					MZPState.Instance.ZoneEvents.AddCamAlert(vals);
 					String camId = vals.GetValue(GlobalParams.oid);
 					string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
@@ -299,9 +300,9 @@ namespace MultiZonePlayer {
 					cmdresult.OutputMessage += "Zone " + m_zoneDetails.ZoneName + " armed status=" + m_zoneDetails.IsArmed;
 					break;
 				case GlobalCommands.powercycle:
-					MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+					m_zoneDetails.PowerControlOn();
 					Thread.Sleep(Convert.ToInt16(vals.GetValue(GlobalParams.interval)));
-					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
+					m_zoneDetails.PowerControlOff();
 					break;
 				case GlobalCommands.heatscheduleon:
 					m_zoneDetails.ScheduledHeatActive = true;
@@ -312,24 +313,24 @@ namespace MultiZonePlayer {
 				case GlobalCommands.poweron:
 					MLog.Log(this, "Permanent power ON zone=" + m_zoneDetails.ZoneName);
 					m_zoneDetails.RequirePowerForced = true;
-					MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+					m_zoneDetails.PowerControlOn();
 					cmdresult.OutputMessage += "power on ok";
 					break;
 				case GlobalCommands.poweroff:
 					MLog.Log(this, "Permanent power OFF zone=" + m_zoneDetails.ZoneName);
-					MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
+					m_zoneDetails.PowerControlOff();
 					m_zoneDetails.RequirePowerForced = false;
 					cmdresult.OutputMessage += "power off ok";
 					break;
 				case GlobalCommands.powertoggle:
 					MLog.Log(this, "Power toggle zone=" + m_zoneDetails.ZoneName);
 					if (m_zoneDetails.IsPowerOn) {
-						MZPState.Instance.PowerControlOff(m_zoneDetails.ZoneId);
+						m_zoneDetails.PowerControlOff();
 						m_zoneDetails.RequirePowerForced = false;
 						cmdresult.OutputMessage += "power toggled OFF";
 					}
 					else {
-						MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+						m_zoneDetails.PowerControlOn();
 						m_zoneDetails.RequirePowerForced = true;
 						cmdresult.OutputMessage += "power toggled ON";
 					}
@@ -429,7 +430,7 @@ namespace MultiZonePlayer {
 						bool needsPower = m_zoneDetails.RequirePowerForced;
 						m_zoneDetails.RequirePowerForced = true;
 						if (!MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId)) {
-							MZPState.Instance.PowerControlOn(m_zoneDetails.ZoneId);
+							m_zoneDetails.PowerControlOn();
 							System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay); //ensure we can hear this
 						}
 						string sourcezoneid = vals.GetValue(GlobalParams.sourcezoneid);

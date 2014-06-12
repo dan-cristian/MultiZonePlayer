@@ -427,7 +427,7 @@ namespace MultiZonePlayer
 					fieldInfo = instance.GetType().GetField(propName);
 					if (fieldInfo != null){
 						if (parameters != null && parameters.Length > 0)
-							MLog.Log(null, "Warning, Field called with parameters");
+							MLog.Log("Warning, Field called with parameters");
 						value = fieldInfo.GetValue(instance);
 					}
 					else{
@@ -926,7 +926,7 @@ namespace MultiZonePlayer
 					if (atoms[0] == "?" && target == null)
 						target = "";
 					if (target == null) {
-						MLog.Log(null, "Could not find script target");
+						MLog.Log("Could not find script target");
 						break;
 					}
 					int resultInsertIndex = result.IndexOf(target);

@@ -66,10 +66,10 @@
 <button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">#</button>
 <%%>
 <%if;#Zones,%_zoneid.RequireHeat#%>
-<img src="heat.png" />
+<img src="img/heat.png" />
 <%%>
 <%if;#Zones,%_zoneid.ScheduledHeatActive#%>
-<img src="schedule.png" />
+<img src="img/schedule.png" />
 <%%>
 <%if;#Zones,%_zoneid.HasOneWireVoltageSensor#%><button class="Small" onclick="ajaxCall('voltage','zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=voltage', false)">Voltage</button><%%>
 <div id="camera"></div>

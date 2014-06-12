@@ -9,26 +9,45 @@
 <link href="mobile.css" rel="stylesheet" type="text/css" />
 <script type="text/JavaScript" src="basic.js"></script> 
 <script type="text/JavaScript">
+    var refreshInterval;
     var serverDate = new Date("#S.ServerDateTime#");
     var auto_refresh_time = setInterval(
 		function () {
-		    showTimeDiff("Time");
+		    showTimeDiff();
 		}, 5000);
     function initialise() {
-        refresh(60000);
+        refreshInterval = '%_interval';
+        if (refreshInterval > 0)
+            ;
+        else
+            refreshInterval = 60000;
+        showTimeDiff();
+        refresh(refreshInterval, 'summary.html?interval='+refreshInterval);
     }
     function showTimeDiff(targetDiv) {
         var minElapsed = DateDiff.inMinutes(new Date(), serverDate);
-        showText(targetDiv, minElapsed);
+        showText('TimeServer', 'Server: ' + serverDate.toGMTString());
+        showText('TimeClient', 'Client: ' + new Date().toGMTString());
         if (minElapsed <= 5)
-            document.getElementById(targetDiv).style.backgroundColor = "Green";
+            document.getElementById('TimeServer').style.backgroundColor = "LightGreen";
         else
-            document.getElementById(targetDiv).style.backgroundColor = "Red";
+            document.getElementById('TimeServer').style.backgroundColor = "Red";
+    }
+    function setRefresh(radio) {
+        refreshInterval = radio.value;
+        window.open('summary.html?interval=' + refreshInterval, '_self');
     }
 </script>
 </head>
-<body onload="javascript:initialise()" onerror="refresh(60000)" style="text-align:left">
-<div style="position:relative;width:100px" id="Time"></div><br />
+<body onload="javascript: initialise()" onerror="javascript: initialise()" style="text-align:center">
+<button class="Clean"><span>
+<input name="refresh" id="refresh1" type="radio" value="10000"  onclick="setRefresh(this)" <%if;%_interval==10000%>1 checked<%%>>10 sec</input>
+<input name="refresh" id="refresh2" type="radio" value="60000"  onclick="setRefresh(this)" <%if;%_interval==60000%>2 checked<%%>>01 min</input>
+<input name="refresh" id="refresh3" type="radio" value="600000" onclick="setRefresh(this)" <%if;%_interval==600000%>3 checked<%%>>10 min</input>
+<div style="position:relative;" id="TimeServer"></div>
+<div style="position:relative;" id="TimeClient"></div>
+</span>
+</button>
 <%for;i1;0;++;#S.UserIsNearList.Count#;%>
 <button class="Clean User">#S.UserIsNearList.?,%i1.Name#
 <br /><br /><span style="font-size:xx-small">#S.UserIsNearList.?,%i1.NearbyPresentAgeAsTimeSpan#</span></button>
@@ -36,12 +55,27 @@
 <button class="Clean Alarm#SystemAlarm.IsArmed#">#SystemAlarm.AreaState#
     <span style="font-size:xx-small"><br /><br />#SystemAlarm.LastAreaStateChangeAge#</span></button>
 <%if;#SystemAlarm.IsArmed#%>
-    <~for;i2;0;++;#Z.ZoneWithLockContact_All.Count#;~>
-	<button class="Clean ContactLock#Z.ZoneWithLockContact_All.?,%i2.IsClosureArmed#">#Z.ZoneWithLockContact_All.?,%i2.ZoneName#<br /><br />
+    <~for;i2;0;++;#Z.ZoneWithCondition_All,ClosureType,LockZoneContact.Count#;~>
+	<button class="Clean ContactLock#Z.ZoneWithCondition_All,ClosureType,LockZoneContact.?,%i2.IsClosureArmed#">
+        #Z.ZoneWithCondition_All,ClosureType,LockZoneContact.?,%i2.ZoneName#<br /><br />
     <span style="font-size:xx-small">
-        #Z.ZoneWithLockContact_All.?,%i2.ClosureCountSinceArmed#/#Z.ZoneWithLockContact_All.?,%i2.AlarmsensorCountSinceArmed#/#Z.ZoneWithLockContact_All.?,%i2.CameraCountSinceArmed#
+        #Z.ZoneWithCondition_All,ClosureType,LockZoneContact.?,%i2.ClosureCountSinceArmed#/
+        #Z.ZoneWithCondition_All,ClosureType,LockZoneContact.?,%i2.AlarmsensorCountSinceArmed#/
+        #Z.ZoneWithCondition_All,ClosureType,LockZoneContact.?,%i2.CameraCountSinceArmed#
         </span></button>
 	<~~>
+<%%>
+<%for;i2;0;++;#Z.ZoneWithCondition_All,IsPowerOn,True.Count#;%>
+<button class="Clean PowerTrue">#Z.ZoneWithCondition_All,IsPowerOn,True.?,%i2.ZoneName#
+<br /><br /><span style="font-size:xx-small">
+#Z.ZoneWithCondition_All,IsPowerOn,True.?,%i2.PowerOnAge#
+</span></button>
+<%%>
+<%for;i3;0;++;#Z.ZoneWithCondition_All,HasImmediateMove,True.Count#;%>
+<button class="Clean MoveTrue">#Z.ZoneWithCondition_All,HasImmediateMove,True.?,%i3.ZoneName#
+<br /><br /><span style="font-size:xx-small" title="#Z.ZoneWithCondition_All,HasImmediateMove,True.?,%i3.LastMovementAge#">
+#Z.ZoneWithCondition_All,HasImmediateMove,True.?,%i3.LastMovementAgeAsTimeSpan#
+</span></button>
 <%%>
 </body>
 </html>

@@ -30,6 +30,7 @@ namespace MultiZonePlayer {
 		public String PowerType;
 		[Category("Edit")]
 		public int PowerOnDelay;
+		private DateTime m_lastPowerOn = DateTime.MinValue;
 		public String WakeTime = "";
 		public String WakeWeekDay = "";
 		[Category("Edit"), Description("ID of camera object from iSpy")]
@@ -623,6 +624,79 @@ namespace MultiZonePlayer {
 
 		public Boolean IsPowerOn {
 			get { return MZPState.Instance.PowerControlIsOn(ZoneId); }
+		}
+		public String PowerOnAge {
+			get {
+				if (m_lastPowerOn != DateTime.MinValue)
+					return Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(m_lastPowerOn));
+				else
+					return "not on";
+			}
+		}
+		public void PowerControlOn() {
+			bool switchedOn = false;
+			String powerdevice;
+			if (HasPowerCapabilities) {
+				if (this.PowerType == MultiZonePlayer.PowerType.Denkovi.ToString()) {
+					if (!MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
+						switchedOn = true;
+					}
+					MZPState.Instance.PowerControlDenkovi.PowerOn(ZoneId);
+					powerdevice = Constants.POWER_TYPE_DENKOVI;
+					m_lastPowerOn = DateTime.Now;
+				}
+				else {
+					if (!MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
+						switchedOn = true;
+					}
+					if (this.PowerType == MultiZonePlayer.PowerType.Numato.ToString()) {
+						MZPState.Instance.PowerControlNumato.PowerOn(ZoneId);
+						m_lastPowerOn = DateTime.Now;
+					}
+					powerdevice = Constants.POWER_TYPE_NUMATO;
+				}
+				if (switchedOn) {
+					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, powerdevice,
+						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOn", ZoneId.ToString(),
+						Constants.EVENT_TYPE_POWER);
+				}
+			}
+			else {
+				MLog.Log(this, "Error, Power ON command sent to zone without power cap: " + ZoneName);
+			}
+		}
+		public void PowerControlOff() {
+			bool switchedOff = false;
+			String powerdevice;
+
+			if (HasPowerCapabilities) {
+				if (this.PowerType == MultiZonePlayer.PowerType.Denkovi.ToString()) {
+					if (MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
+						switchedOff = true;
+					}
+					MZPState.Instance.PowerControlDenkovi.PowerOff(ZoneId);
+					powerdevice = Constants.POWER_TYPE_DENKOVI;
+					m_lastPowerOn = DateTime.MinValue;
+				}
+				else {
+					if (MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
+						switchedOff = true;
+					}
+					if (this.PowerType == MultiZonePlayer.PowerType.Numato.ToString()) {
+						MZPState.Instance.PowerControlNumato.PowerOff(ZoneId);
+						m_lastPowerOn = DateTime.MinValue;
+					}
+					powerdevice = Constants.POWER_TYPE_NUMATO;
+				}
+				if (switchedOff) {
+					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, powerdevice,
+						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOff", ZoneId.ToString(),
+						Constants.EVENT_TYPE_POWER);
+				}
+			}
+			else {
+				MLog.Log(this, "Error, Power OFF command sent to zone without power cap: " + ZoneName);
+			}
 		}
 		public Boolean HasPowerCapabilities {
 			get {
@@ -1323,19 +1397,22 @@ namespace MultiZonePlayer {
 			}
 		}
 
-
+		public static List<ZoneDetails> ZoneWithCondition_All(String fieldName, String fieldValue) {
+			return ZoneDetailsList.FindAll(x => Reflect.GetPropertyField(x,fieldName).ToString()==fieldValue)
+					.OrderByDescending(x => x.LastClosureEventDateTime).ToList();
+		}
 		public static void ProcessAllZones(bool fastActions, bool slowActions) {
 			foreach (ZoneDetails zone in ZoneDetailsList) {
 				if (fastActions) {
 					//turn on or off power
 					if (zone.RequirePower && !zone.IsPowerOn) {
 						MLog.Log("Powering on zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
-						MZPState.Instance.PowerControlOn(zone.ZoneId);
+						zone.PowerControlOn();
 					}
 
 					if (!zone.RequirePower && zone.IsPowerOn) {
 						//MLog.Log("Powering off zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
-						MZPState.Instance.PowerControlOff(zone.ZoneId);
+						zone.PowerControlOff();
 					}
 				}
 			}
