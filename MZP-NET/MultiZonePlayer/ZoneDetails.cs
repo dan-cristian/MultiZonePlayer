@@ -257,12 +257,11 @@ namespace MultiZonePlayer {
 			set {
 				m_isClosureContactMade = value;
 				ClosureCount++;
-				if (value && RelayType==EnumRelayType.NormalOpen) {
+				if (GetClosureIsRelayInNormalState(value))
 					RelayState = EnumRelayState.ContactClosed;
-				}
-				else {
+				else
 					RelayState = EnumRelayState.ContactOpen;
-				}
+				
 				MLog.Log(this, "Contact event=" + value + " on zone="+ ZoneName +" relaystate=" + RelayState + " relaytype="+RelayType);
 
 				LastClosureEventDateTime = DateTime.Now;

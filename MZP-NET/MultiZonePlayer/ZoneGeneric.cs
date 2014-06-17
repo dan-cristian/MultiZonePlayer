@@ -366,6 +366,7 @@ namespace MultiZonePlayer {
 					switch (m_zoneDetails.ClosureType) {
 							case EnumClosureType.PresenceContact:
 							case EnumClosureType.Contact:
+							case EnumClosureType.LockZoneContact:
 								string msg = "Closure contact state " + key + " is " + contactMade
 									 + " on zone " + m_zoneDetails.ZoneName;
 								MLog.Log(this, msg);

@@ -23,6 +23,8 @@ namespace MultiZonePlayer {
 		public const string ONEWIRE_IO8_NAME = "DS2408";
 		public const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
 		public const string ONEWIRE_COUNTER_NAME = "DS2423";
+		public const string ONEWIRE_IO2_NAME = "DS2413";
+
 		public enum DeviceTypeEnum { OneWire, RFX };
 
 		public String Name;
@@ -36,8 +38,9 @@ namespace MultiZonePlayer {
 		public double[] Voltage = new double[3];
 		public double[] Counter = new double[2];
 		public Boolean[] Activity = new Boolean[8];
+		public Boolean HasActivitySensing = false;
 		public Boolean[] Level = new Boolean[8];
-		public Boolean[] Latch = new Boolean[8];
+		public Boolean[] State = new Boolean[8];
 		public Boolean IOHigh = false, IOAlarm = false;
 		public int IONumberChannels = 2;
 		public Boolean IOHasVCC = false;
@@ -83,6 +86,7 @@ namespace MultiZonePlayer {
 							m_hasTemp = true;
 							break;
 						case ONEWIRE_IO_NAME:
+						case ONEWIRE_IO2_NAME:
 						case ONEWIRE_IO8_NAME:
 							m_hasClosure = true;
 							break;
@@ -151,7 +155,9 @@ namespace MultiZonePlayer {
 					s += " cnt1=" + Counter[0] + " cnt2=" + Counter[1];
 				if (m_hasClosure) {
 					for (int i = 0; i < IONumberChannels; i++) {
-						s += " act"+i+":" + (Activity[i]?"1":"0") + " lev"+i+":"+(Level[i]?"1":"0")	+ " latch"+i+":"+(Latch[i]?"1":"0");
+						if (HasActivitySensing)
+							s += " act" + i + ":" + (Activity[i] ? "A" : "a");
+						s += " lev"+i+":"+(Level[i]?"L":"l") + " state"+i+":"+(State[i]?"S":"s");
 					}
 					s += " vcc=" + IOHasVCC + " high="+IOHigh;
 				}
@@ -173,8 +179,11 @@ namespace MultiZonePlayer {
 				if (m_hasVoltage)
 					val = Voltage[0] + "/" + Voltage[1] + "/" + Voltage[2];
 				if (m_hasClosure) {
-					for (int i = 0; i < IONumberChannels;i++ )
-						val += (Activity[i] ? "1" : "0") + (Level[i] ? "1" : "0") + (Latch[i] ? "1" : "0")+"/";
+					for (int i = 0; i < IONumberChannels; i++) {
+						if (HasActivitySensing)
+							val += (Activity[i] ? "A" : "a");
+						val += (Level[i] ? "L" : "l") + (State[i] ? "S" : "s") + "/";
+					}
 				}
 				if (m_hasHum)
 					val = Humidity.ToString()+"%";
@@ -1035,7 +1044,7 @@ namespace MultiZonePlayer {
 		public void Reinitialise() {
 			try {
 				SensorDevice.Clear(SensorDevice.DeviceTypeEnum.OneWire);
-				foreach (DSPortAdapter adapter in m_adapterList){
+				foreach (DSPortAdapter adapter in m_adapterList) {
 					try { adapter.freePort(); }
 					catch (Exception) { }
 				}
@@ -1057,65 +1066,78 @@ namespace MultiZonePlayer {
 					}
 				}
 
-				try {
-					adapterVar = OneWireAccessProvider.getAdapter(IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1], IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
-					m_lastOKRead = DateTime.Now;
-					m_initErrors = 0;
-					if (m_adapterList.Find(x => x.getAddressAsString() == adapterVar.getAddressAsString()) == null) {
-						m_adapterList.Add(adapterVar);
-						MLog.Log("Found onewire port based adapter " + adapterVar.getAdapterName());
-					}
-				}
-				catch (Exception) {
-					if (m_initErrors < 5) {
-						MLog.Log(this, "Unable to init onewire adapter name=" + IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1] 
-							+ " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
-					}
-					
-				}
+				String[] adapterNames = IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1].Split(';');
+				String[] adapterPorts = IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1].Split(';');
+				if (adapterNames.Length == adapterPorts.Length) {
+					for (int i = 0; i < adapterNames.Length; i++) {
+						MLog.Log(this, "Trying to initialize 1wire adapter " + adapterNames[i] + adapterPorts[i]);
+						try {
+							adapterVar = OneWireAccessProvider.getAdapter(adapterNames[i], adapterPorts[i]);
+							adapterVar.beginExclusive(true);
+							adapterVar.setSearchAllDevices();
+							adapterVar.targetAllFamilies();
+							java.util.Enumeration containers = adapterVar.getAllDeviceContainers();
 
-				if (m_adapterList.Count== 0) {
+							m_lastOKRead = DateTime.Now;
+							m_initErrors = 0;
+							if (m_adapterList.Find(x => x.getAddressAsString() == adapterVar.getAddressAsString()) == null) {
+								m_adapterList.Add(adapterVar);
+								MLog.Log("Found onewire port based adapter " + adapterVar.getAdapterVersion()
+									+ " " + adapterVar.getAdapterName() + adapterVar.getAddressAsString());
+							}
+							else
+								MLog.Log(this, "Adapter already initialised previously, skipping");
+							adapterVar.endExclusive();
+						}
+						catch (Exception) { }
+					}
+				}
+				else
+					Alert.CreateAlert("1wire adapter names and ports in ini file do not have same length, namesLen="
+						+ adapterNames.Length + " ports=" + adapterPorts.Length, true);
+
+				if (m_adapterList.Count == 0) {
 					m_initErrors++;
 					if (m_initErrors > 100)
 						m_initErrors = 0;
-
 					if (m_initErrors < 5) {
-						MLog.Log(this, "Error, OneWire adapter not found");
+						MLog.Log(this, "Unable to init onewire adapter name=" + IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1]
+							+ " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
+						return;
 					}
-					return;
-				}
-				//MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
+					//MLog.Log(this, "OneWire adapter=" + adapter.getAdapterName() + " port=" + adapter.getPortName());
 
-				foreach (DSPortAdapter adapter in m_adapterList) {
-					// get exclusive use of adapter
-					adapter.beginExclusive(true);
-					// clear any previous search restrictions
-					adapter.setSearchAllDevices();
-					adapter.targetAllFamilies();
-					adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
-					java.util.Enumeration containers = adapter.getAllDeviceContainers();
-					OneWireContainer element; //TemperatureContainer temp;
-					//sbyte[] state;
-					while (containers.hasMoreElements()) {
-						element = (OneWireContainer)containers.nextElement();
-						List<ZoneDetails> zoneList = ZoneDetails.GetZonesWithOneWire(element.getAddressAsString());
-						String zonename = zoneList.Count > 0 ? zoneList[0].ZoneName + ", zonecount=" + zoneList.Count : "ZONE NOT ASSOCIATED";
-						MLog.Log(this, "OneWire device found adapter="+adapter.getAdapterName()+" zone=" + zonename + ", addr=" + element.getAddressAsString()
-									   + " name=" + element.getName() + " altname=" + element.getAlternateNames()
-									   + " speed=" + element.getMaxSpeed()
-									   + " desc=" + element.getDescription());
+					foreach (DSPortAdapter adapter in m_adapterList) {
+						// get exclusive use of adapter
+						adapter.beginExclusive(true);
+						// clear any previous search restrictions
+						adapter.setSearchAllDevices();
+						adapter.targetAllFamilies();
+						adapter.setSpeed(DSPortAdapter.SPEED_REGULAR);
+						java.util.Enumeration containers = adapter.getAllDeviceContainers();
+						OneWireContainer element; //TemperatureContainer temp;
+						//sbyte[] state;
+						while (containers.hasMoreElements()) {
+							element = (OneWireContainer)containers.nextElement();
+							List<ZoneDetails> zoneList = ZoneDetails.GetZonesWithOneWire(element.getAddressAsString());
+							String zonename = zoneList.Count > 0 ? zoneList[0].ZoneName + ", zonecount=" + zoneList.Count : "ZONE NOT ASSOCIATED";
+							MLog.Log(this, "OneWire device found adapter=" + adapter.getAdapterName() + " zone=" + zonename + ", addr=" + element.getAddressAsString()
+										   + " name=" + element.getName() + " altname=" + element.getAlternateNames()
+										   + " speed=" + element.getMaxSpeed()
+										   + " desc=" + element.getDescription());
+						}
+						adapter.endExclusive();
+
+						/*// Monitor of the network
+						dMonitor = new DeviceMonitor(adapter);
+						dMonitor.setDoAlarmSearch(false);
+						// setup event listener (should point to this form)
+						dMonitor.addDeviceMonitorEventListener(this);
+						m_searchThread = new Thread(() => dMonitor.run());
+						m_searchThread.Name = "OneWire Search";
+						m_searchThread.Start();
+						*/
 					}
-					adapter.endExclusive();
-
-					/*// Monitor of the network
-					dMonitor = new DeviceMonitor(adapter);
-					dMonitor.setDoAlarmSearch(false);
-					// setup event listener (should point to this form)
-					dMonitor.addDeviceMonitorEventListener(this);
-					m_searchThread = new Thread(() => dMonitor.run());
-					m_searchThread.Name = "OneWire Search";
-					m_searchThread.Start();
-					*/
 				}
 			}
 			catch (Exception ex) {
@@ -1267,36 +1289,60 @@ namespace MultiZonePlayer {
 			}
 		}
 
+		public void ReadLoop() {
+			List<Thread> threadList = new List<Thread>();
+			String adapterId;
+			while (MZPState.Instance != null) {
+				foreach (DSPortAdapter adapter in m_adapterList) {
+					adapterId = (adapter.getAdapterVersion() + adapter.getPortName());
+					if (threadList.Find(x => x.Name == adapterId) == null) {
+						MLog.Log(this, "Adding new 1wire thread for adapter " + adapterId + " total threads="+threadList.Count);
+						Thread th= new Thread(() => this.ReadAdapterInLoop(adapter));
+						th.Name = adapterId;
+						th.Start();
+						threadList.Add(th);
+					}
+				}
+				if (m_adapterList == null || m_adapterList.Count==0 || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
+					Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", true);
+					foreach (Thread th in threadList) {
+						th.Abort();
+					}
+					threadList.Clear();
+					Reinitialise();
+				}
+				Thread.Sleep(1000);
+			}
+			MLog.Log(this, "OneWire ReadLoop exit");
+		}
+
 		/// <summary>
 		/// Reads one wire components. DS2423 which is time critical is read mixed with others
 		/// </summary>
-		public void LoopReadSlow() {
+		private void ReadAdapterInLoop(DSPortAdapter adapter) {
 			int i = 0;
+			
 			while (MZPState.Instance != null) {
 				try {
-					foreach (DSPortAdapter adapter in m_adapterList) {
-						if (i > Convert.ToInt16(IniFile.PARAM_ONEWIRE_SLOW_READ_DELAY[1])) {
-							//slow tick
-							i = 0;
-							if (adapter == null || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
-								Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", true);
-								Reinitialise();
-							}
-							ProcessFamily(SensorDevice.ONEWIRE_TEMPDEV_NAME, adapter, false, false, 0x28); //DS18B20 = temp
-							ProcessFamily(SensorDevice.ONEWIRE_SMARTBATDEV_NAME, adapter, false, false, 0x26); //DS2438 = Smart Battery Monitor
-						}
-						ProcessFamily(SensorDevice.ONEWIRE_IO_NAME, adapter, false, true, 0x12);//DS2406/DS2407
-						ProcessFamily(SensorDevice.ONEWIRE_COUNTER_NAME, adapter, false, true, 0x1D); //DS2423
-						ProcessFamily(SensorDevice.ONEWIRE_IO8_NAME, adapter, false, false, 0x29); //DS2408
-						i++;
-						Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
+					if (i > Convert.ToInt16(IniFile.PARAM_ONEWIRE_SLOW_READ_DELAY[1])) {
+						//slow tick
+						i = 0;
+						ProcessFamily(SensorDevice.ONEWIRE_TEMPDEV_NAME, adapter, false, false, 0x28); //DS18B20 = temp
+						ProcessFamily(SensorDevice.ONEWIRE_SMARTBATDEV_NAME, adapter, false, false, 0x26); //DS2438 = Smart Battery Monitor
 					}
+					ProcessFamily(SensorDevice.ONEWIRE_IO_NAME, adapter, false, true, 0x12);//DS2406/DS2407
+					ProcessFamily(SensorDevice.ONEWIRE_COUNTER_NAME, adapter, false, true, 0x1D); //DS2423
+					ProcessFamily(SensorDevice.ONEWIRE_IO8_NAME, adapter, false, false, 0x29); //DS2408
+					ProcessFamily(SensorDevice.ONEWIRE_IO2_NAME, adapter, false, false, 0x3A); //DS2413
+					i++;
+					Thread.Sleep(Convert.ToInt16(IniFile.PARAM_ONEWIRE_FAST_READ_DELAY[1]));
+					
 				}
 				catch (Exception ex) {
-					MLog.Log(ex, this, "Error on 1wire loop");
+					MLog.Log(ex, this, "Error on 1wire loop adapter " + adapter.getAddressAsString());
 				}
 			}
-			MLog.Log(this, "OneWire LoopReadSlow exit");
+			MLog.Log(this, "OneWire ReadAdapterInLoop exit adapter " + adapter.getAddressAsString());
 		}
 
 		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element, SensorDevice dev) {
@@ -1348,13 +1394,14 @@ namespace MultiZonePlayer {
 							dev.IOHigh = isHigh8;
 							dev.IONumberChannels = 8;
 							dev.IOHasVCC = vcc;
+							dev.HasActivitySensing = io.hasActivitySensing();
 							for (int i = 0; i < channels8; i++) {
 								activity8 = io.getSensedActivity(i, state);
-								level8 = io.getLevel(i, state);
+								level8 = io.getLevel(i, state);//TODO: check level
 								latch8 = io.getLatchState(i, state);
 								dev.Activity[i] = activity8;
 								dev.Level[i] = level8;
-								dev.Latch[i] = latch8;
+								dev.State[i] = latch8;
 								isOn8 = latch8;
 
 								if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "Level" + i)) {
@@ -1441,19 +1488,20 @@ namespace MultiZonePlayer {
 							state = swd.readDevice();
 							initialState = (sbyte[])state.Clone();
 							int channels2 = swd.getNumberChannels(state);
-							bool activity2, level2, latch2, isHigh2, isOn2, lastlevel2, activityWasDetected2=false;
+							bool activity2, level2, state2, isHigh2, isOn2, lastlevel2, activityWasDetected2=false;
 							dev.IONumberChannels = channels2;
 							isHigh2 = swd.isHighSideSwitch();
 							dev.IOHigh = isHigh2;
+							dev.HasActivitySensing = swd.hasActivitySensing();
 							for (int i = 0; i < channels2; i++) {
 								activity2 = swd.getSensedActivity(i, state);
 								level2 = swd.getLevel(i, state);
 								level2 = !level2;//TODO: why level is diff than 8 IO device?
-								latch2 = swd.getLatchState(i, state);
+								state2 = swd.getLatchState(i, state);
 								dev.Activity[i] = activity2;
 								dev.Level[i] = level2;
-								dev.Latch[i] = latch2;
-								isOn2 = latch2;
+								dev.State[i] = state2;
+								isOn2 = state2;
 								
 								if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "Level" + i)) {
 									lastlevel2 = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "Level" + i]);
@@ -1469,7 +1517,7 @@ namespace MultiZonePlayer {
 								foreach (ZoneDetails zone in zoneList){
 									zone.OneWireIOPortCount = channels2;
 									zone.HasOneWireIODevice = true;
-									zone.SetClosureStateIO(i, latch2);
+									zone.SetClosureStateIO(i, state2);
 									if (zone.IsClosureCmdIOOn(i)){
 										if (!isOn2) {
 											MLog.Log(this, "OPENING IO closure that is off, id="+i+" in zone="+ zone.ZoneName);
@@ -1477,9 +1525,9 @@ namespace MultiZonePlayer {
 										}
 									}
 									else {
-										if (isOn2){
-											MLog.Log(this, "CLOSING IO closure that is on, id="+i+" in zone="+ zone.ZoneName);
-											swd.setLatchState(i, false, false, state);
+										if (isOn2){//only detects state when state is True
+											//MLog.Log(this, "CLOSING IO closure that is on, id="+i+" in zone="+ zone.ZoneName);
+											//swd.setLatchState(i, false, false, state);
 										}
 									}
 								}
@@ -1509,6 +1557,80 @@ namespace MultiZonePlayer {
 								swd.readDevice();
 							}
 							
+							break;
+						case SensorDevice.ONEWIRE_IO2_NAME:
+							SwitchContainer io2 = (OneWireContainer3A)element;
+							state = io2.readDevice();
+							initialState = (sbyte[])state.Clone();
+							int channels2a = io2.getNumberChannels(state);
+							bool activity2a, level2a, latch2a, isHigh2a, isOn2a, lastlevel2a, activityWasDetected2a=false;
+							dev.IONumberChannels = channels2a;
+							isHigh2a = io2.isHighSideSwitch();
+							dev.IOHigh = isHigh2a;
+							dev.HasActivitySensing = io2.hasActivitySensing();
+							for (int i = 0; i < channels2a; i++) {
+								activity2a = io2.getSensedActivity(i, state);
+								level2a = io2.getLevel(i, state);
+								level2a = !level2a;//TODO: why level is diff than 8 IO device?
+								latch2a = io2.getLatchState(i, state);
+								dev.Activity[i] = activity2a;
+								dev.Level[i] = level2a;
+								dev.State[i] = latch2a;
+								isOn2a = latch2a;
+								
+								if (m_deviceAttributes.Keys.Contains(element.getAddressAsString() + "Level" + i)) {
+									lastlevel2a = Convert.ToBoolean(m_deviceAttributes[element.getAddressAsString() + "Level" + i]);
+								}
+								else {
+									lastlevel2a = !level2a;//force an initial state update
+								}
+								m_deviceAttributes[element.getAddressAsString() + "Level" + i] = level2a.ToString();
+								if (activity2a || level2a) {
+									activityWasDetected2a = true;
+								}
+
+								foreach (ZoneDetails zone in zoneList){
+									zone.OneWireIOPortCount = channels2a;
+									zone.HasOneWireIODevice = true;
+									zone.SetClosureStateIO(i, latch2a);
+									if (zone.IsClosureCmdIOOn(i)){
+										if (!isOn2a) {
+											MLog.Log(this, "OPENING IO closure that is off, id="+i+" in zone="+ zone.ZoneName);
+											io2.setLatchState(i, true, false, state);
+										}
+									}
+									else {
+										if (isOn2a){
+											MLog.Log(this, "CLOSING IO closure that is on, id="+i+" in zone="+ zone.ZoneName);
+											io2.setLatchState(i, false, false, state);
+										}
+									}
+								}
+
+								if (lastlevel2a != level2a || activity2a) {
+									foreach (ZoneDetails zone in zoneList) {
+										zone.HasOneWireIODevice = true;
+										MLog.Log(this, "Event closure2a change on id="+i+" zone=" + zone.ZoneName
+													   + " count=" + zone.ClosureCount + " level=" + level2a + " lastlevel=" + lastlevel2a + " activity=" + activity2a);
+										//if (!activityB)
+										//	Alert.CreateAlert("No Activity A on level change");
+										ValueList val = new ValueList(GlobalParams.zoneid, zone.ZoneId.ToString(), CommandSources.rawinput);
+										//val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+										val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
+										val.Add(GlobalParams.id, i.ToString());
+										val.Add(GlobalParams.iscontactmade, (level2a).ToString());
+										API.DoCommand(val);
+									}
+								}
+							}
+							if (!state.ArraysEqual(initialState)) {
+								io2.writeDevice(state);
+								//swd.readDevice();
+							}
+							if (activityWasDetected2a) {
+								io2.clearActivity();
+								io2.readDevice();
+							}
 							break;
 						case SensorDevice.ONEWIRE_SMARTBATDEV_NAME:
 							ADContainer adc = (ADContainer) element;

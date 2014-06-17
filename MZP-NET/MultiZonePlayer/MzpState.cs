@@ -195,7 +195,7 @@ namespace MultiZonePlayer {
 			cron.Start();
 
 			m_oneWire = new OneWire();
-			Thread onew = new Thread(() => m_oneWire.LoopReadSlow());
+			Thread onew = new Thread(() => m_oneWire.ReadLoop());
 			onew.Name = "Onewire";
 			onew.Start();
 
