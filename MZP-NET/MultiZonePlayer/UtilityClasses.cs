@@ -169,7 +169,9 @@ namespace MultiZonePlayer
 		reloadlibraryvideo,
 		reloadlibrarypictures,
 		heatscheduleon,
-		heatscheduleoff
+		heatscheduleoff,
+		zoneautosetup,
+		userconfirm
 	}
 	public enum GlobalParams
 	{

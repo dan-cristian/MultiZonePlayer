@@ -346,11 +346,9 @@ namespace MultiZonePlayer {
 						Alert.CreateAlert("WARNING: Large count, counter=" + counter + " deltaPulses=" + PulseCountInTimeSample,
 							this, false, Alert.NotificationFlags.NotifyUserAfterXMinutes, 1);
 					}*/
-					if (lapsedMinutes > 2 * PulseSampleMinutesFrequency)
-					{
+					if (lapsedMinutes > 2 * PulseSampleMinutesFrequency){
 						Alert.CreateAlert("Long pulse counter period detected, minutes=" + lapsedMinutes
-							+ " counterdelta=" + PulseCountInTimeSample + " in zone " + ZoneName,
-							this, false, null, Alert.NotificationFlags.NotifyUserAfterXOccurences, 10);
+							+ " counterdelta=" + PulseCountInTimeSample + " in zone " + ZoneName + " lastpulsesampling="+LastPulseSamplingStart, true);
 					}
 					UtilityCost utilCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType));
 						
@@ -362,37 +360,40 @@ namespace MultiZonePlayer {
 					unitCountPerMissedFrame = PulseLastMainUnitsCount / missedFrames;
 					unitsPerMinute = unitCountPerMissedFrame / PulseSampleMinutesFrequency;
 					if (MaxUtilityUnitsPerMinute != -1 && unitsPerMinute > MaxUtilityUnitsPerMinute) {
-						Alert.CreateAlert("Large utility units consumption registered, possible error, skipping, for zone="+ZoneName
-							+" units per minute="+unitsPerMinute+", limit is="+MaxUtilityUnitsPerMinute, true);
+						Alert.CreateAlert("Large utility units consumption registered, possible error, skipping, for zone=" + ZoneName
+							+ " units per minute=" + unitsPerMinute + ", limit is=" + MaxUtilityUnitsPerMinute, true);
 					}
-					else
-					do {
-						pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, unitCountPerMissedFrame);
-						totalLoggedPulses += pulseIncrement;
-						PulseMainUnitsCount += pulseIncrement;
-						unitCost = 0;
-						cost = 0;
-						watts = -1;
-						if (utilCost != null) {
-							unitCost = utilCost.UnitCost;
-							switch (UtilityType) {
-								case EnumUtilityType.Electricity:
-									watts = 1000 * unitCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
-									break;
-								case EnumUtilityType.Water:
-									break;
-								default:
-									MLog.Log(this, "WARNING unprocessed utility type " + UtilityType);
-									break;
+					else {
+						Alert.CreateAlert("Splitting large counter consumption in zone "+ZoneName,true);
+						do {
+							pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, unitCountPerMissedFrame);
+							totalLoggedPulses += pulseIncrement;
+							PulseMainUnitsCount += pulseIncrement;
+							unitCost = 0;
+							cost = 0;
+							watts = -1;
+							if (utilCost != null) {
+								unitCost = utilCost.UnitCost;
+								switch (UtilityType) {
+									case EnumUtilityType.Electricity:
+										watts = 1000 * unitCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
+										break;
+									case EnumUtilityType.Gas:
+									case EnumUtilityType.Water:
+										break;
+									default:
+										MLog.Log(this, "WARNING unprocessed utility type " + UtilityType);
+										break;
+								}
+								cost = unitCountPerMissedFrame * unitCost;
 							}
-							cost = unitCountPerMissedFrame * unitCost;
+							LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
+							Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
+								PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), unitCountPerMissedFrame.ToString(),
+								cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
 						}
-						LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
-						Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
-							PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), unitCountPerMissedFrame.ToString(),
-							cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
+						while (totalLoggedPulses < PulseLastMainUnitsCount);
 					}
-					while (totalLoggedPulses < PulseLastMainUnitsCount);
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
 					SaveEntryToIni();//save in case of power outage

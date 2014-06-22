@@ -17,7 +17,7 @@ namespace MultiZonePlayer {
 		private static int m_recIndex = 0;
 		private ZonesForm m_zoneForm;
 		private DateTime m_lastContactMade = DateTime.MinValue, m_lastContactReleased = DateTime.MinValue;
-
+		private Boolean m_userConfirm = false;
 		/// <summary>
 		/// Pattern is x-x-xx- where x is a press longer than 1 second and - is a press less than 1 second
 		/// </summary>
@@ -507,8 +507,34 @@ namespace MultiZonePlayer {
 						SaveCurrentPicture(EventSource.Closure);
 					}
 					break;
+				case GlobalCommands.userconfirm:
+					m_userConfirm = true;
+					break;
+				case GlobalCommands.zoneautosetup:
+					//TODO: power on all amps
+					foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+						zone.RequirePowerForced = true;
+						zone.PowerControlOn();
+						Text2Speech.PlayMessage("Power on in zone " + ZoneName, zone.ZoneGeneric);
+					}
+					foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+						m_userConfirm = false;
+						Text2Speech.PlayMessage("Press button confirm in maximum 5 seconds after you hear the sound", zone.ZoneGeneric);
+						DateTime starttime = DateTime.Now;
+						do {
+							Thread.Sleep(100);
+						}
+						while (m_userConfirm == false && DateTime.Now.Subtract(starttime).TotalSeconds<=5);
 
-					#endregion
+					}
+					
+					//TODO: play sound in each sound card and wait for user confirmation via web
+					//TODO: ask user to press keyboard in the zone and identify pressed raw input
+					//TODO: close all amps and open each one after another. ask user to press key when can hear sound and set power index
+					MZPState.Instance.PowerControlDenkovi.PowerOff();
+					//TODO: skip elements for zones auto configured or put them as last options?
+					break;
+			#endregion
 
 				default:
 
