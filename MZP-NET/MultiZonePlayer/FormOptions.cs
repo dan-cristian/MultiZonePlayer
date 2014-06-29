@@ -204,23 +204,29 @@ namespace MultiZonePlayer
             Object zoneId;
             Object controlDeviceName;
             List<ControlDevice> list = new List<ControlDevice>();
-
+			ZoneDetails zone;
             for (int r = 0; r < dgvControl.Rows.Count; r++)
             {
                 zoneId = dgvControl.Rows[r].Cells[Control_ZoneId.Name].Value;
-                controlDeviceName = dgvControl.Rows[r].Cells[Control_DeviceName.Name].Value ?? "";
+				zone = ZoneDetails.GetZoneById(Convert.ToInt16(zoneId));
+				controlDeviceName = dgvControl.Rows[r].Cells[Control_DeviceName.Name].Value ?? "";
+				if (zone != null)
+					zone.ControlDeviceName = controlDeviceName.ToString();
+				/*
                 if (controlDeviceName.ToString() != "")
                     list.Add(new ControlDevice(Convert.ToInt16(zoneId), controlDeviceName.ToString(), "not used"));
+				 */
             }
-            ControlDevice.SaveToIni(list);
+            //ControlDevice.SaveToIni(list);
 			MZPState.Instance.LoadSystemAndUserControls();
         }
 
         private void GUILoadControls()
         {
-            foreach (ControlDevice ctrl in MZPState.Instance.IniControlDevices)
+			List<ZoneDetails> controlDevs = ZoneDetails.ZoneDetailsList.FindAll(x => x.ControlDeviceName != null);
+            foreach (ZoneDetails zone in controlDevs)
             {
-                    dgvControl.Rows.Add(ctrl.ZoneId, ctrl.DeviceName, ctrl.DisplayName);
+				dgvControl.Rows.Add(zone.ZoneId, zone.ControlDeviceName, zone.ZoneName);
             }
         }
 

@@ -25,7 +25,7 @@ namespace MultiZonePlayer {
 		private ArrayList m_systemInputDeviceList = null;
 		private Hashtable m_systemInputDeviceNames = null;
 		public String powerControlStatusCommand;
-		private List<ControlDevice> m_iniControlList = new List<ControlDevice>();
+		//private List<ControlDevice> m_iniControlList = new List<ControlDevice>();
 		public List<Playlist> m_playlist = new List<Playlist>();
 		public Hashtable zoneDefaultInputs;
 		private static RemotePipi[] remotePipi;
@@ -238,7 +238,7 @@ namespace MultiZonePlayer {
 		public void LoadSystemAndUserControls() {
 			PopulateSystemControlDevices();
 			//loading user selected controls for each zone
-			ControlDevice.LoadFromIni(m_iniControlList);
+			//ControlDevice.LoadFromIni(m_iniControlList);
 		}
 
 		private void LoadMacrosandRules() {
@@ -594,9 +594,9 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public List<ControlDevice> IniControlDevices {
+		/*public List<ControlDevice> IniControlDevices {
 			get { return m_iniControlList; }
-		}
+		}*/
 
 		public List<ControlDevice> SystemAvailableControlDevices {
 			get { return m_systemAvailableControlDevices; }
@@ -727,6 +727,7 @@ namespace MultiZonePlayer {
 			return table;
 		}
 
+		/*
 		public int GetZoneByControlDevice(String deviceName, string key) {
 			List<ControlDevice> devices = m_iniControlList.FindAll(x => x.DeviceName == deviceName);
 			switch (devices.Count) {
@@ -742,8 +743,8 @@ namespace MultiZonePlayer {
 					}
 					return -1;
 			}
-		}
-
+		}*/
+		/*
 		public String GetControlDeviceByZone(int zoneId) {
 			foreach (ControlDevice ctrl in MZPState.Instance.m_iniControlList) {
 				if (ctrl.ZoneId.Equals(zoneId)) {
@@ -751,7 +752,7 @@ namespace MultiZonePlayer {
 				}
 			}
 			return null;
-		}
+		}*/
 
 		public List<Alert> ActiveAlertList {
 			get { return Alert.ActiveAlertList; }

@@ -222,7 +222,7 @@ namespace MultiZonePlayer
 								System.Text.Encoding encoding = System.Text.Encoding.UTF8; //request.ContentEncoding;
 								System.IO.StreamReader reader = new System.IO.StreamReader(body, encoding);
 								post = reader.ReadToEnd();
-								post = System.Uri.UnescapeDataString(post);
+								//post = System.Uri.UnescapeDataString(post);
 								post = post.Replace("%20", " ").Replace("+", " ");
 								//post = post.Replace("&", "^");
 								body.Close();
@@ -234,7 +234,7 @@ namespace MultiZonePlayer
 						String item;
 						foreach (String atom in atoms)
 						{
-							item = atom; //.Replace("^", "&");
+							item = System.Uri.UnescapeDataString(atom); //.Replace("^", "&");
 							//vars = item.Split(new String[] {"="}, StringSplitOptions.RemoveEmptyEntries);
 							vars = item.SplitTwo("=");
 							if (Enum.IsDefined(typeof (GlobalParams), vars[0]))

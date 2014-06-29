@@ -106,7 +106,7 @@ namespace MultiZonePlayer
                 txtOutputDevice.Text = m_zoneDetails.OutputKeywords + " - " + m_zoneDetails.OutputDeviceUserSelected;
                 txtUser.Text = m_zone.ZoneUser.Name;
                 //txtInactiveCycles.Text = m_zone.InactiveCyclesCount.ToString()+"/" + IniFile.ZONE_INACTIVITY_MAX_CYCLES;
-                txtControlDevice.Text = m_zone.ControlDevice;
+                //txtControlDevice.Text = m_zone.ControlDevice;
                 txtCurrentCmd.Text = m_zone.CurrentCmd;
                 txtZoneName.Text = m_zoneDetails.ZoneId + ":"+m_zoneDetails.ZoneName;
                 txSleepTimer.Text = m_zoneDetails.SleepHourMin;

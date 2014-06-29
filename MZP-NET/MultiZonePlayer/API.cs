@@ -15,7 +15,9 @@ namespace MultiZonePlayer
 			ZoneDetails zoneDetails;
 			try {
 				RemotePipiCommand cmdRemote;
-				zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device, kd.Key);
+				zoneDetails = ZoneDetails.ZoneDetailsList.Find(x => x.ControlDeviceName == kd.Device);
+				if (zoneDetails != null) zoneId = zoneDetails.ZoneId;
+				//zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device, kd.Key);
 				//ignore console KEYBOARD commands
 				if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1])	&& zoneId == -1){
 					//MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
@@ -164,7 +166,7 @@ namespace MultiZonePlayer
                             int oid = Convert.ToInt16(vals.GetValue(GlobalParams.oid));
                             vals.Add(GlobalParams.zoneid, MZPState.Instance.GetZoneIdByCamZoneId(oid).ToString());
                             //then pass command
-                            DoZoneCommand(apicmd, vals, ref cmdresult);
+                            DoZoneCommand(apicmd, vals, zoneId, ref cmdresult);
                             //resvalue = values;
                             //result = JsonResult(res, err, values);
                             break;
@@ -519,7 +521,7 @@ namespace MultiZonePlayer
 							MediaLibrary.InitialiseVideos();
 							break;
                         default:
-                            DoZoneCommand(apicmd, vals, ref cmdresult);
+                            DoZoneCommand(apicmd, vals, zoneId, ref cmdresult);
                             break;
 					}
 					#endregion
@@ -549,16 +551,15 @@ namespace MultiZonePlayer
             return cmdresult;
         }
 
-        public static void DoZoneCommand(GlobalCommands apicmd, ValueList vals, ref CommandResult result)
+        public static void DoZoneCommand(GlobalCommands apicmd, ValueList vals, int zoneId, ref CommandResult result)
             //private static String DoZoneCommand(String cmdName, int zoneId, out String errorMessage)
         {
-            try
-            {
-                int zoneId = InferZone(vals.GetValue(GlobalParams.zoneid),
-					vals.GetValue(GlobalParams.zonename), vals.GetValue(GlobalParams.singleparamvalue));
+            try {
+				//inferring is unreliable and produces bad results
+                //int zoneId = InferZone(vals.GetValue(GlobalParams.zoneid),
+				//	vals.GetValue(GlobalParams.zonename), vals.GetValue(GlobalParams.singleparamvalue));
 
-                if (zoneId == -1)
-                {
+                if (zoneId == -1) {
 					result.ErrorMessage = "ERROR no zone found to process command" + apicmd;
 					MLog.Log(null, result.ErrorMessage);
 					result.Result = ResultEnum.ERR;
@@ -582,32 +583,27 @@ namespace MultiZonePlayer
                     }*/
 
                     zone = ZoneDetails.GetZoneById(zoneId).ZoneGeneric;
-                    if (zone == null)
-                    {
+                    if (zone == null) {
                         MLog.Log(null, "No current zone for cmd=" + apicmd + " zoneid=" + zoneId);
                         result.ErrorMessage = "Zone not active " + zoneId;
                         result.Result = ResultEnum.ERR;
 						return;
                     }
-                    else
-                    {
-                        lock (zone)
-                        {
+                    else {
+                        lock (zone) {
 							result.ErrorMessage = "cmdzone="+zone.ZoneName;
                             zone.ProcessAction(apicmd, vals, ref result);
                         }
                     }
                 }
-                else
-                {
+                else {
                     result.ErrorMessage = "ControlCenter instance is null";
 					result.Result = ResultEnum.ERR;
 					MLog.Log(null, result.ErrorMessage);
 					return;
                 }
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 MLog.Log(ex, "Error DoZoneCommand cmd=" + apicmd);
                 result.ErrorMessage = ex.Message;
                 result.Result = ResultEnum.ERR;

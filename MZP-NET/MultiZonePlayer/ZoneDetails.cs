@@ -48,6 +48,8 @@ namespace MultiZonePlayer {
 		public ZoneType Type = ZoneType.Undefined;
 		public String OutputDeviceNameWaveVLC;
 		public int WavedeviceIndex;
+		[Category("Edit"), Description("the raw input device name as provided by Windows, eg: \\\\?\\HID#VID_0A81&PID_0101&MI_00#7&37e1499b&0&0000#{884b96c3-56ef-11d1-bc8c-00a0c91405dd}")]
+		public String ControlDeviceName;
 		//public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
 		[Category("Edit"), Description("ID from winload/paradox system")]
@@ -93,7 +95,7 @@ namespace MultiZonePlayer {
 		public string CounterPageNameToInclude = "1";//counter page name to consider, ignore rest (e.g. 1)
 		[Category("Edit"), Description("IO IDs to include when checking for contact state (so not OUTPUT), comma separated. DS2406 has 2 ports, so value can be 0,1. Rest are ignored")]
 		public string ClosureLevelNameToInclude = "0,1";//counter page name/ID to consider, ignore rest (e.g. 0,1)
-		private string m_closuresCmdContactOnList = "";//list of commands to be executed with closure IDs that must be kept open, comma separated, e.g. for ds2406.
+		public string ClosuresCmdContactOnList = "";//list of commands to be executed with closure IDs that must be kept open, comma separated, e.g. for ds2406.
 		private string m_closuresContactStateOnList = "";//list of closure state IDs that are read from device as open, comma separated, e.g. for ds2406.
 		[Category("Edit")]
 		public DateTime PulseMainUnitsStartDate = DateTime.Now;
@@ -273,17 +275,17 @@ namespace MultiZonePlayer {
 		}
 
 		public Boolean IsClosureCmdIOOn(int id) {
-			return m_closuresCmdContactOnList.Contains(id + ",");
+			return ClosuresCmdContactOnList.Contains(id + ",");
 		}
 
 
 		public void SetClosureCmdIO(int id, Boolean setOn){
 			if (setOn && !IsClosureCmdIOOn(id)) {
-				m_closuresCmdContactOnList += id + ",";
+				ClosuresCmdContactOnList += id + ",";
 			}
 			else
 				if (!setOn && IsClosureCmdIOOn(id))
-					m_closuresCmdContactOnList = m_closuresCmdContactOnList.Replace(id + ",", "");
+					ClosuresCmdContactOnList = ClosuresCmdContactOnList.Replace(id + ",", "");
 		}
 
 		public Boolean IsClosureStateIOOn(int id) {
@@ -364,7 +366,7 @@ namespace MultiZonePlayer {
 							+ " units per minute=" + unitsPerMinute + ", limit is=" + MaxUtilityUnitsPerMinute, true);
 					}
 					else {
-						Alert.CreateAlert("Splitting large counter consumption in zone "+ZoneName,true);
+						int passes = 0;
 						do {
 							pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, unitCountPerMissedFrame);
 							totalLoggedPulses += pulseIncrement;
@@ -391,8 +393,10 @@ namespace MultiZonePlayer {
 							Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
 								PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), unitCountPerMissedFrame.ToString(),
 								cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
+							passes++;
 						}
 						while (totalLoggedPulses < PulseLastMainUnitsCount);
+						Alert.CreateAlert("Splited large counter consumption in zone " + ZoneName + " passes="+passes , true);
 					}
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
@@ -1049,6 +1053,7 @@ namespace MultiZonePlayer {
 
 					WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);
 					OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(WavedeviceIndex);
+					ControlDeviceName = zonestorage.ControlDeviceName;
 
 					WakeTime = zonestorage.WakeTime;
 					WakeWeekDay = zonestorage.WakeWeekDay;
@@ -1076,7 +1081,8 @@ namespace MultiZonePlayer {
 					ClosureCount = zonestorage.ClosureCount;
 					ClosureType = zonestorage.ClosureType;
 					RelayType = zonestorage.RelayType;
-					
+					ClosuresCmdContactOnList = zonestorage.ClosuresCmdContactOnList;
+
 					//if (ClosureOpenCloseRelay.RelayType == ClosureOpenCloseRelay.EnumRelayType.NormalOpen)
 					IsClosureArmed = true;
 					NearbyZonesIdList = zonestorage.NearbyZonesIdList;
@@ -1370,7 +1376,6 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		
 		public static List<ZoneDetails> ZoneWithPotentialUserPresence_All {
 			get {
 				return ZoneDetailsList.FindAll(x => x.HasSpeakers && (x.IsActive || x.HasImmediateMove
@@ -1413,6 +1418,14 @@ namespace MultiZonePlayer {
 					if (!zone.RequirePower && zone.IsPowerOn) {
 						//MLog.Log("Powering off zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
 						zone.PowerControlOff();
+					}
+				}
+				if (slowActions) {
+					if (zone.ControlDeviceName != null) {
+						ControlDevice dev = MZPState.Instance.SystemAvailableControlDevices.Find(x => x.DeviceName == zone.ControlDeviceName);
+						if (dev == null) {
+							Alert.CreateAlertOnce("Invalid control device in zone "+zone.ZoneName,"ControlDevice"+zone.ZoneName);
+						}
 					}
 				}
 			}

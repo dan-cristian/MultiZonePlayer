@@ -11,7 +11,7 @@ namespace MultiZonePlayer {
 		private int m_sourceZoneId;
 		//private int m_inactiveCyclesCount = 0;
 		private IZoneActivity m_mainZoneActivity;
-		private String m_controlDevice = null;
+		//private String m_controlDevice = null;
 		private ZoneDetails m_zoneDetails;
 		private List<ZoneDetails> m_clonedZones;
 		private static int m_recIndex = 0;
@@ -42,11 +42,11 @@ namespace MultiZonePlayer {
 			get { return m_mainZoneActivity; }
 			set { m_mainZoneActivity = value; }
 		}
-
+		/*
 		public String ControlDevice {
 			get { return m_controlDevice; }
 			set { m_controlDevice = value; }
-		}
+		}*/
 
 		public ZoneDetails ZoneDetails {
 			get { return m_zoneDetails; }
@@ -517,7 +517,9 @@ namespace MultiZonePlayer {
 						zone.PowerControlOn();
 						Text2Speech.PlayMessage("Power on in zone " + ZoneName, zone.ZoneGeneric);
 					}
-					foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+					//Identifying associated sound card
+					/*
+					foreach (soundcard in cardlist) {
 						m_userConfirm = false;
 						Text2Speech.PlayMessage("Press button confirm in maximum 5 seconds after you hear the sound", zone.ZoneGeneric);
 						DateTime starttime = DateTime.Now;
@@ -525,13 +527,23 @@ namespace MultiZonePlayer {
 							Thread.Sleep(100);
 						}
 						while (m_userConfirm == false && DateTime.Now.Subtract(starttime).TotalSeconds<=5);
-
+						//todo: pick selected raw input device
+						//todo: repeat selection for multiple devices
 					}
-					
+					*/
 					//TODO: play sound in each sound card and wait for user confirmation via web
+					
+					//identify raw inputs
 					//TODO: ask user to press keyboard in the zone and identify pressed raw input
+					//todo: remove invalid raw inpt devs
+					m_userConfirm = false;
+					Text2Speech.PlayMessage("Press button confirm from your device in maximum 5 seconds after you hear the sound", m_zoneDetails.ZoneGeneric);
+					
+					//associate amp power index
 					//TODO: close all amps and open each one after another. ask user to press key when can hear sound and set power index
-					MZPState.Instance.PowerControlDenkovi.PowerOff();
+					foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+						zone.RequirePowerForced = false;
+					}
 					//TODO: skip elements for zones auto configured or put them as last options?
 					break;
 			#endregion
@@ -884,7 +896,7 @@ namespace MultiZonePlayer {
 		}
 
 		private void LoadZoneIni() {
-			m_controlDevice = MZPState.Instance.GetControlDeviceByZone(m_zoneDetails.ZoneId);
+			//m_controlDevice = MZPState.Instance.GetControlDeviceByZone(m_zoneDetails.ZoneId);
 		}
 
 		private void CheckForSleep() {
