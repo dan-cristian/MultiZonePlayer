@@ -62,7 +62,8 @@ namespace MultiZonePlayer {
 		private SysLog m_syslog;
 		private ScriptingRule m_rule = new ScriptingRule();
 		private MacroEntry m_macro = new MacroEntry();
-
+		private Boolean m_homeMessageActive = false;
+		private String m_homeMessage = "";
 		public ScriptingRule ScriptRule {
 			get { return m_rule; }
 		}
@@ -1060,6 +1061,11 @@ namespace MultiZonePlayer {
 				m.SendMessageToTarget(message);
 			}
 		}
+		public void SendHomeMessage(String message) {
+			m_homeMessageActive = true;
+			m_homeMessage += DateTime.Now.ToString(IniFile.DATETIME_DAYHR_FORMAT)+": "+ message+"\r\n";
+		}
+
 		public void MessengerMakeBuzz() {
 			double lastBuzz = DateTime.Now.Subtract(m_lastBuzzDateTime).TotalSeconds;
 
@@ -1355,8 +1361,20 @@ namespace MultiZonePlayer {
 			Utilities.DeleteFilesOlderThan(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER, "*.*", 1);
 		}
 
+		private void CheckHomeMessages() {
+			if (m_homeMessageActive) {
+				List<ZoneDetails> zones = ZoneDetails.ZoneDetailsList.FindAll(x => x.IsActive);
+				foreach (MultiZonePlayer.ZoneDetails zone in zones) {
+					Text2Speech.PlayMessage(m_homeMessage, zone.ZoneGeneric);
+					if (zone.HasDisplay) { 
+					//TODO: turn on tv, change to PC, display text
+					}
+				}
+			}
+		}
 		public void TickFast() {
 			CheckAlerts();
+			CheckHomeMessages();
 		}
 
 		public void TickSlow() {

@@ -146,6 +146,7 @@ namespace MultiZonePlayer
 		notifyuser,
 		sendmessage,
 		sendchat,
+		homemessage,
 		closure,
 		closurearm,
 		closuredisarm,

@@ -396,7 +396,9 @@ namespace MultiZonePlayer {
 							passes++;
 						}
 						while (totalLoggedPulses < PulseLastMainUnitsCount);
-						Alert.CreateAlert("Splited large counter consumption in zone " + ZoneName + " passes="+passes , true);
+						if (passes > 1) {
+							Alert.CreateAlert("Splited large counter consumption in zone " + ZoneName + " passes=" + passes, true);
+						}
 					}
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;

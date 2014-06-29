@@ -1009,7 +1009,6 @@ namespace MultiZonePlayer
 
         public static void PlayMessage(String text, ZoneGeneric zone)
         {
-
             try
             {
                 if (zone != null)
