@@ -164,7 +164,8 @@ namespace MultiZonePlayer
                         case GlobalCommands.cameraevent:
                             //we don't have zoneid, add it from camera id
                             int oid = Convert.ToInt16(vals.GetValue(GlobalParams.oid));
-                            vals.Add(GlobalParams.zoneid, MZPState.Instance.GetZoneIdByCamZoneId(oid).ToString());
+							zoneId = MZPState.Instance.GetZoneIdByCamZoneId(oid);
+                            vals.Add(GlobalParams.zoneid, zoneId.ToString());
                             //then pass command
                             DoZoneCommand(apicmd, vals, zoneId, ref cmdresult);
                             //resvalue = values;
