@@ -202,6 +202,7 @@ namespace MultiZonePlayer {
 			if (m_zoneGeneric == null)
 				m_zoneGeneric = new ZoneGeneric(this);
 			LoadStateFromIni();
+
 		}
 		public String Name {//for web edit, match singleton Name field requirements
 			get {return ZoneName;}
@@ -1005,18 +1006,25 @@ namespace MultiZonePlayer {
 
 		#endregion
 		public static void LoadFromIni() {
-			Hashtable zoneValues = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONES);
+			//Hashtable zoneValues = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONES);
 
 			ZoneDetails zone;
 
 			m_intervalImmediate = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[0]);
 			m_intervalRecent = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[1]);
 			m_intervalPast = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[2]);
-
-			foreach (int id in zoneValues.Keys) {
-				zone = new ZoneDetails(id, zoneValues[id].ToString());
+			int i = 0;
+			//foreach (int id in zoneValues.Keys) {
+			do {
+				try {
+					zone = new ZoneDetails(i, "");
+				}
+				catch (Exception) { 
+					break; 
+				}
 				m_valueList.Add(zone);
-			}
+				i++;
+			} while (true);
 
 			m_valueList.Sort(delegate(Singleton a1, Singleton a2) {
 				return ((ZoneDetails)a1).ZoneId.CompareTo(((ZoneDetails)a2).ZoneId);
@@ -1123,8 +1131,9 @@ namespace MultiZonePlayer {
 
 					LoadPicturesFromDisk();
 				}
-				else
-					MLog.Log(this, "Ini state NOT FOUND for zone=" + ZoneName);
+				else {
+					throw new Exception("Ini state NOT FOUND for zone=" + ZoneName);
+				}
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, "Unable to load zone id="+ ZoneId +" message "+ ex.Message +" STACK=" + ex.StackTrace);
