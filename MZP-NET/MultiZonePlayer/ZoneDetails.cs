@@ -389,7 +389,7 @@ namespace MultiZonePlayer {
 								}
 								cost = unitCountPerMissedFrame * unitCost;
 							}
-							LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
+							LastPulseSamplingStart = LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
 							Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
 								PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), unitCountPerMissedFrame.ToString(),
 								cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
