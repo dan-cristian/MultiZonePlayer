@@ -1037,7 +1037,7 @@ namespace MultiZonePlayer
 		public string FilterFieldValue = null;
 		protected List<String> VariableList = null;
 		[Category("Edit"), Description(@"Java Script code to be executed when trigger condition meet. Example:<br/>
-			RuleAlarm={ZoneDetails.Temperature;ZoneName=curte f|<br/>
+			RuleAlarm={ZoneDetails.m_temperature;ZoneName=curte f|<br/>
 			if ('#ServerTime#'=='aa')<br/>
 			result = 'command=music;zonename=living';<br/>
 			else<br/>

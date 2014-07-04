@@ -16,7 +16,7 @@ namespace MultiZonePlayer
 	///# DoThat -- well, you figure out when :-)
 	///8-9/2 12,13,14-18 * * * C:\Program\ Files\MyProg\DoThat.exe
 	/// 
-	/// 0 * * * * <%if "#Zones,2.Temperature"<"24";"command=poweron;zonename=heat-living"
+	/// 0 * * * * <%if "#Zones,2.m_temperature"<"24";"command=poweron;zonename=heat-living"
 	/// 
 	/// </summary>
 	public class Cron

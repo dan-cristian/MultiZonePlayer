@@ -17,6 +17,7 @@ using com.dalsemi.onewire.application.monitor;
 namespace MultiZonePlayer {
 
 	public class SensorDevice {
+		
 		public const string ONEWIRE_CONTROLLER_NAME = "DS1990A";
 		public const string ONEWIRE_TEMPDEV_NAME = "DS18B20";
 		public const string ONEWIRE_IO_NAME = "DS2406";
@@ -24,7 +25,7 @@ namespace MultiZonePlayer {
 		public const string ONEWIRE_SMARTBATDEV_NAME = "DS2438";
 		public const string ONEWIRE_COUNTER_NAME = "DS2423";
 		public const string ONEWIRE_IO2_NAME = "DS2413";
-
+		
 		public enum DeviceTypeEnum { OneWire, RFX };
 
 		public String Name;
@@ -62,7 +63,7 @@ namespace MultiZonePlayer {
 		public static List<SensorDevice> DeviceList {
 			get { return SensorDevice.m_deviceList.FindAll(x=>x.SuccessCount>0); }
 		}
-
+		
 		public SensorDevice(String name, String address, String family, ZoneDetails zone, DeviceTypeEnum devtype, String otherInfo ) {
 			Name = name;
 			Address = address;
@@ -126,7 +127,8 @@ namespace MultiZonePlayer {
 			dev.LastRead = DateTime.Now;
 			return dev;
 		}
-
+		
+		
 		private String GetZoneName {
 			get { return Zone != null ? Zone.ZoneName : "zoneN/A"; }
 		}
@@ -190,7 +192,7 @@ namespace MultiZonePlayer {
 				if (m_hasTemp) {
 					if (val != "")
 						val += " ";
-					val += Temperature.ToString() + "°";
+					val += Temperature + "°";
 				}
 				if (val == "") val = "n/a";
 				return val;
@@ -538,7 +540,10 @@ namespace MultiZonePlayer {
 					               + " for response:[" + origResponse + "] is " + dev.DisplayValues());
 					if (dev.ZoneId != -1) {
 						ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
-						
+						if (zone == null) {
+							Alert.CreateAlertOnce("Null zone " + dev.ZoneId + " in RFXrecvresp", "RFXReceiveSerialResponse");
+							return;
+						}
 						SensorDevice devsensor = SensorDevice.UpdateGetDevice(dev.DeviceName, dev.DeviceId, dev.DeviceType.ToString(), zone, 
 							SensorDevice.DeviceTypeEnum.RFX, dev.DisplayValues());
 						
@@ -559,7 +564,7 @@ namespace MultiZonePlayer {
 
 								lasttemp = lasttemp == 0 ? 0.1m : lasttemp;
 								lasthum = lasthum == 0 ? 0.1m : lasthum;
-								zone.Temperature = (double) temp;
+								zone.SetTemperature((double) temp, dev.DeviceId);
 								zone.Humidity = (double) hum;
 								devsensor.Temperature = (double) temp;
 								devsensor.Humidity = (double)hum;
@@ -1008,7 +1013,7 @@ namespace MultiZonePlayer {
 		//private Thread m_searchThread;
 		
 		
-		private double TEMP_DEFAULT = 85;
+		
 		private DateTime m_lastOKRead = DateTime.Now;
 		private Dictionary<string, string> m_deviceAttributes = new Dictionary<string, string>();
 		private int m_initErrors = 0;
@@ -1259,7 +1264,7 @@ namespace MultiZonePlayer {
 					//m_deviceList.RemoveAll(x => x.Family == familyString);
 					DateTime start = DateTime.Now;
 					int elementCount = 0, errCount = 0;
-					String address;
+					String address, sensorName;
 					SensorDevice dev;
 					while (MZPState.Instance != null && containers.hasMoreElements()) {
 						element = (OneWireContainer) containers.nextElement();
@@ -1268,7 +1273,8 @@ namespace MultiZonePlayer {
 						if (zoneList.Count == 0)
 							Alert.CreateAlertOnce("Onewire device not associate, adress=" + address + " name=" + element.getName(), "OneWire"+address);
 						zone = zoneList.Count > 0 ? zoneList[0] : null;
-						dev = SensorDevice.UpdateGetDevice(element.getName(), address, familyString, zone, SensorDevice.DeviceTypeEnum.OneWire, "");
+						sensorName = zone.GetTemperatureDeviceName(address);
+						dev = SensorDevice.UpdateGetDevice(element.getName(), address, familyString, zone, SensorDevice.DeviceTypeEnum.OneWire, sensorName);
 						dev.StartProcessing();
 						if (!ProcessElement(zoneList, element, dev)) {
 							errCount++;
@@ -1350,6 +1356,7 @@ namespace MultiZonePlayer {
 			Boolean result = true;
 			TemperatureContainer temp;
 			double tempVal;
+			String deviceId = element.getAddressAsString();
 			m_lastOKRead = DateTime.Now;
 			if (zoneList != null) {
 				String zoneName = zoneList.Count > 0 ? zoneList[0].ZoneName + ", totalzonecount=" + zoneList.Count : "no zone exist";
@@ -1361,7 +1368,7 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							if (tempVal != TEMP_DEFAULT) {
+							if (tempVal != Constants.TEMP_DEFAULT) {
 								if (dev.TemperatureResolutionIndex != -1)
 									dev.Temperature = tempVal;
 								else
@@ -1370,11 +1377,11 @@ namespace MultiZonePlayer {
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
 								SetResolution(element, zone, dev, tempVal);
-								if (tempVal != TEMP_DEFAULT) {
+								if (tempVal != Constants.TEMP_DEFAULT) {
 									if (zone.TemperatureResolutionDigits >= 0)
-										zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
+										zone.SetTemperature(Math.Round(tempVal, zone.TemperatureResolutionDigits), deviceId);
 									else
-										zone.Temperature = tempVal;
+										zone.SetTemperature(tempVal, deviceId);
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
@@ -1668,18 +1675,17 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							if (tempVal != TEMP_DEFAULT) {
+							if (tempVal != Constants.TEMP_DEFAULT) {
 								dev.Temperature = Math.Round(tempVal, 2);//too many digits, not needed
 							}
 							foreach (ZoneDetails zone in zoneList) {
 								zone.HasOneWireTemperatureSensor = true;
 								SetResolution(element, zone, dev, tempVal);
-								
-								if (tempVal != TEMP_DEFAULT) {
+								if (tempVal != Constants.TEMP_DEFAULT) {
 									if (zone.TemperatureResolutionDigits >= 0)
-										zone.Temperature = Math.Round(tempVal, zone.TemperatureResolutionDigits);
+										zone.SetTemperature(Math.Round(tempVal, zone.TemperatureResolutionDigits), deviceId);
 									else
-										zone.Temperature = tempVal;
+										zone.SetTemperature(tempVal, deviceId);
 								}
 								else {
 									MLog.Log(this, "Reading DEFAULT temp via ds2438 in zone " + zone.ZoneName);
@@ -1926,7 +1932,7 @@ namespace MultiZonePlayer {
 							case "BatteryVoltage":
 								m_lastStatus.BatteryVoltage = pairs[1];
 								break;
-							case "Temperature ":
+							case "m_temperature ":
 								m_lastStatus.Temperature = pairs[1];
 								break;
 							case "UPSStatus":

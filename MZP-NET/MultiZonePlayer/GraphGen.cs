@@ -13,7 +13,8 @@ namespace MultiZonePlayer
 	{
 		private System.ComponentModel.IContainer components = null;
 		System.Windows.Forms.DataVisualization.Charting.Chart chart1;
-		private List<Tuple<int, DateTime, double>> m_tempHistoryList, m_humHistoryList;
+		private List<Tuple<int, DateTime, double>> m_humHistoryList;
+		private List<Tuple<int, DateTime, double, int, String>> m_tempHistoryList;
 		private List<Tuple<int, DateTime, double, int, double>> m_voltageHistoryList;
 		private List<Tuple<int, DateTime, double, double, double, String>> m_utilitiesHistoryList;
 		private List<Tuple<int, DateTime, int, String, String>> m_eventHistoryList;
@@ -75,14 +76,21 @@ namespace MultiZonePlayer
 		{
 			m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
 			PrepareGraph("Temperature & Humidity @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
-			List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zoneId
-				&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastTempHumReference.Subtract(x.Item2).TotalHours>=0);
-			if (tempValues.Count > 0)
-			{
+			List<Tuple<int, DateTime, double, int, String>> tempValues = null;
+			List<int> positionList = new List<int>();
+			string positionName;
+			int positionValue;
+			positionList = m_tempHistoryList.FindAll(x => x.Item1 == zoneId).Select(x => x.Item4).Distinct().ToList();
+			//one zone can have multiple temperature values from distinct sensors
+			for (int positionIndex = 0; positionIndex < positionList.Count; positionIndex++) {
+				positionValue = positionList[positionIndex];
+				positionName = m_tempHistoryList.FindLast(x=>x.Item1==zoneId && x.Item4==positionValue).Item5;
+				tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zoneId && x.Item4==positionValue
+					&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastTempHumReference.Subtract(x.Item2).TotalHours>=0);
 				var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
 				{
-					Name = "Temperature",
-					Color = System.Drawing.Color.Red,
+					Name = "Temperature " + positionName,
+					Color = m_colors[positionIndex],
 					IsVisibleInLegend = true,
 					IsXValueIndexed = false,
 					ChartType = SeriesChartType.Line,
@@ -90,8 +98,7 @@ namespace MultiZonePlayer
 				};
 				this.chart1.Series.Add(series1);
 				double total = 0, min = double.MaxValue, max = double.MinValue;
-				foreach (var point in tempValues)
-				{
+				foreach (var point in tempValues){
 					series1.Points.AddXY(point.Item2, point.Item3);
 					min = Math.Min(min, point.Item3);
 					max = Math.Max(max, point.Item3);
@@ -125,7 +132,7 @@ namespace MultiZonePlayer
 				series2.Name += " Avg=" + Math.Round(total / series2.Points.Count, 2) + " Min=" + min + " Max=" + max;
 			}
 			double minT;
-			minT = tempValues.Count>0? tempValues.Min(x => x.Item3):0;
+			minT = tempValues!=null && tempValues.Count>0? tempValues.Min(x => x.Item3):0;
 			double minY = tempValues.Count>0 ? minT : double.MaxValue;
 			minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
 			chart1.ChartAreas[0].AxisY.Minimum = minY;
@@ -350,45 +357,50 @@ namespace MultiZonePlayer
 			else {
 				zoneList = GetZoneList(zoneIdList);
 			}
-
+			List<int> positionList = new List<int>();
+			string positionName;
+			int positionValue;
 			foreach (ZoneDetails zone in zoneList){
-				color = zone.Color != null ? zone.Color : "Black";
-				List<Tuple<int, DateTime, double>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zone.ZoneId 
-					&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastTempHumReference.Subtract(x.Item2).TotalHours>=0);
-				if (tempValues.Count > 0)
-				{
-					var series1 = new System.Windows.Forms.DataVisualization.Charting.Series
-					{
-						Name = "Temp " + zone.ZoneName,
-						Color = System.Drawing.Color.FromName(color),
-						IsVisibleInLegend = true,
-						IsXValueIndexed = false,
-						ChartType = SeriesChartType.Line,
-						BorderWidth = 1
-					};
-					this.chart1.Series.Add(series1);
-					double total = 0, min = double.MaxValue, max = double.MinValue;
-					double tempTotalValue=0, lastTempValue=0;
-					DateTime lastPointTaken = DateTime.MinValue;
-					foreach (var point in tempValues)
-					{
-						series1.Points.AddXY(point.Item2, point.Item3);
-						total += point.Item3;
-						min = Math.Min(min,point.Item3);
-						max = Math.Max(max, point.Item3);
-						total += point.Item3;
-						UpdateUnitsAndTotal(point.Item2, point.Item3, ref tempTotalValue, ref lastPointTaken, ref lastTempValue);
+				positionList = m_tempHistoryList.FindAll(x=>x.Item1==zone.ZoneId).Select(x => x.Item4).Distinct().ToList();
+				//one zone can have multiple temperature values from distinct sensors
+				for (int positionIndex = 0; positionIndex < positionList.Count; positionIndex++) {
+					positionValue = positionList[positionIndex];
+					positionName = m_tempHistoryList.FindLast(x=>x.Item1==zone.ZoneId && x.Item4==positionValue).Item5;
+					color = zone.Color != null ? zone.Color : "Black";
+					List<Tuple<int, DateTime, double, int, String>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zone.ZoneId && x.Item4==positionValue
+						&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastTempHumReference.Subtract(x.Item2).TotalHours >= 0);
+					if (tempValues.Count > 0) {
+						var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+							Name = "Temp " + zone.ZoneName + " " + positionName,
+							Color = System.Drawing.Color.FromName(color),
+							IsVisibleInLegend = true,
+							IsXValueIndexed = false,
+							ChartType = SeriesChartType.Line,
+							BorderWidth = 1
+						};
+						this.chart1.Series.Add(series1);
+						double total = 0, min = double.MaxValue, max = double.MinValue;
+						double tempTotalValue = 0, lastTempValue = 0;
+						DateTime lastPointTaken = DateTime.MinValue;
+						foreach (var point in tempValues) {
+							series1.Points.AddXY(point.Item2, point.Item3);
+							total += point.Item3;
+							min = Math.Min(min, point.Item3);
+							max = Math.Max(max, point.Item3);
+							total += point.Item3;
+							UpdateUnitsAndTotal(point.Item2, point.Item3, ref tempTotalValue, ref lastPointTaken, ref lastTempValue);
+						}
+						double minutesElapsed = tempValues[tempValues.Count - 1].Item2.Subtract(tempValues[0].Item2).TotalMinutes;
+						series1.Name += " min=" + min + " max=" + max + " °C/min=" + Math.Round(tempTotalValue / minutesElapsed, 1);
 					}
-					double minutesElapsed = tempValues[tempValues.Count - 1].Item2.Subtract(tempValues[0].Item2).TotalMinutes;
-					series1.Name += " min="+min+" max="+max	+ " °C/min=" + Math.Round(tempTotalValue / minutesElapsed, 1);
-				}
-				
-				double minT;
-				minT = tempValues.Count > 0 ? tempValues.Min(x => x.Item3) : 0;
-				minY = tempValues.Count > 0 ? minT : double.MaxValue;
-				//minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
 
-				lastMinY = Math.Min(lastMinY, minY);
+					double minT;
+					minT = tempValues.Count > 0 ? tempValues.Min(x => x.Item3) : 0;
+					minY = tempValues.Count > 0 ? minT : double.MaxValue;
+					//minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
+
+					lastMinY = Math.Min(lastMinY, minY);
+				}
 			}
 			chart1.ChartAreas[0].AxisY.MajorGrid.LineWidth = 0;
 			chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
@@ -638,7 +650,7 @@ namespace MultiZonePlayer
 		}
 
 		private void LoadHistory(bool needTempHum, bool needClosure, bool needVoltage, bool needUtilities, bool needErrors){
-			m_tempHistoryList = new List<Tuple<int, DateTime, double>>();
+			m_tempHistoryList = new List<Tuple<int, DateTime, double, int, String>>();
 			m_humHistoryList = new List<Tuple<int, DateTime, double>>();
 			m_eventHistoryList = new List<Tuple<int, DateTime, int, String, String>>();
 			m_voltageHistoryList = new List<Tuple<int, DateTime, double, int, double>>();
@@ -659,13 +671,15 @@ namespace MultiZonePlayer
 									Type = data[1],
 									Date = Convert.ToDateTime(data[2]),
 									Value = Convert.ToDouble(data[3]),
-									ZoneId = Convert.ToInt16(data[4])
+									ZoneId = Convert.ToInt16(data[4]),
+									Position = data.Length>5 ? GetInt(data[5]):0,
+									DeviceName = data.Length>6 ? data[6]:""
 								};
 					MLog.Log(this, "Processing TEMP/HUM");
 					foreach (var line in query) {
 						switch (line.Type) {
 							case Constants.CAPABILITY_TEMP:
-								m_tempHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
+								m_tempHistoryList.Add(new Tuple<int, DateTime, double, int, String>(line.ZoneId, line.Date, line.Value, line.Position, line.DeviceName));
 								break;
 							case Constants.CAPABILITY_HUM:
 								m_humHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));

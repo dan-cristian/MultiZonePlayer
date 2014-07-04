@@ -824,6 +824,10 @@ namespace MultiZonePlayer
 		public const int NOT_SET = -1;
 		public const string ALL = "ALL";
 		public const string POWER_TYPE_DENKOVI = "Denkovi", POWER_TYPE_NUMATO= "Numato";
+		public const double TEMP_DEFAULT = 85;
+		public const char MULTI_ENTRY_SEPARATOR = ';';
+		public const char DESCRIPTION_START_SEPARATOR = '[';
+		public const char DESCRIPTION_END_SEPARATOR = ']';
 	}
 
 
@@ -855,7 +859,16 @@ namespace MultiZonePlayer
         }
     }
 
-
+	public class TemperatureEntry {
+		public double Temperature;
+		public string DeviceId;
+		public string DeviceName;
+		public TemperatureEntry(double temperature, string deviceid, string devicename) {
+			Temperature = temperature;
+			DeviceId = deviceid;
+			DeviceName = devicename;
+		}
+	}
 
     public class MoodMusic
     {

@@ -109,12 +109,13 @@ namespace MultiZonePlayer {
 		[Category("Edit"), Description("Max number of utility units that can be consumed / minute. Safety check for malfunctioning 1-wire. -1 if limit disabled.")]
 		public int MaxUtilityUnitsPerMinute = Constants.NOT_SET;
 
-		[Category("Edit")]
+		[Category("Edit"), Description("OneWire device id for temperature sensors. Format for multiple entries is <ADDRESS1XXXXX>[sensorname1-optional];<ADDRESS2XXXXX>[sensorname2-optional];etc.")]
 		public String TemperatureDeviceId="";
 		[Category("Edit"), Description("OneWire device id for devices that supports IO operations. E.g. DS2406, DS2408")]
 		public String OneWireIODeviceId="";
 		//[Category("Edit")]
 		//public String OtherOneWireDeviceIdList;//separated by ;
+		private List<TemperatureEntry> m_temperatureList = new List<TemperatureEntry>();
 
 		[Category("Edit")]
 		public double TemperatureMaxAlarm = 1000;
@@ -172,7 +173,7 @@ namespace MultiZonePlayer {
 		private double[] m_voltage = new double[5] { Constants.NOT_SET, Constants.NOT_SET, Constants.NOT_SET, Constants.NOT_SET, Constants.NOT_SET};
 		protected const double DEFAULT_TEMP_HUM = -1000;
 
-		protected double m_temperature = DEFAULT_TEMP_HUM, m_humidity = DEFAULT_TEMP_HUM;
+		protected double m_humidity = DEFAULT_TEMP_HUM; //m_temperature = DEFAULT_TEMP_HUM, 
 		protected Boolean m_lowTempReached = true;
 		//protected double m_temperatureLast = DEFAULT_TEMP_HUM, m_humidityLast = DEFAULT_TEMP_HUM;
 		protected DateTime m_lastTempSet = DateTime.MinValue, m_lastHumSet = DateTime.MinValue;
@@ -625,7 +626,7 @@ namespace MultiZonePlayer {
 
 		public Boolean HasTemperatureAlarm {
 			get {
-				return (m_temperature > TemperatureMaxAlarm) || (m_temperature < TemperatureMinAlarm);
+				return (Temperature > TemperatureMaxAlarm) || (Temperature < TemperatureMinAlarm);
 			}
 		}
 
@@ -942,24 +943,78 @@ namespace MultiZonePlayer {
 		}
 
 		public double Temperature {
-			get { return m_temperature; }//return Math.Round(m_temperature, 2).ToString(); }
-			set {
-				if (m_temperature != DEFAULT_TEMP_HUM &&  MaxTempUnitsVariationBetweenReads!=Constants.NOT_SET) {
-					if (Math.Abs(m_temperature - value) > MaxTempUnitsVariationBetweenReads) {
-						Alert.CreateAlert("Too big variance in temperature detected, last val=" + m_temperature + " current=" + value
+			get {
+				if (m_temperatureList.Count > 0)
+					return m_temperatureList[0].Temperature;
+				else
+					return DEFAULT_TEMP_HUM;
+			}//return Math.Round(m_temperature, 2).ToString(); }
+		}
+
+		public String DisplayTemperature {
+			get {
+				String display="";
+				foreach (TemperatureEntry temp in m_temperatureList){
+					display += "/"+temp.Temperature;
+				}
+				if (display.Length >= 1) 
+					return display.Substring(1);
+				else 
+					return display;
+			}
+		}
+		private int GetTemperatureDevicePosition(String deviceId) {
+			string[] atoms = TemperatureDeviceId.ToLower().Split(Constants.MULTI_ENTRY_SEPARATOR);
+			deviceId = deviceId.ToLower();
+			int pos=0;
+			for (int i = 0; i < atoms.Length; i++) {
+				if (atoms[i].Contains(deviceId)) {
+					pos = i;
+					break;
+				}
+			}
+			return pos;
+		}
+		//position in the 
+		public string GetTemperatureDeviceName(String deviceId) {
+			int position = GetTemperatureDevicePosition(deviceId);
+			string[] atoms = TemperatureDeviceId.ToLower().Split(Constants.MULTI_ENTRY_SEPARATOR);
+			String[] names = atoms[position].Split(Constants.DESCRIPTION_START_SEPARATOR);
+			if (names.Length >= 2)
+				return names[1].Replace("" + Constants.DESCRIPTION_END_SEPARATOR, "");
+			else
+				return "";
+		}
+		public void SetTemperature(double value, String deviceId) {
+			int position = GetTemperatureDevicePosition(deviceId);
+			string devicename = GetTemperatureDeviceName(deviceId);
+			TemperatureEntry temp = m_temperatureList.Find(x => x.DeviceId == deviceId);
+			if (temp == null) {
+				temp = new TemperatureEntry(DEFAULT_TEMP_HUM, deviceId, devicename);
+				m_temperatureList.Add(temp);
+			}
+			else {
+				temp.DeviceName = devicename;
+			}
+			//device with position == 0 is representative for the current zone
+			if (position == 0 && Temperature != DEFAULT_TEMP_HUM &&  MaxTempUnitsVariationBetweenReads!=Constants.NOT_SET) {
+					if (Math.Abs(Temperature - value) > MaxTempUnitsVariationBetweenReads) {
+						Alert.CreateAlert("Too big variance in temperature detected, last val=" + Temperature + " current=" + value
 							+ " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
 						return;
 					}
 				}
-				if (Temperature != value) {
+				if (temp.Temperature != value) {
 					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
-						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString());
-					ScriptingRule.ExecuteRule(this, "temp=" + value);
+						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), position.ToString(), devicename);
+					if (position == 0) {
+						ScriptingRule.ExecuteRule(this, "temp=" + value);
+						//Temperature = value;
+					}
 					//m_temperatureLast = m_temperature;
 				}
-				m_temperature = value;
+				temp.Temperature = value;
 				m_lastTempSet = DateTime.Now;
-
 				if (Temperature > TemperatureMaxAlarm) {
 					Alert.CreateAlert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
 						+ ZoneName + ", temp is " + Temperature, this, false, null,
@@ -971,9 +1026,7 @@ namespace MultiZonePlayer {
 							+ ZoneName + ", temp is " + Temperature, this, false, null,
 							Alert.NotificationFlags.NotifyUserAfterXHours, 1);
 					}
-			}
 		}
-
 		public double TemperatureTargetMaxTreshhold {
 			get { return TemperatureTarget + Convert.ToDouble(IniFile.PARAM_TEMP_TRESHHOLD[1]); }
 		}
@@ -1109,7 +1162,7 @@ namespace MultiZonePlayer {
 					TemperatureResolutionDigits = zonestorage.TemperatureResolutionDigits;
 					MaxTempUnitsVariationBetweenReads = zonestorage.MaxTempUnitsVariationBetweenReads;
 					Color = zonestorage.Color;
-					//Temperature = "1";
+					//m_temperature = "1";
 
 					UtilityType = zonestorage.UtilityType;
 					PulseMainUnitsCount = zonestorage.PulseMainUnitsCount;
