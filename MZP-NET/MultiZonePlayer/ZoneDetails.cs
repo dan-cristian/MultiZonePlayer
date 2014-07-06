@@ -113,6 +113,11 @@ namespace MultiZonePlayer {
 		public String TemperatureDeviceId="";
 		[Category("Edit"), Description("OneWire device id for devices that supports IO operations. E.g. DS2406, DS2408")]
 		public String OneWireIODeviceId="";
+
+		public int WDIORelayOutputPinIndex = Constants.NOT_SET;
+		public int WDIOButtonPinIndex = Constants.NOT_SET;
+		public int WDIOSwitchPinIndex = Constants.NOT_SET;
+
 		//[Category("Edit")]
 		//public String OtherOneWireDeviceIdList;//separated by ;
 		private List<TemperatureEntry> m_temperatureList = new List<TemperatureEntry>();
@@ -714,7 +719,16 @@ namespace MultiZonePlayer {
 		public Boolean HasClosures {
 			get { return ClosureIdList != "" || HasOneWireIODevice; }
 		}
-
+		public Boolean HasRelay {
+			get {
+				return HasWDIORelay || HasOneWireIODevice;
+			}
+		}
+		public Boolean HasWDIORelay {
+			get {
+				return WDIORelayOutputPinIndex != Constants.NOT_SET;
+			}
+		}
 		public Boolean HasOneWireTemperatureSensor {
 			get { return m_hasOneWireTempSensor; }
 			set { m_hasOneWireTempSensor = value; }

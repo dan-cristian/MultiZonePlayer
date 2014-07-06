@@ -660,11 +660,11 @@ namespace MultiZonePlayer {
 
 	public class WDIO : GenericModem, IMessenger, IMZPDevice {
 		private String m_lastState, m_channel;
-		private const string WDIO_ATTRIB_SWITCH = "iopin=", WDIO_ATTRIB_BUTTON = "iobutton=";
+		private const string WDIO_ATTRIB_SWITCH = "iopin=", WDIO_ATTRIB_BUTTON = "iobutton=", WDIO_ATTRIB_OUTPUT="ioout=";
 		private const int WDIO_PIN_COUNT = 14;
 		private const char STATE_CONTACT_MADE = '0', STATE_CONTACT_NOTMADE = '1', STATE_UNDEFINED = '?';
 		private int[] m_zoneIdMap = new int[WDIO_PIN_COUNT];
-		private const char CMD_SWITCH = 'S', CMD_BUTTON = 'B', CMD_PARAM_LOW = 'L', CMD_PARAM_HIGH = 'H';
+		private const char CMD_SWITCH = 'S', CMD_BUTTON = 'B', CMD_PARAM_LOW_ON = 'L', CMD_PARAM_HIGH_OFF = 'H';
 
 		public String State {
 			get { return m_lastState; }
@@ -718,6 +718,24 @@ namespace MultiZonePlayer {
 					iocmd = CMD_BUTTON;
 					attriblength = WDIO_ATTRIB_BUTTON.Length;
 				}
+				else {
+					startindex = zone.ClosureIdList.IndexOf(WDIO_ATTRIB_OUTPUT);
+					if (startindex != -1) {
+						switch (zone.RelayType) {
+							case EnumRelayType.NormalOpen:
+								iocmd = CMD_PARAM_HIGH_OFF;//set as output and turn on or off (depends)
+								break;
+							case EnumRelayType.NormalClosed:
+								iocmd = CMD_PARAM_LOW_ON;
+								break;
+							default:
+								Alert.CreateAlert("Relay type not set for WDIO at init", true);
+								iocmd = CMD_PARAM_HIGH_OFF;
+								break;
+						}
+						attriblength = WDIO_ATTRIB_OUTPUT.Length;
+					}
+				}
 			}
 			if (startindex != -1) {
 				end = zone.ClosureIdList.IndexOf(";", startindex);
@@ -731,18 +749,49 @@ namespace MultiZonePlayer {
 				else {
 					MLog.Log(this, "Error parsing pin=" + zone.ClosureIdList + " for zone " + zone.ZoneName);
 				}
+				switch (iocmd) {
+					case CMD_PARAM_HIGH_OFF:
+					case CMD_PARAM_LOW_ON:
+						zone.WDIORelayOutputPinIndex = pinindex;
+						break;
+					case CMD_BUTTON:
+						zone.WDIOButtonPinIndex = pinindex;
+						break;
+					case CMD_SWITCH:
+						zone.WDIOSwitchPinIndex = pinindex;
+						break;
+				}
+
 				if (pinindex >= 0 && pinindex < m_zoneIdMap.Length) {
 					m_zoneIdMap[pinindex] = zone.ZoneId;
 					Thread.Sleep(100);
-					MLog.Log(this, "Set IO pin " + pinindex + " zone=" + zone.ZoneName
-					               + " result=" + WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000));
+					MLog.Log(this, "Set IO pin index= " + pinindex + "on zone=" + zone.ZoneName + " cmd=" +iocmd 
+						+ " result=" + WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000));
 				}
 				else {
 					MLog.Log(this, "Error pin index in zone " + zone.ZoneName + " is out of range: " + pinindex);
 				}
 			}
 		}
+		/// <summary>
+		/// Turn relay off
+		/// </summary>
+		/// <param name="pinindex">0 to n</param>
+		public void SetOutputHigh(int pinindex) {
+			String result = WriteCommand(m_channel + CMD_PARAM_HIGH_OFF + Convert.ToChar('A' + pinindex), 1, 1000);
+			MLog.Log(this, "WDIO Set output High returned " + result);
+			ReceiveSerialResponse(result);
 
+		}
+		/// <summary>
+		/// Turn relay on
+		/// </summary>
+		/// <param name="pinindex">0 to n</param>
+		public void SetOutputLow(int pinindex) {
+			String result = WriteCommand(m_channel + CMD_PARAM_LOW_ON + Convert.ToChar('A' + pinindex), 1, 1000);
+			MLog.Log(this, "WDIO Set output Low returned " + result);
+			ReceiveSerialResponse(result);
+		}
 		public override Boolean TestConnection() {
 			if (comm == null || !comm.IsPortOpen()) {
 				return false;
@@ -759,14 +808,28 @@ namespace MultiZonePlayer {
 			if (response.Length >= 3) {
 				channel = response[0]; //filter later, now all is A
 				pin = response[1];
-				if (response[2] == CMD_PARAM_LOW) {
+				if (response[2] == CMD_PARAM_LOW_ON) {
 					state = STATE_CONTACT_MADE;
 				}
-				else if (response[2] == CMD_PARAM_HIGH) {
+				else if (response[2] == CMD_PARAM_HIGH_OFF) {
 					state = STATE_CONTACT_NOTMADE;
 				}
 				else {
-					state = STATE_UNDEFINED;
+					//check first if this is a response for output set
+					switch (response[1])
+					{
+						case CMD_PARAM_LOW_ON:
+							state = STATE_CONTACT_MADE;
+							pin = response[2];
+							break;
+						case CMD_PARAM_HIGH_OFF:
+							state = STATE_CONTACT_NOTMADE;
+							pin = response[2];
+							break;
+						default:
+							state = STATE_UNDEFINED;
+							break;
+					}
 				}
 				if (state != STATE_UNDEFINED) {
 					if (state == STATE_CONTACT_MADE) {
@@ -817,7 +880,7 @@ namespace MultiZonePlayer {
 		}
 
 		public string Name() {
-			return "WD";
+			return "WDIO";
 		}
 	}
 
@@ -1046,6 +1109,7 @@ namespace MultiZonePlayer {
 			return true; //dMonitor.isRunning;
 		}
 
+		private const int ONEWIRE_ERR_COUNT_NOSILENT = 5;
 		public void Reinitialise() {
 			try {
 				SensorDevice.Clear(SensorDevice.DeviceTypeEnum.OneWire);
@@ -1055,7 +1119,7 @@ namespace MultiZonePlayer {
 				}
 				m_adapterList.Clear();
 				DSPortAdapter adapterVar;
-				if (m_initErrors < 5)
+				if (m_initErrors < ONEWIRE_ERR_COUNT_NOSILENT)
 					MLog.Log(this, "Initialising OneWire");
 				try {
 					adapterVar = null;
@@ -1075,7 +1139,9 @@ namespace MultiZonePlayer {
 				String[] adapterPorts = IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1].Split(';');
 				if (adapterNames.Length == adapterPorts.Length) {
 					for (int i = 0; i < adapterNames.Length; i++) {
-						MLog.Log(this, "Trying to initialize 1wire adapter " + adapterNames[i] + adapterPorts[i]);
+						if (m_initErrors < ONEWIRE_ERR_COUNT_NOSILENT) {
+							MLog.Log(this, "Trying to initialize 1wire adapter " + adapterNames[i] + adapterPorts[i]);
+						}
 						try {
 							adapterVar = OneWireAccessProvider.getAdapter(adapterNames[i], adapterPorts[i]);
 							adapterVar.beginExclusive(true);
@@ -1105,7 +1171,7 @@ namespace MultiZonePlayer {
 					m_initErrors++;
 					if (m_initErrors > 100)
 						m_initErrors = 0;
-					if (m_initErrors < 5) {
+					if (m_initErrors < ONEWIRE_ERR_COUNT_NOSILENT) {
 						MLog.Log(this, "Unable to init onewire adapter name=" + IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1]
 							+ " port =" + IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1]);
 						return;
@@ -1310,7 +1376,7 @@ namespace MultiZonePlayer {
 					}
 				}
 				if (m_adapterList == null || m_adapterList.Count==0 || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
-					Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", true);
+					Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", false);
 					foreach (Thread th in threadList) {
 						th.Abort();
 					}

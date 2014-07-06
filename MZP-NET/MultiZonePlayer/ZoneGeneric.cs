@@ -409,15 +409,26 @@ namespace MultiZonePlayer {
 					break;
 				case GlobalCommands.closureopen:
 					int closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
-					m_zoneDetails.SetClosureCmdIO(closureid, true);
+					if (m_zoneDetails.HasWDIORelay) {
+						MZPState.Instance.WDIO.SetOutputHigh(m_zoneDetails.WDIORelayOutputPinIndex);
+					}
+					else
+						m_zoneDetails.SetClosureCmdIO(closureid, true);
 					break;
 				case GlobalCommands.closureclose:
 					closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
-					m_zoneDetails.SetClosureCmdIO(closureid, false);
+					if (m_zoneDetails.HasWDIORelay) {
+						MZPState.Instance.WDIO.SetOutputLow(m_zoneDetails.WDIORelayOutputPinIndex);
+					}
+					else
+						m_zoneDetails.SetClosureCmdIO(closureid, false);
 					break;
 				case GlobalCommands.closuretoggle:
 					closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
-					m_zoneDetails.SetClosureCmdIO(closureid, !m_zoneDetails.IsClosureCmdIOOn(closureid));
+					if (m_zoneDetails.HasWDIORelay) { }
+						
+					else
+						m_zoneDetails.SetClosureCmdIO(closureid, !m_zoneDetails.IsClosureCmdIOOn(closureid));
 					break;
 				case GlobalCommands.counter:
 					ulong counter = 0;
