@@ -449,6 +449,7 @@ namespace MultiZonePlayer
 							switch (classname) {
 								case "ZoneDetails":
 									fieldObj = ZoneDetails.GetZoneByInternalId(id);
+									((ZoneDetails)fieldObj).FieldChanged(field);
 									break;
 								case "User":
 									fieldObj = User.GetUser(id);

@@ -660,11 +660,11 @@ namespace MultiZonePlayer {
 
 	public class WDIO : GenericModem, IMessenger, IMZPDevice {
 		private String m_lastState, m_channel;
-		private const string WDIO_ATTRIB_SWITCH = "iopin=", WDIO_ATTRIB_BUTTON = "iobutton=", WDIO_ATTRIB_OUTPUT="ioout=";
+		public const string WDIO_ATTRIB_SWITCH = "iopin=", WDIO_ATTRIB_BUTTON = "iobutton=", WDIO_ATTRIB_OUTPUT="ioout=";
 		private const int WDIO_PIN_COUNT = 14;
 		private const char STATE_CONTACT_MADE = '0', STATE_CONTACT_NOTMADE = '1', STATE_UNDEFINED = '?';
 		private int[] m_zoneIdMap = new int[WDIO_PIN_COUNT];
-		private const char CMD_SWITCH = 'S', CMD_BUTTON = 'B', CMD_PARAM_LOW_ON = 'L', CMD_PARAM_HIGH_OFF = 'H';
+		private const char CMD_SWITCH = 'S', CMD_BUTTON = 'B', CMD_PARAM_LOW = 'L', CMD_PARAM_HIGH = 'H';
 
 		public String State {
 			get { return m_lastState; }
@@ -694,7 +694,7 @@ namespace MultiZonePlayer {
 			//ClearPins();
 			m_lastState = "";
 			for (int i = 0; i < m_zoneIdMap.Length; i++) {
-				m_zoneIdMap[i] = -1;
+				m_zoneIdMap[i] = Constants.NOT_SET;
 				m_lastState += STATE_CONTACT_NOTMADE;
 			}
 			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
@@ -703,7 +703,7 @@ namespace MultiZonePlayer {
 		}
 
 		public void SetPinTypes(ZoneDetails zone) {
-			string pin;
+			string pin, result;
 			char iocmd = '?';
 			int startindex, end, pinindex, attriblength = 0;
 
@@ -723,14 +723,14 @@ namespace MultiZonePlayer {
 					if (startindex != -1) {
 						switch (zone.RelayType) {
 							case EnumRelayType.NormalOpen:
-								iocmd = CMD_PARAM_HIGH_OFF;//set as output and turn on or off (depends)
+								iocmd = CMD_PARAM_LOW;//set as output and turn on or off (depends)
 								break;
 							case EnumRelayType.NormalClosed:
-								iocmd = CMD_PARAM_LOW_ON;
+								iocmd = CMD_PARAM_HIGH;
 								break;
 							default:
 								Alert.CreateAlert("Relay type not set for WDIO at init", true);
-								iocmd = CMD_PARAM_HIGH_OFF;
+								iocmd = CMD_PARAM_LOW;
 								break;
 						}
 						attriblength = WDIO_ATTRIB_OUTPUT.Length;
@@ -750,8 +750,8 @@ namespace MultiZonePlayer {
 					MLog.Log(this, "Error parsing pin=" + zone.ClosureIdList + " for zone " + zone.ZoneName);
 				}
 				switch (iocmd) {
-					case CMD_PARAM_HIGH_OFF:
-					case CMD_PARAM_LOW_ON:
+					case CMD_PARAM_HIGH:
+					case CMD_PARAM_LOW:
 						zone.WDIORelayOutputPinIndex = pinindex;
 						break;
 					case CMD_BUTTON:
@@ -764,31 +764,40 @@ namespace MultiZonePlayer {
 
 				if (pinindex >= 0 && pinindex < m_zoneIdMap.Length) {
 					m_zoneIdMap[pinindex] = zone.ZoneId;
-					Thread.Sleep(100);
+					Thread.Sleep(100);//pause between wdio writes
+					result = WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000);
 					MLog.Log(this, "Set IO pin index= " + pinindex + "on zone=" + zone.ZoneName + " cmd=" +iocmd 
-						+ " result=" + WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000));
+						+ " result=" + result);
 				}
 				else {
 					MLog.Log(this, "Error pin index in zone " + zone.ZoneName + " is out of range: " + pinindex);
 				}
+				//set all unused port to output not on
+				for (int i = 0; i < m_zoneIdMap.Length; i++) {
+					if (m_zoneIdMap[i] == Constants.NOT_SET) {
+						Thread.Sleep(100);//pause between wdio writes
+						MLog.Log(this, "Setting off unused wdio pin index" + i);
+						WriteCommand(m_channel + CMD_PARAM_LOW + Convert.ToChar('A' + i), 1, 1000);
+					}
+				}
 			}
-		}
-		/// <summary>
-		/// Turn relay off
-		/// </summary>
-		/// <param name="pinindex">0 to n</param>
-		public void SetOutputHigh(int pinindex) {
-			String result = WriteCommand(m_channel + CMD_PARAM_HIGH_OFF + Convert.ToChar('A' + pinindex), 1, 1000);
-			MLog.Log(this, "WDIO Set output High returned " + result);
-			ReceiveSerialResponse(result);
-
 		}
 		/// <summary>
 		/// Turn relay on
 		/// </summary>
 		/// <param name="pinindex">0 to n</param>
+		public void SetOutputHigh(int pinindex) {
+			String result = WriteCommand(m_channel + CMD_PARAM_HIGH + Convert.ToChar('A' + pinindex), 1, 1000);
+			MLog.Log(this, "WDIO Set output High returned " + result);
+			ReceiveSerialResponse(result);
+
+		}
+		/// <summary>
+		/// Turn relay off
+		/// </summary>
+		/// <param name="pinindex">0 to n</param>
 		public void SetOutputLow(int pinindex) {
-			String result = WriteCommand(m_channel + CMD_PARAM_LOW_ON + Convert.ToChar('A' + pinindex), 1, 1000);
+			String result = WriteCommand(m_channel + CMD_PARAM_LOW + Convert.ToChar('A' + pinindex), 1, 1000);
 			MLog.Log(this, "WDIO Set output Low returned " + result);
 			ReceiveSerialResponse(result);
 		}
@@ -808,22 +817,22 @@ namespace MultiZonePlayer {
 			if (response.Length >= 3) {
 				channel = response[0]; //filter later, now all is A
 				pin = response[1];
-				if (response[2] == CMD_PARAM_LOW_ON) {
-					state = STATE_CONTACT_MADE;
-				}
-				else if (response[2] == CMD_PARAM_HIGH_OFF) {
+				if (response[2] == CMD_PARAM_LOW) {
 					state = STATE_CONTACT_NOTMADE;
+				}
+				else if (response[2] == CMD_PARAM_HIGH) {
+					state = STATE_CONTACT_MADE;
 				}
 				else {
 					//check first if this is a response for output set
 					switch (response[1])
 					{
-						case CMD_PARAM_LOW_ON:
-							state = STATE_CONTACT_MADE;
+						case CMD_PARAM_LOW:
+							state = STATE_CONTACT_NOTMADE;
 							pin = response[2];
 							break;
-						case CMD_PARAM_HIGH_OFF:
-							state = STATE_CONTACT_NOTMADE;
+						case CMD_PARAM_HIGH:
+							state = STATE_CONTACT_MADE;
 							pin = response[2];
 							break;
 						default:

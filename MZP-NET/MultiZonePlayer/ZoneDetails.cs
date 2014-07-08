@@ -65,7 +65,7 @@ namespace MultiZonePlayer {
 		public Boolean RequirePowerForced = false;
 		[Category("Edit")]
 		public String NearbyZonesIdList = "";//zone id list separated by ;
-		[Category("Edit")]
+		[Category("Edit"), Description("list of io ports. for wdio use " + WDIO.WDIO_ATTRIB_BUTTON +"x;"+ WDIO.WDIO_ATTRIB_OUTPUT + "x;"+WDIO.WDIO_ATTRIB_SWITCH+"x;")]
 		public string ClosureIdList = "";//separated by ; iopin=2 / for gpio
 		//public ClosureOpenCloseRelay ClosureOpenCloseRelay;
 		[Category("Edit")]
@@ -1407,6 +1407,26 @@ namespace MultiZonePlayer {
 			}
 			
 		}
+
+		private List<String> m_fieldChangedList = new List<string>();
+		public void FieldChanged(String fieldname) {
+			m_fieldChangedList.Add(fieldname);
+		}
+
+		private void CheckAndApplyFieldChanges() {
+			if (m_fieldChangedList.Count > 0) {
+				foreach (String fieldname in m_fieldChangedList) {
+					switch (fieldname) {
+						case "ClosureIdList":
+							MZPState.Instance.WDIO.SetPinTypes(this);
+							break;
+						default:
+							break;
+					}
+				}
+				m_fieldChangedList.Clear();
+			}
+		}
 		#region statics
 		/*public static List<ZoneDetails> ValueList {
 			get { return ZoneDetails.ValueList.Select(x=>(ZoneDetails)x).ToList(); }
@@ -1497,6 +1517,8 @@ namespace MultiZonePlayer {
 						//MLog.Log("Powering off zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
 						zone.PowerControlOff();
 					}
+
+					zone.CheckAndApplyFieldChanges();
 				}
 				if (slowActions) {
 					if (zone.ControlDeviceName != null) {

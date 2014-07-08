@@ -410,7 +410,7 @@ namespace MultiZonePlayer {
 				case GlobalCommands.closureopen:
 					int closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
 					if (m_zoneDetails.HasWDIORelay) {
-						MZPState.Instance.WDIO.SetOutputHigh(m_zoneDetails.WDIORelayOutputPinIndex);
+						MZPState.Instance.WDIO.SetOutputLow(m_zoneDetails.WDIORelayOutputPinIndex);
 					}
 					else
 						m_zoneDetails.SetClosureCmdIO(closureid, true);
@@ -418,7 +418,7 @@ namespace MultiZonePlayer {
 				case GlobalCommands.closureclose:
 					closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
 					if (m_zoneDetails.HasWDIORelay) {
-						MZPState.Instance.WDIO.SetOutputLow(m_zoneDetails.WDIORelayOutputPinIndex);
+						MZPState.Instance.WDIO.SetOutputHigh(m_zoneDetails.WDIORelayOutputPinIndex);
 					}
 					else
 						m_zoneDetails.SetClosureCmdIO(closureid, false);
