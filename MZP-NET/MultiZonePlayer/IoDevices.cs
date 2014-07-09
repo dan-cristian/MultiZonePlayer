@@ -817,28 +817,26 @@ namespace MultiZonePlayer {
 			if (response.Length >= 3) {
 				channel = response[0]; //filter later, now all is A
 				pin = response[1];
-				if (response[2] == CMD_PARAM_LOW) {
-					state = STATE_CONTACT_NOTMADE;
-				}
-				else if (response[2] == CMD_PARAM_HIGH) {
-					state = STATE_CONTACT_MADE;
-				}
-				else {
-					//check first if this is a response for output set
-					switch (response[1])
-					{
-						case CMD_PARAM_LOW:
+				//check for output response
+				switch (response[1]) {
+					case CMD_PARAM_LOW:
+						state = STATE_CONTACT_NOTMADE;
+						pin = response[2];
+						break;
+					case CMD_PARAM_HIGH:
+						state = STATE_CONTACT_MADE;
+						pin = response[2];
+						break;
+					default:
+						if (response[2] == CMD_PARAM_LOW) {
 							state = STATE_CONTACT_NOTMADE;
-							pin = response[2];
-							break;
-						case CMD_PARAM_HIGH:
+						}
+						else if (response[2] == CMD_PARAM_HIGH) {
 							state = STATE_CONTACT_MADE;
-							pin = response[2];
-							break;
-						default:
+						}
+						else
 							state = STATE_UNDEFINED;
-							break;
-					}
+						break;
 				}
 				if (state != STATE_UNDEFINED) {
 					if (state == STATE_CONTACT_MADE) {

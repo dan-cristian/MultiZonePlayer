@@ -39,7 +39,6 @@
 <button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,0#  Closed#Zones,%_zoneid.IsClosureRelayInNormalState,0#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=0', true)">IO 0 On=#Zones,%_zoneid.IsClosureStateIOOn,0#</button>
 <button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,1#  Closed#Zones,%_zoneid.IsClosureRelayInNormalState,1#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=1', true)">IO 1 On=#Zones,%_zoneid.IsClosureStateIOOn,1#</button>
 <%%>
-
 <%if;"#Zones,%_zoneid.HasOneWireIODevice##Zones,%_zoneid.OneWireIOPortCount#"=="True8"%>
 <button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,0# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,0#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=0', true)">IO 0 On=#Zones,%_zoneid.IsClosureStateIOOn,0#</button>
 <button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,1# Closed#Zones,%_zoneid.IsClosureRelayInNormalState,1#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=1', true)">IO 1 On=#Zones,%_zoneid.IsClosureStateIOOn,1#</button>
