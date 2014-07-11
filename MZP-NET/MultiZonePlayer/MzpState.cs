@@ -301,7 +301,7 @@ namespace MultiZonePlayer {
 				}
 				m_cron.stop();
 				foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
-					zone.SaveEntryToIni();
+					zone.Close();
 				}
 				foreach (IMessenger mes in m_messengerList) {
 					mes.Close();
@@ -1015,7 +1015,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		private void HealthCheckMessengers() {
+		private void CheckHealthMessengers() {
 			Boolean ok;
 			foreach (IMessenger m in m_messengerList) {
 				if (m != null && !m.IsFaulty()) {
@@ -1400,7 +1400,7 @@ namespace MultiZonePlayer {
 				if (MZPState.Instance == null) {
 					return;
 				}
-				HealthCheckMessengers();
+				CheckHealthMessengers();
 			}
 			if (MZPState.Instance == null) {
 				return;

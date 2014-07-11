@@ -828,6 +828,8 @@ namespace MultiZonePlayer
 		public const char MULTI_ENTRY_SEPARATOR = ';';
 		public const char DESCRIPTION_START_SEPARATOR = '[';
 		public const char DESCRIPTION_END_SEPARATOR = ']';
+		public const string STR_TIMEOUT = "[timeout]";
+		public const string STR_EXCEPTION = "[exception]";
 	}
 
 

@@ -53,21 +53,22 @@ namespace MultiZonePlayer
         private AutoResetEvent m_autoEventReceive = new AutoResetEvent(false);
         private int m_responseTimeoutsCount = 0;
 
-		public const string STR_TIMEOUT = "[timeout]";
-		public const string STR_EXCEPTION = "[exception]";
+		
 
         public int ResponseTimeoutsCount
         {
             get { return m_responseTimeoutsCount; }
         }
 
-        public void Initialise(String baud, String parity, String stopbits, String databits, String port, CommunicationManager.TransmissionType type)
+        public bool Initialise(String baud, String parity, String stopbits, String databits, String port, CommunicationManager.TransmissionType type)
         {
+			bool result;
             comm = new CommunicationManager(baud, parity, stopbits, databits, port, type, this.handler);
-			comm.OpenPort();
+			result = comm.OpenPort();
             m_waitForResponse = false;
             m_lastOperationWasOK = true;
             Connection = port;
+			return result;
         }
 
 		public Boolean IsFaulty()
@@ -133,8 +134,8 @@ namespace MultiZonePlayer
 							Math.DivRem(m_responseTimeoutsCount, 400, out decim);
 							if (m_responseTimeoutsCount < 5 || decim == 0)
 								MLog.Log(this, "No serial response received for cmd=" + cmd + " at count=" + responseCount + " resp=" + m_lastMessageResponse + " number of timeouts=" + m_responseTimeoutsCount);
-							if (!m_lastMessageResponse.Contains(STR_TIMEOUT))
-								m_lastMessageResponse += STR_TIMEOUT;
+							if (!m_lastMessageResponse.Contains(Constants.STR_TIMEOUT))
+								m_lastMessageResponse += Constants.STR_TIMEOUT;
 						}
 						else
 						{
@@ -142,7 +143,7 @@ namespace MultiZonePlayer
 							responseCount++;
 							if (responseCount < responseLinesCountExpected)
 								m_waitForResponse = true;
-							m_lastMessageResponse = m_lastMessageResponse.Replace(STR_TIMEOUT, "");
+							m_lastMessageResponse = m_lastMessageResponse.Replace(Constants.STR_TIMEOUT, "");
 							responseMessage = m_lastMessageResponse;
 						}
 						m_autoEventReceive.Set();
@@ -158,7 +159,7 @@ namespace MultiZonePlayer
 			{
 				MLog.Log(ex, this, "Error writeserialcommand");
 				if (comm != null) comm.ClosePort();
-				m_lastMessageResponse += STR_EXCEPTION;
+				m_lastMessageResponse += Constants.STR_EXCEPTION;
 			}
 			finally
 			{

@@ -407,8 +407,8 @@ namespace MultiZonePlayer {
 		public static Boolean AddPresence(User user, PresenceType type, DateTime presenceDate, String location) {
 			bool added = false;
 			if (presenceDate==null || DateTime.Now.Subtract(presenceDate).TotalMinutes > 10) {
-				MLog.Log(null, "Ignoring obsolete presence message user=" + user.Name 
-					+ " from " + location + " at "+presenceDate);
+				//MLog.Log(null, "Ignoring obsolete presence message user=" + user.Name 
+				//	+ " from " + location + " at "+presenceDate);
 			}
 			else {
 				UserPresence up = m_presenceList.Find(x => x.User == user && x.Type == type);

@@ -180,6 +180,8 @@ namespace MultiZonePlayer {
 						return InputTypeEnum.HDMI1;
 					case "91":
 						return InputTypeEnum.HDMI2;
+					case Constants.STR_TIMEOUT:
+						return InputTypeEnum.Unknown;
 					default: {
 						MLog.Log(this, "Unknown input type=" + res);
 						return InputTypeEnum.Unknown;

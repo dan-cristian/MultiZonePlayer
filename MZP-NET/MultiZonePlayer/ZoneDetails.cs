@@ -1210,7 +1210,7 @@ namespace MultiZonePlayer {
 
 
 		public override void SaveEntryToIni() {
-			MLog.Log(this, "Saving state to ini zone=" + ZoneName);
+			//MLog.Log(this, "Saving state to ini zone=" + ZoneName);
 			//remove fields that generate serialisation problems
 			this.Meta = null;
 
@@ -1326,6 +1326,8 @@ namespace MultiZonePlayer {
 		public void Close() {
 			ZoneClose();
 			SaveEntryToIni();
+			if (WDIORelayOutputPinIndex != Constants.NOT_SET)
+				MZPState.Instance.WDIO.SetOutputLow(WDIORelayOutputPinIndex);
 		}
 
 		public int GetDefaultVolume() {
@@ -1418,6 +1420,7 @@ namespace MultiZonePlayer {
 				foreach (String fieldname in m_fieldChangedList) {
 					switch (fieldname) {
 						case "ClosureIdList":
+							MLog.Log(this, "Applying closure field changes in zone "+ZoneName);
 							MZPState.Instance.WDIO.SetPinTypes(this);
 							break;
 						default:

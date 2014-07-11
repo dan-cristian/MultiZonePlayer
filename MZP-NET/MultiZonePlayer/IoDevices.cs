@@ -305,10 +305,9 @@ namespace MultiZonePlayer {
 		public virtual void Reinitialise() {
 		}
 
-		public void Reinitialise(string baud, string parity, string stopBits, string dataBits, string comport,
-			CommunicationManager.TransmissionType type,
-			int atlinescount, int atdlinescount) {
-			Initialise(baud, parity, stopBits, dataBits, comport, type);
+		public bool Reinitialise(string baud, string parity, string stopBits, string dataBits, string comport,
+			CommunicationManager.TransmissionType type, int atlinescount, int atdlinescount) {
+			bool result = Initialise(baud, parity, stopBits, dataBits, comport, type);
 			//comm = new CommunicationManager(baud, parity, stopBits, dataBits, comport, this.handler);
 			m_atlinescount = atlinescount;
 			m_atdlinescount = atdlinescount;
@@ -316,6 +315,7 @@ namespace MultiZonePlayer {
 			//m_waitForResponse = false;
 			//m_lastOperationWasOK = true;
 			m_commandList = new List<ModemCommand>();
+			return result;
 		}
 
 		public override string SendCommand(Enum cmd, string value) {
@@ -536,8 +536,8 @@ namespace MultiZonePlayer {
 			do {
 				RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
 				if (dev != null) {
-					MLog.Log(this, "RFX result in zoneid=" + dev.ZoneId
-					               + " for response:[" + origResponse + "] is " + dev.DisplayValues());
+					//MLog.Log(this, "RFX result in zoneid=" + dev.ZoneId
+					//               + " for response:[" + origResponse + "] is " + dev.DisplayValues());
 					if (dev.ZoneId != -1) {
 						ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
 						if (zone == null) {
@@ -664,7 +664,7 @@ namespace MultiZonePlayer {
 		private const int WDIO_PIN_COUNT = 14;
 		private const char STATE_CONTACT_MADE = '0', STATE_CONTACT_NOTMADE = '1', STATE_UNDEFINED = '?';
 		private int[] m_zoneIdMap = new int[WDIO_PIN_COUNT];
-		private const char CMD_SWITCH = 'S', CMD_BUTTON = 'B', CMD_PARAM_LOW = 'L', CMD_PARAM_HIGH = 'H';
+		private const char CMD_SWITCH = 'S', CMD_BUTTON = 'B', CMD_PARAM_LOW = 'L', CMD_PARAM_HIGH = 'H', CMD_READ='R';
 
 		public String State {
 			get { return m_lastState; }
@@ -685,7 +685,7 @@ namespace MultiZonePlayer {
 				IniFile.PARAM_WDIO_COMPORT[1] = port;
 			}
 			MLog.Log(this, "Reinitialising WDIO on com " + IniFile.PARAM_WDIO_COMPORT[1]);
-			Reinitialise("9600", "None", "One", "8", IniFile.PARAM_WDIO_COMPORT[1],
+			bool initok = Reinitialise("9600", "None", "One", "8", IniFile.PARAM_WDIO_COMPORT[1],
 				CommunicationManager.TransmissionType.TextR,
 				Convert.ToInt16(IniFile.PARAM_SMS_AT_LINES_COUNT[1]),
 				Convert.ToInt16(IniFile.PARAM_SMS_ATD_LINES_COUNT[1]));
@@ -697,11 +697,21 @@ namespace MultiZonePlayer {
 				m_zoneIdMap[i] = Constants.NOT_SET;
 				m_lastState += STATE_CONTACT_NOTMADE;
 			}
-			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
-				SetPinTypes(zone);
+			if (initok) {
+				foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+					SetPinTypes(zone);
+				}
+				//set all unused port to output not on
+				for (int i = 0; i < m_zoneIdMap.Length; i++) {
+					if (m_zoneIdMap[i] == Constants.NOT_SET) {
+						Thread.Sleep(100);//pause between wdio writes
+						MLog.Log(this, "Setting off unused wdio pin index" + i);
+						WriteCommand(m_channel + CMD_PARAM_LOW + Convert.ToChar('A' + i), 1, 1000);
+					}
+				}
 			}
 		}
-
+		
 		public void SetPinTypes(ZoneDetails zone) {
 			string pin, result;
 			char iocmd = '?';
@@ -764,21 +774,14 @@ namespace MultiZonePlayer {
 
 				if (pinindex >= 0 && pinindex < m_zoneIdMap.Length) {
 					m_zoneIdMap[pinindex] = zone.ZoneId;
-					Thread.Sleep(100);//pause between wdio writes
+					//Thread.Sleep(100);//pause between wdio writes
 					result = WriteCommand(m_channel + iocmd + Convert.ToChar('A' + pinindex), 1, 1000);
 					MLog.Log(this, "Set IO pin index= " + pinindex + "on zone=" + zone.ZoneName + " cmd=" +iocmd 
 						+ " result=" + result);
+					ReceiveSerialResponse(result);//force a state update
 				}
 				else {
 					MLog.Log(this, "Error pin index in zone " + zone.ZoneName + " is out of range: " + pinindex);
-				}
-				//set all unused port to output not on
-				for (int i = 0; i < m_zoneIdMap.Length; i++) {
-					if (m_zoneIdMap[i] == Constants.NOT_SET) {
-						Thread.Sleep(100);//pause between wdio writes
-						MLog.Log(this, "Setting off unused wdio pin index" + i);
-						WriteCommand(m_channel + CMD_PARAM_LOW + Convert.ToChar('A' + i), 1, 1000);
-					}
 				}
 			}
 		}
@@ -801,11 +804,43 @@ namespace MultiZonePlayer {
 			MLog.Log(this, "WDIO Set output Low returned " + result);
 			ReceiveSerialResponse(result);
 		}
+		/// <summary>
+		/// Read pin states and make adjustments if state differs from expected state
+		/// Diff can appear after WDIO power loss. Used for output pins that can drive relays.
+		/// </summary>
+		public void ReadAdjustPinState() {
+			String result;
+			char state;
+			ZoneDetails zone;
+			for (int i = 0; i < m_zoneIdMap.Length; i++) {
+				result = WriteCommand(m_channel + CMD_READ + Convert.ToChar('A' + i), 1, 1000);
+				if (result.Length >= 3) {
+					state = result[2];
+					if (m_zoneIdMap[i] == Constants.NOT_SET) {
+						if (state == CMD_PARAM_HIGH) {
+							MLog.Log(this, "Setting unused pin to low state, was high");
+							WriteCommand(m_channel + CMD_PARAM_LOW + Convert.ToChar('A' + i), 1, 1000);
+						}
+					}
+					else {
+						zone = ZoneDetails.GetZoneById(m_zoneIdMap[i]);
+						if (zone.WDIORelayOutputPinIndex != Constants.NOT_SET) {
+							if (!zone.IsClosureContactMade && state == CMD_PARAM_HIGH) {
+								Alert.CreateAlert("Closure state contact made is " + result + " in zone " + zone.ZoneName
+									+ " not matching expected state contactmade=" + zone.IsClosureContactMade + ", fixing", true);
+								SetOutputLow(i);
+							}
+						}
+					}
+				}
+				else MLog.Log(this, "Unexpected wdio read response " + result);
+			}
+		}
 		public override Boolean TestConnection() {
 			if (comm == null || !comm.IsPortOpen()) {
 				return false;
 			}
-
+			ReadAdjustPinState();
 			//String result = WriteCommand("\r\n", 1, 100);
 			return true;
 		}
@@ -996,8 +1031,8 @@ namespace MultiZonePlayer {
 						for (int i = 0; i < GPIO_PIN_COUNT; i++) {
 							cmd = cmdprefix + i;
 							pinstate = WriteCommand(cmd, 1, 300, STR_ENDLINE);
-							pinstate = pinstate.Replace(STR_TIMEOUT, STR_TIMEOUT_CHAR.ToString())
-								.Replace(STR_EXCEPTION, STR_EXCEPTION_CHAR.ToString());
+							pinstate = pinstate.Replace(Constants.STR_TIMEOUT, STR_TIMEOUT_CHAR.ToString())
+								.Replace(Constants.STR_EXCEPTION, STR_EXCEPTION_CHAR.ToString());
 							/*start = pinstate.IndexOf(cmdprefix);
 							if (start != -1)
 							{

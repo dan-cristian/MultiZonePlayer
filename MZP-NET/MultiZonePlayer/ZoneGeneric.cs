@@ -427,7 +427,10 @@ namespace MultiZonePlayer {
 					break;
 				case GlobalCommands.closuretoggle:
 					if (m_zoneDetails.HasWDIORelay) { 
-					//TODO: impl
+						if (m_zoneDetails.IsClosureContactMade)
+							MZPState.Instance.WDIO.SetOutputLow(m_zoneDetails.WDIORelayOutputPinIndex);
+						else
+							MZPState.Instance.WDIO.SetOutputHigh(m_zoneDetails.WDIORelayOutputPinIndex);
 					}
 					else {
 						int closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));	
