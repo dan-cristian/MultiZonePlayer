@@ -172,7 +172,8 @@ namespace MultiZonePlayer
 		heatscheduleon,
 		heatscheduleoff,
 		zoneautosetup,
-		userconfirm
+		userconfirm,
+		waitforcontroldevice
 	}
 	public enum GlobalParams
 	{
@@ -215,6 +216,7 @@ namespace MultiZonePlayer
 		classname,index,
 		source,
 		direction,
+		controldevicename,
 		r//random no
 	}
 	public class CommandSyntax

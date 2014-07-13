@@ -204,7 +204,10 @@ namespace MultiZonePlayer {
 			if (CommandSyntax.UserCommands.Contains(cmdRemote)) {
 				m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
 			}
-
+			if (m_zoneDetails.WaitForControlDeviceSetup) {
+				//cancelling ctrl device setup, should have been done by now in parent API call
+				m_zoneDetails.WaitForControlDeviceSetup = false;
+			}
 			String date, weekday, action;
 			switch (cmdRemote) {
 					#region commands without activity
@@ -564,6 +567,9 @@ namespace MultiZonePlayer {
 					}
 					//TODO: skip elements for zones auto configured or put them as last options?
 					break;
+				case GlobalCommands.waitforcontroldevice:
+					m_zoneDetails.WaitForControlDeviceSetup = true;
+					break;
 			#endregion
 
 				default:
@@ -662,7 +668,7 @@ namespace MultiZonePlayer {
                         */
 							//check if photo (clone zone)
 						case GlobalCommands.photo:
-						case GlobalCommands.back:
+						
 						case GlobalCommands.musicclone:
 							if (MZPState.Instance.GetFirstZoneMusic() != null && !this.Equals(MZPState.Instance.GetFirstZoneMusic()))
 								//cannot clone myself
@@ -733,6 +739,7 @@ namespace MultiZonePlayer {
 								case GlobalCommands.play:
 									m_mainZoneActivity.Play();
 									break;
+								case GlobalCommands.back://as stop key does not work on all remotes
 								case GlobalCommands.stop:
 									m_mainZoneActivity.Stop();
 									//foreach (m_

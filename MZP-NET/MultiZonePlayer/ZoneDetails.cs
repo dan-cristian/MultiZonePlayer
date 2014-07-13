@@ -190,7 +190,9 @@ namespace MultiZonePlayer {
 		protected int m_OneWireIOPortCount = 0;
 		protected ZoneGeneric m_zoneGeneric;
 		private List<SensorDevice> m_sensorList = new List<SensorDevice>();
+		private bool m_waitForControlDeviceSetup;
 
+		
 		
 
 		public ZoneDetails() {
@@ -255,6 +257,10 @@ namespace MultiZonePlayer {
 
 		public void RemoveSensor(SensorDevice sensor) {
 			m_sensorList.Remove(sensor);
+		}
+		public bool WaitForControlDeviceSetup {
+			get { return m_waitForControlDeviceSetup; }
+			set { m_waitForControlDeviceSetup = value; }
 		}
 		public Boolean IsRelayInNormalState {
 			get {

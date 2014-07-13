@@ -338,7 +338,7 @@ namespace MultiZonePlayer {
 				Comment = tg.Tag.Comment == null ? "" : tg.Tag.Comment;
 				Banshee.Streaming.StreamRatingTagger.GetRatingAndPlayCount(tg, ref p_rating, ref p_playcount);
 
-				if (p_rating == -1) {
+				//if (p_rating == -1) {
 					SaveRatingInComment = true;
 					if (Comment.Contains(IniFile.MEDIA_TAG_RATING)) {
 						parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ";");
@@ -351,8 +351,8 @@ namespace MultiZonePlayer {
 						Comment += IniFile.MEDIA_TAG_RATING + "0;";
 						this.SetRating(0);
 					}
-				}
-				if (p_playcount == -1) {
+				//}
+				//if (p_playcount == -1) {
 					SavePlayCountInComment = true;
 					if (Comment.Contains(IniFile.MEDIA_TAG_PLAYCOUNT)) {
 						parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ";");
@@ -365,7 +365,7 @@ namespace MultiZonePlayer {
 						Comment += IniFile.MEDIA_TAG_PLAYCOUNT + "0;";
 						this.SetPlayCount(0);
 					}
-				}
+				//}
 
 				Title = tg.Tag.Title;
 				Title = Title ?? SourceURL.Substring(Math.Max(0, SourceURL.Length - 35)).Replace("\\", "/");
@@ -434,20 +434,20 @@ namespace MultiZonePlayer {
 		}
 
 		public override void SaveItem() {
-			String parameter;
-			m_tagFile = TagLib.File.Create(SourceURL);
-			Banshee.Streaming.StreamRatingTagger.StoreRatingAndPlayCount(Rating, PlayCount, m_tagFile);
-			if (SaveRatingInComment) {
-				parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ";");
-				Comment = Comment.Replace(IniFile.MEDIA_TAG_RATING + parameter, IniFile.MEDIA_TAG_RATING + Rating);
-			}
-			if (SavePlayCountInComment) {
-				parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ";");
-				Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYCOUNT + parameter, IniFile.MEDIA_TAG_PLAYCOUNT + PlayCount);
-			}
-			m_tagFile.Tag.Comment = Comment;
-
+			String parameter, initialComment="";
 			try {
+				m_tagFile = TagLib.File.Create(SourceURL);
+				initialComment = m_tagFile.Tag.Comment;
+				Banshee.Streaming.StreamRatingTagger.StoreRatingAndPlayCount(Rating, PlayCount, m_tagFile);
+				if (SaveRatingInComment) {
+					parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ";");
+					Comment = Comment.Replace(IniFile.MEDIA_TAG_RATING + parameter, IniFile.MEDIA_TAG_RATING + Rating);
+				}
+				if (SavePlayCountInComment) {
+					parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ";");
+					Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYCOUNT + parameter, IniFile.MEDIA_TAG_PLAYCOUNT + PlayCount);
+				}
+				m_tagFile.Tag.Comment = Comment;
 				m_tagFile.Save();
 				m_requireSave = false;
 			}
@@ -456,8 +456,10 @@ namespace MultiZonePlayer {
 				MLog.Log(this, "Corrupt file, not saving, " + SourceURL);
 			}
 			catch (IOException ex) {
-				m_requireSave = true;
-				MLog.Log(this, "Unable to save tag for " + SourceURL + " ex=" + ex.Message);
+				MLog.Log(this, "Unable to save tag for " + SourceURL + " ex=" + ex.Message + " InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
+			}
+			catch (Exception ee) {
+				MLog.Log(this, "Unknown exception "+ee.Message+" on save tag, not saving, " + SourceURL);
 			}
 		}
 	}

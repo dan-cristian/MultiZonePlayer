@@ -13,6 +13,8 @@ namespace MultiZonePlayer
         {
 			int zoneId = -1;
 			ZoneDetails zoneDetails;
+			ValueList val;
+			Thread th;
 			try {
 				RemotePipiCommand cmdRemote;
 				zoneDetails = ZoneDetails.ZoneDetailsList.Find(x => x.ControlDeviceName == kd.Device);
@@ -24,15 +26,26 @@ namespace MultiZonePlayer
 					return;
 				}
 				if (kd.Device == "") {
-					MLog.Log("Command received from unknown keyboard device, ignoring");
 					return;
 				}
 
-				ValueList val = new ValueList(GlobalParams.zoneid, zoneId.ToString(), CommandSources.rawinput);
+				if (zoneDetails == null){
+					MLog.Log("Command received from unknown keyboard device "+kd.Device+", passing this for set device identification check to API");
+					val = new ValueList(GlobalParams.zoneid, zoneId.ToString(), CommandSources.rawinput);
+					val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
+					val.Add(GlobalParams.controldevicename, kd.Device);
+					val.Add(GlobalParams.command, GlobalCommands.nul.ToString());//dummy command, do nothing else but set ctrl device
+					th = new Thread(() => DoCommand(val));
+					th.Name = "RawInput Key Unknown Zone";
+					th.Start();
+					return;
+				}
+
+				val = new ValueList(GlobalParams.zoneid, zoneId.ToString(), CommandSources.rawinput);
 				val.Add(GlobalParams.cmdsource, CommandSources.rawinput.ToString());
 				zoneDetails = ZoneDetails.GetZoneById(zoneId);
-				if (zoneDetails != null && zoneDetails.RelayType != EnumRelayType.Undefined
-					&& zoneDetails.ClosureIdList==kd.Key){
+				/*if (zoneDetails != null //&& zoneDetails.RelayType != EnumRelayType.Undefined&& zoneDetails.ClosureIdList==kd.Key)
+				){
 					val.Add(GlobalParams.command, GlobalCommands.closure.ToString());
 					val.Add(GlobalParams.id, kd.Key);
 					val.Add(GlobalParams.iscontactmade, kd.IsKeyDown.ToString());
@@ -42,39 +55,38 @@ namespace MultiZonePlayer
 					th.Name = "RawInput Closure Key " + kd.Key;
 					th.Start();
 				}
-				else{
-					//normally let only key down message to pass through
-					if (kd.IsKeyUp){
-						return;
-					}
-
-					cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
-					int macroId = MacroEntry.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
-
-					MLog.Log("DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
-						+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId + " macroid="+macroId);
-					
-					if (cmdRemote == null || macroId != -1){
-						if (macroId != -1){
-							MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);
-							MacroEntry.ExecuteMacro(macroId);
-						}
-						return;
-					}
-
-					//check if is not a numeric key
-					short intResult;
-					string apicmd;
-					if (Int16.TryParse(cmdRemote.CommandName, out intResult))
-						apicmd = "k" + intResult;
-					else
-						apicmd = cmdRemote.CommandName.ToLower();
-					val.Add(GlobalParams.command, apicmd);
-					
-					Thread th = new Thread(() => DoCommand(val));
-					th.Name = "RawInput Key " + cmdRemote.CommandName;
-					th.Start();
+				else{*/
+				//normally let only key down message to pass through
+				if (kd.IsKeyUp){
+					return;
 				}
+				val.Add(GlobalParams.controldevicename, kd.Device);
+				cmdRemote = RemotePipi.GetCommandByCode(kd.Key);
+				int macroId = MacroEntry.GetMacroIdByShortcut(kd.Key, kd.DeviceName);
+
+				MLog.Log("DO key event key=" + kd.Key + " device=" + kd.Device + " keyup=" + kd.IsKeyUp + " keydown=" + kd.IsKeyDown
+					+ " apicmd=" + cmdRemote + (cmdRemote == null ? " IGNORING CMD" : "") + " zoneid=" + zoneId + " macroid="+macroId);
+					
+				if (cmdRemote == null || macroId != Constants.NOT_SET){
+					if (macroId != Constants.NOT_SET){
+						MLog.Log(null, "Hook command not found key=" + kd.Key + ", macro execution id=" + macroId);
+						MacroEntry.ExecuteMacro(macroId);
+					}
+					return;
+				}
+
+				//check if is not a numeric key
+				short intResult;
+				string apicmd;
+				if (Int16.TryParse(cmdRemote.CommandName, out intResult))
+					apicmd = "k" + intResult;
+				else
+					apicmd = cmdRemote.CommandName.ToLower();
+				val.Add(GlobalParams.command, apicmd);
+					
+				th = new Thread(() => DoCommand(val));
+				th.Name = "RawInput Key " + cmdRemote.CommandName;
+				th.Start();
             }
             catch (Exception ex)
             {
@@ -83,15 +95,13 @@ namespace MultiZonePlayer
             }
         }
 
-        public static CommandResult DoCommandFromGUIInput(String cmdName, String zoneId)
-        {
+        public static CommandResult DoCommandFromGUIInput(String cmdName, String zoneId){
             ValueList vals = new ValueList(GlobalParams.zoneid, zoneId, CommandSources.gui);
             vals.Add(GlobalParams.command, cmdName);
             return DoCommand(vals);
         }
 
-		public static String DoCommandDirect(GlobalCommands cmd, params string[] paramNameValuePair)
-		{
+		public static String DoCommandDirect(GlobalCommands cmd, params string[] paramNameValuePair){
 			ValueList vals = new ValueList(GlobalParams.command,cmd.ToString(), CommandSources.system);
 			for (int i = 0; i < paramNameValuePair.Length; i=i+2){
 				vals.Add(paramNameValuePair[i], paramNameValuePair[i + 1]);
@@ -128,9 +138,22 @@ namespace MultiZonePlayer
 					&& cmdName != GlobalCommands.counter.ToString())
 					MLog.Log(null, "Executing DOCommand " + cmdName + " zoneid="+zoneId);
 				bool isCmdDefined = Enum.IsDefined(typeof(GlobalCommands), cmdName);
-                
+				string cmdSource = vals.GetValue(GlobalParams.cmdsource);
                 if (isCmdDefined)
 				{
+					if (cmdSource == CommandSources.rawinput.ToString()) {
+						ZoneDetails zonetocontrol = ZoneDetails.ZoneDetailsList.Find(x => x.WaitForControlDeviceSetup);
+						if (zonetocontrol != null) {
+							String device = vals.GetValue(GlobalParams.controldevicename);
+							zonetocontrol.ControlDeviceName = device;
+							zonetocontrol.WaitForControlDeviceSetup = false;
+							zonetocontrol.SaveEntryToIni();
+							string res = "Just set control device " + device + " for zone " + zonetocontrol.ZoneName;
+							Alert.CreateAlert(res, true);
+							cmdresult.OutputMessage += res;
+						}
+					}
+
 					#region standard commands
 					GlobalCommands apicmd = (GlobalCommands)Enum.Parse(typeof(GlobalCommands), cmdName);
                     if (!CommandSyntax.Validate(vals))
@@ -563,8 +586,12 @@ namespace MultiZonePlayer
 				//inferring is unreliable and produces bad results
                 //int zoneId = InferZone(vals.GetValue(GlobalParams.zoneid),
 				//	vals.GetValue(GlobalParams.zonename), vals.GetValue(GlobalParams.singleparamvalue));
+				if (zoneId == Constants.NOT_SET) {
+					string param = vals.GetValue(GlobalParams.singleparamvalue);
+					if (param != null) Int32.TryParse(param, out zoneId);
+				}
 
-                if (zoneId == -1) {
+				if (zoneId == Constants.NOT_SET) {
 					result.ErrorMessage = "ERROR no zone found to process command" + apicmd;
 					MLog.Log(null, result.ErrorMessage);
 					result.Result = ResultEnum.ERR;
