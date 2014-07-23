@@ -329,36 +329,33 @@ namespace MultiZonePlayer
             return 0;
         }
     }
+	
     public void CloseClip()
     {
-        try
-        {
-      int hr = 0;
+		try {
+			int hr = 0;
 
-      // Stop media playback
-      if(this.mediaControl != null)
-        hr = this.mediaControl.Stop();
+			// Stop media playback
+			if (this.mediaControl != null)
+				hr = this.mediaControl.Stop();
 
-      // Clear global flags
-      this.currentState = ZoneState.NotStarted;
-      this.isAudioOnly = true;
-      this.isFullScreen = false;
+			// Clear global flags
+			this.currentState = ZoneState.NotStarted;
+			this.isAudioOnly = true;
+			this.isFullScreen = false;
 
-      // Free DirectShow interfaces
-      CloseInterfaces();
+			// Free DirectShow interfaces
+			CloseInterfaces();
 
-      // Clear file name to allow selection of new file with open dialog
-      //this.fullfilepath = string.Empty;
-        
-      // No current media state
-      //this.currentState = Metadata.ZoneState.NotInitialised;
+			// Clear file name to allow selection of new file with open dialog
+			//this.fullfilepath = string.Empty;
 
-      
-        }
-        catch (Exception ex)
-        {
-            MLog.Log(ex,"Error closing player");
-        }
+			// No current media state
+			//this.currentState = Metadata.ZoneState.NotInitialised;
+		}
+		catch (Exception ex) {
+			MLog.Log(ex, "Error closing player " + ex.Message);
+		}
     }
 
     public virtual String GetFileName()
@@ -403,34 +400,30 @@ namespace MultiZonePlayer
     protected void CloseInterfaces()
     {
       int hr = 0;
-
-      try
-      {
-        lock(this)
-        {
+      try      {
+        lock(this){
+			MLog.Log(this, "Closing DCPLayer interfaces");
           // Relinquish ownership (IMPORTANT!) after hiding video window
-          if (!this.isAudioOnly)
-          {
+          if (!this.isAudioOnly){
             hr = this.videoWindow.put_Visible(OABool.False);
             DsError.ThrowExceptionForHR(hr);
             hr = this.videoWindow.put_Owner(IntPtr.Zero);
             DsError.ThrowExceptionForHR(hr);
           }
 
-          if (this.mediaEventEx != null)
-          {
+          if (this.mediaEventEx != null){
             hr = this.mediaEventEx.SetNotifyWindow(IntPtr.Zero, 0, IntPtr.Zero);
             DsError.ThrowExceptionForHR(hr);
           }
 
 #if DEBUG
-          if (rot != null)
-          {
-              try
-              {
+          if (rot != null){
+              try              {
                   rot.Dispose();
               }
-              catch (Exception) { }
+              catch (Exception ex) {
+				  MLog.Log(this, "unable to dispose ROOT graph " + ex.Message);
+			  }
             rot = null;
           }
 #endif
@@ -451,15 +444,16 @@ namespace MultiZonePlayer
             this.videoWindow = null;
           if (this.frameStep != null) 
             this.frameStep = null;
-          if (this.graphBuilder != null) 
-            Marshal.ReleaseComObject(this.graphBuilder); 
-            this.graphBuilder = null;
-
+		  if (this.graphBuilder != null) {
+			  //this.graphBuilder.Abort();
+			  Marshal.ReleaseComObject(this.graphBuilder);
+			  this.graphBuilder = null;
+		  }
           GC.Collect();
         }
       }
-      catch
-      {
+      catch (Exception ex) {
+		  MLog.Log(this, "unable to close DS graph " + ex.Message);
       }
     }
 
@@ -755,14 +749,13 @@ namespace MultiZonePlayer
       base.WndProc (ref m);
     }
 
-    protected void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-    {
-      StopClip();
-      CloseInterfaces();
+    protected void MainForm_Closing(object sender, System.ComponentModel.CancelEventArgs e){
+		MLog.Log(this, "DCPlayers is closing");
+		StopClip();
+		CloseInterfaces();
     }
 
-    public void Tick()
-    {
+    public void Tick(){
         HandleGraphEvent();
     }
 

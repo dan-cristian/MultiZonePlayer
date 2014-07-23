@@ -858,7 +858,7 @@ namespace MultiZonePlayer {
 						|| RequirePowerForced
 						|| powerforchild;
 
-					bool keepOn = (ActivityType != GlobalCommands.tv) || (Type == ZoneType.Heat);
+					bool keepOn = (ActivityType == GlobalCommands.tv) || (Type == ZoneType.Heat);
 
 					return regularstate && ((!powerfortoolong) || keepOn);
 				}
@@ -1435,6 +1435,20 @@ namespace MultiZonePlayer {
 				}
 				m_fieldChangedList.Clear();
 			}
+		}
+
+		public void SetControlDeviceName(String devicename) {
+			foreach (ZoneDetails zone in ZoneDetailsList) {
+				//remove control device from zones that have it already
+				if (zone.ControlDeviceName.Contains(devicename)) {
+					zone.ControlDeviceName=zone.ControlDeviceName.Replace(devicename + Constants.MULTI_ENTRY_SEPARATOR, "");
+					zone.ControlDeviceName=zone.ControlDeviceName.Replace(devicename, "");//failsafe for entries without separator
+					Alert.CreateAlert("Removed existing control device from zone " + zone.ZoneName + " " + devicename, true);
+				}
+			}
+			ControlDeviceName += devicename + Constants.MULTI_ENTRY_SEPARATOR;
+			WaitForControlDeviceSetup = false;
+			SaveEntryToIni();
 		}
 		#region statics
 		/*public static List<ZoneDetails> ValueList {

@@ -159,7 +159,7 @@ namespace MultiZonePlayer
 
 		private void MainScreen_Activated(object sender, EventArgs e)
 		{
-			MLog.Log(this, "Got focus");
+			//MLog.Log(this, "Got focus");
 		}
 
 		private void chartToolStripMenuItem_Click(object sender, EventArgs e)

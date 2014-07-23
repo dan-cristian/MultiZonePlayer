@@ -1134,7 +1134,7 @@ namespace MultiZonePlayer
 					stack = new System.Diagnostics.StackTrace(1, false);
 				if (stack.GetFrames() != null) {
 					for (int i = 0; i < Math.Min(7, stack.GetFrames().Length); i++)
-						callingMethod += stack.GetFrame(i).GetMethod().Name + " | ";
+						callingMethod += stack.GetFrame(i).GetMethod().Name + "<<";
 					if (e != null && stack.GetFrames().Length>0) {
 						if (e.GetType().ToString().ToLower().Contains("exception"))
 							text += " err=" + ((Exception)e).Message + " method: "
@@ -1143,7 +1143,7 @@ namespace MultiZonePlayer
 								+ " errcol=" + stack.GetFrame(0).GetFileColumnNumber()
 								+ " stack=" + ((Exception)e).StackTrace.Replace('\n',' ');
 						else
-							text += " method: " + callingMethod + " sender=" + e.ToString();
+							text += " Method (" + callingMethod + ") [from " + e.ToString()+"]";
 					}
 				}
             }

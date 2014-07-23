@@ -257,27 +257,27 @@ namespace MultiZonePlayer
                     m_dcPlay.UpdateOutputDevices();
             }
 
-			public override void Stop()
-            {
+			public override void Stop(){
+				MLog.Log(this, "Stop MusicActivity");
                 SaveStateIni();
                 //dcPlay.StopClip();
                 m_dcPlay.CloseClip();
+				m_dcPlay.Close();
 				//m_zoneDetails.ZoneClose();
 				m_zoneDetails.ZoneStop();
                 m_isGuideMode = false;
             }
 
             delegate void DelegateClose();
-			public override void Close()
-            {
+			public override void Close(){
+				MLog.Log(this, "Closing MusicActivity");
                 Stop();
-				if (m_dcPlay.InvokeRequired)
-				{
+				if (m_dcPlay.InvokeRequired){
+					MLog.Log(this, "Closing MusicActivity BYINVOKE");
 					DelegateClose dlg = new DelegateClose(Close);
 					m_dcPlay.BeginInvoke(dlg);
 				}
-				else
-				{
+				else{
 					m_dcPlay.Close();
 					m_zoneDetails.ZoneClose();
 				}
@@ -934,8 +934,7 @@ namespace MultiZonePlayer
             m_zoneState = ZoneState.NotStarted;
 			//m_zoneDetails.RequirePower = false;
         }
-		public override void Close()
-        {
+		public override void Close(){
             Stop();
         }
 		public override void Next()

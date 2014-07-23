@@ -112,26 +112,20 @@ namespace MultiZonePlayer
         public override void Tick()
         {
             // SLOW TICK
-            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 45)
-            {
+            if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 45){
                 m_lastSlowTickDateTime = DateTime.Now;
                 CacheCurrentState();
-                
-                if (m_isOn)
-                {
+                if (m_isOn){
                     m_zoneDetails.ZoneState = ZoneState.Running;
                     //m_zoneDetails.IsActive = true;
                     //m_zoneDetails.RequirePower = m_inputType == DisplayLGTV.InputTypeEnum.HDMI1;
-
-					if (m_zoneDetails.RequirePower && !MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId))
-                    {
+					if (m_zoneDetails.RequirePower && !MZPState.Instance.PowerControlIsOn(m_zoneDetails.ZoneId)){
                         MLog.Log(this, "Powering on display zone id " + m_zoneDetails.ZoneId 
 							+ " for LGTV child " + m_zoneDetails.ZoneName);
                         m_zoneDetails.PowerControlOn();
                     }
                 }
-                else
-                {
+                else{
                     m_zoneDetails.ZoneState = ZoneState.NotStarted;
                     //m_zoneDetails.IsActive = false;
                     //m_zoneDetails.RequirePower = false;

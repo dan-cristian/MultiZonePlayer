@@ -143,11 +143,9 @@ namespace MultiZonePlayer
 				{
 					if (cmdSource == CommandSources.rawinput.ToString()) {
 						ZoneDetails zonetocontrol = ZoneDetails.ZoneDetailsList.Find(x => x.WaitForControlDeviceSetup);
-						if (zonetocontrol != null) {
+						if (zonetocontrol != null) {//set rawinput control device for zone
 							String device = vals.GetValue(GlobalParams.controldevicename);
-							zonetocontrol.ControlDeviceName = device;
-							zonetocontrol.WaitForControlDeviceSetup = false;
-							zonetocontrol.SaveEntryToIni();
+							zonetocontrol.SetControlDeviceName(device);
 							string res = "Just set control device " + device + " for zone " + zonetocontrol.ZoneName;
 							Alert.CreateAlert(res, true);
 							cmdresult.OutputMessage += res;

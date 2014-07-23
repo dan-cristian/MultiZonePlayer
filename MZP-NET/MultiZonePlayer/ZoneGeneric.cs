@@ -1072,6 +1072,8 @@ namespace MultiZonePlayer {
 					if (m_zoneForm != null) {
 						m_zoneForm.CloseFormSafe();
 					}
+					if (m_mainZoneActivity != null)
+						m_mainZoneActivity.Close();
 				}
 				if (m_zoneForm != null) {
 					m_zoneForm.RefreshState();
