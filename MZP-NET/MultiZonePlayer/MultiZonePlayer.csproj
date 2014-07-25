@@ -126,7 +126,7 @@
     <Reference Include="agsXMPP">
       <HintPath>ThirdParty\messengers\agsXMPP.dll</HintPath>
     </Reference>
-    <Reference Include="DirectShowLib-2008, Version=2.1.0.42596, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
+    <Reference Include="DirectShowLib-2008, Version=2.1.0.39923, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\DirectShowLib-2008.dll</HintPath>
     </Reference>
