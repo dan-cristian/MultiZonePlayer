@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FreeFileSync XmlType="REAL">
+    <Directories>
+        <Item>C:\Development\GIT\MZP\MZP-NET\MultiZonePlayer\bin\Debug</Item>
+        <Item>C:\Development\GIT\MZP\MZP-NET\WebApp\WebApp\m</Item>
+        <Item>Z:\</Item>
+        <Item>Z:\webroot\m</Item>
+    </Directories>
+    <Delay>2</Delay>
+    <Commandline>c:\Development\GIT\MZP\MZP-NET\MultiZonePlayer\bin\Debug\scripts\SyncMZP-BatchRun.ffs_batch</Commandline>
+</FreeFileSync>
