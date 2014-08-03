@@ -12,19 +12,25 @@ namespace MultiZonePlayer
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
 			int zoneId = -1;
-			ZoneDetails zoneDetails;
+            List<ZoneDetails> zoneDetailsList;
+            ZoneDetails zoneDetails=null;
 			ValueList val;
 			Thread th;
 			try {
+                if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1]) && zoneId == -1) {
+                    //MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
+                    return;
+                }
 				RemotePipiCommand cmdRemote;
-				zoneDetails = ZoneDetails.ZoneDetailsList.Find(x => x.ControlDeviceName == kd.Device);
-				if (zoneDetails != null) zoneId = zoneDetails.ZoneId;
+				zoneDetailsList = ZoneDetails.ZoneDetailsList.FindAll(x => x.ControlDeviceName.Contains(kd.Device));
+                if (zoneDetailsList.Count > 1)
+                    Alert.CreateAlertOnce("Warning, same control device assigned to multiple zones like " + zoneDetailsList[0].ZoneName + ";" + zoneDetailsList[1].ZoneName, "RawInputControl");
+                if (zoneDetailsList.Count == 1)
+                    zoneDetails = zoneDetailsList[0];
+                if (zoneDetails != null) zoneId = zoneDetails.ZoneId;
 				//zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device, kd.Key);
 				//ignore console KEYBOARD commands
-				if (kd.Device.Contains(IniFile.PARAM_KEYBOARD_DEVICE_IDENTIFIER[1])	&& zoneId == -1){
-					//MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
-					return;
-				}
+				
 				if (kd.Device == "") {
 					return;
 				}
@@ -139,8 +145,7 @@ namespace MultiZonePlayer
 					MLog.Log(null, "Executing DOCommand " + cmdName + " zoneid="+zoneId);
 				bool isCmdDefined = Enum.IsDefined(typeof(GlobalCommands), cmdName);
 				string cmdSource = vals.GetValue(GlobalParams.cmdsource);
-                if (isCmdDefined)
-				{
+                if (isCmdDefined){
 					if (cmdSource == CommandSources.rawinput.ToString()) {
 						ZoneDetails zonetocontrol = ZoneDetails.ZoneDetailsList.Find(x => x.WaitForControlDeviceSetup);
 						if (zonetocontrol != null) {//set rawinput control device for zone
@@ -149,6 +154,7 @@ namespace MultiZonePlayer
 							string res = "Just set control device " + device + " for zone " + zonetocontrol.ZoneName;
 							Alert.CreateAlert(res, true);
 							cmdresult.OutputMessage += res;
+                            return cmdresult;
 						}
 					}
 

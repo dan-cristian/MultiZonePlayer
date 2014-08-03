@@ -280,7 +280,7 @@ namespace MultiZonePlayer {
 			System.Diagnostics.ProcessWindowStyle startState, System.Diagnostics.ProcessPriorityClass priority) {
 			MLog.Log(null, "Restarting " + procName);
 			Utilities.CloseProcSync(procName);
-			Utilities.RunProcessWait(procPath, System.Diagnostics.ProcessWindowStyle.Normal, priority);
+			Utilities.RunProcessWait(procPath, startState, priority);
 		}
 
 		public void Shutdown() {
@@ -964,6 +964,25 @@ namespace MultiZonePlayer {
 			}
 		}
 
+        private void ReduceProgramsPriority() {
+            System.Diagnostics.Process proc;
+            proc =  Utilities.GetProcess(IniFile.PARAM_HUBIC_PROCNAME[1]);
+            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                Utilities.SetProcessPriority(IniFile.PARAM_HUBIC_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+            }
+            proc = Utilities.GetProcess(IniFile.PARAM_DROPBOX_PROCNAME[1]);
+            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                Utilities.SetProcessPriority(IniFile.PARAM_DROPBOX_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+            }
+            proc = Utilities.GetProcess(IniFile.PARAM_CRYPTSYNC_PROCNAME[1]);
+            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                Utilities.SetProcessPriority(IniFile.PARAM_CRYPTSYNC_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+            }
+            proc = Utilities.GetProcess(IniFile.PARAM_ISPY_PROCNAME[1]);
+            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                Utilities.SetProcessPriority(IniFile.PARAM_ISPY_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+            }
+        }
 		private void HealthCheckWinload() {
 			if (!Utilities.IsProcAlive(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1])) {
 				MLog.Log(this, "WINLOAD proc not running, restarting");
@@ -1385,6 +1404,7 @@ namespace MultiZonePlayer {
 					return;
 				}
 				HealthCheckiSpy();
+                ReduceProgramsPriority();
 				if (MZPState.Instance == null) {
 					return;
 				}

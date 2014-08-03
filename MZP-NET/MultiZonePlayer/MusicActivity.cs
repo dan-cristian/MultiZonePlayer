@@ -752,10 +752,12 @@ namespace MultiZonePlayer
                         NumericCmdReceived(cmdRemote.ToString().Substring(cmdRemote.ToString().Length - 1));
                         break;
                     case GlobalCommands.right:
-                        NextPlaylist();
+                        Next();
+                        //NextPlaylist();
                         break;
                     case GlobalCommands.left:
-                        PreviousPlaylist();
+                        Previous();
+                        //PreviousPlaylist();
                         break;
                     case GlobalCommands.enter://for numpads
 						if (GetState() == ZoneState.Running)
@@ -858,16 +860,14 @@ namespace MultiZonePlayer
                 
                 //return result;
             }
-			public override void Tick()
-            {
-                if (IsAlarm && GetVolumeLevel() < m_zoneForm.ZoneDetails.GetDefaultVolume())
-                {
+			public override void Tick(){
+                if (IsAlarm && GetVolumeLevel() < m_zoneForm.ZoneDetails.GetDefaultVolume()){
                     SetVolumeLevel(GetVolumeLevel() + 100);
 					MLog.Log(this, "Setting alarm volume on " + m_zoneDetails.ZoneName + " vol="+GetVolumeLevel());
                 }
 
-                if (CurrentItem != null)
-                {
+                if (CurrentItem != null && m_zoneDetails.ZoneState==ZoneState.Running){
+                    m_zoneDetails.ActivityType = GlobalCommands.music;
                     m_zoneDetails.Title = CurrentItem.Title;
                     m_zoneDetails.Rating = CurrentItem.Rating;
                     m_zoneDetails.Playcount = CurrentItem.PlayCount;

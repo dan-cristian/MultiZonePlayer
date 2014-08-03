@@ -162,6 +162,9 @@ namespace MultiZonePlayer
             public static String[] PARAM_ISPY_PROCNAME = new String[] { "PARAM_ISPY_PROCNAME", "ispy" };
             public static String[] PARAM_ISPY_OTHERPROC = new String[] { "PARAM_ISPY_OTHERPROC", "ffmpeg" };
             public static String[] PARAM_ISPY_APP_PATH = new String[] { "PARAM_ISPY_APP_PATH", "c:\\Program Files\\iSpy\\iSpy\\iSpy.exe"};
+            public static String[] PARAM_HUBIC_PROCNAME = new String[] { "PARAM_HUBIC_PROCNAME", "hubiC" };
+            public static String[] PARAM_DROPBOX_PROCNAME = new String[] { "PARAM_DROPBOX_PROCNAME", "Dropbox" };
+            public static String[] PARAM_CRYPTSYNC_PROCNAME = new String[] { "PARAM_CRYPTSYNC_PROCNAME", "CryptSync" };
 
             public static String[] PARAM_WEB_USER = new String[] { "PARAM_WEB_USER", "a" };
             public static String[] PARAM_WEB_PASS = new String[] { "PARAM_WEB_PASS", "poi" };

@@ -416,7 +416,7 @@ namespace MultiZonePlayer {
 					}
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
-                    LastCounterCount = counter;//TODO: check if this fixes the watt problem.
+                    //LastCounterCount = counter;//TODO: check if this fixes the watt problem.
 					SaveEntryToIni();//save in case of power outage
 				}
 				else {
@@ -1451,9 +1451,12 @@ namespace MultiZonePlayer {
 		public void SetControlDeviceName(String devicename) {
 			foreach (ZoneDetails zone in ZoneDetailsList) {
 				//remove control device from zones that have it already
+                if (zone.ControlDeviceName == null)
+                    zone.ControlDeviceName = "";
 				if (zone.ControlDeviceName.Contains(devicename)) {
 					zone.ControlDeviceName=zone.ControlDeviceName.Replace(devicename + Constants.MULTI_ENTRY_SEPARATOR, "");
 					zone.ControlDeviceName=zone.ControlDeviceName.Replace(devicename, "");//failsafe for entries without separator
+                    zone.SaveEntryToIni();
 					Alert.CreateAlert("Removed existing control device from zone " + zone.ZoneName + " " + devicename, true);
 				}
 			}
@@ -1557,7 +1560,7 @@ namespace MultiZonePlayer {
 					zone.CheckAndApplyFieldChanges();
 				}
 				if (slowActions) {
-					if (zone.ControlDeviceName != null) {
+					if (zone.ControlDeviceName != null && zone.ControlDeviceName != "") {
 						ControlDevice dev = MZPState.Instance.SystemAvailableControlDevices.Find(x => x.DeviceName == zone.ControlDeviceName);
 						if (dev == null) {
 							Alert.CreateAlertOnce("Invalid control device in zone "+zone.ZoneName,"ControlDevice"+zone.ZoneName);

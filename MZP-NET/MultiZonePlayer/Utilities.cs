@@ -305,6 +305,26 @@ namespace MultiZonePlayer
             return (proc.Length != 0);
         }
 
+        public static Process GetProcess(String procName) {
+            Process[] proc;
+            proc = Process.GetProcessesByName(procName);
+            if (proc.Length > 0)
+                return proc[0];
+            else
+                return null;
+        }
+
+        public static bool SetProcessPriority(String procName, ProcessPriorityClass priority) {
+            System.Diagnostics.Process[] procList;
+            procList = System.Diagnostics.Process.GetProcessesByName(procName);
+            if (procList.Length > 0) {
+                procList[0].PriorityClass = priority;
+                return true;
+            }
+            else
+                MLog.Log("Cannot locate process for setting priority, proc=" + procName);
+            return false;
+        }
         public static Process RunProcessWait(String command, ProcessWindowStyle style, ProcessPriorityClass priority)
         {
             String fileName;
@@ -1261,7 +1281,7 @@ namespace MultiZonePlayer
         {
             try
             {
-                Utilities.AppendToGenericLogFile(String.Format("{0} {1} \r", DateTime.Now.ToString("dd-MM hh:mm:ss-ff"), key), 
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} \r\n", DateTime.Now.ToString("dd-MM hh:mm:ss-ff"), key), 
                     EventSource.Keyboard);
             }
             catch (Exception)
@@ -1272,7 +1292,7 @@ namespace MultiZonePlayer
         {
             try
             {
-                Utilities.AppendToGenericLogFile(key, EventSource.RawInput);
+                Utilities.AppendToGenericLogFile(key + "\r\n", EventSource.RawInput);
             }
             catch (Exception)
             { }

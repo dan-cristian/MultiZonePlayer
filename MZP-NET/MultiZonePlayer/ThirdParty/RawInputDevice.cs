@@ -670,10 +670,10 @@ namespace MultiZonePlayer
                             if (modifierOnState.ContainsKey(MODIFIER_CONTROL))
                                 dInfo.vKey = "control, " + dInfo.vKey;
 
-                            MLog.LogRawInput(String.Format("KBD {0} vkey={1} \t msg={2} \t flags={3} \t makecode={4} \t extra={5} device={6} Down={7} Up={8}\r", 
+                            MLog.LogRawInput(String.Format("KBD {0} vkey={1} \t msg={2} \t flags={3} \t makecode={4} \t extra={5} device={6} Down={7} Up={8} DeviceName={9} DeviceType={10} DeviceHandle={11}", 
 								DateTime.Now.ToString("hh:mm:ss-ff"),
                                         dInfo.vKey, dInfo.message, dInfo.flags, "", dInfo.extraInformation, rawx86.header.hDevice,
-										dInfo.isKeyDownWinMessage,dInfo.isKeyUpWinMessage));
+										dInfo.isKeyDownWinMessage,dInfo.isKeyUpWinMessage, dInfo.deviceName, dInfo.deviceType, dInfo.deviceHandle));
 
                             // If the key that was pressed is valid and there
                             // was no problem retrieving information on the device,
@@ -681,7 +681,7 @@ namespace MultiZonePlayer
                             if (KeyPressed != null && dInfo != null)
                             {
                                 KeyControlEventArgs keyArgs = new KeyControlEventArgs(dInfo, GetDevice(message.LParam.ToInt32()));
-                                //if (dInfo.isKeyDownWinMessage) //normally only key down, but all states required for IO key state
+                                if (dInfo.isKeyDownWinMessage) //normally only key down, but all states required for IO key state
                                     KeyPressed(this, ref keyArgs);
                                 result = keyArgs.messageProcessedbyApp;
                             }

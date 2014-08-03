@@ -475,7 +475,7 @@ namespace MultiZonePlayer {
 				m_tagFile.Tag.Comment = Comment;
 				m_tagFile.Save();
 				m_requireSave = false;
-                MLog.LogInfo("Saved tag for " + SourceURL + " PlayCount="+PlayCount+" InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
+                MLog.LogInfo("SAVED tag for " + SourceURL + " PlayCount="+PlayCount+" InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
 			}
 			catch (TagLib.CorruptFileException) {
 				m_requireSave = false;
