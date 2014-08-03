@@ -591,7 +591,7 @@ namespace MultiZonePlayer {
 				if (user != null &&	UserPresence.AddPresence(user, PresenceType.Wifi, presenceDate, location))
 					m_lastWifiAddressList.Add(dev.ToUpper());
 				else
-					MLog.Log(null, "Unknown user with Wifi addr=" + dev);
+					MLog.LogInfo("Unknown user with Wifi addr=" + dev);
 				
 			}
 			foreach (String dev in leftList) {
@@ -873,8 +873,8 @@ namespace MultiZonePlayer {
 
 	public class PersistentObject {
 		private class ObjectStored{
-			public String ObjectName;
-			public int LastId;
+			public String ObjectName=null; 
+			public int LastId=Constants.NOT_SET;
 		}
 		private class ListStored{
 			public String ObjectName;

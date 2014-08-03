@@ -421,7 +421,7 @@ namespace MultiZonePlayer
                     else
                         result = deviceDesc;
     
-                if (deviceClass.ToUpper().Equals("KEYBOARD"))
+                if (deviceClass!=null && deviceClass.ToUpper().Equals("KEYBOARD"))
                 {
                     isKeyboard = true;
                 }
@@ -474,8 +474,9 @@ namespace MultiZonePlayer
                     string deviceName;
                     uint pcbSize = 0;
 
-                    RAWINPUTDEVICELIST rid = (RAWINPUTDEVICELIST)Marshal.PtrToStructure(
-                                               new IntPtr((pRawInputDeviceList.ToInt32() + (dwSize * i))),
+                    RAWINPUTDEVICELIST rid;
+                    rid = (RAWINPUTDEVICELIST)Marshal.PtrToStructure(
+                                               new IntPtr((pRawInputDeviceList.ToInt64() + (dwSize * i))),
                                                typeof(RAWINPUTDEVICELIST));
 
                     GetRawInputDeviceInfo(rid.hDevice, RIDI_DEVICENAME, IntPtr.Zero, ref pcbSize);

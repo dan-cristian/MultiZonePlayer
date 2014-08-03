@@ -736,7 +736,7 @@ namespace MultiZonePlayer
 				if (needUtilities) {
 					MLog.Log(this, "START reading Utilities");
 					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_UTILITIES);
-					DateTime test;
+					//DateTime test;
 					var query = from line in allLines
 								let data = line.Split(',')
 								select new {

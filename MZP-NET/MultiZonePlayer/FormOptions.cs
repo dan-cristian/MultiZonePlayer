@@ -75,9 +75,10 @@ namespace MultiZonePlayer
 
         private void PopulateOutputDevices()
         {
-            foreach (String deviceName in DShowUtility.SystemDeviceNameList)
-            {
-                ((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add(deviceName);
+            int count = DShowUtility.SystemDeviceFriendlyNameList.Count;
+            for (int i=0; i< count;i++) {
+                ((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add(
+                    DShowUtility.SystemDeviceFriendlyNameList[i] + ";" + DShowUtility.SystemDeviceNameList[i]);
             }
 			((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add("");
 			((DataGridViewComboBoxColumn)dgvZones.Columns[OutputDevice.Name]).Items.Add(IniFile.DEFAULT_AUTO_DEV_NAME);
@@ -515,7 +516,7 @@ namespace MultiZonePlayer
 
         private void TestOutputDevice(String outDevice, String keywords, int defaultVolume)
         {
-            outDevice = ZoneDetails.GetOutputDeviceNameAutocompleted(outDevice, keywords);
+            //outDevice = ZoneDetails.GetOutputDeviceNameAutocompleted(outDevice, keywords);
             //DCPlayer dcPlay = new DCPlayer(this, outDevice, IniFile.CurrentPath() + IniFile.TEST_FILE_NAME, Metadata.ZoneDetails.GetDefaultVolume(defaultVolume));
         }
 

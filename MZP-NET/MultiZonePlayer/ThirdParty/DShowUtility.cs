@@ -73,7 +73,7 @@ namespace MultiZonePlayer
                     Marshal.ThrowExceptionForHR(hr);
                 string ret = val as string;
                 if ((ret == null) || (ret.Length < 1))
-                    throw new NotImplementedException("SensorDevice FriendlyName");
+                    throw new NotImplementedException("Device FriendlyName");
                 return ret;
             }
             catch (Exception)
@@ -106,7 +106,7 @@ namespace MultiZonePlayer
             try
             {
                 Type srvType = Type.GetTypeFromCLSID(Clsid_SystemDeviceEnum);
-                if (srvType == null) throw new NotImplementedException("System SensorDevice Enumerator");
+                if (srvType == null) throw new NotImplementedException("System Device Enumerator");
 
 
 
@@ -266,6 +266,26 @@ namespace MultiZonePlayer
 				return systemOutputDeviceNames;
 			}
 		}
+        public static List<string> SystemDeviceFriendlyNameList
+        {
+            get
+            {
+                List<String> systemOutputDeviceFriendlyNames = new List<string>();
+                ArrayList systemOutputDeviceList = null;
+                DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioOutRender, out systemOutputDeviceList);
+
+                List<WAVEOUTCAPS> m_waveoutdeviceList = GetDevCapsPlayback();
+                String deviceName;
+
+                foreach (Object m in systemOutputDeviceList)
+                {
+                    deviceName = DShowUtility.GetFriendlyName((IMoniker)m);
+                    systemOutputDeviceFriendlyNames.Add(deviceName);
+                }
+
+                return systemOutputDeviceFriendlyNames;
+            }
+        }
 
 		public static List<WAVEOUTCAPS> GetDevCapsPlayback()
 		{

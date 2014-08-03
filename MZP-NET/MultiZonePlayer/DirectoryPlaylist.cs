@@ -231,6 +231,7 @@ namespace MultiZonePlayer {
 		public String MediaType = "";
 		public String SourceURL = "";
 		public String SourceContainerURL = "";
+        public DateTime LastPlayDate = DateTime.MinValue;
 		public int RandomId = rndSeed.Next();
 		public String Title = "";
 		public int PlayCount = 0;
@@ -269,8 +270,12 @@ namespace MultiZonePlayer {
 			m_requireSave = true;
 		}
 
+        /// <summary>
+        /// Increase number of plays and set play date to current date
+        /// </summary>
 		public virtual void IncreasePlayCount() {
 			PlayCount++;
+            LastPlayDate = DateTime.Now;
 			m_requireSave = true;
 		}
 
@@ -288,8 +293,9 @@ namespace MultiZonePlayer {
 		public Boolean IsFavorite = false;
 		public LastFmMeta Meta;
 		private TagLib.File m_tagFile = null;
-		private Boolean SaveRatingInComment = false;
-		private Boolean SavePlayCountInComment = false;
+        //by default save tags in comment, should work for all files
+		private Boolean SaveRatingInComment = true;
+		private Boolean SavePlayCountInComment = true;
 
 		public AudioItem() {
 		}
@@ -301,7 +307,7 @@ namespace MultiZonePlayer {
 		}
 
 		public void SetLibraryAddedComment() {
-			Comment = Comment + IniFile.MEDIA_TAG_LIBRARY_ID + DateTime.Now.ToString("yyyy-MM-dd");
+			Comment = Comment + IniFile.MEDIA_TAG_LIBRARY_ID + DateTime.Now.ToString("yyyy-MM-dd")+Constants.MULTI_ENTRY_SEPARATOR;
 			m_requireSave = true;
 		}
 
@@ -326,6 +332,7 @@ namespace MultiZonePlayer {
 
 		public override bool RetrieveMediaItemValues() {
 			int p_rating = -1, p_playcount = -1;
+            DateTime p_playdate;
 			String parameter;
 			bool result = false;
 			try {
@@ -339,12 +346,12 @@ namespace MultiZonePlayer {
 				Banshee.Streaming.StreamRatingTagger.GetRatingAndPlayCount(tg, ref p_rating, ref p_playcount);
 
 				//if (p_rating == -1) {
-					SaveRatingInComment = true;
+					//SaveRatingInComment = true;
 					if (Comment.Contains(IniFile.MEDIA_TAG_RATING)) {
-						parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ";");
+                        parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, "" + Constants.MULTI_ENTRY_SEPARATOR);
 						if (!int.TryParse(parameter, out p_rating)) {
 							p_rating = 0;
-							MLog.Log(this, "Error reading rating value from comment=" + Comment + " on file=" + SourceURL);
+							MLog.LogInfo("Error reading tag rating value from comment=" + Comment + " on file=" + SourceURL);
 						}
 					}
 					else {
@@ -353,12 +360,12 @@ namespace MultiZonePlayer {
 					}
 				//}
 				//if (p_playcount == -1) {
-					SavePlayCountInComment = true;
+					//SavePlayCountInComment = true;
 					if (Comment.Contains(IniFile.MEDIA_TAG_PLAYCOUNT)) {
-						parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ";");
+						parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ""+Constants.MULTI_ENTRY_SEPARATOR);
 						if (!int.TryParse(parameter, out p_playcount)) {
 							p_playcount = 0;
-							MLog.Log(this, "Error reading PlayCount value from comment=" + Comment + " on file=" + SourceURL);
+							MLog.LogInfo("Error reading PlayCount value from tag comment=" + Comment + " on file=" + SourceURL);
 						}
 					}
 					else {
@@ -366,6 +373,12 @@ namespace MultiZonePlayer {
 						this.SetPlayCount(0);
 					}
 				//}
+                if (Comment.Contains(IniFile.MEDIA_TAG_PLAYDATE)) {
+                    parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYDATE, "" + Constants.MULTI_ENTRY_SEPARATOR);
+                    if (!DateTime.TryParse(parameter, out p_playdate)) {
+                        MLog.LogInfo("Error reading PlayDate tag value from comment=" + Comment + " on file=" + SourceURL);
+                    }
+                }
 
 				Title = tg.Tag.Title;
 				Title = Title ?? SourceURL.Substring(Math.Max(0, SourceURL.Length - 35)).Replace("\\", "/");
@@ -407,15 +420,14 @@ namespace MultiZonePlayer {
 					//first added to library, reset some fields
 					this.SetRating(0);
 					this.SetPlayCount(0);
-					this.SetLibraryAddedComment();
 					this.SetFavorite(false);
-					LibraryAddDate = Created;
+                    this.SetLibraryAddedComment();
+                    LibraryAddDate = Created;
 				}
 				else {
 					String librarydate = Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_LIBRARY_ID)
 					                                       + IniFile.MEDIA_TAG_LIBRARY_ID.Length, "yyyy-mm-dd".Length);
 					LibraryAddDate = DateTime.Parse(librarydate);
-
 					if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE)) {
 						this.IsFavorite =
 							Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1) == "1";
@@ -426,8 +438,8 @@ namespace MultiZonePlayer {
 				}
 				result = true;
 			}
-			catch (Exception) {
-				//MLog.Log(ex, "Unable to read tag for file "+ SourceURL);
+			catch (Exception ex) {
+				MLog.LogInfo("Unable to read tag for file "+ SourceURL + " err="+ex.Message);
 				errorMetaCount++;
 			}
 			return result;
@@ -440,23 +452,37 @@ namespace MultiZonePlayer {
 				initialComment = m_tagFile.Tag.Comment;
 				Banshee.Streaming.StreamRatingTagger.StoreRatingAndPlayCount(Rating, PlayCount, m_tagFile);
 				if (SaveRatingInComment) {
-					parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ";");
-					Comment = Comment.Replace(IniFile.MEDIA_TAG_RATING + parameter, IniFile.MEDIA_TAG_RATING + Rating);
+					parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ""+Constants.MULTI_ENTRY_SEPARATOR);
+                    if (parameter == null)
+                        Comment += IniFile.MEDIA_TAG_RATING + Rating + Constants.MULTI_ENTRY_SEPARATOR;
+                    else
+                        Comment = Comment.Replace(IniFile.MEDIA_TAG_RATING + parameter, IniFile.MEDIA_TAG_RATING + Rating);
 				}
 				if (SavePlayCountInComment) {
-					parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, ";");
-					Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYCOUNT + parameter, IniFile.MEDIA_TAG_PLAYCOUNT + PlayCount);
+                    parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, "" + Constants.MULTI_ENTRY_SEPARATOR);
+                    if (parameter == null)
+                        Comment += IniFile.MEDIA_TAG_PLAYCOUNT + PlayCount + Constants.MULTI_ENTRY_SEPARATOR;
+                    else
+					    Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYCOUNT + parameter, IniFile.MEDIA_TAG_PLAYCOUNT + PlayCount);
+
+                    parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYDATE, "" + Constants.MULTI_ENTRY_SEPARATOR);
+                    if (parameter == null)
+                        Comment += IniFile.MEDIA_TAG_PLAYDATE + LastPlayDate.ToString() + Constants.MULTI_ENTRY_SEPARATOR;
+                    else
+                        Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYDATE + parameter, IniFile.MEDIA_TAG_PLAYDATE + LastPlayDate);
 				}
+
 				m_tagFile.Tag.Comment = Comment;
 				m_tagFile.Save();
 				m_requireSave = false;
+                MLog.LogInfo("Saved tag for " + SourceURL + " PlayCount="+PlayCount+" InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
 			}
 			catch (TagLib.CorruptFileException) {
 				m_requireSave = false;
-				MLog.Log(this, "Corrupt file, not saving, " + SourceURL);
+				MLog.LogInfo("Corrupt file, not saving tag, " + SourceURL);
 			}
 			catch (IOException ex) {
-				MLog.Log(this, "Unable to save tag for " + SourceURL + " ex=" + ex.Message + " InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
+				MLog.LogInfo("Unable to save tag for " + SourceURL + " PlayCount=" + PlayCount + " ex=" + ex.Message + " InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
 			}
 			catch (Exception ee) {
 				MLog.Log(this, "Unknown exception "+ee.Message+" on save tag, not saving, " + SourceURL);

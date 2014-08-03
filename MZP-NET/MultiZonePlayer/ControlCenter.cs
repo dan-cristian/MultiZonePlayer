@@ -151,6 +151,12 @@ namespace MultiZonePlayer
                         m_lastSlowTickDateTime = DateTime.Now;
 						ZoneDetails.ProcessAllZones(false, true);
 						MZPState.Instance.TickSlow();
+                        ZoneDetails zonewithmusic = ZoneDetails.ZoneDetailsList.Find(x => x.IsActive && x.ActivityType == GlobalCommands.music);
+                        //increase priority when playing music
+                        if (zonewithmusic!=null)
+                            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
+                        else
+                            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
 						/*foreach (ZoneDetails details in ZoneDetails.ZoneDetailsList){
 							if (details.HasPastActivity) ZoneGeneric.ZoneInactiveActions(details);
 							List<ZoneDetails> zonesWithPower = ZoneDetails.ZoneDetailsList.FindAll(x =>

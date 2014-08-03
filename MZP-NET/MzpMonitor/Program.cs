@@ -102,7 +102,7 @@ namespace MzpMonitor {
 			if (procList!=null && procList.Length>0)
 				procList[0].Kill();
 			System.Diagnostics.Process proc = RunProcessWait(CurrentPath() + "\\" + MZPProcName + ".exe",
-						System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.Normal);
+						System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.Normal);
 			AppendToGenericLogFile("MZP proc restarted");
 		}
 		public static bool IsProcAlive(String procName)

@@ -123,12 +123,14 @@ namespace MultiZonePlayer
 					Monitor.RefreshFrequencySecondary();
 				}
 
+                MoveToSecondScreen();
+
 				if (Utilities.GetForegroundWindow() != GetXBMCHandle())//(!m_bringToForegroundOnce) 
 					{
 					MLog.Log(this, "Sending XMBC to foreground, previous foreground win="
 						+ Utilities.GetForegroundWindow() + " xmbc=" + GetXBMCHandle());
 					//TODO: improve detection of cases when app is shown on main screem in foreground and is not moved to 2nd screen
-					MoveToSecondScreen();
+					
 					Utilities.SetForegroundWindow(GetXBMCHandle());
 					//m_bringToForegroundOnce = true;
 				}
@@ -334,16 +336,20 @@ namespace MultiZonePlayer
 		{
 			Screen[] sc = Screen.AllScreens;
 			if (sc.Length > 1) {
-				MLog.Log(null, "Multiple screens detected, count=" + sc.Length);
+				//MLog.Log(this, "Multiple screens detected, count=" + sc.Length);
 				foreach (Screen scr in sc) {
+                    Rectangle area = scr.Bounds;
 					if (!scr.Primary) {
-						Rectangle area = scr.Bounds;
 						IntPtr handle = GetXBMCHandle();
 						Utilities.SetWindowPos(handle, 0, area.Left, area.Top,
 							area.Width, area.Height, Utilities.SWP.SHOWWINDOW);
-						MLog.Log(null, "XBMC h=" + handle + " sent to second screen at x=" + area.Left + " y=" + area.Top + " scrname=" + scr.DeviceName);
+						MLog.Log(this, "XBMC h=" + handle + " sent to second screen at x=" + area.Left + " y=" + area.Top + " scrname=" + scr.DeviceName );
 						break;
 					}
+                    else
+                    {
+                        //MLog.Log(this, "XBMC is already on Primary screen at x=" + area.Left + " y=" + area.Top + " scrname=" + scr.DeviceName);
+                    }
 				}
 			}
 			else
@@ -370,37 +376,38 @@ namespace MultiZonePlayer
                 String result = PostURLMessage(GET_URL, "Player.GetActivePlayers");
                 try{
                     sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
-					if (sresp.result != null && sresp.result.Length > 0 && sresp.result[0].playerid == 1) {
-						if (m_zoneDetails.ZoneState.Equals(ZoneState.NotStarted)) {
-							MLog.Log(this, "XBMC has active player");
-							base.Play();
-							//Play();
-						}
-						m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
-						result = PostURLMessage(GET_URL, "Application.GetProperties", "properties", @"[""volume""]");
-						resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-						if (resp.result != null) {
-							SetVolumeLevel(resp.result.volume);
-						}
-
-						result = PostURLMessage(GET_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
-						resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
-						if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0) {
-							m_isXBMCPlayerRunning = true;
-							m_zoneDetails.Title = resp.result.items[0].label;
-							m_zoneDetails.Author = "xbmc";
-							//m_zoneDetails.RequirePower = true;
-							//m_zoneDetails.IsActive = true;
-							m_zoneDetails.Genre = "";//resp.result.type;
-							m_zoneDetails.ActivityType = GlobalCommands.xbmc;
-							if (!MZPState.Instance.IsWinloadLoading)
-								Utilities.SetForegroundWindow(GetXBMCHandle());
-						}
-						else {
-							if (m_zoneDetails.IsActive)
-								m_zoneDetails.ZoneStop();
-							m_isXBMCPlayerRunning = false;
-						}
+					if (sresp.result != null && sresp.result.Length > 0){
+                        if (sresp.result[0].playerid == 1 && sresp.result[0].type == "video" || (sresp.result[0].playerid == 0 && sresp.result[0].type == "audio")) {
+                            if (m_zoneDetails.ZoneState.Equals(ZoneState.NotStarted)){
+                                MLog.Log(this, "XBMC has active player " + sresp.result[0].type);
+                                base.Play();
+                                //Play();
+                            }
+                            m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
+                            result = PostURLMessage(GET_URL, "Application.GetProperties", "properties", @"[""volume""]");
+                            resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                            if (resp.result != null){
+                                SetVolumeLevel(resp.result.volume);
+                            }
+                            result = PostURLMessage(GET_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
+                            resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                            if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0){
+                                m_isXBMCPlayerRunning = true;
+                                m_zoneDetails.Title = resp.result.items[0].label;
+                                m_zoneDetails.Author = "xbmc";
+                                //m_zoneDetails.RequirePower = true;
+                                //m_zoneDetails.IsActive = true;
+                                m_zoneDetails.Genre = "";//resp.result.type;
+                                m_zoneDetails.ActivityType = GlobalCommands.xbmc;
+                                if (!MZPState.Instance.IsWinloadLoading)
+                                    Utilities.SetForegroundWindow(GetXBMCHandle());
+                            }
+                        }
+                        else {
+                            if (m_zoneDetails.IsActive)
+                                m_zoneDetails.ZoneStop();
+                            m_isXBMCPlayerRunning = false;
+                        }
 					}
 					else {
 						if (m_zoneDetails.IsActive)
@@ -417,7 +424,7 @@ namespace MultiZonePlayer
         public override void Tick()
         {
             if (DateTime.Now.Subtract(m_lastSlowTickDateTime).Duration().TotalSeconds > 10) {
-				if (m_zoneDetails.ZoneState == ZoneState.Running) {
+                if (m_isXBMCProcessOn){
 					FixDisplay();
 				}
                 GetXBMCStatus();

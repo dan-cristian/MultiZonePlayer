@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FreeFileSync XmlFormat="3" XmlType="BATCH">
+<FreeFileSync XmlFormat="4" XmlType="BATCH">
     <MainConfig>
         <Comparison>
             <Variant>TimeAndSize</Variant>
+            <TimeShift>0</TimeShift>
             <Symlinks>Follow</Symlinks>
         </Comparison>
         <SyncConfig>
@@ -59,6 +60,7 @@
                 <Right>Z:\</Right>
                 <CompareConfig>
                     <Variant>TimeAndSize</Variant>
+                    <TimeShift>0</TimeShift>
                     <Symlinks>Exclude</Symlinks>
                 </CompareConfig>
                 <SyncConfig>

@@ -427,8 +427,7 @@ namespace MultiZonePlayer
 			}
 		}
 
-        public static void AppendToGenericLogFile(String text, EventSource logType)
-        {
+        public static void AppendToGenericLogFile(String text, EventSource logType){
 			try {
 				StreamWriter str;
 				switch (logType) {
@@ -458,7 +457,15 @@ namespace MultiZonePlayer
 				str.Close();
 			}
 			catch (Exception) { }
-            
+        }
+        public static void AppendToInfoLogFile(String text) {
+            try {
+                StreamWriter str;
+                str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_INFO_FILE);
+                str.Write(text);
+                str.Close();
+            }
+            catch (Exception) { }
         }
 		public static bool ExistFileRelativeToAppPath(String fileName) {
 			return File.Exists(IniFile.CurrentPath() + fileName);
@@ -1134,7 +1141,7 @@ namespace MultiZonePlayer
 					stack = new System.Diagnostics.StackTrace(1, false);
 				if (stack.GetFrames() != null) {
 					for (int i = 0; i < Math.Min(7, stack.GetFrames().Length); i++)
-						callingMethod += stack.GetFrame(i).GetMethod().Name + "<<";
+						callingMethod += stack.GetFrame(i).GetMethod().Name + " << ";
 					if (e != null && stack.GetFrames().Length>0) {
 						if (e.GetType().ToString().ToLower().Contains("exception"))
 							text += " err=" + ((Exception)e).Message + " method: "
@@ -1161,11 +1168,11 @@ namespace MultiZonePlayer
 					|| (e.GetType().ToString().ToLower().Contains("exception")) 
 					|| text.ToLower().Contains("error"))))//any error
 				{
-					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
+					Utilities.AppendToGenericLogFile(System.DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT_FOR_LOGS+ " [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.System);
 				}
 				else
-					Utilities.AppendToGenericLogFile("DROPPED: "+System.DateTime.Now.ToString("dd-MM HH:mm:ss-ff [")
+					Utilities.AppendToGenericLogFile("DROPPED: "+System.DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT_FOR_LOGS+" [")
 						+ Thread.CurrentThread.Name + "]:" + text + "\n", EventSource.SystemDropped);
             }
             catch (Exception ex){
@@ -1192,6 +1199,14 @@ namespace MultiZonePlayer
             }
             catch (Exception)
             { }
+        }
+
+		//private Boolean m_userConfirm = false;
+        public static void LogInfo(String text) {
+            try {
+                Utilities.AppendToInfoLogFile(System.DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT_FOR_LOGS)+" "+text+"\r\n");
+            }
+            catch (Exception) { }
         }
 
         public static void LogWeb(HttpListenerRequest request)

@@ -35,6 +35,7 @@ namespace MultiZonePlayer
             public const String LOG_WEB_FILE = "\\MultiZonePlayerWeb.log";
             public const String LOG_KEY_FILE = "\\MultiZonePlayerKeyboard.log";
             public const String LOG_RAWINPUT_FILE = "\\MultiZonePlayerRawInput.log";
+            public const String LOG_INFO_FILE = "\\MultiZonePlayerInfo.log";
 			public const String MEDIA_META_FILE_NAME = "\\mzp-meta.txt"; 
             public const String TEMP_EXTENSION = ".temp.wav";
             public const String BEEP_OK_FILE_NAME = "\\BeepOK.wav";
@@ -104,6 +105,7 @@ namespace MultiZonePlayer
             public const String MEDIA_TAG_FAVORITE = "MZPFAVORITE:";
 			public const String MEDIA_TAG_RATING = "MZPRATING:";
 			public const String MEDIA_TAG_PLAYCOUNT = "MZPPLAYCOUNT:";
+            public const String MEDIA_TAG_PLAYDATE = "MZPPLAYDATE:";
 
             public const String PLAYLIST_DEFAULT = "default";
 
@@ -172,8 +174,6 @@ namespace MultiZonePlayer
 			
             public static String[] PARAM_PARADOX_WINLOAD_DATA_FILE = new String[] { "PARAM_PARADOX_WINLOAD_DATA_FILE", "1.txt" };
             public static String[] PARAM_PARADOX_WINLOAD_PROCNAME = new String[] { "PARAM_PARADOX_WINLOAD_PROCNAME", "WinLoad" };
-            public static String[] PARAM_PARADOX_WINLOAD_USERNAME = new String[] { "PARAM_PARADOX_WINLOAD_USERNAME", "MASTER" };
-            public static String[] PARAM_PARADOX_WINLOAD_USERPASS = new String[] { "PARAM_PARADOX_WINLOAD_USERPASS", "1234" };
             public static String[] PARAM_PARADOX_WINLOAD_APP_PATH = new String[] { "PARAM_PARADOX_WINLOAD_APP_PATH", "c:\\Program Files\\Paradox Security Systems\\WinLoad\\WinLoad.exe" };
 
             public static String[] PARAM_GTALK_USERNAME = new String[] { "PARAM_GTALK_USERNAME", "antonio.gaudi33@gmail.com" };
@@ -259,6 +259,7 @@ namespace MultiZonePlayer
 			public static String DATETIME_MONTH_FORMAT = "MMM";
 			public static String DATETIME_FULL_FORMAT = "yyyy-MM-dd HH:mm:ss";
 			public static String DATETIME_FULL_FORMAT_FOR_FILE = "yyyy-MM-dd_HH-mm-ss";
+            public static String DATETIME_FULL_FORMAT_FOR_LOGS = "dd-MM HH:mm:ss-ff";
 
             public static Object[] PARAMS = new Object[]
             {
@@ -304,8 +305,6 @@ namespace MultiZonePlayer
                 PARAM_PARADOX_WINLOAD_DATA_FILE,
                 PARAM_PARADOX_WINLOAD_APP_PATH,
                 PARAM_PARADOX_WINLOAD_PROCNAME,
-                PARAM_PARADOX_WINLOAD_USERNAME,
-                PARAM_PARADOX_WINLOAD_USERPASS,
                 PARAM_GTALK_USERNAME,
                 PARAM_GTALK_USERPASS,
                 //PARAM_GTALK_SERVER,

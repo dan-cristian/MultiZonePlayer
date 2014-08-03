@@ -185,7 +185,7 @@ namespace MultiZonePlayer {
 		protected DateTime m_lastRunningDateTime = DateTime.MinValue;
 		// not serializable, hidden from json
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
-		protected static new List<Singleton> m_valueList = new List<Singleton>();
+		protected static List<Singleton> m_valueList = new List<Singleton>();
 		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false,m_hasOneWireCounterDevice=false;
 		protected int m_OneWireIOPortCount = 0;
 		protected ZoneGeneric m_zoneGeneric;
@@ -391,6 +391,7 @@ namespace MultiZonePlayer {
 								unitCost = utilCost.UnitCost;
 								switch (UtilityType) {
 									case EnumUtilityType.Electricity:
+                                        //TODO: problem here, high watt value recorded after split of power loss delta
 										watts = 1000 * unitCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
 										break;
 									case EnumUtilityType.Gas:
@@ -415,6 +416,7 @@ namespace MultiZonePlayer {
 					}
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
+                    LastCounterCount = counter;//TODO: check if this fixes the watt problem.
 					SaveEntryToIni();//save in case of power outage
 				}
 				else {
@@ -1259,19 +1261,28 @@ namespace MultiZonePlayer {
 			return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
 		}
 
+        /// <summary>
+        /// Return the directshow device guid
+        /// </summary>
+        /// <param name="p_outputDevice">either the exact directshow device guid or AUTOxxx indicator</param>
+        /// <param name="p_outputKeywords">keywords to look for using device friendly name search</param>
+        /// <returns></returns>
 		public static String GetOutputDeviceNameAutocompleted(String p_outputDevice, String p_outputKeywords) {
 			List<String> systemOutputDevices = DShowUtility.SystemDeviceNameList;
+            List<String> systemOutputDeviceFriendlyNames = DShowUtility.SystemDeviceFriendlyNameList;
 			String matchValue;
 			String result = "";//"NONE-outdev=" + p_outputDevice + "|keys=" + p_outputKeywords + "|";
 			if (p_outputKeywords != null) {
 				String[] keys = p_outputKeywords.Split(',');
 
-				if (p_outputDevice.Equals(IniFile.DEFAULT_AUTO_DEV_NAME)) {
-					foreach (String device in systemOutputDevices) {
+                if (p_outputDevice.Equals(IniFile.DEFAULT_AUTO_DEV_NAME))
+                {
+					int count=systemOutputDeviceFriendlyNames.Count;
+                    for (int i=0;i<count;i++) {
 						matchValue = "";
 						foreach (String key in keys) {
-							if (device.ToLower().Contains(key.ToLower()))
-								matchValue = device;
+							if (systemOutputDeviceFriendlyNames[i].ToLower().Contains(key.ToLower()))
+                                matchValue = systemOutputDevices[i];
 							else {
 								matchValue = "";
 								break;
@@ -1284,7 +1295,7 @@ namespace MultiZonePlayer {
 					}
 				}
 				else
-					result = p_outputDevice;
+                    result = p_outputDevice;
 			}
 
 			//MLog.Log(null, "SensorDevice user select="+p_outputDevice+" keywords="+p_outputKeywords+" res="+result);
@@ -1529,6 +1540,8 @@ namespace MultiZonePlayer {
 		}
 		public static void ProcessAllZones(bool fastActions, bool slowActions) {
 			foreach (ZoneDetails zone in ZoneDetailsList) {
+                if (MZPState.Instance==null || MZPState.Instance.IsShuttingDown)
+                    return;
 				if (fastActions) {
 					//turn on or off power
 					if (zone.RequirePower && !zone.IsPowerOn) {

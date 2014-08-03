@@ -183,42 +183,33 @@ namespace MultiZonePlayer
 
                 if (m_dcPlay.GetState() == ZoneState.Running)
                     Stop();
-                if (CurrentItem != null)
-                {
+                if (CurrentItem != null){
                     musicFile = CurrentItem.SourceURL;
-
-                    if (File.Exists(musicFile))
-                    {
+                    if (File.Exists(musicFile)){
                         //m_currentPlayList.MediaItemValueChange(musicFile, WindowsMediaItem.keyPlayCount, 1, 0, int.MaxValue);
 						MLog.Log(this, "Playing file" + CurrentItem.SourceURL + " playcount=" + CurrentItem.PlayCount + " vol="+m_dcPlay.GetVolumeLevel());
                         //init amp power if needed
-						//m_zoneDetails.RequirePower = true;
-						//m_zoneDetails.IsActive = true;
+                        m_zoneDetails.ZoneState = ZoneState.Running;//Ensure power remains on until music starts
                         m_zoneDetails.PowerControlOn();
 						int loop = 0;
-						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50)
-						{//usefull for HDMI devices
+						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50){//usefull for HDMI devices
 							MLog.Log(this, "Waiting, device not yet available for zone " + m_zoneDetails.ZoneName);
 							System.Threading.Thread.Sleep(500);
 							loop++;
 						}
-						if (loop >= 50)
-						{
+						if (loop >= 50){
 							MLog.Log(this, "Error, NO device available for zone " + m_zoneDetails.ZoneName);
-							//m_zoneDetails.IsActive = false;
+                            Stop();
 						}
-						else
-						{
+						else{
 							m_dcPlay.OpenClip(musicFile, this.m_zoneForm);
-							if (m_dcPlay.GetState() == ZoneState.Running)
-							{
+							if (m_dcPlay.GetState() == ZoneState.Running){
 								m_zoneDetails.ZoneState = ZoneState.Running;
 							}
 							m_songList[m_currentSongKey].IncreasePlayCount();
 						}
                     }
-                    else
-                    {
+                    else{
                         MLog.Log(this, "At Play, File does not exist, name=" + musicFile);
                         //Next();
                     }
@@ -246,6 +237,7 @@ namespace MultiZonePlayer
                 int volume = m_zoneForm.GetVolumeLevel();
 				//m_zoneDetails.RequirePower = true;
 				if (!MZPState.Instance.PowerControlIsOn(m_zoneForm.ZoneDetails.ZoneId)) {
+                    m_zoneDetails.ZoneState = ZoneState.Running;//Ensure power remains on until music starts
 					m_zoneForm.ZoneDetails.PowerControlOn();
 					System.Threading.Thread.Sleep(m_zoneDetails.PowerOnDelay);//ensure we can hear this
 				}

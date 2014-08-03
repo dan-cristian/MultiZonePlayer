@@ -1179,6 +1179,7 @@ namespace MultiZonePlayer {
 
 				String[] adapterNames = IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1].Split(';');
 				String[] adapterPorts = IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1].Split(';');
+                String exceptions = "";
 				if (adapterNames.Length == adapterPorts.Length) {
 					for (int i = 0; i < adapterNames.Length; i++) {
 						if (m_initErrors < ONEWIRE_ERR_COUNT_NOSILENT) {
@@ -1202,7 +1203,9 @@ namespace MultiZonePlayer {
 								MLog.Log(this, "Adapter already initialised previously, skipping");
 							adapterVar.endExclusive();
 						}
-						catch (Exception) { }
+						catch (Exception ex) {
+                            exceptions += ex.Message+";";
+                        }
 					}
 				}
 				else
@@ -2370,20 +2373,20 @@ namespace MultiZonePlayer {
 				m_isInit = false;
 				uint nResult = 0;
 				try {
-					nResult = IsInpOutDriverOpen();
+					nResult = IsInpOutDriverOpen_x64();
 					m_isInit = true;
-					MLog.Log(this, "LPT init on 32 bit OK");
+                    m_bX64 = true;
+					MLog.Log(this, "LPT init on 64 bit OK");
 				}
 				catch (BadImageFormatException) {
-					MLog.Log(this, "LPT init on 32 bit Failed");
-					nResult = IsInpOutDriverOpen_x64();
+					MLog.Log(this, "LPT init on 64 bit Failed");
+					nResult = IsInpOutDriverOpen();
 					if (nResult != 0) {
-						m_bX64 = true;
 						m_isInit = true;
-						MLog.Log(this, "LPT init on 64 bit OK");
+						MLog.Log(this, "LPT init on 32 bit OK");
 					}
 					else {
-						MLog.Log(this, "LPT init on 64 bit Failed");
+						MLog.Log(this, "LPT init on 32 bit Failed");
 					}
 				}
 

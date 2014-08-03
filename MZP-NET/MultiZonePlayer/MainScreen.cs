@@ -19,8 +19,6 @@ namespace MultiZonePlayer
         {
             MZPState.Initialise();
             InitializeComponent();
-            System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
-            
         }
 
         private void ShowNewForm(object sender, EventArgs e)
