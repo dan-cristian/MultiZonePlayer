@@ -24,7 +24,8 @@ namespace MultiZonePlayer
 				RemotePipiCommand cmdRemote;
 				zoneDetailsList = ZoneDetails.ZoneDetailsList.FindAll(x => x.ControlDeviceName.Contains(kd.Device));
                 if (zoneDetailsList.Count > 1)
-                    Alert.CreateAlertOnce("Warning, same control device assigned to multiple zones like " + zoneDetailsList[0].ZoneName + ";" + zoneDetailsList[1].ZoneName, "RawInputControl");
+                    Alert.CreateAlertOnce("Warning, same control device assigned to "+ zoneDetailsList.Count +" multiple zones like " 
+                        + zoneDetailsList[0].ZoneName + ";" + zoneDetailsList[1].ZoneName + " device="+kd.Device, "RawInputControl");
                 if (zoneDetailsList.Count == 1)
                     zoneDetails = zoneDetailsList[0];
                 if (zoneDetails != null) zoneId = zoneDetails.ZoneId;

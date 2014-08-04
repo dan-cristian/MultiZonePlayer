@@ -173,7 +173,8 @@ namespace MultiZonePlayer
 		heatscheduleoff,
 		zoneautosetup,
 		userconfirm,
-		waitforcontroldevice
+		waitforcontroldevice,
+        favorite
 	}
 	public enum GlobalParams
 	{

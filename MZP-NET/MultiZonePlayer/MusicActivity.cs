@@ -787,6 +787,10 @@ namespace MultiZonePlayer
                     case GlobalCommands.down:
                         rating = RatingDown();
                         break;
+                    case GlobalCommands.favorite:
+                        if (CurrentItem!=null)
+                            CurrentItem.SetFavorite(true);
+                        break;
                     case GlobalCommands.ratingset:
                         SetRating(Convert.ToInt16(vals.GetValue(GlobalParams.ratingvalue)));
                         break;

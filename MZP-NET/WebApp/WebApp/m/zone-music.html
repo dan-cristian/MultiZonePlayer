@@ -14,6 +14,7 @@
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=volumedown&zoneid=%_zoneid', true)"><b>-</b></button>
 <button class="Small" onclick="ajaxCall('result','cmd.html?command=volumeup&zoneid=%_zoneid', true)"><b>+</b></button>
 <button class="Caption">#Zones,%_zoneid.VolumeLevel#</button>
+<button class="Small Pressed<%?;"#Zones,%_zoneid.IsFavorite#"=="true"%>" onclick="ajaxCall('result','cmd.html?command=favorite&zoneid=%_zoneid', true)"><b>☺</b></button>
 <meter value="#Zones,%_zoneid.PositionPercent#" min="0" max="100">#Zones,%_zoneid.ZoneState# #Zones,%_zoneid.PositionPercent#%</meter>
 <hr />
 <img src="#Zones,%_zoneid.Meta.ImageURL#" onclick="showDiv('artist')"/>
