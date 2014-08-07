@@ -91,7 +91,7 @@ namespace MultiZonePlayer
 				m_isXBMCProcessStarting = true;
 				//start minimized to force an app placement on 2nd screem
 				MZPState.RestartGenericProc(IniFile.PARAM_XBMC_PROCESS_NAME[1], IniFile.PARAM_XBMC_APP_PATH[1],
-					System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.AboveNormal);
+					System.Diagnostics.ProcessWindowStyle.Normal, System.Diagnostics.ProcessPriorityClass.AboveNormal);
 				int i = 0;//wait for xbmc to launch
 				do { System.Threading.Thread.Sleep(100); i++; }
 				while (GetXBMCHandle() == IntPtr.Zero && i < 100);

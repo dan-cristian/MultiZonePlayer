@@ -159,7 +159,7 @@ namespace MultiZonePlayer {
 		public String Album;
 		public String Year;
 		public String SourceURL;
-		public LastFmMeta Meta;
+		public MediaItemBase MediaItem;
 
 		public Boolean CameraAlertActive = true;
 		private List<PictureSnapshot> m_pictureList = new List<PictureSnapshot>();
@@ -1220,7 +1220,7 @@ namespace MultiZonePlayer {
 		public override void SaveEntryToIni() {
 			//MLog.Log(this, "Saving state to ini zone=" + ZoneName);
 			//remove fields that generate serialisation problems
-			this.Meta = null;
+			this.MediaItem = null;
 
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
 			param.UseExtensions = false;
@@ -1563,7 +1563,7 @@ namespace MultiZonePlayer {
 					if (zone.ControlDeviceName != null && zone.ControlDeviceName != "") {
 						ControlDevice dev = MZPState.Instance.SystemAvailableControlDevices.Find(x => x.DeviceName == zone.ControlDeviceName);
 						if (dev == null) {
-							Alert.CreateAlertOnce("Invalid control device in zone "+zone.ZoneName,"ControlDevice"+zone.ZoneName);
+							Alert.CreateAlertOnce("Invalid control device in zone "+zone.ZoneName + " device="+zone.ControlDeviceName,"ControlDevice"+zone.ZoneName);
 						}
 					}
 				}

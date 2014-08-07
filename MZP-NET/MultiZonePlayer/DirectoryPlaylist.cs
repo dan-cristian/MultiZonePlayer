@@ -244,6 +244,7 @@ namespace MultiZonePlayer {
 		public DateTime LibraryAddDate;
 		public String Author = "";
 		public String Copyright;
+        public Boolean IsFavorite = false;
 
 		public bool RequireSave {
 			get { return m_requireSave; }
@@ -290,7 +291,7 @@ namespace MultiZonePlayer {
 		public String ContributingArtist = "";
 		public String Year = "";
 		public String Album = "";
-		public Boolean IsFavorite = false;
+		
 		public LastFmMeta Meta;
 		private TagLib.File m_tagFile = null;
         //by default save tags in comment, should work for all files
@@ -313,6 +314,7 @@ namespace MultiZonePlayer {
 
 		public void SetFavorite(bool isFavorite) {
 			string currentIsFavorite;
+            IsFavorite = isFavorite;
 			if (Comment.Contains(IniFile.MEDIA_TAG_FAVORITE)) {
 				currentIsFavorite =
 					Comment.Substring(Comment.IndexOf(IniFile.MEDIA_TAG_FAVORITE) + IniFile.MEDIA_TAG_FAVORITE.Length, 1);

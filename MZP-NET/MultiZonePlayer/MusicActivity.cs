@@ -190,6 +190,7 @@ namespace MultiZonePlayer
 						MLog.Log(this, "Playing file" + CurrentItem.SourceURL + " playcount=" + CurrentItem.PlayCount + " vol="+m_dcPlay.GetVolumeLevel());
                         //init amp power if needed
                         m_zoneDetails.ZoneState = ZoneState.Running;//Ensure power remains on until music starts
+                        Tick();//force update current song details at start
                         m_zoneDetails.PowerControlOn();
 						int loop = 0;
 						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50){//usefull for HDMI devices
@@ -882,7 +883,7 @@ namespace MultiZonePlayer
                     m_zoneDetails.SourceURL = CurrentItem.SourceURL;
                     m_zoneDetails.Playlist = m_currentPlaylistName;
                     m_zoneDetails.PlaylistCount = m_songList.Count;
-					m_zoneDetails.Meta = CurrentItem.Meta;
+					m_zoneDetails.MediaItem = CurrentItem;
                 }
                 if (m_dcPlay!=null) m_dcPlay.Tick();
             }
