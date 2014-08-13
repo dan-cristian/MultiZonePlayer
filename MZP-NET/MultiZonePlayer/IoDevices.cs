@@ -319,11 +319,13 @@ namespace MultiZonePlayer {
 		}
 
 		public override string SendCommand(Enum cmd, string value) {
-			throw new NotImplementedException();
+            MLog.Log(this, "SendCommand not implemented");
+            return "";
 		}
 
 		public override string GetCommandStatus(Enum cmd) {
-			throw new NotImplementedException();
+            MLog.Log(this, "GetCommandStatus not implemented");
+            return "";
 		}
 
 		protected override void ReceiveSerialResponse(string response) {
@@ -339,7 +341,7 @@ namespace MultiZonePlayer {
 		}
 
 		public Boolean SendMessageToTarget(String message) {
-			MLog.Log(this, "ERROR send message not implemented in modem");
+            MLog.Log(this, "ERROR SendMessageToTarget not implemented in modem");
 			return false;
 		}
 
@@ -531,65 +533,70 @@ namespace MultiZonePlayer {
 		}
 
 		protected override void ReceiveSerialResponse(string response) {
-			string origResponse = response;
-			//MLog.Log(this, "RFXCOMM: " + response);
-			do {
-				RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
-				if (dev != null) {
-					//MLog.Log(this, "RFX result in zoneid=" + dev.ZoneId
-					//               + " for response:[" + origResponse + "] is " + dev.DisplayValues());
-					if (dev.ZoneId != -1) {
-						ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
-						if (zone == null) {
-							Alert.CreateAlertOnce("Null zone " + dev.ZoneId + " in RFXrecvresp", "RFXReceiveSerialResponse");
-							return;
-						}
-						SensorDevice devsensor = SensorDevice.UpdateGetDevice(dev.DeviceName, dev.DeviceId, dev.DeviceType.ToString(), zone, 
-							SensorDevice.DeviceTypeEnum.RFX, dev.DisplayValues());
-						
-						switch (dev.DeviceType) {
-							case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
-								decimal temp, hum, lasttemp, lasthum, signal, battery;
-								temp = Convert.ToDecimal(
-										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value)/10;
-								hum = Convert.ToDecimal(
-										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value);
-								signal = Convert.ToDecimal(
-										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.signal.ToString()).Value);
-								battery = Convert.ToDecimal(
-										dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.battery.ToString()).Value);
+            try {
+                string origResponse = response;
+                //MLog.Log(this, "RFXCOMM: " + response);
+                do {
+                    RFXDeviceDefinition.RFXDevice dev = RFXDeviceDefinition.GetDevice(ref response);
+                    if (dev != null) {
+                        //MLog.Log(this, "RFX result in zoneid=" + dev.ZoneId
+                        //               + " for response:[" + origResponse + "] is " + dev.DisplayValues());
+                        if (dev.ZoneId != -1) {
+                            ZoneDetails zone = ZoneDetails.GetZoneById(dev.ZoneId);
+                            if (zone == null) {
+                                Alert.CreateAlertOnce("Null zone " + dev.ZoneId + " in RFXrecvresp", "RFXReceiveSerialResponse");
+                                return;
+                            }
+                            SensorDevice devsensor = SensorDevice.UpdateGetDevice(dev.DeviceName, dev.DeviceId, dev.DeviceType.ToString(), zone,
+                                SensorDevice.DeviceTypeEnum.RFX, dev.DisplayValues());
 
-								lasttemp = Convert.ToDecimal(zone.Temperature);
-								lasthum = Convert.ToDecimal(zone.Humidity);
+                            switch (dev.DeviceType) {
+                                case RFXDeviceDefinition.DeviceTypeEnum.temp_hum:
+                                    decimal temp, hum, lasttemp, lasthum, signal, battery;
+                                    temp = Convert.ToDecimal(
+                                            dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.temperature.ToString()).Value) / 10;
+                                    hum = Convert.ToDecimal(
+                                            dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.humidity.ToString()).Value);
+                                    signal = Convert.ToDecimal(
+                                            dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.signal.ToString()).Value);
+                                    battery = Convert.ToDecimal(
+                                            dev.FieldValues.Find(x => x.Name == RFXDeviceDefinition.DeviceAttributes.battery.ToString()).Value);
 
-								lasttemp = lasttemp == 0 ? 0.1m : lasttemp;
-								lasthum = lasthum == 0 ? 0.1m : lasthum;
-								zone.SetTemperature((double) temp, dev.DeviceId);
-								zone.Humidity = (double) hum;
-								devsensor.Temperature = (double) temp;
-								devsensor.Humidity = (double)hum;
-								devsensor.Signal = (int)signal;
-								devsensor.Battery = (int)battery;
-								devsensor.RecordSuccess();
-								break;
-							case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
+                                    lasttemp = Convert.ToDecimal(zone.Temperature);
+                                    lasthum = Convert.ToDecimal(zone.Humidity);
 
-								break;
-							default:
-								MLog.Log(this, "Unknown RFX device type in response " + response);
-								break;
-						}
-					}
-					else {
-						MLog.Log(this, "Unknown zone for RFX response " + response);
-					}
-				}
-				else {
-					MLog.Log(this, "No RFX device identified for response " + response);
-				}
-			} while (response.Length > 0 && MZPState.Instance != null);
+                                    lasttemp = lasttemp == 0 ? 0.1m : lasttemp;
+                                    lasthum = lasthum == 0 ? 0.1m : lasthum;
+                                    zone.SetTemperature((double)temp, dev.DeviceId);
+                                    zone.Humidity = (double)hum;
+                                    devsensor.Temperature = (double)temp;
+                                    devsensor.Humidity = (double)hum;
+                                    devsensor.Signal = (int)signal;
+                                    devsensor.Battery = (int)battery;
+                                    devsensor.RecordSuccess();
+                                    break;
+                                case RFXDeviceDefinition.DeviceTypeEnum.lighting1:
 
-			//String message = response.ToLower().Replace("\r", "").Replace("\n", "").ToLower();
+                                    break;
+                                default:
+                                    MLog.Log(this, "Unknown RFX device type in response " + response);
+                                    break;
+                            }
+                        }
+                        else {
+                            MLog.Log(this, "Unknown zone for RFX response " + response);
+                        }
+                    }
+                    else {
+                        MLog.Log(this, "No RFX device identified for response " + response);
+                    }
+                } while (response.Length > 0 && MZPState.Instance != null);
+
+                //String message = response.ToLower().Replace("\r", "").Replace("\n", "").ToLower();
+            }
+            catch (Exception ex) {
+                MLog.Log(this, "Error on RFX received serial response err=" + ex.Message);
+            }
 		}
 
 		public override string GetCommandStatus(Enum cmd) {
@@ -638,7 +645,8 @@ namespace MultiZonePlayer {
 		}
 
 		public bool IsEnabled() {
-			throw new NotImplementedException();
+            MLog.Log(this, "IsEnabled not implemented");
+            return false;
 		}
 
 		public void Enable() {
