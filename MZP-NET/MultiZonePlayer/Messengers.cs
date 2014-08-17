@@ -365,8 +365,7 @@ namespace MultiZonePlayer
 					result = true;
 				}
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex){
 				MLog.Log("Error sending email, err="+ex.Message);
 			}
 			return result;

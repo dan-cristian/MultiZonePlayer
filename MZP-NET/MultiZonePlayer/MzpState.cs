@@ -1339,7 +1339,7 @@ namespace MultiZonePlayer {
 					else {
 						alert.LastSendAttempt = DateTime.Now;
 						alert.SendAttemptCount++;
-						MLog.Log(this, "User alert notification Failed, alert " + alert.LastCause);
+						MLog.Log(this, "User alert notification Failed, alert " + alert.LastCause + " sendCount="+alert.SendAttemptCount);
 					}
 				}
 			}

@@ -1147,7 +1147,7 @@ namespace MultiZonePlayer {
 		}
 
 		public Boolean SendMessageToTarget(string message) {
-			MLog.Log(this, "Error not implemented");
+			MLog.Log(this, "Error not implemented in OneWire");
 			return false;
 		}
 
