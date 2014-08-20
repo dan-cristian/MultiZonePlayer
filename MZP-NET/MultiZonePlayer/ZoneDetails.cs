@@ -1460,7 +1460,8 @@ namespace MultiZonePlayer {
 					Alert.CreateAlert("Removed existing control device from zone " + zone.ZoneName + " " + devicename, true);
 				}
 			}
-			ControlDeviceName += devicename + Constants.MULTI_ENTRY_SEPARATOR;
+            //allow only one control device per zone, possibl improv in the future
+            ControlDeviceName = devicename;// +Constants.MULTI_ENTRY_SEPARATOR;
 			WaitForControlDeviceSetup = false;
 			SaveEntryToIni();
 		}

@@ -12,7 +12,7 @@ namespace MultiZonePlayer
         public static void DoCommandFromRawInput(KeyDetail kd)
         {
 			int zoneId = -1;
-            List<ZoneDetails> zoneDetailsList;
+            List<ZoneDetails> zoneDetailsList = null;
             ZoneDetails zoneDetails=null;
 			ValueList val;
 			Thread th;
@@ -21,7 +21,10 @@ namespace MultiZonePlayer
                     //MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
                     return;
                 }
-				RemotePipiCommand cmdRemote;
+                if (kd.Device == "") {
+                    return;
+                }
+                RemotePipiCommand cmdRemote;
 				zoneDetailsList = ZoneDetails.ZoneDetailsList.FindAll(x => x.ControlDeviceName.Contains(kd.Device));
                 if (zoneDetailsList.Count > 1)
                     Alert.CreateAlertOnce("Warning, same control device assigned to "+ zoneDetailsList.Count +" multiple zones like " 
@@ -31,10 +34,6 @@ namespace MultiZonePlayer
                 if (zoneDetails != null) zoneId = zoneDetails.ZoneId;
 				//zoneId = MZPState.Instance.GetZoneByControlDevice(kd.Device, kd.Key);
 				//ignore console KEYBOARD commands
-				
-				if (kd.Device == "") {
-					return;
-				}
 
 				if (zoneDetails == null){
 					MLog.Log("Command received from unknown keyboard device "+kd.Device+", passing this for set device identification check to API");

@@ -1064,7 +1064,9 @@ namespace MultiZonePlayer {
 			Boolean result = false;
 			result = EmailNotifier.SendEmail(message);
 			foreach (IMessenger m in m_messengerList) {
-				result = m.SendMessageToTarget(message) || result;
+                if (m != null) {
+                    result = m.SendMessageToTarget(message) || result;
+                }
 			}
 			return result;
 		}

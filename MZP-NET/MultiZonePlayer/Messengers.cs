@@ -92,23 +92,33 @@ namespace MultiZonePlayer
 
         private void messageReceived(object sender, agsXMPP.protocol.client.Message msg)
         {
-			if (Thread.CurrentThread.Name == null 
-				|| !Thread.CurrentThread.Name.StartsWith("GTalk"))
-				Thread.CurrentThread.Name = "GTalk " + msg.Body;
+            try {
+                if (Thread.CurrentThread.Name == null
+                    || !Thread.CurrentThread.Name.StartsWith("GTalk"))
+                    Thread.CurrentThread.Name = "GTalk " + msg.Body;
 
-            string[] chatMessage = null;
-            chatMessage = msg.From.ToString().Split('/');
-            //agsXMPP.Jid jid = null;
-            //jid = new agsXMPP.Jid(chatMessage[0]);
-            //agsXMPP.protocol.client.Message reply = null;
+                string[] chatMessage = null;
+                chatMessage = msg.From.ToString().Split('/');
+                //agsXMPP.Jid jid = null;
+                //jid = new agsXMPP.Jid(chatMessage[0]);
+                //agsXMPP.protocol.client.Message reply = null;
 
-            ReceiveMessage(msg.Body, chatMessage[0]);
+                ReceiveMessage(msg.Body, chatMessage[0]);
+            }
+            catch (Exception ex) {
+                Alert.CreateAlertOnce("Error in Gtalk message received, err="+ex.Message, "GTalk receive");
+            }
         }
         
         private void loginFailed(object o, agsXMPP.Xml.Dom.Element el)
         {
+            try{
             //Thread.CurrentThread.Name = "GTalk Event LoggedIn Failed";
             MLog.Log(this, "GTalk Messenger NOT authenticated " + el.Value);
+             }
+            catch (Exception ex) {
+                Alert.CreateAlertOnce("Error in Gtalk loginFailed, err=" + ex.Message, "GTalk loginFailed");
+            }
         }
 
         private void loggedIn(object o)
@@ -119,12 +129,17 @@ namespace MultiZonePlayer
 
         private void xmpp_OnPresence(object sender, agsXMPP.protocol.client.Presence pres)
         {
+            try{
             agsXMPP.protocol.client.Presence item;
             //MLog.Log(this, "GTalkMessengers roster: "+ pres.From +" type=" + pres.Type + " status=" + pres.Status);
             item = m_presenceList.Find(x => x.From.Equals(pres.From));
             if (item != null)
                 m_presenceList.Remove(item);
             m_presenceList.Add(pres);
+            }
+            catch (Exception ex) {
+                Alert.CreateAlertOnce("Error in Gtalk xmpp_OnPresence, err=" + ex.Message, "GTalk xmpp_OnPresence");
+            }
         }
 		private void objXmpp_OnError(object sender, Exception ex)
 		{
