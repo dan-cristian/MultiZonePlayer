@@ -208,7 +208,13 @@ namespace MultiZonePlayer
 
         private void button5_Click(object sender, EventArgs e)
         {
-            //MZPState.Instance.DisplayList[0].SendCommand(DisplayLGTV.LGCommands.SCREENMUTE_kd, "0");
+            System.Data.Common.DbProviderFactory fact = System.Data.Common.DbProviderFactories.GetFactory("System.Data.SQLite");
+            using (System.Data.Common.DbConnection cnn = fact.CreateConnection()) {
+                cnn.ConnectionString = "Data Source=c:\\sqlite\\test.db3";
+                cnn.Open();
+                cnn.Close();
+            }
+            
         }
 
         /// <summary>
@@ -308,6 +314,11 @@ namespace MultiZonePlayer
 		{
 
 		}
+
+        private void Test_Load(object sender, EventArgs e) {
+            // TODO: This line of code loads data into the 'testDBDataSet1.TempRec' table. You can move, or remove it, as needed.
+
+        }
 
 	}
 

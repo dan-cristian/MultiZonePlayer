@@ -837,7 +837,10 @@ namespace MultiZonePlayer {
 		public Boolean RequirePower {
 			get {
 				if (HasPowerCapabilities) {
-					int closeperiod = Convert.ToInt16(IniFile.PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD[1]);
+                    int closeperiod = Convert.ToInt16(IniFile.PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD[1]);
+                    if (ActivityType == GlobalCommands.music)
+                        closeperiod = 2 * closeperiod;//do not close the music that fast
+                        
 					bool powerfortoolong = (RequirePowerForced || IsActive)
 						&& (LastMovementAge.TotalMinutes > closeperiod)
 						&& (LastLocalCommandAgeInSeconds > 60 * closeperiod);
@@ -1562,7 +1565,7 @@ namespace MultiZonePlayer {
 				}
 				if (slowActions) {
 					if (zone.ControlDeviceName != null && zone.ControlDeviceName != "") {
-						ControlDevice dev = MZPState.Instance.SystemAvailableControlDevices.Find(x => x.DeviceName == zone.ControlDeviceName);
+						ControlDevice dev = MZPState.Instance.SystemAvailableControlDevices.Find(x => zone.ControlDeviceName.Contains(x.DeviceName));
 						if (dev == null) {
 							Alert.CreateAlertOnce("Invalid control device in zone "+zone.ZoneName + " device="+zone.ControlDeviceName,"ControlDevice"+zone.ZoneName);
 						}
