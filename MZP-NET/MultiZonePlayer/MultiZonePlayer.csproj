@@ -207,6 +207,7 @@
     <Compile Include="AudioManagement.Designer.cs">
       <DependentUpon>AudioManagement.cs</DependentUpon>
     </Compile>
+    <Compile Include="DB.cs" />
     <Compile Include="GraphGen.cs">
       <SubType>Form</SubType>
     </Compile>

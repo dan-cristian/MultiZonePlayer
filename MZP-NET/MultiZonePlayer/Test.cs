@@ -208,13 +208,10 @@ namespace MultiZonePlayer
 
         private void button5_Click(object sender, EventArgs e)
         {
-            System.Data.Common.DbProviderFactory fact = System.Data.Common.DbProviderFactories.GetFactory("System.Data.SQLite");
-            using (System.Data.Common.DbConnection cnn = fact.CreateConnection()) {
-                cnn.ConnectionString = "Data Source=c:\\sqlite\\test.db3";
-                cnn.Open();
-                cnn.Close();
-            }
-            
+            //DB.Temperature.WriteRecord(DateTime.Now, 1, 23.6, 0, "mijloc");
+            DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, DateTime.Now,
+                            DB.COL_TEMPERATURE_ZONEID, 2, DB.COL_TEMPERATURE_VALUE, 12.5, DB.COL_TEMPERATURE_SENSORPOSITION, 1,
+                            DB.COL_TEMPERATURE_SENSORID, "susuc");
         }
 
         /// <summary>
