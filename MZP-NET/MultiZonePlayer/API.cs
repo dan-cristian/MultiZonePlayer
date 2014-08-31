@@ -305,6 +305,11 @@ namespace MultiZonePlayer
                             MZPState.RestartComputer("restart command received");
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);
                             break;
+                        case GlobalCommands.closemyself:
+                            cmdresult.OutputMessage = "Application MZP is closing on User request";
+                            MLog.Log(cmdresult.OutputMessage);
+                            System.Windows.Forms.Application.Exit();
+                            break;
                         case GlobalCommands.makebuzz:
                             MZPState.Instance.MessengerMakeBuzz();
                             //result = JsonResult(Metadata.ResultEnum.OK, "", null);

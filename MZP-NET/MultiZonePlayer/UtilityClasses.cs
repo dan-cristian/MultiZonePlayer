@@ -127,6 +127,7 @@ namespace MultiZonePlayer
 		holdcriteria,
 		setnotify,
 		restartsystem,
+        closemyself,
 		sendsms,
 		zonearm,
 		zonedisarm,

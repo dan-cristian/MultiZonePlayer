@@ -936,7 +936,7 @@ namespace MultiZonePlayer {
 
 		private void ZoneOpenActions() {
 			if ((m_zoneDetails.NotifyZoneEventTriggered == ZoneNotifyState.Closed)
-			    || (DateTime.Now.Subtract(m_zoneDetails.LastNotifyZoneEventTriggered).TotalHours > 1)) {
+			    || (DateTime.Now.Subtract(m_zoneDetails.LastNotifyZoneEventTriggered).TotalMinutes > 2)) {
 				Utilities.RunProcessWait(IniFile.CurrentPath() + "\\zone-open-" + m_zoneDetails.ZoneId + ".bat",
 					System.Diagnostics.ProcessWindowStyle.Hidden, System.Diagnostics.ProcessPriorityClass.BelowNormal);
 				m_zoneDetails.NotifyZoneEventTriggered = ZoneNotifyState.Open;
