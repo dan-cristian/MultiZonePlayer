@@ -1190,7 +1190,7 @@ namespace MultiZonePlayer {
 		}
 
 		public override int PendingSaveItemsCount() {
-			return m_playlistItems.Count(m => m.RequireSave);
+            return m_playlistItems.Count(m => m.RequireSave);
 		}
 
 		protected override void ProcessFile(FileInfo fi) {
