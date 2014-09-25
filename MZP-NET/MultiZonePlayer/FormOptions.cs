@@ -180,7 +180,7 @@ namespace MultiZonePlayer
 					zone.PowerOnDelay = Convert.ToInt16(dgvZones.Rows[r].Cells[Zones_PowerOnDelay.Name].Value ?? "0");
 					zone.NearbyZonesIdList= (dgvZones.Rows[r].Cells[Zones_NearbyZoneIdList.Name].Value ?? "").ToString();
 					zone.TemperatureDeviceId = (dgvZones.Rows[r].Cells[Zones_TempDeviceId.Name].Value ?? "").ToString();
-					zone.PowerType = (dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString();
+					zone.PowerType = (PowerType)Enum.Parse(typeof(PowerType),(dgvZones.Rows[r].Cells[Zones_PowerType.Name].Value ?? "").ToString());
 					zone.Type = (ZoneType)Enum.Parse(typeof(ZoneType),(dgvZones.Rows[r].Cells[Zones_Type.Name].Value ?? "Undefined").ToString());
 					zone.CronSchedule = (dgvZones.Rows[r].Cells[Zones_HeatSchedule.Name].Value ?? "").ToString();
 					zone.SaveEntryToIni();

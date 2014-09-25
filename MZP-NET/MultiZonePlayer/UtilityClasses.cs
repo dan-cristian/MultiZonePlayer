@@ -610,6 +610,7 @@ namespace MultiZonePlayer
 	{
 		Denkovi,
 		Numato,
+        Relay,
 		None
 	}
 

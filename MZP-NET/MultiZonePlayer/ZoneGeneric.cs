@@ -411,19 +411,19 @@ namespace MultiZonePlayer {
 					                           m_zoneDetails.IsClosureArmed;
 					break;
 				case GlobalCommands.closureopen:
-					if (m_zoneDetails.HasWDIORelay) {
+                    if (m_zoneDetails.HasWDIORelay && m_zoneDetails.IsClosureContactMade) {
 						MZPState.Instance.WDIO.SetOutputLow(m_zoneDetails.WDIORelayOutputPinIndex);
 					}
-					else {
+                    else if (m_zoneDetails.HasOneWireIODevice) {
 						int closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
 						m_zoneDetails.SetClosureCmdIO(closureid, true);
 					}
 					break;
 				case GlobalCommands.closureclose:
-					if (m_zoneDetails.HasWDIORelay) {
+                    if (m_zoneDetails.HasWDIORelay && !m_zoneDetails.IsClosureContactMade) {
 						MZPState.Instance.WDIO.SetOutputHigh(m_zoneDetails.WDIORelayOutputPinIndex);
 					}
-					else {
+					else if (m_zoneDetails.HasOneWireIODevice){
 						int closureid = Convert.ToInt16(vals.GetValue(GlobalParams.id));
 						m_zoneDetails.SetClosureCmdIO(closureid, false);
 					}

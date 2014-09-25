@@ -604,7 +604,7 @@ namespace MultiZonePlayer {
 		}
 
 		public BasePowerControl PowerControl(int zoneid) {
-			if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString()) {
+			if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi) {
 				return m_powerControlDenkovi;
 			}
 			else {
@@ -635,15 +635,17 @@ namespace MultiZonePlayer {
 		}
 
 		public bool PowerControlIsOn(int zoneid) {
-			if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi.ToString()) {
-				return m_powerControlDenkovi.IsPowerOn(zoneid);
-			}
-			else if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Numato.ToString()) {
-				return m_powerControlNumato.IsPowerOn(zoneid);
-			}
-			else {
-				return false;
-			}
+            ZoneDetails zone= MultiZonePlayer.ZoneDetails.GetZoneById(zoneid);
+            switch (zone.PowerType) {
+                case PowerType.Denkovi:
+			    	return m_powerControlDenkovi.IsPowerOn(zoneid);
+                case PowerType.Numato:
+                    return m_powerControlNumato.IsPowerOn(zoneid);
+                case PowerType.Relay:
+                    return zone.IsClosureContactMade;
+                default:
+                    return false;
+            }
 		}
 
 		public void ToogleFollowMeMusic() {

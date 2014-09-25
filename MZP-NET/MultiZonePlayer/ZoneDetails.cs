@@ -27,13 +27,14 @@ namespace MultiZonePlayer {
 		public String LocationName = "Default Location";
 		[Category("Edit")]
 		public int PowerIndex = Constants.NOT_SET;
-		public String PowerType;
+        [Category("Edit")]
+		public PowerType PowerType = PowerType.None;
 		[Category("Edit")]
 		public int PowerOnDelay;
 		private DateTime m_lastPowerOn = DateTime.MinValue;
 		public String WakeTime = "";
 		public String WakeWeekDay = "";
-		[Category("Edit"), Description("ID of camera object from iSpy")]
+		[Category("Edit"), Description("ID of camera object from iSpy (oid)")]
 		public String CameraId = "";
 		[Category("Edit"), Description("format widthXheight")]
 		public String CameraResolution = "";
@@ -660,28 +661,29 @@ namespace MultiZonePlayer {
 		}
 		public void PowerControlOn() {
 			bool switchedOn = false;
-			String powerdevice;
 			if (HasPowerCapabilities) {
-				if (this.PowerType == MultiZonePlayer.PowerType.Denkovi.ToString()) {
-					if (!MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
-						switchedOn = true;
-					}
-					MZPState.Instance.PowerControlDenkovi.PowerOn(ZoneId);
-					powerdevice = Constants.POWER_TYPE_DENKOVI;
-					m_lastPowerOn = DateTime.Now;
-				}
-				else {
-					if (!MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
-						switchedOn = true;
-					}
-					if (this.PowerType == MultiZonePlayer.PowerType.Numato.ToString()) {
+                switch (this.PowerType){
+                    case MultiZonePlayer.PowerType.Denkovi:
+                        if (!MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
+						    switchedOn = true;
+					    }
+					    MZPState.Instance.PowerControlDenkovi.PowerOn(ZoneId);
+					    m_lastPowerOn = DateTime.Now;
+                        break;
+                    case MultiZonePlayer.PowerType.Numato:
+                        if (!MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
+						    switchedOn = true;
+					    }
 						MZPState.Instance.PowerControlNumato.PowerOn(ZoneId);
 						m_lastPowerOn = DateTime.Now;
-					}
-					powerdevice = Constants.POWER_TYPE_NUMATO;
-				}
+                        break;
+                    case MultiZonePlayer.PowerType.Relay:
+                        CommandResult res = new CommandResult();
+                        ZoneGeneric.ProcessAction(GlobalCommands.closureclose, new ValueList(GlobalParams.id, WDIORelayOutputPinIndex.ToString(),CommandSources.system), ref res);
+                        break;
+                }
 				if (switchedOn) {
-					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, powerdevice,
+					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, this.PowerType.ToString(),
 						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOn", ZoneId.ToString(),
 						Constants.EVENT_TYPE_POWER);
 				}
@@ -692,29 +694,31 @@ namespace MultiZonePlayer {
 		}
 		public void PowerControlOff() {
 			bool switchedOff = false;
-			String powerdevice;
 
 			if (HasPowerCapabilities) {
-				if (this.PowerType == MultiZonePlayer.PowerType.Denkovi.ToString()) {
-					if (MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
-						switchedOff = true;
-					}
-					MZPState.Instance.PowerControlDenkovi.PowerOff(ZoneId);
-					powerdevice = Constants.POWER_TYPE_DENKOVI;
-					m_lastPowerOn = DateTime.MinValue;
-				}
-				else {
-					if (MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
-						switchedOff = true;
-					}
-					if (this.PowerType == MultiZonePlayer.PowerType.Numato.ToString()) {
+                switch (this.PowerType) { 
+                    case (MultiZonePlayer.PowerType.Denkovi):
+					    if (MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
+						    switchedOff = true;
+					    }
+					    MZPState.Instance.PowerControlDenkovi.PowerOff(ZoneId);
+					    m_lastPowerOn = DateTime.MinValue;
+                        break;
+                    case MultiZonePlayer.PowerType.Numato:
+					    if (MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
+						    switchedOff = true;
+					    }
 						MZPState.Instance.PowerControlNumato.PowerOff(ZoneId);
 						m_lastPowerOn = DateTime.MinValue;
-					}
-					powerdevice = Constants.POWER_TYPE_NUMATO;
+                        break;
+                    case MultiZonePlayer.PowerType.Relay:
+                        CommandResult res = new CommandResult();
+                        ZoneGeneric.ProcessAction(GlobalCommands.closureopen, new ValueList(GlobalParams.id, WDIORelayOutputPinIndex.ToString(), CommandSources.system), ref res);
+                        break;
 				}
+            
 				if (switchedOff) {
-					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, powerdevice,
+					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, this.PowerType.ToString(),
 						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOff", ZoneId.ToString(),
 						Constants.EVENT_TYPE_POWER);
 				}
@@ -725,7 +729,8 @@ namespace MultiZonePlayer {
 		}
 		public Boolean HasPowerCapabilities {
 			get {
-				return PowerIndex != -1 && PowerType != "";
+				return //PowerIndex != -1 && 
+                    PowerType != PowerType.None;
 			}
 		}
 		public Boolean HasClosures {
@@ -1391,6 +1396,7 @@ namespace MultiZonePlayer {
 			SourceURL = null;
 			//RequirePower = false;
 			ZoneState = ZoneState.NotStarted;
+            MediaItem = null;
 			//ActivityType = GlobalCommands.nul;
 		}
 
