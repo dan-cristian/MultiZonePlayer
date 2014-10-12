@@ -21,7 +21,7 @@ namespace MultiZonePlayer
                     //MLog.Log(null,"Ignoring key=" + e.Keyboard.vKey + " from device=" + e.Keyboard.deviceName);
                     return;
                 }
-                if (kd.Device == "") {
+                if (kd.Device == "" || kd.DeviceName==null || kd.DeviceName=="") {
                     return;
                 }
                 RemotePipiCommand cmdRemote;

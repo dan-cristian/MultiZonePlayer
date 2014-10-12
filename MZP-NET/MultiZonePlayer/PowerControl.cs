@@ -390,37 +390,37 @@ namespace MultiZonePlayer
             FTD2XX_NET.FTDI.FT_STATUS status = FTD2XX_NET.FTDI.FT_STATUS.FT_OTHER_ERROR;
 
             int[] index = GetSocketIndexForZone(zoneId);
+            if (index.Length > 0) {
+                for (int j = 0; j < index.Length; j++) {
+                    stateToSend = "";
+                    initialState = m_relayState;
+                    zoneIndex = index[j];
+                    // checking if this zone is still active, if active and bool param is false will ignore
+                    //TODO
 
-			
-            for (int j = 0; j < index.Length; j++)
-            {
-                stateToSend = "";
-                initialState = m_relayState;
-                zoneIndex = index[j];
-                // checking if this zone is still active, if active and bool param is false will ignore
-                //TODO
+                    MLog.Log(this, "Sending power command " + state + " to zoneindex " + zoneIndex);
+                    initialState = initialState.Substring(0, zoneIndex - 1) + state + initialState.Substring(zoneIndex);
+                    m_relayState = initialState;
 
-                MLog.Log(this,"Sending power command "+state+" to zoneindex " + zoneIndex);
-                initialState = initialState.Substring(0, zoneIndex - 1) + state + initialState.Substring(zoneIndex);
-                m_relayState = initialState;
-
-                for (int i = m_relayState.Length; i > 0; i--)
-                    stateToSend += initialState[i - 1];
-                status = SendPowerCommand(stateToSend);
-                if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK)
-                {
-                    MLog.Log(this,"Error send command " +state+ ", status=" + status);
-                    if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_IO_ERROR)
-                    {
-                        //MLog.Log(null,"Reseting device started");
-                        //status = m_usb8Relay.ResetDevice();
-                        //MLog.Log(null,"Reseting device completed, status=" + status);
+                    for (int i = m_relayState.Length; i > 0; i--)
+                        stateToSend += initialState[i - 1];
+                    status = SendPowerCommand(stateToSend);
+                    if (status != FTD2XX_NET.FTDI.FT_STATUS.FT_OK) {
+                        MLog.Log(this, "Error send command " + state + ", status=" + status);
+                        if (status == FTD2XX_NET.FTDI.FT_STATUS.FT_IO_ERROR) {
+                            //MLog.Log(null,"Reseting device started");
+                            //status = m_usb8Relay.ResetDevice();
+                            //MLog.Log(null,"Reseting device completed, status=" + status);
+                        }
+                        m_lastCommandWasOK = false;
                     }
-	                m_lastCommandWasOK = false;
+                    else {
+                        m_lastCommandWasOK = true;                        
+                    }
                 }
-                else {
-	                m_lastCommandWasOK = true;
-                }
+            }
+            else {
+                Alert.CreateAlert("Send power command to a zone without power capabilities, should not happen, zoneid="+zoneId, true);
             }
             return status;
         }

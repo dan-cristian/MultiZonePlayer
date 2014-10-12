@@ -313,6 +313,8 @@ namespace MultiZonePlayer
 		}
 
         private void Test_Load(object sender, EventArgs e) {
+            // TODO: This line of code loads data into the 'sensorsDataSet.temperature' table. You can move, or remove it, as needed.
+            this.temperatureTableAdapter.Fill(this.sensorsDataSet.temperature);
             // TODO: This line of code loads data into the 'testDBDataSet1.TempRec' table. You can move, or remove it, as needed.
 
         }

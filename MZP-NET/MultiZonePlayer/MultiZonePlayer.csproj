@@ -212,6 +212,11 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="IoDevices.cs" />
+    <Compile Include="SensorsDataSet.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SensorsDataSet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="Singletons.cs" />
     <Compile Include="ThirdParty\Cron.cs" />
     <Compile Include="ThirdParty\fastJSON\dynamic.cs" />
@@ -370,6 +375,17 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="scheduler.ini" />
+    <None Include="SensorsDataSet.xsc">
+      <DependentUpon>SensorsDataSet.xsd</DependentUpon>
+    </None>
+    <None Include="SensorsDataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>SensorsDataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="SensorsDataSet.xss">
+      <DependentUpon>SensorsDataSet.xsd</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

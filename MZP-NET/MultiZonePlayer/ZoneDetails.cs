@@ -50,7 +50,7 @@ namespace MultiZonePlayer {
 		public String OutputDeviceNameWaveVLC;
 		public int WavedeviceIndex;
 		[Category("Edit"), Description("the raw input device name as provided by Windows, eg: \\\\?\\HID#VID_0A81&PID_0101&MI_00#7&37e1499b&0&0000#{884b96c3-56ef-11d1-bc8c-00a0c91405dd}")]
-		public String ControlDeviceName;
+		public String ControlDeviceName = "";
 		//public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
 		[Category("Edit"), Description("ID from winload/paradox system")]
@@ -797,7 +797,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public Boolean RequireHeat {
+	public Boolean RequireHeat {
 			get {
 				if (Temperature < TemperatureTarget) {
 					m_lowTempReached = true;
@@ -1549,6 +1549,18 @@ namespace MultiZonePlayer {
 		public static Boolean ZoneThatRequireHeat_AllExcept(int exceptedZoneId) {
 			return ZoneDetailsList.Find(x => x.RequireHeat && x.ZoneId!=exceptedZoneId) != null;
 		}
+
+        public static String ZoneThatRequireHeatDetails_AllExcept(int exceptedZoneId) {
+            List<ZoneDetails> zones = ZoneDetailsList.FindAll(x => x.RequireHeat && x.ZoneId!=exceptedZoneId).ToList();
+            string details = "";
+            if (zones==null || zones.Count==0)
+                details = "No zones requires heat (zone "+ GetZoneById(exceptedZoneId).ZoneName + " is excepted)";
+            else
+                foreach (ZoneDetails zone in zones) {
+                    details += zone.ZoneName + " current temp=" + zone.Temperature + " target=" + zone.TemperatureTarget + "; ";
+                }
+            return details;
+        }
 
 		public static List<ZoneDetails> ZoneWithLockContact_All {
 			get {

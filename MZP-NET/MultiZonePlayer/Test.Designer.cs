@@ -70,11 +70,16 @@
             this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.testDBDataSetBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.testDBDataSetBindingSource1 = new System.Windows.Forms.BindingSource(this.components);
+            this.sensorsDataSet = new MultiZonePlayer.SensorsDataSet();
+            this.temperatureBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.temperatureTableAdapter = new MultiZonePlayer.SensorsDataSetTableAdapters.temperatureTableAdapter();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tempRecBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.testDBDataSetBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.testDBDataSetBindingSource1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sensorsDataSet)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.temperatureBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -206,18 +211,21 @@
             this.chart1.BackColor = System.Drawing.Color.Transparent;
             chartArea1.Name = "ChartArea1";
             this.chart1.ChartAreas.Add(chartArea1);
+            this.chart1.DataSource = this.temperatureBindingSource;
             legend1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(159, 171);
+            this.chart1.Location = new System.Drawing.Point(13, 171);
             this.chart1.Margin = new System.Windows.Forms.Padding(2);
             this.chart1.Name = "chart1";
             series1.ChartArea = "ChartArea1";
             series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series1.Legend = "Legend1";
             series1.Name = "Series1";
+            series1.XValueMember = "datetime";
+            series1.YValueMembers = "value";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(351, 244);
+            this.chart1.Size = new System.Drawing.Size(405, 244);
             this.chart1.TabIndex = 12;
             this.chart1.Text = "chart1";
             // 
@@ -234,7 +242,7 @@
             legend2.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom;
             legend2.Name = "Legend1";
             this.chart2.Legends.Add(legend2);
-            this.chart2.Location = new System.Drawing.Point(640, 214);
+            this.chart2.Location = new System.Drawing.Point(586, 202);
             this.chart2.Margin = new System.Windows.Forms.Padding(2);
             this.chart2.Name = "chart2";
             series2.ChartArea = "ChartArea1";
@@ -270,6 +278,20 @@
             this.chart2.TabIndex = 12;
             this.chart2.Text = "chart1";
             // 
+            // sensorsDataSet
+            // 
+            this.sensorsDataSet.DataSetName = "SensorsDataSet";
+            this.sensorsDataSet.SchemaSerializationMode = System.Data.SchemaSerializationMode.IncludeSchema;
+            // 
+            // temperatureBindingSource
+            // 
+            this.temperatureBindingSource.DataMember = "temperature";
+            this.temperatureBindingSource.DataSource = this.sensorsDataSet;
+            // 
+            // temperatureTableAdapter
+            // 
+            this.temperatureTableAdapter.ClearBeforeFill = true;
+            // 
             // Test
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -299,6 +321,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.testDBDataSetBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.testDBDataSetBindingSource1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.sensorsDataSet)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.temperatureBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -324,5 +348,8 @@
         private System.Windows.Forms.BindingSource testDBDataSetBindingSource;
         private System.Windows.Forms.BindingSource testDBDataSetBindingSource1;
         private System.Windows.Forms.BindingSource tempRecBindingSource;
+        private SensorsDataSet sensorsDataSet;
+        private System.Windows.Forms.BindingSource temperatureBindingSource;
+        private SensorsDataSetTableAdapters.temperatureTableAdapter temperatureTableAdapter;
     }
 }
