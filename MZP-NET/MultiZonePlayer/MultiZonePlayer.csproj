@@ -410,6 +410,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Documentation\" />
     <Folder Include="Icons\" />
     <Folder Include="Tests\" />
   </ItemGroup>

@@ -710,7 +710,7 @@ namespace MultiZonePlayer
             cmdres.ServerStatus = srv;
             //cmdres.ValueList = values;
 			JSONParameters param=new JSONParameters();param.UseExtensions = true;
-			return fastJSON.JSON.Instance.ToJSON(cmdres, param);
+			return fastJSON.JSON.ToJSON(cmdres, param);
         }
 
         /*
@@ -719,7 +719,7 @@ namespace MultiZonePlayer
             Metadata.ServerStatus srv = new Metadata.ServerStatus();
             srv.ZoneDetails = ControlCenter.Instance.Zones.ToArray();
             res.ServerStatus = srv;
-            string jsonStatus = fastJSON.JSON.Instance.ToJSON(res, false);
+            string jsonStatus = fastJSON.JSON.ToJSON(res, false);
             return jsonStatus;
         }
          * */

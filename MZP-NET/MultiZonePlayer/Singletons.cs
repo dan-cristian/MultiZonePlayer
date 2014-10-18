@@ -275,7 +275,7 @@ namespace MultiZonePlayer {
 
 			try {
 				foreach (String json in values.Values) {
-					user = fastJSON.JSON.Instance.ToObject<User>(json);
+					user = fastJSON.JSON.ToObject<User>(json);
 					Add(user);
 				}
 			}
@@ -290,7 +290,7 @@ namespace MultiZonePlayer {
 			int r = 0;
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
 			foreach (User user in m_valueList) {
-				json = fastJSON.JSON.Instance.ToJSON(user, param);
+				json = fastJSON.JSON.ToJSON(user, param);
 				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS, r.ToString(), json);
 				r++;
 			}
@@ -625,7 +625,7 @@ namespace MultiZonePlayer {
 				//post.Add("username", IniFile.PARAM_ROUTER_USER_NAME[1]);
 				//post.Add("password", IniFile.PARAM_ROUTER_USER_PASS[1]);
 				//String logout = post.GetResponse();
-				/*UserPresence.OpenWrtWifiAssociations[] wrt = fastJSON.JSON.Instance.ToObject<UserPresence.OpenWrtWifiAssociations[]>(json);
+				/*UserPresence.OpenWrtWifiAssociations[] wrt = fastJSON.JSON.ToObject<UserPresence.OpenWrtWifiAssociations[]>(json);
 				if (wrt[0].assoclist != null) {
 					foreach (UserPresence.OpenWrtWifiAssociations.AssocList assoc in wrt[0].assoclist){
 						user = User.GetUserByWifi(assoc.Address);
@@ -751,7 +751,7 @@ namespace MultiZonePlayer {
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
 			param.UseExtensions = false;
 			foreach (Object obj in m_valueList) {
-				json = fastJSON.JSON.Instance.ToJSON(obj, param);
+				json = fastJSON.JSON.ToJSON(obj, param);
 				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_UTILITYCOST, r.ToString(), json);
 				r++;
 			}
@@ -763,7 +763,7 @@ namespace MultiZonePlayer {
 
 			try {
 				foreach (String json in values.Values) {
-					item = fastJSON.JSON.Instance.ToObject<UtilityCost>(json);
+					item = fastJSON.JSON.ToObject<UtilityCost>(json);
 					Add(item);
 				}
 			}
@@ -843,7 +843,7 @@ namespace MultiZonePlayer {
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 			param.UseExtensions = false;
 			foreach (Object obj in m_valueList) {
-				json = fastJSON.JSON.Instance.ToJSON(obj, param);
+				json = fastJSON.JSON.ToJSON(obj, param);
 				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_LIGHTSENSOR, r.ToString(), json);
 				r++;
 			}
@@ -860,7 +860,7 @@ namespace MultiZonePlayer {
 
 			try {
 				foreach (String json in values.Values) {
-					item = fastJSON.JSON.Instance.ToObject<LightSensor>(json);
+					item = fastJSON.JSON.ToObject<LightSensor>(json);
 					Add(item);
 				}
 			}
@@ -955,7 +955,7 @@ namespace MultiZonePlayer {
 			PersistentObject item;
 			try {
 				foreach (String json in values.Values) {
-					item = (PersistentObject)fastJSON.JSON.Instance.ToObject(json, this.GetType());
+					item = (PersistentObject)fastJSON.JSON.ToObject(json, this.GetType());
 					Add(item, iniSectionName);
 				}
 			}
@@ -970,7 +970,7 @@ namespace MultiZonePlayer {
 			String json;
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 			param.UseExtensions = false;
-			json = fastJSON.JSON.Instance.ToJSON(this, param);
+			json = fastJSON.JSON.ToJSON(this, param);
 			IniFile.IniWriteValuetoTemp(GetList(this).IniSectionName, this.Id.ToString(), json);
 		}
 		

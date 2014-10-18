@@ -15,11 +15,13 @@ namespace fastJSON
     {
         private StringBuilder _output = new StringBuilder();
         private StringBuilder _before = new StringBuilder();
-        readonly int _MAX_DEPTH = 10;
+        readonly int _MAX_DEPTH = 20;
         int _current_depth = 0;
         private Dictionary<string, int> _globalTypes = new Dictionary<string, int>();
+        private Dictionary<object, int> _cirobj = new Dictionary<object, int>();
         private JSONParameters _params;
         private bool _useEscapedUnicode = false;
+        //private bool _circular = false;
 
         internal JSONSerializer(JSONParameters param)
         {
@@ -35,6 +37,8 @@ namespace fastJSON
             if (_params.UsingGlobalTypes && _globalTypes != null && _globalTypes.Count > 0)
             {
                 StringBuilder sb = _before;
+                //if (_circular)
+                //    sb.Append("\"$circular\":true,");
                 sb.Append("\"$types\":{");
                 bool pendingSeparator = false;
                 foreach (var kv in _globalTypes)
@@ -83,7 +87,9 @@ namespace fastJSON
             else if (obj is DateTime)
                 WriteDateTime((DateTime)obj);
 
-            else if (_params.KVStyleStringDictionary == false && obj is IDictionary && obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+            else if (_params.KVStyleStringDictionary == false && obj is IDictionary &&
+                obj.GetType().IsGenericType && obj.GetType().GetGenericArguments()[0] == typeof(string))
+
                 WriteStringDictionary((IDictionary)obj);
 
             else if (obj is IDictionary)
@@ -110,7 +116,7 @@ namespace fastJSON
             else if (obj is Enum)
                 WriteEnum((Enum)obj);
 
-            else if (JSON.Instance.IsTypeRegistered(obj.GetType()))
+            else if (Reflection.Instance.IsTypeRegistered(obj.GetType()))
                 WriteCustom(obj);
 
             else
@@ -154,7 +160,7 @@ namespace fastJSON
         private void WriteCustom(object obj)
         {
             Serialize s;
-            JSON.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
+            Reflection.Instance._customSerializer.TryGetValue(obj.GetType(), out s);
             WriteStringFast(s(obj));
         }
 
@@ -203,7 +209,11 @@ namespace fastJSON
             _output.Append(dt.Minute.ToString("00", NumberFormatInfo.InvariantInfo));
             _output.Append(':');
             _output.Append(dt.Second.ToString("00", NumberFormatInfo.InvariantInfo));
-
+            if (_params.DateTimeMilliseconds)
+            {
+                _output.Append('.');
+                _output.Append(dt.Millisecond.ToString("000", NumberFormatInfo.InvariantInfo));
+            }
             if (_params.UseUTCDateTime)
                 _output.Append('Z');
 
@@ -325,6 +335,18 @@ namespace fastJSON
         bool _TypesWritten = false;
         private void WriteObject(object obj)
         {
+            int i =0;
+            if (_cirobj.TryGetValue(obj, out i) == false)
+                _cirobj.Add(obj, _cirobj.Count + 1);
+            else
+            {
+                if (_current_depth > 0)
+                {
+                    //_circular = true;
+                    _output.Append("{\"$i\":" + i + "}");
+                    return;
+                }
+            }
             if (_params.UsingGlobalTypes == false)
                 _output.Append('{');
             else
@@ -365,7 +387,7 @@ namespace fastJSON
                 append = true;
             }
 
-            Getters[] g = Reflection.Instance.GetGetters(t, _params.ShowReadOnlyProperties);
+            Getters[] g = Reflection.Instance.GetGetters(t, _params);
             int c = g.Length;
             for (int ii = 0; ii < c; ii++)
             {
@@ -395,7 +417,7 @@ namespace fastJSON
                 _output.Append(",\"$map\":");
                 WriteStringDictionary(map);
             }
-            _current_depth--;
+            //_current_depth--;
             _output.Append('}');
             _current_depth--;
         }

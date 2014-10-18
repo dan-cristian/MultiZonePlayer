@@ -294,7 +294,7 @@ namespace MultiZonePlayer
 								if (value.GetType().BaseType.Name=="Enum")
 									res = value.ToString();
 								else {
-									res = fastJSON.JSON.Instance.ToJSON(value, param);
+									res = fastJSON.JSON.ToJSON(value, param);
 								}
 								break;
 						}
@@ -527,7 +527,7 @@ namespace MultiZonePlayer
 							obj = Convert.ChangeType(value, paramType);
 						}
 						catch (Exception) {
-							obj = fastJSON.JSON.Instance.ToObject(value, paramType);
+							obj = fastJSON.JSON.ToObject(value, paramType);
 						}
 						break;
 				}

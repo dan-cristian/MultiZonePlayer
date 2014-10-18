@@ -2080,7 +2080,7 @@ namespace MultiZonePlayer {
 					val.Add(GlobalParams.action, failure.ToString());
 					val.Add(GlobalParams.datetime, DateTime.Now.ToString());
 					CommandResult retcmd = API.DoCommandFromWeb(val); //, out retval);
-					//Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
+					//Metadata.CommandResult retcmd = fastJSON.JSON.ToObject(json) as Metadata.CommandResult;
 				}
 			}
 			catch (Exception ex) {
@@ -2468,8 +2468,12 @@ namespace MultiZonePlayer {
 		}
 
 		public bool IsPowerOn(short pinIndex) {
-			string state = PortState;
-			return state[state.Length - 1 - pinIndex] == '1';
+            if (pinIndex > 0) {
+                string state = PortState;
+                return state[state.Length - 1 - pinIndex] == '1';
+            }
+            else
+                return false;
 		}
 
 		public Boolean IsInitialised() {

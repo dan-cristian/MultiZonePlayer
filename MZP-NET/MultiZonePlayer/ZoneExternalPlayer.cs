@@ -375,7 +375,7 @@ namespace MultiZonePlayer
 				m_isXBMCProcessOn = true;
                 String result = PostURLMessage(GET_URL, "Player.GetActivePlayers");
                 try{
-                    sresp = fastJSON.JSON.Instance.ToObject<XBMCSimpleResponse>(result);
+                    sresp = fastJSON.JSON.ToObject<XBMCSimpleResponse>(result);
 					if (sresp.result != null && sresp.result.Length > 0){
                         if (sresp.result[0].playerid == 1 && sresp.result[0].type == "video" || (sresp.result[0].playerid == 0 && sresp.result[0].type == "audio")) {
                             if (m_zoneDetails.ZoneState.Equals(ZoneState.NotStarted)){
@@ -385,12 +385,12 @@ namespace MultiZonePlayer
                             }
                             m_zoneDetails.LastLocalCommandDateTime = DateTime.Now;
                             result = PostURLMessage(GET_URL, "Application.GetProperties", "properties", @"[""volume""]");
-                            resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                            resp = fastJSON.JSON.ToObject<XBMCResponse>(result);
                             if (resp.result != null){
                                 SetVolumeLevel(resp.result.volume);
                             }
                             result = PostURLMessage(GET_URL, "Playlist.GetItems", "playlistid", "1", "properties", @"[""title""]");
-                            resp = fastJSON.JSON.Instance.ToObject<XBMCResponse>(result);
+                            resp = fastJSON.JSON.ToObject<XBMCResponse>(result);
                             if (resp.result != null && resp.result.items != null && resp.result.items.Length > 0){
                                 m_isXBMCPlayerRunning = true;
                                 m_zoneDetails.Title = resp.result.items[0].label;

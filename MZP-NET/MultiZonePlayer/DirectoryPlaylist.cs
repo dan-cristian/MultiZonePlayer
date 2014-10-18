@@ -1210,7 +1210,7 @@ namespace MultiZonePlayer {
 						metaFile = dir.FullName + IniFile.MEDIA_META_FILE_NAME;
 						if (File.Exists(metaFile)) {
 							metaText = Utilities.ReadFile(metaFile);
-							metaDisk = fastJSON.JSON.Instance.ToObject<LastFmMeta>(metaText);
+							metaDisk = fastJSON.JSON.ToObject<LastFmMeta>(metaText);
 							if (metaDisk.ArtistName == null) {
 								metaDisk.ArtistName = dir.Name;
 							}
@@ -1220,7 +1220,7 @@ namespace MultiZonePlayer {
 								meta.URL = dir.FullName;
 								fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 								param.UseExtensions = false;
-								metaText = fastJSON.JSON.Instance.ToJSON(meta, param);
+								metaText = fastJSON.JSON.ToJSON(meta, param);
 								System.IO.File.WriteAllText(metaFile, metaText);
 							}
 							else {
@@ -1437,7 +1437,7 @@ namespace MultiZonePlayer {
 				HasMusicCache = true;
 				MLog.Log("Music Library loading from cache");
 				String json = Utilities.ReadFileRelativeToAppPath(IniFile.MEDIA_MUSIC_STORAGE_FILE);
-				MusicCollection jsonMusic = JSON.Instance.ToObject<MusicCollection>(json);
+				MusicCollection jsonMusic = JSON.ToObject<MusicCollection>(json);
 				m_musicFiles = jsonMusic;
 				m_isMusicInitialised = true;
 				MLog.Log("Music Library cache loading done");
@@ -1453,7 +1453,7 @@ namespace MultiZonePlayer {
 				HasPictureCache = true;
 				MLog.Log("Pictures Library loading from cache");
 				String json = Utilities.ReadFileRelativeToAppPath(IniFile.MEDIA_PICTURE_STORAGE_FILE);
-				PicturesCollection jsonPict = JSON.Instance.ToObject<PicturesCollection>(json);
+				PicturesCollection jsonPict = JSON.ToObject<PicturesCollection>(json);
 				m_pictureFiles = jsonPict;
 				MLog.Log("Pictures Library loading cache done");
 				m_isPicturesInitialised = true;
@@ -1469,7 +1469,7 @@ namespace MultiZonePlayer {
 				HasVideoCache = true;
 				MLog.Log("Video Library loading from cache");
 				String json = Utilities.ReadFileRelativeToAppPath(IniFile.MEDIA_VIDEO_STORAGE_FILE);
-				VideoCollection jsonVideo = JSON.Instance.ToObject<VideoCollection>(json);
+				VideoCollection jsonVideo = JSON.ToObject<VideoCollection>(json);
 				m_videoFiles = jsonVideo;
 				MLog.Log("Video Library loading cache done");
 				m_isVideosInitialised = true;
@@ -1554,7 +1554,7 @@ namespace MultiZonePlayer {
 					param.UseExtensions = false;
 					param.UseEscapedUnicode = false;
 					param.SerializeNullValues = false;
-					json = fastJSON.JSON.Instance.ToJSON(m_musicFiles, param);
+					json = fastJSON.JSON.ToJSON(m_musicFiles, param);
 					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_MUSIC_STORAGE_FILE, json);
 					MLog.Log("Saving music library done");
 				}
@@ -1564,7 +1564,7 @@ namespace MultiZonePlayer {
 					param.UseExtensions = false;
 					param.UseEscapedUnicode = false;
 					param.SerializeNullValues = false;
-					json = fastJSON.JSON.Instance.ToJSON(m_videoFiles, param);
+					json = fastJSON.JSON.ToJSON(m_videoFiles, param);
 					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_VIDEO_STORAGE_FILE, json);
 					MLog.Log("Saving video library done");
 				}
@@ -1574,7 +1574,7 @@ namespace MultiZonePlayer {
 					param.UseExtensions = false;
 					param.UseEscapedUnicode = false;
 					param.SerializeNullValues = false;
-					json = fastJSON.JSON.Instance.ToJSON(m_pictureFiles, param);
+					json = fastJSON.JSON.ToJSON(m_pictureFiles, param);
 					Utilities.WriteTextFileRelToAppPath(IniFile.MEDIA_PICTURE_STORAGE_FILE, json);
 					MLog.Log("Saving picture library done");
 				}

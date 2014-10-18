@@ -291,7 +291,7 @@ namespace MultiZonePlayer
 							lastindex = post.LastIndexOf('}');
 							String json = post.Substring(firstindex, lastindex - firstindex + 1);
 
-							ValueList val = fastJSON.JSON.Instance.ToObject<ValueList>(json);
+							ValueList val = fastJSON.JSON.ToObject<ValueList>(json);
 							cmdResult = API.DoCommandFromWeb(val); //, out resvalue);
 						}
 						else

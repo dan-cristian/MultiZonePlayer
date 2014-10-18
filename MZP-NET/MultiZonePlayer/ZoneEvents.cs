@@ -338,7 +338,7 @@ namespace MultiZonePlayer
                     val.Add(GlobalParams.datetime, datetime.ToString());
                     //Metadata.ValueList retval;
 					CommandResult retcmd = API.DoCommandFromWeb(val);//, out retval);
-                    //Metadata.CommandResult retcmd = fastJSON.JSON.Instance.ToObject(json) as Metadata.CommandResult;
+                    //Metadata.CommandResult retcmd = fastJSON.JSON.ToObject(json) as Metadata.CommandResult;
 
                 }
             }

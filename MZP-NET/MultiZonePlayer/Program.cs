@@ -29,6 +29,7 @@ namespace MultiZonePlayer
 					{
 						Application.EnableVisualStyles();
 						Application.SetCompatibleTextRenderingDefault(false);
+                        MessageBox.Show("press ok to continue");
 						Application.Run(new MainScreen());
 						Test.RunTest();
 					}

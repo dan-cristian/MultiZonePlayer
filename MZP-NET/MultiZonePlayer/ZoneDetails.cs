@@ -1131,7 +1131,7 @@ namespace MultiZonePlayer {
 					MLog.Log(this, "Loading state for zone=" + ZoneId);
 					if (ZoneId == 20)
 						MultiZonePlayer.MZPState.Instance.TestCond = true;
-					ZoneDetails zonestorage = JSON.Instance.ToObject<ZoneDetails>(json);
+					ZoneDetails zonestorage = JSON.ToObject<ZoneDetails>(json);
 					Id = zonestorage.Id;
 					Description = zonestorage.Description;
 					ZoneName = zonestorage.ZoneName;
@@ -1230,7 +1230,8 @@ namespace MultiZonePlayer {
 			}
 			catch (Exception ex) {
 				MLog.Log(ex, "Unable to load zone id="+ ZoneId +" message "+ ex.Message +" STACK=" + ex.StackTrace);
-				throw new Exception("ZoneLoad Exception zoneid="+ZoneId, ex);
+				if (ex.Message.Contains("NOT FOUND"))
+                    throw new Exception("ZoneLoad ENDED at zone="+ZoneId, ex);
 			}
 		}
 
@@ -1242,7 +1243,7 @@ namespace MultiZonePlayer {
 
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
 			param.UseExtensions = false;
-			String json = JSON.Instance.ToJSON(this, param);
+			String json = JSON.ToJSON(this, param);
 			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
 			
 			//update dependencies if fields have changed - not a good ideea as triggers activity change

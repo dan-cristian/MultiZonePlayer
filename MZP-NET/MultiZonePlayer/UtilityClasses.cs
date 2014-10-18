@@ -735,7 +735,7 @@ namespace MultiZonePlayer
 			foreach (MacroEntry entry in list)
 			{
 				fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
-				json = JSON.Instance.ToJSON(entry, param);
+				json = JSON.ToJSON(entry, param);
 				Utilities.WritePrivateProfileString(IniFile.SCHEDULER_SECTION_MAIN, line.ToString(),
 					json, IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 			}
@@ -754,7 +754,7 @@ namespace MultiZonePlayer
 					line.ToString(), IniFile.CurrentPath()+IniFile.SCHEDULER_FILE);
 				if (json != "")
 				{
-					entry = JSON.Instance.ToObject<MacroEntry>(json);
+					entry = JSON.ToObject<MacroEntry>(json);
 					entry.ExecutedDateTime = DateTime.MinValue;
 					entry.Id = line;
 					list.Add(entry);
@@ -1011,7 +1011,7 @@ namespace MultiZonePlayer
 			{
 				foreach (String json in values.Values)
 				{
-					mood = fastJSON.JSON.Instance.ToObject<MoodMusic>(json);
+					mood = fastJSON.JSON.ToObject<MoodMusic>(json);
 					mood.Genres.Sort(delegate(String a1, String a2) { return a2.CompareTo(a1); });
 					mood.Authors.Sort(delegate(String a1, String a2) { return a2.CompareTo(a1); });
 					list.Add(mood);
@@ -1030,7 +1030,7 @@ namespace MultiZonePlayer
             int r = 0;
             foreach (MoodMusic mood in list)
             {
-                json = fastJSON.JSON.Instance.ToJSON(mood);
+                json = fastJSON.JSON.ToJSON(mood);
                 IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_MUSICMOOD, r.ToString(), json);
                 r++;
             }
@@ -1065,7 +1065,7 @@ namespace MultiZonePlayer
 
             foreach (String json in values.Values)
             {
-				entry = fastJSON.JSON.Instance.ToObject<MusicScheduleEntry>(json);
+				entry = fastJSON.JSON.ToObject<MusicScheduleEntry>(json);
                 list.Add(entry);
             }
         }
@@ -1076,7 +1076,7 @@ namespace MultiZonePlayer
             int r = 0;
             foreach (MusicScheduleEntry entry in list)
             {
-                json = fastJSON.JSON.Instance.ToJSON(entry);
+                json = fastJSON.JSON.ToJSON(entry);
                 IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_MUSICSCHEDULE, r.ToString(), json);
                 r++;
             }
@@ -1266,7 +1266,7 @@ namespace MultiZonePlayer
 					line.ToString(), IniFile.CurrentPath() + IniFile.SCHEDULER_FILE);
 				if (json != "")
 				{
-					entry = fastJSON.JSON.Instance.ToObject<RFXDevice>(json);
+					entry = fastJSON.JSON.ToObject<RFXDevice>(json);
 					entry.EntryId = line;
 					entry.PopulateFieldDefs();
 					list.Add(entry);
