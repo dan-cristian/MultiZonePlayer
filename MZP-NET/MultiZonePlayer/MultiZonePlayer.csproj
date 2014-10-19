@@ -412,6 +412,7 @@
   <ItemGroup>
     <Folder Include="Documentation\" />
     <Folder Include="Icons\" />
+    <Folder Include="Reports\" />
     <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>

@@ -29,7 +29,7 @@ namespace MultiZonePlayer
 					{
 						Application.EnableVisualStyles();
 						Application.SetCompatibleTextRenderingDefault(false);
-                        MessageBox.Show("press ok to continue");
+                        //MessageBox.Show("press ok to continue, for debug remote connect delay");
 						Application.Run(new MainScreen());
 						Test.RunTest();
 					}

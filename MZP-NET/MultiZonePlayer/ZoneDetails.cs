@@ -405,7 +405,8 @@ namespace MultiZonePlayer {
 								cost = unitCountPerMissedFrame * unitCost;
 							}
 							LastPulseSamplingStart = LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
-                            DB.WriteRecord(DB.TABLE_COUNTER, DB.COL_COUNTER_DATETIME, LastPulseSamplingStart, DB.COL_COUNTER_ZONEID, ZoneId,
+                            DB.WriteRecord(DB.TABLE_COUNTER, DB.COL_COUNTER_DATETIME, LastPulseSamplingStart.ToString(Constants.DATETIME_DB_FORMAT), 
+                                DB.COL_COUNTER_ZONEID, ZoneId,
                                 DB.COL_COUNTER_MAINUNIT, unitCountPerMissedFrame, DB.COL_COUNTER_SECONDARYUNIT, watts,
                                 DB.COL_COUNTER_UTILITYTYPE, UtilityType, DB.COL_COUNTER_TOTALMAINUNIT, PulseLastMainUnitsCount,
                                 DB.COL_COUNTER_TOTALCOUNTER, counter, DB.COL_COUNTER_COST, cost);
@@ -1040,7 +1041,7 @@ namespace MultiZonePlayer {
 				}
 				if (temp.Temperature != value) {
                     //DB.Temperature.WriteRecord(DateTime.Now, ZoneId, value, position, deviceId);
-                    DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, DateTime.Now, 
+                    DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT), 
                             DB.COL_TEMPERATURE_ZONEID, ZoneId, DB.COL_TEMPERATURE_VALUE, value, DB.COL_TEMPERATURE_SENSORPOSITION, position,
                             DB.COL_TEMPERATURE_SENSORID, deviceId, DB.COL_TEMPERATURE_SENSORNAME, devicename);
                     Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
@@ -1081,7 +1082,7 @@ namespace MultiZonePlayer {
 			get { return m_humidity; }
 			set {
 				if (Humidity != value) {
-                    DB.WriteRecord(DB.TABLE_HUMIDITY, DB.COL_HUMIDITY_DATETIME, DateTime.Now, DB.COL_HUMIDITY_ZONEID, ZoneId,
+                    DB.WriteRecord(DB.TABLE_HUMIDITY, DB.COL_HUMIDITY_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT), DB.COL_HUMIDITY_ZONEID, ZoneId,
                         DB.COL_HUMIDITY_VALUE, value);
 					Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
 						Constants.CAPABILITY_HUM, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString());

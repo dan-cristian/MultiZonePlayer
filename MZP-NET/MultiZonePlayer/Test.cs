@@ -209,9 +209,14 @@ namespace MultiZonePlayer
         private void button5_Click(object sender, EventArgs e)
         {
             //DB.Temperature.WriteRecord(DateTime.Now, 1, 23.6, 0, "mijloc");
-            DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, DateTime.Now,
-                            DB.COL_TEMPERATURE_ZONEID, 2, DB.COL_TEMPERATURE_VALUE, 12.5, DB.COL_TEMPERATURE_SENSORPOSITION, 1,
-                            DB.COL_TEMPERATURE_SENSORID, "susuc");
+            string type = "temphum";
+            SimpleGraph graph = new SimpleGraph(type == "temphum", type == Constants.EVENT_TYPE_CLOSURE, type == Constants.CAPABILITY_VOLTAGE,
+                        type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type == Constants.CAPABILITY_ERROR);
+            
+            if (type == "temphum") {
+                graph.ShowDBTempHumGraphs(38, 8, -8);
+                graph.ShowDBTempHumGraphs(9, 8, -8);
+            }
         }
 
         /// <summary>
@@ -314,7 +319,7 @@ namespace MultiZonePlayer
 
         private void Test_Load(object sender, EventArgs e) {
             // TODO: This line of code loads data into the 'sensorsDataSet.temperature' table. You can move, or remove it, as needed.
-            this.temperatureTableAdapter.Fill(this.sensorsDataSet.temperature);
+            //this.temperatureTableAdapter.Fill(this.sensorsDataSet.temperature);
             // TODO: This line of code loads data into the 'testDBDataSet1.TempRec' table. You can move, or remove it, as needed.
 
         }

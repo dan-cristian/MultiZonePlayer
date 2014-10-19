@@ -6,6 +6,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Data;
 
 namespace MultiZonePlayer
 {
@@ -57,25 +58,104 @@ namespace MultiZonePlayer
 			
 		}
 
-		private void PrepareGraph(String title, int period) {
-			chart1.Series.Clear();
-			chart1.Titles.Clear();
-			this.chart1.Legends[0].Docking = Docking.Bottom;
-			this.chart1.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(period);
-			chart1.Titles.Add(title);
-			chart1.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.LightGray;
-			chart1.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
+		private void PrepareGraph(ref Chart chart, String title, int period) {
+			chart.Series.Clear();
+			chart.Titles.Clear();
+			chart.Legends[0].Docking = Docking.Bottom;
+			chart.ChartAreas[0].AxisX.LabelStyle.Format = GetDateFormat(period);
+			chart.Titles.Add(title);
+			chart.ChartAreas[0].AxisX.MajorGrid.LineColor = Color.LightGray;
+			chart.ChartAreas[0].AxisY.MajorGrid.LineColor = Color.LightGray;
 			//chart1.Legends[0].MaximumAutoSize = 50;
-			chart1.Legends[0].TextWrapThreshold = 75;
+			chart.Legends[0].TextWrapThreshold = 75;
 			//chart1.ChartAreas[0].AxisX2.Enabled = AxisEnabled.False;
 			//chart1.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
 			//chart1.ChartAreas[0].AxisY2.MajorGrid.Enabled = false;
 		}
 
+        public void ShowDBTempHumGraphs(int zoneId, int ageHours, int hoursSupplement) {
+            DateTime genStart = DateTime.Now;
+            m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
+            PrepareGraph(ref chart1, "DB Temp & Hum "+ZoneDetails.GetZoneById(zoneId).ZoneName+" @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+            DataTable positionsAvail = DB.GetDataTable(DB.QUERYNAME_TEMPERATURE_POSITIONS, DB.PARAM_ZONEID, zoneId.ToString(), DB.PARAM_START_DATETIME, 
+                m_lastTempHumReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT));
+            int poscount = positionsAvail.Rows.Count;
+            DataTable records;
+            string positionName;
+            String positionValue;
+            double total = 0, min = double.MaxValue, max = double.MinValue;
+            DateTime datetime; double value;
+            for (int positionIndex = 0; positionIndex < poscount; positionIndex++) {
+                positionValue = positionsAvail.Rows[positionIndex].Field<String>(DB.COL_TEMPERATURE_SENSORID);
+                positionName = positionsAvail.Rows[positionIndex].Field<String>(DB.COL_TEMPERATURE_SENSORNAME);
+                records = DB.GetDataTable(DB.QUERYNAME_TEMPERATURE_RECORDS, DB.PARAM_ZONEID, zoneId.ToString(), DB.PARAM_SENSORID, positionValue.ToString(),
+                    DB.PARAM_START_DATETIME, m_lastTempHumReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT), 
+                    DB.PARAM_END_DATETIME, m_lastTempHumReference.AddHours(ageHours).ToString(Constants.DATETIME_DB_FORMAT));
+                if (records.Rows.Count > 0) {
+                    var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+                        Name = "Temperature " + positionName,
+                        Color = m_colors[positionIndex],
+                        IsVisibleInLegend = true,
+                        IsXValueIndexed = false,
+                        ChartType = SeriesChartType.Line,
+                        BorderWidth = 1
+                    };
+                    this.chart1.Series.Add(series1);
+                    //charts[positionIndex].DataSource = records;
+                    //series1.XValueMember = DB.COL_TEMPERATURE_DATETIME;
+                    //series1.XValueType = ChartValueType.DateTime;
+                    //series1.YValueMembers = DB.COL_TEMPERATURE_VALUE;
+                    //series1.YValueType = ChartValueType.Auto;
+                    //charts[positionIndex].DataBind();
+
+                    foreach (DataRow row in records.Rows) {
+                        datetime = row.Field<DateTime>(DB.COL_TEMPERATURE_DATETIME);
+                        value = row.Field<double>(DB.COL_TEMPERATURE_VALUE);
+                        series1.Points.AddXY(datetime, value);
+                        min = Math.Min(min, value);
+                        max = Math.Max(max, value);
+                        total += value;
+                    }
+                    series1.Name += " Avg=" + Math.Round(total / records.Rows.Count, 2) + " Min=" + min + " Max=" + max + " @" + records.Rows[0].Field<DateTime>(DB.COL_TEMPERATURE_DATETIME).ToString();
+                }
+                records.Clear();
+            }
+            //humidity
+            records = DB.GetDataTable(DB.QUERYNAME_HUMIDITY_RECORDS, DB.PARAM_ZONEID, zoneId.ToString(), 
+                DB.PARAM_START_DATETIME, m_lastTempHumReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                DB.PARAM_END_DATETIME, m_lastTempHumReference.AddHours(ageHours).ToString(Constants.DATETIME_DB_FORMAT));
+            if (records.Rows.Count > 0) {
+                var series2 = new System.Windows.Forms.DataVisualization.Charting.Series {
+                    Name = "Humidity",
+                    Color = System.Drawing.Color.Blue,
+                    IsVisibleInLegend = true,
+                    IsXValueIndexed = false,
+                    ChartType = SeriesChartType.Line,
+                    BorderWidth = 1
+                };
+                this.chart1.Series.Add(series2);
+                foreach (DataRow row in records.Rows) {
+                    datetime = row.Field<DateTime>(DB.COL_HUMIDITY_DATETIME);
+                    value = row.Field<double>(DB.COL_HUMIDITY_VALUE);
+                    series2.Points.AddXY(datetime, value);
+                    min = Math.Min(min, value);
+                    max = Math.Max(max, value);
+                    total += value;
+                }
+                series2.Name += " Avg=" + Math.Round(total / records.Rows.Count, 2) + " Min=" + min + " Max=" + max + " @" + records.Rows[0].Field<DateTime>(DB.COL_HUMIDITY_DATETIME).ToString();
+                records.Clear();
+            }
+            chart1.ChartAreas[0].RecalculateAxesScale();
+            chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
+            chart1.Titles[0].Text += " ["+Math.Round(DateTime.Now.Subtract(genStart).TotalSeconds,0).ToString()+" s]";
+            chart1.Invalidate();
+            SaveGraph(chart1, zoneId.ToString(), ageHours, "temphum");
+        }
+        /*
 		public void ShowTempHumGraph(int zoneId, int ageHours, int hoursSupplement)
 		{
 			m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
-			PrepareGraph("Temperature & Humidity @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+			PrepareGraph(ref chart1, "Temperature & Humidity @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			List<Tuple<int, DateTime, double, int, String>> tempValues = null;
 			List<int> positionList = new List<int>();
 			string positionName;
@@ -140,7 +220,7 @@ namespace MultiZonePlayer
 			chart1.Invalidate();
 			SaveGraph(chart1, zoneId.ToString(), ageHours, "temphum");
 		}
-
+        */
 		private void SaveGraph(Chart chart, String zoneId, int ageHours, String type) {
 
 			chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
@@ -164,7 +244,7 @@ namespace MultiZonePlayer
 		public void ShowVoltageGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAll, int hoursSupplement) {
 			try {
 				m_lastVoltageReference = GetDateReference(m_lastVoltageReference, hoursSupplement);
-				PrepareGraph("Voltage @ " + m_lastVoltageReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				PrepareGraph(ref chart1, "Voltage @ " + m_lastVoltageReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				int maxIndex = Convert.ToInt16(m_voltageHistoryList.Max(x => x.Item4));
 				System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[maxIndex+1];
 				double minY = double.MaxValue, maxY = double.MinValue;
@@ -244,7 +324,7 @@ namespace MultiZonePlayer
 		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType, int hoursSupplement) {
 			try {
 				m_lastUtilityReference = GetDateReference(m_lastUtilityReference, hoursSupplement);
-				PrepareGraph(zoneName + " " + utilityType + " @ " + m_lastUtilityReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				PrepareGraph(ref chart1, zoneName + " " + utilityType + " @ " + m_lastUtilityReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				List<int> zoneList;
 				if (zoneId != -1)
 					zoneList = new List<int>() { zoneId};
@@ -340,7 +420,7 @@ namespace MultiZonePlayer
 		{
 			double lastMinY=double.MaxValue, minY=double.MaxValue;
 			m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
-			PrepareGraph("Temperature @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+			PrepareGraph(ref chart1, "Temperature @ " + m_lastTempHumReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			String color;
 			List<ZoneDetails> zoneList = new List<ZoneDetails>();
 			ZoneDetails tempZone;
@@ -424,7 +504,7 @@ namespace MultiZonePlayer
 					else
 						m_lastErrorReference = m_lastErrorReference.AddHours(hoursSupplement);
 				}
-				PrepareGraph("Errors @ " + m_lastErrorReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+				PrepareGraph(ref chart1, "Errors @ " + m_lastErrorReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 				String color;
 				List<int> zoneIdList; 
 				List<ZoneDetails> zoneList = new List<ZoneDetails>();
@@ -486,7 +566,7 @@ namespace MultiZonePlayer
 		public void ShowEventGraph(int zoneId, int ageHours, int hoursSupplement)
 		{
 			m_lastEventReference = GetDateReference(m_lastEventReference, hoursSupplement);
-			PrepareGraph("Events @ " + m_lastEventReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+			PrepareGraph(ref chart1, "Events @ " + m_lastEventReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
 			List<Tuple<int, DateTime, int, String, String>> closureValues, sensorValues, camValues, powerValues;
 
 			List<String> distinctClosureIdentifiers = m_eventHistoryList.FindAll(x => x.Item1 == zoneId && m_lastEventReference.Subtract(x.Item2).TotalHours <= ageHours
@@ -595,13 +675,13 @@ namespace MultiZonePlayer
 		private DateTime GetDateReference(DateTime lastDate, int hoursSupplement) {
 			DateTime result;
 			if (lastDate == DateTime.MinValue)
+				lastDate = DateTime.Now;
+			
+			if (hoursSupplement == 0)
 				result = DateTime.Now;
-			else {
-				if (hoursSupplement == 0)
-					result = DateTime.Now;
-				else
-					result = lastDate.AddHours(hoursSupplement);
-			}
+			else
+				result = lastDate.AddHours(hoursSupplement);
+			
 			return result;
 		}
 		protected override void Dispose(bool disposing)

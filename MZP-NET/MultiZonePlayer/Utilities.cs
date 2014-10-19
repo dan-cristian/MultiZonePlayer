@@ -110,6 +110,33 @@ namespace MultiZonePlayer
 			}
 			return true;
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="text">contains parameters like @var=value </param>
+        /// <param name="paramPrefix">e.g. @</param>
+        /// <param name="parameters">has a list with name,value, so should be odd</param>
+        /// <returns></returns>
+        public static String ReplaceParams(this string text, String paramPrefix, params String[] parameters) {
+            if (parameters.Length == 2* (int)parameters.Length/2){
+                string name, value;
+                int start;
+                for (int i = 0; i < parameters.Length; i=i+2) {
+                    name = parameters[i];
+                    value = parameters[i+1];
+                    start = text.IndexOf(paramPrefix + name);
+                    if (start >= 0) {
+                        text = text.Replace(paramPrefix + name, value);
+                    }
+                }
+                return text;
+            }
+            else {
+                Alert.CreateAlert("Odd number of parameters expected for text=" + text, true);
+                return text;
+            }
+        }
 	}
 
 	public class MyWebClient : WebClient {
