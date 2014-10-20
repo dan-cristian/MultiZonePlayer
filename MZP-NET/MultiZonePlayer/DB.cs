@@ -33,13 +33,28 @@ namespace MultiZonePlayer {
         public static string COL_COUNTER_TOTALCOUNTER = "totalcounter";
         public static string COL_COUNTER_UTILITYTYPE = "utilitytype";
 
+        public const string TABLE_EVENT = "event";
+        public static string COL_EVENT_DATETIME = "datetime";
+        public static string COL_EVENT_ZONEID = "zoneid";
+        public static string COL_EVENT_RELAYSTATE = "relaystate";
+        public static string COL_EVENT_EVENTTYPE = "eventtype";
+        public static string COL_EVENT_KEY = "key";
+
         public static Object m_lock = new Object();
 
+        public enum PARAMS {
+            zoneid,
+            startdatetime,
+            enddatetime,
+            sensorid,
+            type
+        }
         public const String PARAM_ID = "@";
         public const String PARAM_ZONEID = "zoneid";
         public const String PARAM_START_DATETIME = "startdatetime";
         public const String PARAM_END_DATETIME = "enddatetime";
         public const String PARAM_SENSORID = "sensorid";
+        public const String PARAM_TYPE = "type";
 
         public class QueryPair {
             public string QueryName;
@@ -55,7 +70,7 @@ namespace MultiZonePlayer {
             + ">='" + PARAM_ID + PARAM_START_DATETIME+"'";
         private static String QUERYSQL_TEMPERATURE_RECORDS = "SELECT " + COL_TEMPERATURE_DATETIME + ", " + COL_TEMPERATURE_VALUE
             + " FROM " + DB.TABLE_TEMPERATURE + QUERYSQL_TEMPERATURE_ROWS_FILTER + " AND " + COL_TEMPERATURE_SENSORID + "='" + PARAM_ID + PARAM_SENSORID+"'"
-            + " AND "+ DB.COL_TEMPERATURE_DATETIME + " <='"+PARAM_END_DATETIME+"'";
+            + " AND "+ DB.COL_TEMPERATURE_DATETIME + " <='"+ PARAM_ID + PARAM_END_DATETIME+"' ORDER BY " + COL_TEMPERATURE_DATETIME + " ASC";
 
         public const String QUERYNAME_TEMPERATURE_POSITIONS = "TEMPERATURE_POSITIONS";
         private static String QUERYSQL_TEMPERATURE_POSITIONS = "SELECT DISTINCT(" + COL_TEMPERATURE_SENSORID + "), "+COL_TEMPERATURE_SENSORNAME
@@ -66,7 +81,14 @@ namespace MultiZonePlayer {
             + ">='" + PARAM_ID + PARAM_START_DATETIME + "'";
         private static String QUERYSQL_HUMIDITY_RECORDS = "SELECT " + COL_HUMIDITY_DATETIME + ", " + COL_HUMIDITY_VALUE
             + " FROM " + DB.TABLE_HUMIDITY + QUERYSQL_HUMIDITY_ROWS_FILTER /*+ " AND " + COL_HUMIDITY_SENSORID + "='" + PARAM_ID + PARAM_SENSORID + "'"*/
-            + " AND " + DB.COL_HUMIDITY_DATETIME + " <='" + PARAM_END_DATETIME + "'";
+            + " AND " + DB.COL_HUMIDITY_DATETIME + " <='" + PARAM_ID + PARAM_END_DATETIME + "' ORDER BY " + COL_HUMIDITY_DATETIME + " ASC";
+
+        public static String QUERYNAME_COUNTER_POSITIONS = "COUNTER_POSITIONS";
+        private static String QUERYSQL_COUNTER_POSITIONS = "SELECT DISTINCT(zoneid) FROM counter WHERE datetime>=@startdatetime AND datetime<=@enddatetime"
+            +" AND utilitytype=@type";
+        public static String QUERYNAME_COUNTER_RECORDS = "COUNTER_RECORDS";
+        private static String QUERYSQL_COUNTER_RECORDS = "SELECT datetime, mainunit, secondaryunit, cost FROM counter WHERE zoneid=@zoneid AND datetime>='@startdatetime' AND datetime<='@enddatetime'"
+            + " AND utilitytype='@type'";
 
         private static List<QueryPair> m_queryList = null;
         public static void InitQueries() {
@@ -74,14 +96,15 @@ namespace MultiZonePlayer {
             m_queryList.Add(new QueryPair(QUERYNAME_TEMPERATURE_RECORDS, QUERYSQL_TEMPERATURE_RECORDS));
             m_queryList.Add(new QueryPair(QUERYNAME_TEMPERATURE_POSITIONS, QUERYSQL_TEMPERATURE_POSITIONS));
             m_queryList.Add(new QueryPair(QUERYNAME_HUMIDITY_RECORDS, QUERYSQL_HUMIDITY_RECORDS));
-
+            m_queryList.Add(new QueryPair(QUERYNAME_COUNTER_POSITIONS, QUERYSQL_COUNTER_POSITIONS));
+            m_queryList.Add(new QueryPair(QUERYNAME_COUNTER_RECORDS, QUERYSQL_COUNTER_RECORDS));
         }
         protected static void GetDatabase() {
             if (m_dbcon==null) {
                 //DbProviderFactory fact = DbProviderFactories.GetFactory("System.Data.SQLite");
                 //m_db = fact.CreateConnection();
                 //m_db.ConnectionString = "Data Source=c:\\sqlite\\Sensors.db3";
-                m_dbcon = new SQLiteConnection("Data Source=c:\\sqlite\\Sensors.db3;Version=3;New=False;Compress=True;");
+                m_dbcon = new SQLiteConnection("Data Source="+IniFile.PARAM_SQLITEDB_PATH[1]+";Version=3;New=False;Compress=True;");
             }
             //if (m_db.State != System.Data.ConnectionState.Open) {
             //    m_db.Open();
@@ -176,7 +199,10 @@ namespace MultiZonePlayer {
                 QueryPair query = m_queryList.Find(x=>x.QueryName==queryname);
                 if (query != null) {
                     string sql = query.QuerySQL.ReplaceParams(PARAM_ID, parameters);
-                    return LoadData(sql);
+                    MLog.LogSql(sql);
+                    DataTable result = LoadData(sql);
+                    MLog.LogSql("Return OK rowscount=" + result.Rows.Count);
+                    return result;
                 }
                 else {
                     Alert.CreateAlert("No query found with name=" + queryname, true);

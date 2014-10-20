@@ -235,6 +235,9 @@ namespace MultiZonePlayer {
 					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, camId,
 						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "CamMove", m_zoneDetails.ZoneId.ToString(),
 						Constants.EVENT_TYPE_CAMALERT);
+                    DB.WriteRecord(DB.TABLE_EVENT, DB.COL_EVENT_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT),
+                                    DB.COL_EVENT_ZONEID, m_zoneDetails.ZoneId.ToString(), DB.COL_EVENT_RELAYSTATE, "CamMove",
+                                    DB.COL_EVENT_EVENTTYPE, Constants.EVENT_TYPE_CAMALERT, DB.COL_EVENT_KEY, camId);
 					SaveCurrentPicture(EventSource.Cam);
 					//TODO
 					break;
@@ -263,6 +266,9 @@ namespace MultiZonePlayer {
 					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, "",
 						eventDateTime.ToString(IniFile.DATETIME_FULL_FORMAT), "Sensor" + zonestate, m_zoneDetails.ZoneId.ToString(),
 						Constants.EVENT_TYPE_SENSORALERT);
+                    DB.WriteRecord(DB.TABLE_EVENT, DB.COL_EVENT_DATETIME, eventDateTime.ToString(Constants.DATETIME_DB_FORMAT),
+                                    DB.COL_EVENT_ZONEID, m_zoneDetails.ZoneId.ToString(), DB.COL_EVENT_RELAYSTATE, "Sensor" + zonestate,
+                                    DB.COL_EVENT_EVENTTYPE, Constants.EVENT_TYPE_SENSORALERT, DB.COL_EVENT_KEY, "");
 					if (m_zoneDetails.HasCamera) {
 						SaveCurrentPicture(EventSource.Alarm);
 					}
@@ -376,7 +382,9 @@ namespace MultiZonePlayer {
 								Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", m_zoneDetails.ZoneName, key,
 									DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), m_zoneDetails.RelayState.ToString(),
 									m_zoneDetails.ZoneId.ToString(), Constants.EVENT_TYPE_CLOSURE, key);
-
+                                DB.WriteRecord(DB.TABLE_EVENT, DB.COL_EVENT_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT),
+                                    DB.COL_EVENT_ZONEID, m_zoneDetails.ZoneId.ToString(), DB.COL_EVENT_RELAYSTATE, m_zoneDetails.RelayState.ToString(),
+                                    DB.COL_EVENT_EVENTTYPE, Constants.EVENT_TYPE_CLOSURE, DB.COL_EVENT_KEY, key);
 								if (contactMade) {
 									if (m_zoneDetails.IsArmed ||
 										(MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId == m_zoneDetails.AlarmAreaId)) {
@@ -471,12 +479,12 @@ namespace MultiZonePlayer {
 
 				case GlobalCommands.generategraph:
 					int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
-					string type = vals.GetValue(GlobalParams.type).ToLower();
+					string type = vals.GetValue(GlobalParams.type);
 					int direction = 0;
 					if (vals.GetValue(GlobalParams.direction) != null)
 						direction = Convert.ToInt16(vals.GetValue(GlobalParams.direction));
 					SimpleGraph graph = new SimpleGraph(type == "temphum-disabled-here-DB-now", type == Constants.EVENT_TYPE_CLOSURE, type == Constants.CAPABILITY_VOLTAGE,
-						type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type == Constants.CAPABILITY_ERROR);
+						false /*type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER*/, type == Constants.CAPABILITY_ERROR);
 					List<int> zoneIdList = new List<int>();
 					zoneIdList.Add(m_zoneDetails.ZoneId);
 					if (type == "temphum") {
@@ -489,7 +497,7 @@ namespace MultiZonePlayer {
 						graph.ShowVoltageGraph( m_zoneDetails.ZoneId.ToString(), zoneIdList, ageHours, false, direction);
 					}
 					if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
-						graph.ShowUtilitiesGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type, direction);
+						graph.ShowDBUtilitiesGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type, direction);
 					}
 					if (type == Constants.CAPABILITY_ERROR) {
 						graph.ShowErrorGraph(ageHours, m_zoneDetails.ZoneId, false, direction);

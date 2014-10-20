@@ -396,7 +396,7 @@ namespace MultiZonePlayer
 							break;
 						case GlobalCommands.generatefullgraph:
 							int ageHours = Convert.ToInt16(vals.GetValue(GlobalParams.interval));
-							string type = vals.GetValue(GlobalParams.type).ToLower();
+							string type = vals.GetValue(GlobalParams.type);
 							int direction = 0;
 							if (vals.GetValue(GlobalParams.direction) != null)
 								direction = Convert.ToInt16(vals.GetValue(GlobalParams.direction));
@@ -424,7 +424,7 @@ namespace MultiZonePlayer
 							}
 							 
 							if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
-								graph.ShowUtilitiesGraph(-1, "all", ageHours, type, direction);
+								graph.ShowDBUtilitiesGraph(-1, "all-disabled", ageHours, type, direction);
 							}
 							if (type == Constants.CAPABILITY_ERROR) {
 								graph.ShowErrorGraph(ageHours, -1, true, direction);

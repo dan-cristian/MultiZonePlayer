@@ -408,7 +408,7 @@ namespace MultiZonePlayer {
                             DB.WriteRecord(DB.TABLE_COUNTER, DB.COL_COUNTER_DATETIME, LastPulseSamplingStart.ToString(Constants.DATETIME_DB_FORMAT), 
                                 DB.COL_COUNTER_ZONEID, ZoneId,
                                 DB.COL_COUNTER_MAINUNIT, unitCountPerMissedFrame, DB.COL_COUNTER_SECONDARYUNIT, watts,
-                                DB.COL_COUNTER_UTILITYTYPE, UtilityType, DB.COL_COUNTER_TOTALMAINUNIT, PulseLastMainUnitsCount,
+                                DB.COL_COUNTER_UTILITYTYPE, UtilityType.ToString(), DB.COL_COUNTER_TOTALMAINUNIT, PulseLastMainUnitsCount,
                                 DB.COL_COUNTER_TOTALCOUNTER, counter, DB.COL_COUNTER_COST, cost);
 							Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
 								PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), unitCountPerMissedFrame.ToString(),

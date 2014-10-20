@@ -321,6 +321,98 @@ namespace MultiZonePlayer
 			}
 		}
 
+        public void ShowDBUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType, int hoursSupplement) {
+            try {
+                DateTime genStart = DateTime.Now;
+                m_lastUtilityReference = GetDateReference(m_lastUtilityReference, hoursSupplement);
+                PrepareGraph(ref chart1, zoneName + " " + utilityType + " @ " + m_lastUtilityReference.ToString(IniFile.DATETIME_FULL_FORMAT), ageHours);
+                List<int> zoneList = new List<int>();
+                if (zoneId != -1)
+                    zoneList.Add(zoneId);
+                else {
+                    DataTable zonesAvailable = DB.GetDataTable(DB.QUERYNAME_COUNTER_POSITIONS, DB.PARAM_TYPE, utilityType, DB.PARAM_START_DATETIME,
+                        m_lastUtilityReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT));
+                    foreach (DataRow row in zonesAvailable.Rows) {
+                        zoneList.Add(row.Field<int>(DB.COL_COUNTER_ZONEID));
+                    }
+                }
+                int zoneCount = zoneList.Count;
+                System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[zoneCount];
+                System.Windows.Forms.DataVisualization.Charting.Series series1;
+                DataTable records;
+                for (int i = 0; i < zoneCount; i++) {
+                    records = DB.GetDataTable(DB.QUERYNAME_COUNTER_RECORDS, DB.PARAM_ZONEID, zoneId.ToString(),
+                        DB.PARAM_START_DATETIME, m_lastUtilityReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAM_END_DATETIME, m_lastUtilityReference.AddHours(ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAMS.type.ToString(), utilityType);
+                    double minY = double.MaxValue, maxY = double.MinValue;
+                    if (records.Rows.Count > 0) {
+                        series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+                            //Name = Constants.CAPABILITY_ELECTRICITY,
+                            Color = m_colors[i],
+                            IsVisibleInLegend = true,
+                            IsXValueIndexed = false,
+                            ChartType = SeriesChartType.StepLine,
+                            BorderWidth = 1,
+                            MarkerSize = 3,
+                            XAxisType = AxisType.Primary,
+                            YAxisType = AxisType.Primary
+                        };
+                        this.chart1.Series.Add(series1);
+                        double value = 0, cost = 0, minwatts = double.MaxValue, maxwatts = double.MinValue, totalwatts = 0, avgwatts;
+                        double minValue = double.MaxValue, maxValue = double.MinValue;
+                        double yvalue;
+                        foreach (DataRow row in records.Rows) {
+                            switch (utilityType) { 
+                                case Constants.CAPABILITY_ELECTRICITY:
+                                    yvalue = row.Field<double>(DB.COL_COUNTER_SECONDARYUNIT);
+                                    series1.Points.AddXY(row.Field<DateTime>(DB.COL_COUNTER_DATETIME), yvalue);
+                                    value += row.Field<int>(DB.COL_COUNTER_MAINUNIT);
+                                    totalwatts += value;
+                                    if (yvalue != 0)
+                                        minwatts = Math.Min(minwatts, yvalue);
+                                    maxwatts = Math.Max(maxwatts, yvalue);
+                                    break;
+                                case Constants.CAPABILITY_WATER:
+                                    yvalue = row.Field<int>(DB.COL_COUNTER_MAINUNIT);
+                                    series1.Points.AddXY(row.Field<DateTime>(DB.COL_COUNTER_DATETIME), yvalue);
+                                    value += yvalue;
+                                    break;
+                            }
+                            cost += row.Field<double>(DB.COL_COUNTER_COST);
+                        }
+                        switch (utilityType) {
+                            case Constants.CAPABILITY_ELECTRICITY:
+                                avgwatts = totalwatts / records.Rows.Count;
+                                series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min=" + Math.Round(minValue, 2) + " max=" + Math.Round(maxValue, 2)
+                                    + "\n watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
+                                break;
+                            case Constants.CAPABILITY_WATER:
+                                series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min=" + minY + " max=" + maxY;
+                                break;
+                        }
+                        if (zoneId == -1)
+                            series1.Name = ZoneDetails.GetZoneById(zoneList[i]).ZoneName + " " + series1.Name;
+                    }
+                    else {
+                        maxY = 1;
+                        minY = 0;
+                    }
+                }
+                chart1.ChartAreas[0].RecalculateAxesScale();
+                chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
+                chart1.Titles[0].Text += " [" + Math.Round(DateTime.Now.Subtract(genStart).TotalSeconds, 0).ToString() + " s]";
+                chart1.Invalidate();
+                SaveGraph(chart1, zoneId.ToString(), ageHours, utilityType);
+                //chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
+                //	+ utilityType + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
+            }
+            catch (Exception ex) {
+                MLog.Log(ex, this, "Err gen utility graph");
+            }
+        }
+
+        /*
 		public void ShowUtilitiesGraph(int zoneId, String zoneName, int ageHours, String utilityType, int hoursSupplement) {
 			try {
 				m_lastUtilityReference = GetDateReference(m_lastUtilityReference, hoursSupplement);
@@ -405,7 +497,7 @@ namespace MultiZonePlayer
 				MLog.Log(ex, this, "Err gen utility graph");
 			}
 		}
-
+        */
 		private List<ZoneDetails> GetZoneList(List<int> zoneIdList) {
 			List<ZoneDetails> zoneList = new List<ZoneDetails>();
 			ZoneDetails tempZone;

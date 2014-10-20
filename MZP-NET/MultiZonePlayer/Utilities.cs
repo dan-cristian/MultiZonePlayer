@@ -514,6 +514,15 @@ namespace MultiZonePlayer
             }
             catch (Exception) { }
         }
+        public static void AppendToSqlLogFile(String text) {
+            try {
+                StreamWriter str;
+                str = File.AppendText(IniFile.CurrentPath() + IniFile.LOG_SQL_FILE);
+                str.Write(text);
+                str.Close();
+            }
+            catch (Exception) { }
+        }
 		public static bool ExistFileRelativeToAppPath(String fileName) {
 			return File.Exists(IniFile.CurrentPath() + fileName);
 		}
@@ -1238,6 +1247,7 @@ namespace MultiZonePlayer
             { }
         }
 
+
         public static void LogModem(String text)
         {
             try
@@ -1255,6 +1265,13 @@ namespace MultiZonePlayer
             }
             catch (Exception) { }
         }
+        public static void LogSql(String text) {
+            try {
+                Utilities.AppendToSqlLogFile(System.DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT_FOR_LOGS) + " " + text + "\r\n");
+            }
+            catch (Exception) { }
+        }
+
 
         public static void LogWeb(HttpListenerRequest request)
         {

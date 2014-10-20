@@ -822,9 +822,9 @@ namespace MultiZonePlayer
 
 	public class Constants
 	{
-		public const string CAPABILITY_TEMP = "temp", CAPABILITY_HUM = "hum", EVENT_TYPE_POWER="power", 
-			CAPABILITY_VOLTAGE="voltage", CAPABILITY_ELECTRICITY="electricity", CAPABILITY_WATER="water", CAPABILITY_ERROR="error";
-		public const string EVENT_TYPE_CAMALERT = "cam", EVENT_TYPE_SENSORALERT = "sensor", EVENT_TYPE_CLOSURE = "closure", 
+		public const string CAPABILITY_TEMP = "temp", CAPABILITY_HUM = "hum", EVENT_TYPE_POWER="Power", 
+			CAPABILITY_VOLTAGE="Voltage", CAPABILITY_ELECTRICITY="Electricity", CAPABILITY_WATER="Water", CAPABILITY_ERROR="Error";
+		public const string EVENT_TYPE_CAMALERT = "Cam", EVENT_TYPE_SENSORALERT = "Sensor", EVENT_TYPE_CLOSURE = "Closure", 
 			EVENT_TYPE_ELECTRICITY = "Electricity", EVENT_TYPE_WATER = "Water", EVENT_TYPE_GAS = "Gas" ;
 		public const int NOT_SET = -1;
 		public const string ALL = "ALL";

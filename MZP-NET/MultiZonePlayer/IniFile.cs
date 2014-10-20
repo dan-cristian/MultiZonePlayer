@@ -36,6 +36,7 @@ namespace MultiZonePlayer
             public const String LOG_KEY_FILE = "\\MultiZonePlayerKeyboard.log";
             public const String LOG_RAWINPUT_FILE = "\\MultiZonePlayerRawInput.log";
             public const String LOG_INFO_FILE = "\\MultiZonePlayerInfo.log";
+            public const String LOG_SQL_FILE = "\\MultiZonePlayerSQL.log";
 			public const String MEDIA_META_FILE_NAME = "\\mzp-meta.txt"; 
             public const String TEMP_EXTENSION = ".temp.wav";
             public const String BEEP_OK_FILE_NAME = "\\BeepOK.wav";
@@ -257,6 +258,8 @@ namespace MultiZonePlayer
 
 			public static String[] PARAM_TEMP_TRESHHOLD = new String[] { "PARAM_TEMP_TRESHHOLD", "0.3", "treshhold when checking if temp target is meet, to avoid rapid on/offs" };
 
+            public static String[] PARAM_SQLITEDB_PATH = new String[] { "PARAM_SQLITEDB_PATH", "c:\\sqlite\\Sensors.db3", "sqlite database full path and filename" };
+
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
@@ -361,7 +364,8 @@ namespace MultiZonePlayer
 				PARAM_ONEWIRE_FAST_READ_DELAY,
 				PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD,
 				PARAM_RECENT_RUN_INTERVAL_MINUTES,
-				PARAM_TEMP_TRESHHOLD
+				PARAM_TEMP_TRESHHOLD,
+                PARAM_SQLITEDB_PATH
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;

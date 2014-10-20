@@ -214,8 +214,8 @@ namespace MultiZonePlayer
                         type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type == Constants.CAPABILITY_ERROR);
             
             if (type == "temphum") {
-                graph.ShowDBTempHumGraphs(38, 8, -8);
-                graph.ShowDBTempHumGraphs(9, 8, -8);
+                graph.ShowDBTempHumGraphs(38, 48, -48);
+                graph.ShowDBTempHumGraphs(25, 48, -48);
             }
         }
 
