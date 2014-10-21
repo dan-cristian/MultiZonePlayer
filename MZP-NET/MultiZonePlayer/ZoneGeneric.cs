@@ -488,7 +488,7 @@ namespace MultiZonePlayer {
 					List<int> zoneIdList = new List<int>();
 					zoneIdList.Add(m_zoneDetails.ZoneId);
 					if (type == "temphum") {
-						graph.ShowDBTempHumGraphs(m_zoneDetails.ZoneId, ageHours, direction);
+                        graph.ShowDBTempHumGraphs(m_zoneDetails.ZoneId.ToString(), zoneIdList, false, ageHours, direction);
 					}
 					if (type == Constants.EVENT_TYPE_CLOSURE) {
 						graph.ShowEventGraph(m_zoneDetails.ZoneId, ageHours, direction);
@@ -497,7 +497,7 @@ namespace MultiZonePlayer {
 						graph.ShowVoltageGraph( m_zoneDetails.ZoneId.ToString(), zoneIdList, ageHours, false, direction);
 					}
 					if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
-						graph.ShowDBUtilitiesGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type, direction);
+						graph.ShowDBCounterGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type, direction);
 					}
 					if (type == Constants.CAPABILITY_ERROR) {
 						graph.ShowErrorGraph(ageHours, m_zoneDetails.ZoneId, false, direction);

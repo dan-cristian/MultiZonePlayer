@@ -209,14 +209,14 @@ namespace MultiZonePlayer
         private void button5_Click(object sender, EventArgs e)
         {
             //DB.Temperature.WriteRecord(DateTime.Now, 1, 23.6, 0, "mijloc");
-            string type = "temphum";
+            /*string type = "temphum";
             SimpleGraph graph = new SimpleGraph(type == "temphum", type == Constants.EVENT_TYPE_CLOSURE, type == Constants.CAPABILITY_VOLTAGE,
                         type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type == Constants.CAPABILITY_ERROR);
             
             if (type == "temphum") {
                 graph.ShowDBTempHumGraphs(38, 48, -48);
                 graph.ShowDBTempHumGraphs(25, 48, -48);
-            }
+            }*/
         }
 
         /// <summary>

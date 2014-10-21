@@ -84,8 +84,8 @@ namespace MultiZonePlayer {
             + " AND " + DB.COL_HUMIDITY_DATETIME + " <='" + PARAM_ID + PARAM_END_DATETIME + "' ORDER BY " + COL_HUMIDITY_DATETIME + " ASC";
 
         public static String QUERYNAME_COUNTER_POSITIONS = "COUNTER_POSITIONS";
-        private static String QUERYSQL_COUNTER_POSITIONS = "SELECT DISTINCT(zoneid) FROM counter WHERE datetime>=@startdatetime AND datetime<=@enddatetime"
-            +" AND utilitytype=@type";
+        private static String QUERYSQL_COUNTER_POSITIONS = "SELECT DISTINCT(zoneid) FROM counter WHERE datetime>='@startdatetime' AND datetime<='@enddatetime'"
+            +" AND utilitytype='@type'";
         public static String QUERYNAME_COUNTER_RECORDS = "COUNTER_RECORDS";
         private static String QUERYSQL_COUNTER_RECORDS = "SELECT datetime, mainunit, secondaryunit, cost FROM counter WHERE zoneid=@zoneid AND datetime>='@startdatetime' AND datetime<='@enddatetime'"
             + " AND utilitytype='@type'";
@@ -159,28 +159,32 @@ namespace MultiZonePlayer {
        
 
         private static void ExecuteQuery(string txtQuery) {
-            SQLiteCommand sql_cmd;
-            DB.GetDatabase();
-            m_dbcon.Open();
-            sql_cmd = m_dbcon.CreateCommand();
-            sql_cmd.CommandText = txtQuery;
-            sql_cmd.ExecuteNonQuery();
-            m_dbcon.Close();
+            lock (m_lock) {
+                SQLiteCommand sql_cmd;
+                DB.GetDatabase();
+                m_dbcon.Open();
+                sql_cmd = m_dbcon.CreateCommand();
+                sql_cmd.CommandText = txtQuery;
+                sql_cmd.ExecuteNonQuery();
+                m_dbcon.Close();
+            }
         }
         private static DataTable LoadData(string sqlcommand) {
-            SQLiteDataAdapter DBadapt;
-            SQLiteCommand sql_cmd;
-            DataSet DS = new DataSet();
-            DataTable DT = new DataTable();
-            DB.GetDatabase();
-            m_dbcon.Open();
-            sql_cmd = m_dbcon.CreateCommand();
-            DBadapt = new SQLiteDataAdapter(sqlcommand, m_dbcon);
-            DS.Reset();
-            DBadapt.Fill(DS);
-            DT = DS.Tables[0];
-            m_dbcon.Close();
-            return DT;
+            lock (m_lock) {
+                SQLiteDataAdapter DBadapt;
+                SQLiteCommand sql_cmd;
+                DataSet DS = new DataSet();
+                DataTable DT = new DataTable();
+                DB.GetDatabase();
+                m_dbcon.Open();
+                sql_cmd = m_dbcon.CreateCommand();
+                DBadapt = new SQLiteDataAdapter(sqlcommand, m_dbcon);
+                DS.Reset();
+                DBadapt.Fill(DS);
+                DT = DS.Tables[0];
+                m_dbcon.Close();
+                return DT;
+            }
         }
 
        
@@ -212,7 +216,7 @@ namespace MultiZonePlayer {
             }
         }
         public class Reports {
-
+           
         }
         /*
         public class Temperature {

@@ -412,7 +412,7 @@ namespace MultiZonePlayer
 							}
 							
 							if (type == "temphum") {
-								graph.ShowTempGraph(zoneStringList, zoneIdList, ageHours, zoneStringList == "-1", direction);
+								graph.ShowDBTempHumGraphs(zoneStringList, zoneIdList, zoneStringList == "-1", ageHours, direction);
 							}
 							/*
 							if (type == "closure") {
@@ -424,7 +424,7 @@ namespace MultiZonePlayer
 							}
 							 
 							if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
-								graph.ShowDBUtilitiesGraph(-1, "all-disabled", ageHours, type, direction);
+								graph.ShowDBCounterGraph(-1, "all", ageHours, type, direction);
 							}
 							if (type == Constants.CAPABILITY_ERROR) {
 								graph.ShowErrorGraph(ageHours, -1, true, direction);

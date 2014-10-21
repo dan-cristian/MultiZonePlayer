@@ -57,8 +57,8 @@
 <%if;"#Zones,%_zoneid.UtilityType#"=="Water"%>
 <button class="small" onclick="ajaxCall('water', 'zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Water&targetdiv=water', false)">Water</button>
 <%%>
-<%if;#Zones,%_zoneid.HasTemperatureSensor#%><button class="Caption" 
-    onclick="ajaxCall('temp-hum', 'zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum&targetdiv=temp-hum&direction=0', false)" title="Target #Zones,%_zoneid.TemperatureTarget#°">#Zones,%_zoneid.DisplayTemperature#°</button>
+<%if;#Zones,%_zoneid.HasTemperatureSensor#%>
+    <button class="Caption" onclick="ajaxCall('temp-hum', 'zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=temphum&targetdiv=temp-hum&direction=0', false)" title="Target #Zones,%_zoneid.TemperatureTarget#°">#Zones,%_zoneid.DisplayTemperature#°</button>
 #Zones,%_zoneid.ClosureCount#
 <%%>
 <%if;#Zones,%_zoneid.HasHumiditySensor#%><button class="Caption" 
