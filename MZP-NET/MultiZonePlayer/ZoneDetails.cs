@@ -1045,7 +1045,7 @@ namespace MultiZonePlayer {
                             DB.COL_TEMPERATURE_ZONEID, ZoneId, DB.COL_TEMPERATURE_VALUE, value, DB.COL_TEMPERATURE_SENSORPOSITION, position,
                             DB.COL_TEMPERATURE_SENSORID, deviceId, DB.COL_TEMPERATURE_SENSORNAME, devicename);
                     Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
-						Constants.CAPABILITY_TEMP, DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), position.ToString(), devicename);
+                        Constants.CAPABILITY_TEMP, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT), value.ToString(), ZoneId.ToString(), position.ToString(), devicename);
 					if (position == 0) {
 						ScriptingRule.ExecuteRule(this, "temp=" + value);
 						//Temperature = value;
