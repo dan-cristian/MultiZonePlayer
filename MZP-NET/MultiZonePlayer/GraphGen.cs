@@ -85,13 +85,16 @@ namespace MultiZonePlayer
             String color;
             ZoneDetails tempZone;
             if (showAllZones) {
-                List<int> tempzoneIdList = m_tempHistoryList.Select(x => x.Item1).Distinct().ToList();
-                foreach (int id in tempzoneIdList) {
-                    tempZone = ZoneDetails.GetZoneById(id);
+                DataTable zonesAvail = DB.GetDataTable(DB.QUERYNAME_TEMPERATURE_POSITIONS,  
+                    DB.PARAM_START_DATETIME, m_lastTempHumReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                    DB.PARAM_END_DATETIME, m_lastTempHumReference.ToString(Constants.DATETIME_DB_FORMAT));
+                foreach (DataRow row in zonesAvail.Rows ) {
+                    zoneId = row.Field<int>(DB.COL_TEMPERATURE_ZONEID);
+                    tempZone = ZoneDetails.GetZoneById(zoneId);
                     if (tempZone != null)
                         zoneList.Add(tempZone);
                     else
-                        MLog.Log(this, "Unexpected unknown zone in temp graph id=" + id);
+                        MLog.Log(this, "Unexpected unknown zone in temp graph id=" + zoneId);
                 }
             }
             else {
@@ -100,7 +103,7 @@ namespace MultiZonePlayer
             List<int> positionList = new List<int>();
             foreach (ZoneDetails zone in zoneList) {
                 zoneId = zone.ZoneId;
-                DataTable positionsAvail = DB.GetDataTable(DB.QUERYNAME_TEMPERATURE_POSITIONS, DB.PARAM_ZONEID, zoneId.ToString(), DB.PARAM_START_DATETIME,
+                DataTable positionsAvail = DB.GetDataTable(DB.QUERYNAME_TEMPERATURE_SENSOR_POSITIONS, DB.PARAM_ZONEID, zoneId.ToString(), DB.PARAM_START_DATETIME,
                     m_lastTempHumReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT));
                 int poscount = positionsAvail.Rows.Count;
                 DataTable records;
@@ -121,7 +124,7 @@ namespace MultiZonePlayer
                     if (records.Rows.Count > 0) {
                         graphcolor = poscount>1 ? m_colors[positionIndex] : System.Drawing.Color.FromName(color);
                         var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
-                            Name = "Temp " + zone.ZoneName,
+                            Name = "Temp " + positionName,
                             Color = graphcolor,
                             IsVisibleInLegend = true,
                             IsXValueIndexed = false,
@@ -129,13 +132,6 @@ namespace MultiZonePlayer
                             BorderWidth = 1
                         };
                         this.chart1.Series.Add(series1);
-                        //charts[positionIndex].DataSource = records;
-                        //series1.XValueMember = DB.COL_TEMPERATURE_DATETIME;
-                        //series1.XValueType = ChartValueType.DateTime;
-                        //series1.YValueMembers = DB.COL_TEMPERATURE_VALUE;
-                        //series1.YValueType = ChartValueType.Auto;
-                        //charts[positionIndex].DataBind();
-
                         foreach (DataRow row in records.Rows) {
                             datetime = row.Field<DateTime>(DB.COL_TEMPERATURE_DATETIME);
                             value = row.Field<double>(DB.COL_TEMPERATURE_VALUE);
@@ -155,7 +151,7 @@ namespace MultiZonePlayer
                 if (records.Rows.Count > 0) {
                     total = 0; min = double.MaxValue; max = double.MinValue;
                     var series2 = new System.Windows.Forms.DataVisualization.Charting.Series {
-                        Name = "Hum " + zone.ZoneName,
+                        Name = "Hum ",
                         Color = System.Drawing.Color.FromName(color),
                         IsVisibleInLegend = true,
                         IsXValueIndexed = false,
@@ -442,7 +438,7 @@ namespace MultiZonePlayer
                 //	+ utilityType + "-" + zoneId + "-" + ageHours + ".gif", ChartImageFormat.Gif);
             }
             catch (Exception ex) {
-                MLog.Log(ex, this, "Err gen utility graph");
+                MLog.Log(ex, this, "Err gen counters graph");
             }
         }
 
@@ -542,83 +538,66 @@ namespace MultiZonePlayer
 			}
 			return zoneList;
 		}
-		
-        /*public void ShowTempGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAllZones, int hoursSupplement)
-		{
-			double lastMinY=double.MaxValue, minY=double.MaxValue;
-			m_lastTempHumReference = GetDateReference(m_lastTempHumReference, hoursSupplement);
-			PrepareGraph(ref chart1, "Temperature", m_lastTempHumReference, ageHours);
-			String color;
-			List<ZoneDetails> zoneList = new List<ZoneDetails>();
-			ZoneDetails tempZone;
-			if (showAllZones) {
-				List<int> tempzoneIdList = m_tempHistoryList.Select(x => x.Item1).Distinct().ToList();
-				foreach (int id in tempzoneIdList) {
-					tempZone = ZoneDetails.GetZoneById(id);
-					if (tempZone != null)
-						zoneList.Add(tempZone);
-					else
-						MLog.Log(this, "Unexpected unknown zone in temp graph id=" + id);
-				}
-			}
-			else {
-				zoneList = GetZoneList(zoneIdList);
-			}
-			List<int> positionList = new List<int>();
-			string positionName;
-			int positionValue;
-			foreach (ZoneDetails zone in zoneList){
-				positionList = m_tempHistoryList.FindAll(x=>x.Item1==zone.ZoneId).Select(x => x.Item4).Distinct().ToList();
-				//one zone can have multiple temperature values from distinct sensors
-				for (int positionIndex = 0; positionIndex < positionList.Count; positionIndex++) {
-					positionValue = positionList[positionIndex];
-					positionName = m_tempHistoryList.FindLast(x=>x.Item1==zone.ZoneId && x.Item4==positionValue).Item5;
-					color = zone.Color != null ? zone.Color : "Black";
-					List<Tuple<int, DateTime, double, int, String>> tempValues = m_tempHistoryList.FindAll(x => x.Item1 == zone.ZoneId && x.Item4==positionValue
-						&& m_lastTempHumReference.Subtract(x.Item2).TotalHours <= ageHours && m_lastTempHumReference.Subtract(x.Item2).TotalHours >= 0);
-					if (tempValues.Count > 0) {
-						var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
-							Name = "Temp " + zone.ZoneName + " " + positionName,
-							Color = System.Drawing.Color.FromName(color),
-							IsVisibleInLegend = true,
-							IsXValueIndexed = false,
-							ChartType = SeriesChartType.Line,
-							BorderWidth = 1
-						};
-						this.chart1.Series.Add(series1);
-						double total = 0, min = double.MaxValue, max = double.MinValue;
-						double tempTotalValue = 0, lastTempValue = 0;
-						DateTime lastPointTaken = DateTime.MinValue;
-						foreach (var point in tempValues) {
-							series1.Points.AddXY(point.Item2, point.Item3);
-							total += point.Item3;
-							min = Math.Min(min, point.Item3);
-							max = Math.Max(max, point.Item3);
-							total += point.Item3;
-							UpdateUnitsAndTotal(point.Item2, point.Item3, ref tempTotalValue, ref lastPointTaken, ref lastTempValue);
-						}
-						double minutesElapsed = tempValues[tempValues.Count - 1].Item2.Subtract(tempValues[0].Item2).TotalMinutes;
-						series1.Name += " min=" + min + " max=" + max + " °C/min=" + Math.Round(tempTotalValue / minutesElapsed, 1);
-					}
 
-					double minT;
-					minT = tempValues.Count > 0 ? tempValues.Min(x => x.Item3) : 0;
-					minY = tempValues.Count > 0 ? minT : double.MaxValue;
-					//minY = humValues.Count > 0 ? Math.Min(minY, humValues.Min(x => x.Item3)) : minY;
-
-					lastMinY = Math.Min(lastMinY, minY);
-				}
-			}
-			chart1.ChartAreas[0].AxisY.MajorGrid.LineWidth = 0;
-			chart1.ChartAreas[0].AxisX.MajorGrid.LineWidth = 1;
-			chart1.ChartAreas[0].AxisY.Minimum = lastMinY;
-			chart1.ChartAreas[0].RecalculateAxesScale();
-			chart1.Invalidate();
-			SaveGraph(chart1, uniqueId, ageHours, "temphum");
-			//chart1.SaveImage(IniFile.CurrentPath() + IniFile.WEB_TMP_IMG_SUBFOLDER
-			//	+ "temphum-" + uniqueId + "-" +ageHours + ".gif", ChartImageFormat.Gif);
-		}
-        */
+        public void ShowDBErrorGraphs(String uniqueId, List<int> zoneIdList, bool showAllZones, int ageHours, int hoursSupplement) {
+            DateTime genStart = DateTime.Now;
+            m_lastErrorReference = GetDateReference(m_lastErrorReference, hoursSupplement);
+            PrepareGraph(ref chart1, "DB Error zone " + uniqueId, m_lastErrorReference, ageHours);
+            int zoneId;
+            List<ZoneDetails> zoneList = new List<ZoneDetails>();
+            String color;
+            ZoneDetails tempZone;
+            if (showAllZones) {
+                DataTable zonesAvail = DB.GetDataTable(DB.QUERYNAME_ERROR_POSITIONS,
+                    DB.PARAM_START_DATETIME, m_lastErrorReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                    DB.PARAM_END_DATETIME, m_lastErrorReference.ToString(Constants.DATETIME_DB_FORMAT));
+                foreach (DataRow row in zonesAvail.Rows) {
+                    zoneId = row.Field<int>(DB.COL_ERROR_ZONEID);
+                    tempZone = ZoneDetails.GetZoneById(zoneId);
+                    if (tempZone != null)
+                        zoneList.Add(tempZone);
+                    else
+                        MLog.Log(this, "Unexpected unknown zone in error graph id=" + zoneId);
+                }
+            }
+            else {
+                zoneList = GetZoneList(zoneIdList);
+            }
+            List<int> positionList = new List<int>();
+            foreach (ZoneDetails zone in zoneList) {
+                zoneId = zone.ZoneId;
+                DataTable records;
+                DateTime datetime; double value;
+                color = zone.Color != null ? zone.Color : "Black";
+                Color graphcolor;
+                records = DB.GetDataTable(DB.QUERYNAME_ERROR_RECORDS, DB.PARAM_ZONEID, zoneId.ToString(),
+                    DB.PARAM_START_DATETIME, m_lastErrorReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                    DB.PARAM_END_DATETIME, m_lastErrorReference.ToString(Constants.DATETIME_DB_FORMAT));
+                if (records.Rows.Count > 0) {
+                    graphcolor = System.Drawing.Color.FromName(color);
+                    var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+                        Name = "Error " + zone.ZoneName,
+                        Color = graphcolor,
+                        IsVisibleInLegend = true,
+                        IsXValueIndexed = false,
+                        ChartType = SeriesChartType.Line,
+                        BorderWidth = 1
+                    };
+                    this.chart1.Series.Add(series1);
+                    foreach (DataRow row in records.Rows) {
+                        datetime = row.Field<DateTime>(DB.COL_ERROR_DATETIME);
+                        value = zone.ZoneId;
+                        series1.Points.AddXY(datetime, value);
+                    }
+                }
+                records.Clear();
+            }
+            chart1.ChartAreas[0].RecalculateAxesScale();
+            chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
+            chart1.Titles[0].Text += " [" + Math.Round(DateTime.Now.Subtract(genStart).TotalSeconds, 0).ToString() + " s]";
+            chart1.Invalidate();
+            SaveGraph(chart1, uniqueId, ageHours, Constants.CAPABILITY_ERROR);
+        }
 
 		public void ShowErrorGraph(int ageHours, int zoneId, bool showallzones, int hoursSupplement) {
 			try {
@@ -867,34 +846,7 @@ namespace MultiZonePlayer
 			string[] allLines;
 
 			try {
-				if (needTempHum) {
-					MLog.Log(this, "Start reading TEMP/HUM from csv files");
-					//GET TEMP and HUM from storage
-					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_TEMPERATURE_HUMIDITY);
-					var query = from line in allLines
-								let data = line.Split(',')
-								select new {
-									ZoneName = data[0],
-									Type = data[1],
-									Date = Convert.ToDateTime(data[2]),
-									Value = Convert.ToDouble(data[3]),
-									ZoneId = Convert.ToInt16(data[4]),
-									Position = data.Length>5 ? GetInt(data[5]):0,
-									DeviceName = data.Length>6 ? data[6]:""
-								};
-					MLog.Log(this, "Processing TEMP/HUM");
-					foreach (var line in query) {
-						switch (line.Type) {
-							case Constants.CAPABILITY_TEMP:
-								m_tempHistoryList.Add(new Tuple<int, DateTime, double, int, String>(line.ZoneId, line.Date, line.Value, line.Position, line.DeviceName));
-								break;
-							case Constants.CAPABILITY_HUM:
-								m_humHistoryList.Add(new Tuple<int, DateTime, double>(line.ZoneId, line.Date, line.Value));
-								break;
-						}
-					}
-					MLog.Log(this, "End reading TEMP/HUM from csv files");
-				}
+				
 				if (needVoltage) {
 					MLog.Log(this, "START reading Voltage");
 					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_VOLTAGE);
@@ -940,35 +892,7 @@ namespace MultiZonePlayer
 					}
 					MLog.Log(this, "End reading Closures");
 				}
-				if (needUtilities) {
-					MLog.Log(this, "START reading Utilities");
-					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_UTILITIES);
-					//DateTime test;
-					var query = from line in allLines
-								let data = line.Split(',')
-								select new {
-									ZoneName = data[0],
-									Date = GetDate(data[1]),
-									Value = Convert.ToDouble(data[2]),
-									ZoneId = Convert.ToInt16(data[3]),
-									Type = data[4].ToLower(),
-									//TotalUnits
-									Cost = Convert.ToDouble(data[6]),
-									//UnitCost
-									Watts = (data.Length > 8 && data[8] != "") ? Convert.ToDouble(data[8]) : 0
-								};
-					MLog.Log(this, "Processing Utilities");
-					foreach (var line in query) {
-						switch (line.Type) {
-							case Constants.CAPABILITY_WATER:
-							case Constants.CAPABILITY_ELECTRICITY:
-								m_utilitiesHistoryList.Add(new Tuple<int, DateTime, double, double, double, String>
-									(line.ZoneId, line.Date, line.Value, line.Cost, line.Watts, line.Type));
-								break;
-						}
-					}
-					MLog.Log(this, "End reading Utilities");
-				}
+				
 				if (needErrors) {
 					MLog.Log(this, "START reading error list");
 					allLines = System.IO.File.ReadAllLines(IniFile.CurrentPath() + IniFile.CSV_DEVICEERRORS);

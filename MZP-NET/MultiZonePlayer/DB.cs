@@ -40,6 +40,12 @@ namespace MultiZonePlayer {
         public static string COL_EVENT_EVENTTYPE = "eventtype";
         public static string COL_EVENT_KEY = "key";
 
+        public const string TABLE_ERROR = "error";
+        public static string COL_ERROR_DATETIME = "datetime";
+        public static string COL_ERROR_ZONEID = "zoneid";
+        public static string COL_ERROR_ID = "id";
+        public static string COL_ERROR_TEXT= "text";
+
         public static Object m_lock = new Object();
 
         public enum PARAMS {
@@ -72,8 +78,11 @@ namespace MultiZonePlayer {
             + " FROM " + DB.TABLE_TEMPERATURE + QUERYSQL_TEMPERATURE_ROWS_FILTER + " AND " + COL_TEMPERATURE_SENSORID + "='" + PARAM_ID + PARAM_SENSORID+"'"
             + " AND "+ DB.COL_TEMPERATURE_DATETIME + " <='"+ PARAM_ID + PARAM_END_DATETIME+"' ORDER BY " + COL_TEMPERATURE_DATETIME + " ASC";
 
-        public const String QUERYNAME_TEMPERATURE_POSITIONS = "TEMPERATURE_POSITIONS";
-        private static String QUERYSQL_TEMPERATURE_POSITIONS = "SELECT DISTINCT(" + COL_TEMPERATURE_SENSORID + "), "+COL_TEMPERATURE_SENSORNAME
+        public static String QUERYNAME_TEMPERATURE_POSITIONS = "TEMPERATURE_POSITIONS";
+        private static String QUERYSQL_TEMPERATURE_POSITIONS = "SELECT DISTINCT(zoneid) FROM temperature WHERE datetime>='@startdatetime' AND datetime<='@enddatetime'";
+
+        public const String QUERYNAME_TEMPERATURE_SENSOR_POSITIONS = "TEMPERATURE_SENSOR_POSITIONS";
+        private static String QUERYSQL_TEMPERATURE_SENSOR_POSITIONS = "SELECT DISTINCT(" + COL_TEMPERATURE_SENSORID + "), "+COL_TEMPERATURE_SENSORNAME
             +" FROM " + DB.TABLE_TEMPERATURE + QUERYSQL_TEMPERATURE_ROWS_FILTER;
 
         public static String QUERYNAME_HUMIDITY_RECORDS = "HUMIDITY_RECORDS";
@@ -90,14 +99,29 @@ namespace MultiZonePlayer {
         private static String QUERYSQL_COUNTER_RECORDS = "SELECT datetime, mainunit, secondaryunit, cost FROM counter WHERE zoneid=@zoneid AND datetime>='@startdatetime' AND datetime<='@enddatetime'"
             + " AND utilitytype='@type'";
 
+        public static String QUERYNAME_ERROR_POSITIONS = "ERROR_POSITIONS";
+        private static String QUERYSQL_ERROR_POSITIONS = "SELECT DISTINCT(zoneid) FROM error WHERE datetime>='@startdatetime' AND datetime<='@enddatetime'";
+        public static String QUERYNAME_ERROR_RECORDS = "ERROR_RECORDS";
+        private static String QUERYSQL_ERROR_RECORDS = "SELECT datetime FROM error WHERE zoneid=@zoneid AND datetime>='@startdatetime' AND datetime<='@enddatetime'";
+
+        public static String QUERYNAME_EVENT_POSITIONS = "EVENT_POSITIONS";
+        private static String QUERYSQL_EVENT_POSITIONS = "SELECT DISTINCT(zoneid) FROM event WHERE datetime>='@startdatetime' AND datetime<='@enddatetime'";
+        public static String QUERYNAME_EVENT_RECORDS = "EVENT_RECORDS";
+        private static String QUERYSQL_EVENT_RECORDS = "SELECT datetime, relaystate, eventtype FROM event WHERE zoneid=@zoneid AND datetime>='@startdatetime' AND datetime<='@enddatetime'";
+
         private static List<QueryPair> m_queryList = null;
         public static void InitQueries() {
             m_queryList = new List<QueryPair>();
             m_queryList.Add(new QueryPair(QUERYNAME_TEMPERATURE_RECORDS, QUERYSQL_TEMPERATURE_RECORDS));
             m_queryList.Add(new QueryPair(QUERYNAME_TEMPERATURE_POSITIONS, QUERYSQL_TEMPERATURE_POSITIONS));
+            m_queryList.Add(new QueryPair(QUERYNAME_TEMPERATURE_SENSOR_POSITIONS, QUERYSQL_TEMPERATURE_SENSOR_POSITIONS));
             m_queryList.Add(new QueryPair(QUERYNAME_HUMIDITY_RECORDS, QUERYSQL_HUMIDITY_RECORDS));
             m_queryList.Add(new QueryPair(QUERYNAME_COUNTER_POSITIONS, QUERYSQL_COUNTER_POSITIONS));
             m_queryList.Add(new QueryPair(QUERYNAME_COUNTER_RECORDS, QUERYSQL_COUNTER_RECORDS));
+            m_queryList.Add(new QueryPair(QUERYNAME_ERROR_POSITIONS, QUERYSQL_ERROR_RECORDS));
+            m_queryList.Add(new QueryPair(QUERYNAME_ERROR_RECORDS, QUERYSQL_ERROR_RECORDS));
+            m_queryList.Add(new QueryPair(QUERYNAME_EVENT_POSITIONS, QUERYSQL_EVENT_RECORDS));
+            m_queryList.Add(new QueryPair(QUERYNAME_EVENT_RECORDS, QUERYSQL_EVENT_RECORDS));
         }
         protected static void GetDatabase() {
             if (m_dbcon==null) {

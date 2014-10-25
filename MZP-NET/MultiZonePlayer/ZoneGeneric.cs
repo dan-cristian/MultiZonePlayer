@@ -373,9 +373,9 @@ namespace MultiZonePlayer {
 					ZoneOpenActions();
 
 					switch (m_zoneDetails.ClosureType) {
-							case EnumClosureType.PresenceContact:
-							case EnumClosureType.Contact:
-							case EnumClosureType.LockZoneContact:
+						case EnumClosureType.Contact:
+                        case EnumClosureType.PresenceContact:	
+                        case EnumClosureType.LockZoneContact:
 								string msg = "Closure contact state " + key + " is " + contactMade
 									 + " on zone " + m_zoneDetails.ZoneName;
 								MLog.Log(this, msg);
@@ -384,7 +384,7 @@ namespace MultiZonePlayer {
 									m_zoneDetails.ZoneId.ToString(), Constants.EVENT_TYPE_CLOSURE, key);
                                 DB.WriteRecord(DB.TABLE_EVENT, DB.COL_EVENT_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT),
                                     DB.COL_EVENT_ZONEID, m_zoneDetails.ZoneId.ToString(), DB.COL_EVENT_RELAYSTATE, m_zoneDetails.RelayState.ToString(),
-                                    DB.COL_EVENT_EVENTTYPE, Constants.EVENT_TYPE_CLOSURE, DB.COL_EVENT_KEY, key);
+                                    DB.COL_EVENT_EVENTTYPE, m_zoneDetails.ClosureType.ToString(), DB.COL_EVENT_KEY, key);
 								if (contactMade) {
 									if (m_zoneDetails.IsArmed ||
 										(MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId == m_zoneDetails.AlarmAreaId)) {
@@ -500,7 +500,7 @@ namespace MultiZonePlayer {
 						graph.ShowDBCounterGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type, direction);
 					}
 					if (type == Constants.CAPABILITY_ERROR) {
-						graph.ShowErrorGraph(ageHours, m_zoneDetails.ZoneId, false, direction);
+                        graph.ShowDBErrorGraphs(m_zoneDetails.ZoneId.ToString(), zoneIdList, false, ageHours, direction);
 					}
 					break;
 				case GlobalCommands.doorring:

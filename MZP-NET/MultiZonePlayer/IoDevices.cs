@@ -242,6 +242,8 @@ namespace MultiZonePlayer {
 			m_errorCount++;
 			Utilities.AppendToCsvFile(IniFile.CSV_DEVICEERRORS, ",", GetZoneId.ToString(), DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), 
 				Address, Name, GetZoneName, DeviceType.ToString(), ex.Message);
+            DB.WriteRecord(DB.TABLE_ERROR, DB.COL_ERROR_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT), DB.COL_ERROR_ZONEID, GetZoneId.ToString(),
+                DB.COL_ERROR_ID, Name, DB.COL_ERROR_TEXT, ex.Message);
 		}
 		public void RecordSuccess() {
 			m_successCount++;

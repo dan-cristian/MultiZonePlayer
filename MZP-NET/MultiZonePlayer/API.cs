@@ -427,7 +427,7 @@ namespace MultiZonePlayer
 								graph.ShowDBCounterGraph(-1, "all", ageHours, type, direction);
 							}
 							if (type == Constants.CAPABILITY_ERROR) {
-								graph.ShowErrorGraph(ageHours, -1, true, direction);
+                                graph.ShowDBErrorGraphs(zoneStringList, zoneIdList, true, ageHours, direction);
 							}
 							//graph.ShowTempGraph(ageHours, zoneIdList);
 							break;
