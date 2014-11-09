@@ -26,7 +26,7 @@
 <button class="Video#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-video.html?command=video&zoneid=%_zoneid','_self')">Video</button>
 <%%>
 <%if;#Zones,%_zoneid.HasMotionSensor#%>
-<button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Cosure', false)">Motion</button>
+<button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Closure', false)">Motion</button>
 <%%>
 <%if;"#Zones,%_zoneid.ClosureType#"=="Contact"%>
 <button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove# Secured#Zones,%_zoneid.IsRelayInNormalState#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Closure', false)">Secured #Zones,%_zoneid.IsRelayInNormalState#</button>
