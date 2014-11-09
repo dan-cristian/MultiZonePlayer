@@ -19,17 +19,17 @@
 <%if;#Zones,%_zoneid.HasCamera#%>
 <button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-pict.html?zoneid=%_zoneid&size=', false)">Cam Pict</button>
 <button class="Move#Zones,%_zoneid.HasImmediateCamMove#" onclick="ajaxCall('camera','zone-cam-video.html?zoneid=%_zoneid', false)">Cam Video</button>
-<button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">#</button>
+<button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Closure', false)">#</button>
 <button onclick="window.open('zone-pictures.html?zoneid=%_zoneid', '_self')">Pictures</button>
 <%%>
 <%if;#Zones,%_zoneid.HasVideoPlayer#%>
 <button class="Video#Zones,%_zoneid.ActivityType#" onclick="window.open('zone-video.html?command=video&zoneid=%_zoneid','_self')">Video</button>
 <%%>
 <%if;#Zones,%_zoneid.HasMotionSensor#%>
-<button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Motion</button>
+<button class="Move#Zones,%_zoneid.HasImmediateAlarmMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Cosure', false)">Motion</button>
 <%%>
 <%if;"#Zones,%_zoneid.ClosureType#"=="Contact"%>
-<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove# Secured#Zones,%_zoneid.IsRelayInNormalState#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Secured #Zones,%_zoneid.IsRelayInNormalState#</button>
+<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove# Secured#Zones,%_zoneid.IsRelayInNormalState#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Closure', false)">Secured #Zones,%_zoneid.IsRelayInNormalState#</button>
 <%%>
 <%if;"#Zones,%_zoneid.HasRelay#"=="True"%>
 <button class="Pressed#Zones,%_zoneid.IsClosureContactMade#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=-1', true)">Relay #Zones,%_zoneid.IsClosureContactMade#</button>
@@ -49,7 +49,7 @@
 <button class="Pressed#Zones,%_zoneid.IsClosureStateIOOn,7# Secured#Zones,%_zoneid.IsClosureRelayInNormalState,7#" onclick="ajaxCall('result', 'cmd.html?command=closuretoggle&zoneid=%_zoneid&id=7', true)">IO 7 On=#Zones,%_zoneid.IsClosureStateIOOn,7#</button>
 <%%>
 <%if;"#Zones,%_zoneid.ClosureType#"=="PresenceContact"%>
-<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">Presence #Zones,%_zoneid.IsClosureContactMade#</button>
+<button class="Pressed#Zones,%_zoneid.ClosureState# Move#Zones,%_zoneid.HasImmediateClosureMove#" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Closure', false)">Presence #Zones,%_zoneid.IsClosureContactMade#</button>
 <%%>
 <%if;"#Zones,%_zoneid.UtilityType#"=="Electricity"%>
 <button class="small" onclick="ajaxCall('electricity','zone-utility-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Electricity&targetdiv=electricity', false)">Electricity</button>
@@ -66,7 +66,7 @@
 <%if;#Zones,%_zoneid.HasPowerCapabilities#%>
 <button class="Pressed#Zones,%_zoneid.IsPowerOn#" 
 	onclick="ajaxCall('result','cmd.html?command=powertoggle&zoneid=%_zoneid', true)">Power</button>
-<button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=closure', false)">#</button>
+<button class="Small" onclick="ajaxCall('event','zone-graph-event.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Closure', false)">#</button>
 <%%>
 <%if;#Zones,%_zoneid.RequireHeat#%>
 <img src="img/heat.png" />

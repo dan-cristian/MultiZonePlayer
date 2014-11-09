@@ -118,9 +118,9 @@ namespace MultiZonePlayer {
             m_queryList.Add(new QueryPair(QUERYNAME_HUMIDITY_RECORDS, QUERYSQL_HUMIDITY_RECORDS));
             m_queryList.Add(new QueryPair(QUERYNAME_COUNTER_POSITIONS, QUERYSQL_COUNTER_POSITIONS));
             m_queryList.Add(new QueryPair(QUERYNAME_COUNTER_RECORDS, QUERYSQL_COUNTER_RECORDS));
-            m_queryList.Add(new QueryPair(QUERYNAME_ERROR_POSITIONS, QUERYSQL_ERROR_RECORDS));
+            m_queryList.Add(new QueryPair(QUERYNAME_ERROR_POSITIONS, QUERYSQL_ERROR_POSITIONS));
             m_queryList.Add(new QueryPair(QUERYNAME_ERROR_RECORDS, QUERYSQL_ERROR_RECORDS));
-            m_queryList.Add(new QueryPair(QUERYNAME_EVENT_POSITIONS, QUERYSQL_EVENT_RECORDS));
+            m_queryList.Add(new QueryPair(QUERYNAME_EVENT_POSITIONS, QUERYSQL_EVENT_POSITIONS));
             m_queryList.Add(new QueryPair(QUERYNAME_EVENT_RECORDS, QUERYSQL_EVENT_RECORDS));
         }
         protected static void GetDatabase() {

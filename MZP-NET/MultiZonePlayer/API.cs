@@ -410,26 +410,30 @@ namespace MultiZonePlayer
 									zoneIdList.Add(Convert.ToInt16(_zone));
 								}
 							}
-							
-							if (type == "temphum") {
-								graph.ShowDBTempHumGraphs(zoneStringList, zoneIdList, zoneStringList == "-1", ageHours, direction);
-							}
+                            switch (type) {
+                                case "temphum":
+                                    graph.ShowDBTempHumGraphs(zoneStringList, zoneIdList, zoneStringList == "-1", ageHours, direction);
+                                    break;
+                                case Constants.CAPABILITY_VOLTAGE:
+                                    graph.ShowVoltageGraph(zoneId.ToString(), zoneIdList, ageHours, zoneId == -1, direction);
+                                    break;
+                                case Constants.CAPABILITY_ELECTRICITY :
+                                case Constants.CAPABILITY_WATER:
+                                    graph.ShowDBCounterGraph(-1, "all", ageHours, type, direction);
+                                    break;
+                                case Constants.CAPABILITY_ERROR:
+                                    graph.ShowDBErrorGraphs(zoneStringList, zoneIdList, true, ageHours, direction); 
+                                    break;
+                                default:
+                                    Alert.CreateAlertOnce("Undefined graph type " + type, "apigenerategraph");
+                                    break;
+                            }
+
 							/*
 							if (type == "closure") {
 								graph.ShowEventGraph(zoneIdList, ageHours);
 							}
 							 */
-							if (type == Constants.CAPABILITY_VOLTAGE) {
-								graph.ShowVoltageGraph(zoneId.ToString(), zoneIdList, ageHours, zoneId == -1, direction);
-							}
-							 
-							if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
-								graph.ShowDBCounterGraph(-1, "all", ageHours, type, direction);
-							}
-							if (type == Constants.CAPABILITY_ERROR) {
-                                graph.ShowDBErrorGraphs(zoneStringList, zoneIdList, true, ageHours, direction);
-							}
-							//graph.ShowTempGraph(ageHours, zoneIdList);
 							break;
 						case GlobalCommands.dismissalert:
 							int aid = Convert.ToInt16(vals.GetValue(GlobalParams.id));

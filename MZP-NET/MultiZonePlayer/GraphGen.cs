@@ -540,65 +540,71 @@ namespace MultiZonePlayer
 		}
 
         public void ShowDBErrorGraphs(String uniqueId, List<int> zoneIdList, bool showAllZones, int ageHours, int hoursSupplement) {
-            DateTime genStart = DateTime.Now;
-            m_lastErrorReference = GetDateReference(m_lastErrorReference, hoursSupplement);
-            PrepareGraph(ref chart1, "DB Error zone " + uniqueId, m_lastErrorReference, ageHours);
-            int zoneId;
-            List<ZoneDetails> zoneList = new List<ZoneDetails>();
-            String color;
-            ZoneDetails tempZone;
-            if (showAllZones) {
-                DataTable zonesAvail = DB.GetDataTable(DB.QUERYNAME_ERROR_POSITIONS,
-                    DB.PARAM_START_DATETIME, m_lastErrorReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
-                    DB.PARAM_END_DATETIME, m_lastErrorReference.ToString(Constants.DATETIME_DB_FORMAT));
-                foreach (DataRow row in zonesAvail.Rows) {
-                    zoneId = row.Field<int>(DB.COL_ERROR_ZONEID);
-                    tempZone = ZoneDetails.GetZoneById(zoneId);
-                    if (tempZone != null)
-                        zoneList.Add(tempZone);
-                    else
-                        MLog.Log(this, "Unexpected unknown zone in error graph id=" + zoneId);
-                }
-            }
-            else {
-                zoneList = GetZoneList(zoneIdList);
-            }
-            List<int> positionList = new List<int>();
-            foreach (ZoneDetails zone in zoneList) {
-                zoneId = zone.ZoneId;
-                DataTable records;
-                DateTime datetime; double value;
-                color = zone.Color != null ? zone.Color : "Black";
-                Color graphcolor;
-                records = DB.GetDataTable(DB.QUERYNAME_ERROR_RECORDS, DB.PARAM_ZONEID, zoneId.ToString(),
-                    DB.PARAM_START_DATETIME, m_lastErrorReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
-                    DB.PARAM_END_DATETIME, m_lastErrorReference.ToString(Constants.DATETIME_DB_FORMAT));
-                if (records.Rows.Count > 0) {
-                    graphcolor = System.Drawing.Color.FromName(color);
-                    var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
-                        Name = "Error " + zone.ZoneName,
-                        Color = graphcolor,
-                        IsVisibleInLegend = true,
-                        IsXValueIndexed = false,
-                        ChartType = SeriesChartType.Line,
-                        BorderWidth = 1
-                    };
-                    this.chart1.Series.Add(series1);
-                    foreach (DataRow row in records.Rows) {
-                        datetime = row.Field<DateTime>(DB.COL_ERROR_DATETIME);
-                        value = zone.ZoneId;
-                        series1.Points.AddXY(datetime, value);
+            try {
+                DateTime genStart = DateTime.Now;
+                m_lastErrorReference = GetDateReference(m_lastErrorReference, hoursSupplement);
+                PrepareGraph(ref chart1, "DB Error zone " + uniqueId, m_lastErrorReference, ageHours);
+                int zoneId;
+                List<ZoneDetails> zoneList = new List<ZoneDetails>();
+                String color;
+                ZoneDetails tempZone;
+                if (showAllZones) {
+                    DataTable zonesAvail = DB.GetDataTable(DB.QUERYNAME_ERROR_POSITIONS,
+                        DB.PARAM_START_DATETIME, m_lastErrorReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAM_END_DATETIME, m_lastErrorReference.ToString(Constants.DATETIME_DB_FORMAT));
+                    foreach (DataRow row in zonesAvail.Rows) {
+                        zoneId = row.Field<int>(DB.COL_ERROR_ZONEID);
+                        tempZone = ZoneDetails.GetZoneById(zoneId);
+                        if (tempZone != null)
+                            zoneList.Add(tempZone);
+                        else
+                            MLog.Log(this, "Unexpected unknown zone in error graph id=" + zoneId);
                     }
                 }
-                records.Clear();
+                else {
+                    zoneList = GetZoneList(zoneIdList);
+                }
+                List<int> positionList = new List<int>();
+                foreach (ZoneDetails zone in zoneList) {
+                    zoneId = zone.ZoneId;
+                    DataTable records;
+                    DateTime datetime; double value;
+                    color = zone.Color != null ? zone.Color : "Black";
+                    Color graphcolor;
+                    records = DB.GetDataTable(DB.QUERYNAME_ERROR_RECORDS, 
+                        DB.PARAM_ZONEID, zoneId.ToString(),
+                        DB.PARAM_START_DATETIME, m_lastErrorReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAM_END_DATETIME, m_lastErrorReference.ToString(Constants.DATETIME_DB_FORMAT));
+                    if (records.Rows.Count > 0) {
+                        graphcolor = System.Drawing.Color.FromName(color);
+                        var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+                            Name = "Error " + zone.ZoneName,
+                            Color = graphcolor,
+                            IsVisibleInLegend = true,
+                            IsXValueIndexed = false,
+                            ChartType = SeriesChartType.Point,
+                            BorderWidth = 1
+                        };
+                        this.chart1.Series.Add(series1);
+                        foreach (DataRow row in records.Rows) {
+                            datetime = row.Field<DateTime>(DB.COL_ERROR_DATETIME);
+                            value = zone.ZoneId;
+                            series1.Points.AddXY(datetime, value);
+                        }
+                    }
+                    records.Clear();
+                }
+                chart1.ChartAreas[0].RecalculateAxesScale();
+                chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
+                chart1.Titles[0].Text += " [" + Math.Round(DateTime.Now.Subtract(genStart).TotalSeconds, 0).ToString() + " s]";
+                chart1.Invalidate();
+                SaveGraph(chart1, uniqueId, ageHours, Constants.CAPABILITY_ERROR);
             }
-            chart1.ChartAreas[0].RecalculateAxesScale();
-            chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
-            chart1.Titles[0].Text += " [" + Math.Round(DateTime.Now.Subtract(genStart).TotalSeconds, 0).ToString() + " s]";
-            chart1.Invalidate();
-            SaveGraph(chart1, uniqueId, ageHours, Constants.CAPABILITY_ERROR);
+            catch (Exception ex) {
+                MLog.Log(ex, this, "Err DBErrorGraph");
+            }
         }
-
+        /*
 		public void ShowErrorGraph(int ageHours, int zoneId, bool showallzones, int hoursSupplement) {
 			try {
 				//double lastMinY = double.MaxValue, minY = double.MaxValue;
@@ -668,7 +674,92 @@ namespace MultiZonePlayer
 				MLog.Log(ex, this, "Error generating err graph zoneid="+zoneId+"  age="+ageHours);
 			}
 		}
+        */
 
+        public void ShowDBEventGraphs(String uniqueId, List<int> zoneIdList, bool showAllZones, int ageHours, int hoursSupplement) {
+            try {
+                DateTime genStart = DateTime.Now;
+                m_lastEventReference = GetDateReference(m_lastEventReference, hoursSupplement);
+                PrepareGraph(ref chart1, "DB Event zone " + uniqueId, m_lastEventReference, ageHours);
+                int zoneId;
+                List<ZoneDetails> zoneList = new List<ZoneDetails>();
+                String color;
+                string eventtype;
+                ZoneDetails tempZone;
+                if (showAllZones) {
+                    DataTable zonesAvail = DB.GetDataTable(DB.QUERYNAME_EVENT_POSITIONS,
+                        DB.PARAM_START_DATETIME, m_lastEventReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAM_END_DATETIME, m_lastEventReference.ToString(Constants.DATETIME_DB_FORMAT));
+                    foreach (DataRow row in zonesAvail.Rows) {
+                        zoneId = row.Field<int>(DB.COL_EVENT_ZONEID);
+                        tempZone = ZoneDetails.GetZoneById(zoneId);
+                        if (tempZone != null)
+                            zoneList.Add(tempZone);
+                        else
+                            MLog.Log(this, "Unexpected unknown zone in event graph id=" + zoneId);
+                    }
+                }
+                else {
+                    zoneList = GetZoneList(zoneIdList);
+                }
+                List<int> positionList = new List<int>();
+                foreach (ZoneDetails zone in zoneList) {
+                    zoneId = zone.ZoneId;
+                    DataTable records;
+                    DateTime datetime; double value;
+                    color = zone.Color != null ? zone.Color : "Black";
+                    Color graphcolor;
+                    records = DB.GetDataTable(DB.QUERYNAME_EVENT_RECORDS,
+                        DB.PARAM_ZONEID, zoneId.ToString(),
+                        DB.PARAM_START_DATETIME, m_lastEventReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAM_END_DATETIME, m_lastEventReference.ToString(Constants.DATETIME_DB_FORMAT));
+                    if (records.Rows.Count > 0) {
+                        graphcolor = System.Drawing.Color.FromName(color);
+                        var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+                            Name = "Event " + zone.ZoneName,
+                            Color = graphcolor,
+                            IsVisibleInLegend = true,
+                            IsXValueIndexed = false,
+                            ChartType = SeriesChartType.Point,
+                            BorderWidth = 1
+                        };
+                        this.chart1.Series.Add(series1);
+                        foreach (DataRow row in records.Rows) {
+                            datetime = row.Field<DateTime>(DB.COL_EVENT_DATETIME);
+                            eventtype = row.Field<String>(DB.COL_EVENT_EVENTTYPE);
+                            switch (eventtype) {
+                                case Constants.EVENT_TYPE_CAMALERT:
+                                    value = 1;
+                                    break;
+                                case Constants.EVENT_TYPE_SENSORALERT:
+                                    value = 2;
+                                    break;
+                                case Constants.EVENT_TYPE_CLOSURE:
+                                    value = 3;
+                                    break;
+                                case Constants.EVENT_TYPE_PRESENCECONTACT:
+                                    value = 4;
+                                    break;
+                                default:
+                                    value = 10;
+                                    break;
+
+                            }
+                            series1.Points.AddXY(datetime, value);
+                        }
+                    }
+                    records.Clear();
+                }
+                chart1.ChartAreas[0].RecalculateAxesScale();
+                chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
+                chart1.Titles[0].Text += " [" + Math.Round(DateTime.Now.Subtract(genStart).TotalSeconds, 0).ToString() + " s]";
+                chart1.Invalidate();
+                SaveGraph(chart1, uniqueId, ageHours, Constants.EVENT_TYPE_CLOSURE);
+            }
+            catch (Exception ex) {
+                MLog.Log(ex, this, "Err DBeventGraph");
+            }
+        }
 		public void ShowEventGraph(int zoneId, int ageHours, int hoursSupplement)
 		{
 			m_lastEventReference = GetDateReference(m_lastEventReference, hoursSupplement);

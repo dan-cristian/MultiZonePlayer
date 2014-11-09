@@ -911,16 +911,16 @@ namespace MultiZonePlayer {
 								duration = 60;
 								break;
 						}
-						if (DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes >= duration) {
+						if (DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes >= duration && LastMovementAge.TotalMinutes > 5) {
 							toBeStopped = true;
-							MLog.Log(this, "zone to be CLOSED as active but for too long than duration mins="+duration);
+							MLog.Log(this, "zone to be CLOSED is active but no move for 5 mins and for too long than duration mins="+duration);
 						}
 					}
 
 					if (!HadRecentRunState && !IsActive) {
 						if (DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes >= inactiveZone){
 							toBeStopped = true;
-							MLog.Log(this,"zone to be CLOSED as not recent and not active");
+							MLog.Log(this,"zone to be CLOSED is not recent and not active");
 						}
 					}
 				}
