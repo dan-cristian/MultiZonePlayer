@@ -1418,7 +1418,7 @@ namespace MultiZonePlayer {
 			get { return m_pictureList; }
 		}
 
-		public void SetVoltage(int voltageIndex, double value) {
+		public void RecordVoltage(int voltageIndex, double value) {
 			if (voltageIndex == VoltageSensorIndex) {
 				if (MaxAllowedVoltageValue != Constants.NOT_SET && value > MaxAllowedVoltageValue) {
 					Alert.CreateAlertOnce("Recorded voltage " + value + " higher than max " + MaxAllowedVoltageValue + " in zone " + ZoneName, "MaxVoltageZone"+ZoneName);
@@ -1443,9 +1443,10 @@ namespace MultiZonePlayer {
 				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName, Constants.CAPABILITY_VOLTAGE,
 						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), voltageIndex.ToString(),
 						lux.ToString(), light!=null?light.Name:"[light sensor undefined]");
+                DB.WriteRecord(DB.TABLE_VOLTAGE, DB.COL_VOLTAGE_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT),
+                                DB.COL_VOLTAGE_ZONEID, ZoneId, DB.COL_VOLTAGE_VALUE, value.ToString());
 				m_voltage[voltageIndex] = value;
 			}
-			
 		}
 
 		private List<String> m_fieldChangedList = new List<string>();

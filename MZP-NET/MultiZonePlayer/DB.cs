@@ -46,6 +46,11 @@ namespace MultiZonePlayer {
         public static string COL_ERROR_ID = "id";
         public static string COL_ERROR_TEXT= "text";
 
+        public const string TABLE_VOLTAGE = "voltage";
+        public static string COL_VOLTAGE_DATETIME = "datetime";
+        public static string COL_VOLTAGE_ZONEID = "zoneid";
+        public static string COL_VOLTAGE_VALUE = "value";
+
         public static Object m_lock = new Object();
 
         public enum PARAMS {
@@ -109,6 +114,11 @@ namespace MultiZonePlayer {
         public static String QUERYNAME_EVENT_RECORDS = "EVENT_RECORDS";
         private static String QUERYSQL_EVENT_RECORDS = "SELECT datetime, relaystate, eventtype FROM event WHERE zoneid=@zoneid AND datetime>='@startdatetime' AND datetime<='@enddatetime'";
 
+        public static String QUERYNAME_VOLTAGE_POSITIONS = "VOLTAGE_POSITIONS";
+        private static String QUERYSQL_VOLTAGE_POSITIONS = "SELECT DISTINCT(zoneid) FROM voltage WHERE datetime>='@startdatetime' AND datetime<='@enddatetime'";
+        public static String QUERYNAME_VOLTAGE_RECORDS = "VOLTAGE_RECORDS";
+        private static String QUERYSQL_VOLTAGE_RECORDS = "SELECT datetime, value FROM voltage WHERE zoneid=@zoneid AND datetime>='@startdatetime' AND datetime<='@enddatetime'";
+
         private static List<QueryPair> m_queryList = null;
         public static void InitQueries() {
             m_queryList = new List<QueryPair>();
@@ -122,6 +132,8 @@ namespace MultiZonePlayer {
             m_queryList.Add(new QueryPair(QUERYNAME_ERROR_RECORDS, QUERYSQL_ERROR_RECORDS));
             m_queryList.Add(new QueryPair(QUERYNAME_EVENT_POSITIONS, QUERYSQL_EVENT_POSITIONS));
             m_queryList.Add(new QueryPair(QUERYNAME_EVENT_RECORDS, QUERYSQL_EVENT_RECORDS));
+            m_queryList.Add(new QueryPair(QUERYNAME_VOLTAGE_POSITIONS, QUERYSQL_VOLTAGE_POSITIONS));
+            m_queryList.Add(new QueryPair(QUERYNAME_VOLTAGE_RECORDS, QUERYSQL_VOLTAGE_RECORDS));
         }
         protected static void GetDatabase() {
             if (m_dbcon==null) {

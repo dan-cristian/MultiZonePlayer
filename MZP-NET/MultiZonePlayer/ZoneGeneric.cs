@@ -494,7 +494,7 @@ namespace MultiZonePlayer {
 						graph.ShowDBEventGraphs(m_zoneDetails.ZoneId.ToString(), zoneIdList, false, ageHours, direction);
 					}
 					if (type == Constants.CAPABILITY_VOLTAGE) {
-						graph.ShowVoltageGraph( m_zoneDetails.ZoneId.ToString(), zoneIdList, ageHours, false, direction);
+                        graph.ShowDBVoltageGraph(m_zoneDetails.ZoneId.ToString(), zoneIdList, false, ageHours, direction);
 					}
 					if (type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER) {
 						graph.ShowDBCounterGraph(m_zoneDetails.ZoneId, m_zoneDetails.ZoneName, ageHours, type, direction);

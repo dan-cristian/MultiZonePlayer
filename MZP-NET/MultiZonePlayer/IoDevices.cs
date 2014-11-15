@@ -1786,7 +1786,7 @@ namespace MultiZonePlayer {
 							for (int i = 0; i < voltage.Length; i++) {
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireVoltageSensor = true;
-									zone.SetVoltage(i, voltage[i]);
+									zone.RecordVoltage(i, voltage[i]);
 								}
 								dev.Voltage[i] = Math.Round(voltage[i], 4);//more than 4 is not relevant for display
 							}

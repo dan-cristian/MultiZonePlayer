@@ -415,7 +415,7 @@ namespace MultiZonePlayer
                                     graph.ShowDBTempHumGraphs(zoneStringList, zoneIdList, zoneStringList == "-1", ageHours, direction);
                                     break;
                                 case Constants.CAPABILITY_VOLTAGE:
-                                    graph.ShowVoltageGraph(zoneId.ToString(), zoneIdList, ageHours, zoneId == -1, direction);
+                                    graph.ShowDBVoltageGraph(zoneStringList, zoneIdList, zoneStringList == "-1", ageHours, direction);
                                     break;
                                 case Constants.CAPABILITY_ELECTRICITY :
                                 case Constants.CAPABILITY_WATER:

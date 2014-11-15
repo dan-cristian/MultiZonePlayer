@@ -268,6 +268,72 @@ namespace MultiZonePlayer
 				lastValue = value;
 			}
 		}
+
+        public void ShowDBVoltageGraph(String uniqueId, List<int> zoneIdList, bool showAllZones, int ageHours, int hoursSupplement) {
+            try {
+                DateTime genStart = DateTime.Now;
+                m_lastVoltageReference = GetDateReference(m_lastVoltageReference, hoursSupplement);
+                PrepareGraph(ref chart1, "DB Voltage zone " + uniqueId, m_lastVoltageReference, ageHours);
+                int zoneId;
+                List<ZoneDetails> zoneList = new List<ZoneDetails>();
+                String color;
+                ZoneDetails tempZone;
+                if (showAllZones) {
+                    DataTable zonesAvail = DB.GetDataTable(DB.QUERYNAME_VOLTAGE_POSITIONS,
+                        DB.PARAM_START_DATETIME, m_lastVoltageReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAM_END_DATETIME, m_lastVoltageReference.ToString(Constants.DATETIME_DB_FORMAT));
+                    foreach (DataRow row in zonesAvail.Rows) {
+                        zoneId = row.Field<int>(DB.COL_VOLTAGE_ZONEID);
+                        tempZone = ZoneDetails.GetZoneById(zoneId);
+                        if (tempZone != null)
+                            zoneList.Add(tempZone);
+                        else
+                            MLog.Log(this, "Unexpected unknown zone in voltage graph id=" + zoneId);
+                    }
+                }
+                else {
+                    zoneList = GetZoneList(zoneIdList);
+                }
+                List<int> positionList = new List<int>();
+                foreach (ZoneDetails zone in zoneList) {
+                    zoneId = zone.ZoneId;
+                    DataTable records;
+                    DateTime datetime; double value;
+                    color = zone.Color != null ? zone.Color : "Black";
+                    Color graphcolor;
+                    records = DB.GetDataTable(DB.QUERYNAME_VOLTAGE_RECORDS,
+                        DB.PARAM_ZONEID, zoneId.ToString(),
+                        DB.PARAM_START_DATETIME, m_lastVoltageReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
+                        DB.PARAM_END_DATETIME, m_lastVoltageReference.ToString(Constants.DATETIME_DB_FORMAT));
+                    if (records.Rows.Count > 0) {
+                        graphcolor = System.Drawing.Color.FromName(color);
+                        var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
+                            Name = "Voltage " + zone.ZoneName,
+                            Color = graphcolor,
+                            IsVisibleInLegend = true,
+                            IsXValueIndexed = false,
+                            ChartType = SeriesChartType.StepLine,
+                            BorderWidth = 1
+                        };
+                        this.chart1.Series.Add(series1);
+                        foreach (DataRow row in records.Rows) {
+                            datetime = row.Field<DateTime>(DB.COL_VOLTAGE_DATETIME);
+                            value = row.Field<Double>(DB.COL_VOLTAGE_VALUE);
+                            series1.Points.AddXY(datetime, value);
+                        }
+                    }
+                    records.Clear();
+                }
+                chart1.ChartAreas[0].RecalculateAxesScale();
+                chart1.ChartAreas[0].AxisY.IsStartedFromZero = false;
+                chart1.Titles[0].Text += " [" + Math.Round(DateTime.Now.Subtract(genStart).TotalSeconds, 0).ToString() + " s]";
+                chart1.Invalidate();
+                SaveGraph(chart1, uniqueId, ageHours, Constants.CAPABILITY_VOLTAGE);
+            }
+            catch (Exception ex) {
+                MLog.Log(ex, this, "Err DBVoltageGraph");
+            }
+        }
 		public void ShowVoltageGraph(String uniqueId, List<int> zoneIdList, int ageHours, bool showAll, int hoursSupplement) {
 			try {
 				m_lastVoltageReference = GetDateReference(m_lastVoltageReference, hoursSupplement);
