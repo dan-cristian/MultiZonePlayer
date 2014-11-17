@@ -1158,9 +1158,50 @@ namespace MultiZonePlayer {
 		}
 
 		public bool TestConnection() {
+            String[] adapterNames = IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1].Split(';');
+            String[] adapterPorts = IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1].Split(';');
+            Boolean adapterFound;
+            for (int i = 0; i < adapterPorts.Length; i++) {
+                adapterFound = false;
+                foreach (DSPortAdapter adapter in m_adapterList) {
+                    if (adapter.getPortName().ToUpper() == adapterPorts[i].ToUpper()) {
+                        adapterFound = true;
+                        break;
+                    }
+                }
+                if (!adapterFound) {
+                    Alert.CreateAlertOnce("1wire adapter defined in ini not initialised, trying to init, port "+adapterPorts[i], "1wiretestinit");
+                    InitAdapter(adapterNames[i], adapterPorts[i]);
+                }
+            }
 			return true; //dMonitor.isRunning;
 		}
 
+        private void InitAdapter(String adapterName, String adapterPort) {
+            DSPortAdapter adapterVar;
+            String exceptions = "";
+            try {
+                adapterVar = OneWireAccessProvider.getAdapter(adapterName, adapterPort);
+                adapterVar.beginExclusive(true);
+                adapterVar.setSearchAllDevices();
+                adapterVar.targetAllFamilies();
+                java.util.Enumeration containers = adapterVar.getAllDeviceContainers();
+
+                m_lastOKRead = DateTime.Now;
+                m_initErrors = 0;
+                if (m_adapterList.Find(x => x.getAddressAsString() == adapterVar.getAddressAsString()) == null) {
+                    m_adapterList.Add(adapterVar);
+                    MLog.Log("Found onewire port based adapter " + adapterVar.getAdapterVersion()
+                        + " " + adapterVar.getAdapterName() + adapterVar.getAddressAsString());
+                }
+                else
+                    MLog.Log(this, "Adapter already initialised previously, skipping");
+                adapterVar.endExclusive();
+            }
+            catch (Exception ex) {
+                exceptions += ex.Message + ";";
+            }
+        }
 		private const int ONEWIRE_ERR_COUNT_NOSILENT = 5;
 		public void Reinitialise() {
 			try {
@@ -1189,33 +1230,13 @@ namespace MultiZonePlayer {
 
 				String[] adapterNames = IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1].Split(';');
 				String[] adapterPorts = IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1].Split(';');
-                String exceptions = "";
+                
 				if (adapterNames.Length == adapterPorts.Length) {
 					for (int i = 0; i < adapterNames.Length; i++) {
 						if (m_initErrors < ONEWIRE_ERR_COUNT_NOSILENT) {
 							MLog.Log(this, "Trying to initialize 1wire adapter " + adapterNames[i] + adapterPorts[i]);
 						}
-						try {
-							adapterVar = OneWireAccessProvider.getAdapter(adapterNames[i], adapterPorts[i]);
-							adapterVar.beginExclusive(true);
-							adapterVar.setSearchAllDevices();
-							adapterVar.targetAllFamilies();
-							java.util.Enumeration containers = adapterVar.getAllDeviceContainers();
-
-							m_lastOKRead = DateTime.Now;
-							m_initErrors = 0;
-							if (m_adapterList.Find(x => x.getAddressAsString() == adapterVar.getAddressAsString()) == null) {
-								m_adapterList.Add(adapterVar);
-								MLog.Log("Found onewire port based adapter " + adapterVar.getAdapterVersion()
-									+ " " + adapterVar.getAdapterName() + adapterVar.getAddressAsString());
-							}
-							else
-								MLog.Log(this, "Adapter already initialised previously, skipping");
-							adapterVar.endExclusive();
-						}
-						catch (Exception ex) {
-                            exceptions += ex.Message+";";
-                        }
+                        InitAdapter(adapterNames[i], adapterPorts[i]);
 					}
 				}
 				else

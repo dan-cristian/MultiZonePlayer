@@ -461,14 +461,14 @@ namespace MultiZonePlayer
                                 case Constants.CAPABILITY_ELECTRICITY:
                                     yvalue = row.Field<double>(DB.COL_COUNTER_SECONDARYUNIT);
                                     series1.Points.AddXY(row.Field<DateTime>(DB.COL_COUNTER_DATETIME), yvalue);
-                                    value += row.Field<int>(DB.COL_COUNTER_MAINUNIT);
+                                    value += row.Field<double>(DB.COL_COUNTER_MAINUNIT);
                                     totalwatts += yvalue;
                                     if (yvalue != 0)
                                         minwatts = Math.Min(minwatts, yvalue);
                                     maxwatts = Math.Max(maxwatts, yvalue);
                                     break;
                                 case Constants.CAPABILITY_WATER:
-                                    yvalue = row.Field<int>(DB.COL_COUNTER_MAINUNIT);
+                                    yvalue = row.Field<double>(DB.COL_COUNTER_MAINUNIT);
                                     series1.Points.AddXY(row.Field<DateTime>(DB.COL_COUNTER_DATETIME), yvalue);
                                     value += yvalue;
                                     minY = Math.Min(minY, yvalue);

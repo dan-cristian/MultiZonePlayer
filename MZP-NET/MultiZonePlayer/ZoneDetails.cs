@@ -357,6 +357,11 @@ namespace MultiZonePlayer {
 			if (id.Contains(CounterPageNameToInclude)) {
 				double lapsedMinutes = DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes;
 				if ( lapsedMinutes >= PulseSampleMinutesFrequency) {
+                    if (PulseCountInTimeSample == 0) {//when program is loaded and no previous counter record happened
+                        //MLog.Log("debug this");
+                        PulseCountInTimeSample = counter - LastCounterCount;
+                        LastCounterCount = counter;
+                    }
 					PulseLastMainUnitsCount = (double)PulseCountInTimeSample / PulseSubUnits;
 					/*if (PulseLastMainUnitsCount > 1) {
 						Alert.CreateAlert("WARNING: Large count, counter=" + counter + " deltaPulses=" + PulseCountInTimeSample,
@@ -370,19 +375,19 @@ namespace MultiZonePlayer {
 						
 					// TODO: split consumption evenly when PC down for long
 					//PulseMainUnitsCount += PulseLastMainUnitsCount;
-					double unitCost, cost, watts, unitCountPerMissedFrame, unitsPerMinute;
+					double unitCost, cost, watts, pulseUnitCountPerMissedFrame, pulseUnitsPerMinute;
 					int missedFrames = (int)Math.Round(lapsedMinutes / PulseSampleMinutesFrequency, 0);
 					double totalLoggedPulses = 0, pulseIncrement = 0;
-					unitCountPerMissedFrame = PulseLastMainUnitsCount / missedFrames;
-					unitsPerMinute = unitCountPerMissedFrame / PulseSampleMinutesFrequency;
-					if (MaxUtilityUnitsPerMinute != -1 && unitsPerMinute > MaxUtilityUnitsPerMinute) {
+					pulseUnitCountPerMissedFrame = PulseLastMainUnitsCount / missedFrames;
+					pulseUnitsPerMinute = pulseUnitCountPerMissedFrame / PulseSampleMinutesFrequency;
+					if (MaxUtilityUnitsPerMinute != -1 && pulseUnitsPerMinute > MaxUtilityUnitsPerMinute) {
 						Alert.CreateAlert("Large utility units consumption registered, possible error, skipping, for zone=" + ZoneName
-							+ " units per minute=" + unitsPerMinute + ", limit is=" + MaxUtilityUnitsPerMinute, true);
+							+ " units per minute=" + pulseUnitsPerMinute + ", limit is=" + MaxUtilityUnitsPerMinute, true);
 					}
 					else {
 						int passes = 0;
 						do {
-							pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, unitCountPerMissedFrame);
+							pulseIncrement = Math.Min(PulseLastMainUnitsCount - totalLoggedPulses, pulseUnitCountPerMissedFrame);
 							totalLoggedPulses += pulseIncrement;
 							PulseMainUnitsCount += pulseIncrement;
 							unitCost = 0;
@@ -393,7 +398,7 @@ namespace MultiZonePlayer {
 								switch (UtilityType) {
 									case EnumUtilityType.Electricity:
                                         //TODO: problem here, high watt value recorded after split of power loss delta
-										watts = 1000 * unitCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
+										watts = 1000 * pulseUnitCountPerMissedFrame / (PulseSampleMinutesFrequency / 60d);
 										break;
 									case EnumUtilityType.Gas:
 									case EnumUtilityType.Water:
@@ -402,16 +407,16 @@ namespace MultiZonePlayer {
 										MLog.Log(this, "WARNING unprocessed utility type " + UtilityType);
 										break;
 								}
-								cost = unitCountPerMissedFrame * unitCost;
+								cost = pulseUnitCountPerMissedFrame * unitCost;
 							}
 							LastPulseSamplingStart = LastPulseSamplingStart.AddMinutes(PulseSampleMinutesFrequency);
                             DB.WriteRecord(DB.TABLE_COUNTER, DB.COL_COUNTER_DATETIME, LastPulseSamplingStart.ToString(Constants.DATETIME_DB_FORMAT), 
                                 DB.COL_COUNTER_ZONEID, ZoneId,
-                                DB.COL_COUNTER_MAINUNIT, unitCountPerMissedFrame, DB.COL_COUNTER_SECONDARYUNIT, watts,
+                                DB.COL_COUNTER_MAINUNIT, pulseUnitCountPerMissedFrame, DB.COL_COUNTER_SECONDARYUNIT, watts,
                                 DB.COL_COUNTER_UTILITYTYPE, UtilityType.ToString(), DB.COL_COUNTER_TOTALMAINUNIT, PulseLastMainUnitsCount,
                                 DB.COL_COUNTER_TOTALCOUNTER, counter, DB.COL_COUNTER_COST, cost);
 							Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
-								PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), unitCountPerMissedFrame.ToString(),
+								PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), pulseUnitCountPerMissedFrame.ToString(),
 								cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString());
 							passes++;
 						}
@@ -422,13 +427,12 @@ namespace MultiZonePlayer {
 					}
 					LastPulseSamplingStart = DateTime.Now;
 					PulseCountInTimeSample = 0;
-                    //LastCounterCount = counter;//TODO: check if this fixes the watt problem.
 					SaveEntryToIni();//save in case of power outage
 				}
 				else {
 					ulong units = counter - LastCounterCount;
 					if (units < 0) {
-						MLog.Log(this, "WARNING, counter reset at LastCount="+LastCounterCount);
+						Alert.CreateAlert("WARNING, counter reset at LastCount="+LastCounterCount, true);
 						units = 0;
 					}
 					if (LastCounterCount != 0)

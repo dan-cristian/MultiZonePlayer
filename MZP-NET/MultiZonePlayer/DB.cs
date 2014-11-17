@@ -151,6 +151,7 @@ namespace MultiZonePlayer {
         public static void WriteRecord(string tablename, params Object[] fields) {
             if (fields == null) return;
             lock (m_lock) {
+                string parameters="";
                 DB.GetDatabase();
                 SQLiteTransaction trans;
                 string fieldnamelist = "", fieldparamlist = "";
@@ -166,6 +167,7 @@ namespace MultiZonePlayer {
                 SQLiteCommand cmd = new SQLiteCommand(SQL);
                 for (int i = 0; i < fields.Length; i = i + 2) {
                     cmd.Parameters.AddWithValue("@" + fields[i], fields[i + 1]);
+                    parameters += fields[i+1]+",";
                 }
                 cmd.Connection = m_dbcon;
                 if (m_dbcon.State != System.Data.ConnectionState.Closed) {
@@ -176,6 +178,7 @@ namespace MultiZonePlayer {
                 trans = m_dbcon.BeginTransaction();
                 int retval = 0;
                 try {
+                    MLog.LogSql(cmd.CommandText + " ["+parameters+"]");
                     retval = cmd.ExecuteNonQuery();
                     if (retval != 1)
                         MLog.Log("Row in DB table " + tablename + " NOT inserted!");

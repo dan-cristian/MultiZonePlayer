@@ -967,22 +967,27 @@ namespace MultiZonePlayer {
 		}
 
         private void ReduceProgramsPriority() {
-            System.Diagnostics.Process proc;
-            proc =  Utilities.GetProcess(IniFile.PARAM_HUBIC_PROCNAME[1]);
-            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
-                Utilities.SetProcessPriority(IniFile.PARAM_HUBIC_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+            try {
+                System.Diagnostics.Process proc;
+                proc = Utilities.GetProcess(IniFile.PARAM_HUBIC_PROCNAME[1]);
+                if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                    Utilities.SetProcessPriority(IniFile.PARAM_HUBIC_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+                }
+                proc = Utilities.GetProcess(IniFile.PARAM_DROPBOX_PROCNAME[1]);
+                if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                    Utilities.SetProcessPriority(IniFile.PARAM_DROPBOX_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+                }
+                proc = Utilities.GetProcess(IniFile.PARAM_CRYPTSYNC_PROCNAME[1]);
+                if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                    Utilities.SetProcessPriority(IniFile.PARAM_CRYPTSYNC_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+                }
+                proc = Utilities.GetProcess(IniFile.PARAM_ISPY_PROCNAME[1]);
+                if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
+                    Utilities.SetProcessPriority(IniFile.PARAM_ISPY_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+                }
             }
-            proc = Utilities.GetProcess(IniFile.PARAM_DROPBOX_PROCNAME[1]);
-            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
-                Utilities.SetProcessPriority(IniFile.PARAM_DROPBOX_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
-            }
-            proc = Utilities.GetProcess(IniFile.PARAM_CRYPTSYNC_PROCNAME[1]);
-            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
-                Utilities.SetProcessPriority(IniFile.PARAM_CRYPTSYNC_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
-            }
-            proc = Utilities.GetProcess(IniFile.PARAM_ISPY_PROCNAME[1]);
-            if (proc != null && proc.PriorityClass != System.Diagnostics.ProcessPriorityClass.BelowNormal) {
-                Utilities.SetProcessPriority(IniFile.PARAM_ISPY_PROCNAME[1], System.Diagnostics.ProcessPriorityClass.BelowNormal);
+            catch (Exception ex) {
+                Alert.CreateAlertOnce("Error reduce programs priority " + ex.Message, "ReduceProgramsPriority");
             }
         }
 		private void HealthCheckWinload() {
