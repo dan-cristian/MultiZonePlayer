@@ -45,6 +45,8 @@ namespace MultiZonePlayer {
 		public String OutputKeywords;
 		[Category("Edit")]
 		public String OutputDeviceUserSelected;
+        [Category("Edit"), Description("True if the audio device is a bluetooth device or False. When True no BT scans will be performed when playing")]
+        public Boolean IsBluetoothOutputDevice = false;
 		[Category("Edit")]
 		public ZoneType Type = ZoneType.Undefined;
 		public String OutputDeviceNameWaveVLC;
@@ -1158,6 +1160,7 @@ namespace MultiZonePlayer {
 					if (!OutputDeviceAutoCompleted().Equals("")) {
 						HasSpeakers = true;
 					}
+                    IsBluetoothOutputDevice = zonestorage.IsBluetoothOutputDevice;
 
 					WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);
 					OutputDeviceNameWaveVLC = GetVLCAudioWaveDeviceName(WavedeviceIndex);

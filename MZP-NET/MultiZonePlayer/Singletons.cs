@@ -525,8 +525,11 @@ namespace MultiZonePlayer {
 
 		public static void CheckLocalBluetooth() {
 			try {
-				List<String> currentList = Bluetooth.DiscoverDevices().Select(x => x.Address.ToString()).ToList();
-				UpdateBTDevices(currentList, DateTime.Now, "Main Home");
+                if (ZoneDetails.ZoneDetailsList.Find(x => x.IsActive && x.IsBluetoothOutputDevice) == null) {
+                    //scan via bluetooth only when no active zone with a BT audio device
+                    List<String> currentList = Bluetooth.DiscoverDevices().Select(x => x.Address.ToString()).ToList();
+                    UpdateBTDevices(currentList, DateTime.Now, "Main Home");
+                }
 			}
 			catch (Exception ex) {
 				MLog.Log(null, "CheckLocal Bluetooth error " + ex.Message);
