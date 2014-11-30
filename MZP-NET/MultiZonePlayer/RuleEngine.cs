@@ -304,7 +304,7 @@ namespace MultiZonePlayer
 		}
 
 
-		private static Object ReflectLine(Object instance, String atom)
+		public static Object ReflectLine(Object instance, String atom)
 		{
 			object value;
 			String[] methodAtoms, paramAtoms;
@@ -1122,7 +1122,7 @@ namespace MultiZonePlayer
 						if (r.FilterFieldName == "")
 							ruleList.Add(r);
 						else {
-							val = Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
+                            val = Reflect.ReflectLine(callingInstance, r.FilterFieldName);//Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
 							if (val != null && r.FilterFieldValue == val.ToString())
 								ruleList.Add(r);
 						}

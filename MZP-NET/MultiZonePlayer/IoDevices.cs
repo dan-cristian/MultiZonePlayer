@@ -2033,6 +2033,7 @@ namespace MultiZonePlayer {
 	public class MustekUPS : GenericUPS, IMZPDevice {
 		private string m_statusurl, m_lastHtml = "";
 		private WebClient m_client;
+        private DateTime m_lastErrorReadStatus = DateTime.MinValue;
 
 		public MustekUPS(String statusurl) {
 			m_statusurl = statusurl;
@@ -2107,7 +2108,10 @@ namespace MultiZonePlayer {
 				}
 			}
 			catch (Exception ex) {
-				MLog.Log(this, "Unable to read UPS status" + ex.Message);
+                if (DateTime.Now.Subtract(m_lastErrorReadStatus).TotalMinutes > 60) {
+                    MLog.Log(this, "Unable to read Mustek UPS status, UPS might not be connected, " + ex.Message);
+                    m_lastErrorReadStatus = DateTime.Now;
+                }
 			}
 		}
 
@@ -2523,8 +2527,8 @@ namespace MultiZonePlayer {
 				this.Authenticated = device_info.Authenticated;
 				this.Connected = device_info.Connected;
 				this.DeviceName = device_info.DeviceName;
-				this.LastSeen = device_info.LastSeen;
-				this.LastUsed = device_info.LastUsed;
+				this.LastSeen = device_info.LastSeen.ToLocalTime();
+				this.LastUsed = device_info.LastUsed.ToLocalTime();
 				this.Address = device_info.DeviceAddress;
 				this.Nap = device_info.DeviceAddress.Nap;
 				this.Sap = device_info.DeviceAddress.Sap;
@@ -2593,6 +2597,11 @@ namespace MultiZonePlayer {
 					//MLog.Log(null, "Active BT device detected " + device.ToString());
 					devices.Add(device);
 				}
+                else {
+                    //alternate method for devices that do not support connect, like avantree headset
+                    if (device.Connected && DateTime.Now.Subtract(device.LastSeen).TotalMinutes<10)
+                        devices.Add(device);
+                }
 				//MLog.Log(null, "Discovery result="+canConnect+" on " + device.DeviceName + " " + device.Address+ " took " 
 				//	+ Utilities.DurationAsTimeSpan(DateTime.Now.Subtract(startDisc)));
 			}

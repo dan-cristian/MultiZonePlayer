@@ -1212,6 +1212,7 @@ namespace MultiZonePlayer {
 				}
 			}
 
+
 			//generate images
 			/*foreach (ZoneDetails zone in ZoneDetails)
 		{
@@ -1400,6 +1401,13 @@ namespace MultiZonePlayer {
 				}
 			}
 		}
+
+        private void CheckForDynamicSoundCards() {
+            List<ZoneDetails> zoneswithspeakers = ZoneDetails.ZoneDetailsList.FindAll(x=>x.HasSpeakersCapability && !x.HasSpeakers).ToList();
+            foreach (ZoneDetails zone in zoneswithspeakers) {
+                zone.CheckAndActivateSpeakers();
+            }
+        }
 		public void TickFast() {
 			CheckAlerts();
 			CheckHomeMessages();
@@ -1464,9 +1472,15 @@ namespace MultiZonePlayer {
 			if (MZPState.Instance == null) {
 				return;
 			}
+            CheckForDynamicSoundCards();
+            if (MZPState.Instance == null) {
+                return;
+            }
 			if (MediaLibrary.AllAudioFiles != null) {
 				MediaLibrary.AllAudioFiles.SaveUpdatedItems();
 			}
+
+
 		}
 	}
 }

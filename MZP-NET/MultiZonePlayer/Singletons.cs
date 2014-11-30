@@ -476,14 +476,14 @@ namespace MultiZonePlayer {
 			switch (type) {
 				case PresenceType.Bluetooth:
 					if (up.LastBTActiveDate < presenceDate) {
-						up.LastBTActiveDate = presenceDate;
+						up.LastBTActiveDate = presenceDate.ToLocalTime();
 						up.BTLostContactCount = 0;
 						up.User.Location = location;
 					}
 					break;
 				case PresenceType.Wifi:
 					if (up.LastWifiActiveDate < presenceDate) {
-						up.LastWifiActiveDate = presenceDate;
+						up.LastWifiActiveDate = presenceDate.ToLocalTime();
 						up.WifiLostContactCount = 0;
 						up.User.Location = location;
 					}
@@ -501,11 +501,12 @@ namespace MultiZonePlayer {
 
 				foreach (String dev in newList) {
 					user = User.GetUserByBT(dev);
-					if (user != null)
-						if (UserPresence.AddPresence(user, PresenceType.Bluetooth, presenceDate, location))
-							m_lastBTDeviceList.Add(dev);
-					//else
-					//	MLog.Log(null, "Unknown user with Bluetooth device addr=" + dev);
+                    if (user != null) {
+                        if (UserPresence.AddPresence(user, PresenceType.Bluetooth, presenceDate, location))
+                            m_lastBTDeviceList.Add(dev);
+                    }
+                    else
+                        MLog.LogInfo("Unknown user with Bluetooth device addr=" + dev);
 				}
 				foreach (String dev in leftList) {
 					user = User.GetUserByBT(dev);
@@ -526,7 +527,7 @@ namespace MultiZonePlayer {
 		public static void CheckLocalBluetooth() {
 			try {
                 if (ZoneDetails.ZoneDetailsList.Find(x => x.IsActive && x.IsBluetoothOutputDevice) == null) {
-                    //scan via bluetooth only when no active zone with a BT audio device
+                    //scan via bluetooth only when no active zone with a BT audio device. if runs while play drops will happen
                     List<String> currentList = Bluetooth.DiscoverDevices().Select(x => x.Address.ToString()).ToList();
                     UpdateBTDevices(currentList, DateTime.Now, "Main Home");
                 }
@@ -538,48 +539,52 @@ namespace MultiZonePlayer {
 		}
 
 		public static void CheckRemoteBluetooth() {
-			try {
-				//based on custom script loopforbt.sh:
-				//68:ED:43:08:10:40 Dan,2013-12-04 23:01:28
-				//
-				MyWebClient web = new MyWebClient();
-				System.Net.NetworkInformation.Ping pingSender = new System.Net.NetworkInformation.Ping();
-				System.Net.NetworkInformation.PingReply pingReply;
-				string host;
+            try {
+                if (ZoneDetails.ZoneDetailsList.Find(x => x.IsActive && x.IsBluetoothOutputDevice) == null) {
+                    //scan remote only when no active zone with a BT audio device. if this scan runs periodic disconnect will be detected
 
-				DateTime presenceDate;
-				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
-				foreach (String url in urllist) {
-					try {
-						if (MZPState.Instance == null)
-							break;
-						host = new Uri(url).Host;
-						pingReply = pingSender.Send(host,1000);
-						if (pingReply.Status == System.Net.NetworkInformation.IPStatus.Success) {
-							String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_BT_STATUS_FILE[1]);
-							String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-							var query1 = from line in btlist
-										 let data = line.Split(',')
-										 select new {
-											 BTAddress = data[0].Split(' ')[0],
-											 Date = data[1]
-										 };
-							List<String> currentList = query1.Select(x => x.BTAddress).ToList();
-							if (query1.ToList().Count > 0)
-								presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
-							else
-								presenceDate = DateTime.Now;
-							UpdateBTDevices(currentList, presenceDate, url);
-						}
-					}
-					catch (Exception e) {
-						MLog.Log(null, "Download remote BT file for url="+url+" error=" + e.Message);
-					}
-				}
-			}
-			catch (Exception ex) {
-				MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
-			}
+                    //based on custom script loopforbt.sh:
+                    //68:ED:43:08:10:40 Dan,2013-12-04 23:01:28
+                    //
+                    MyWebClient web = new MyWebClient();
+                    System.Net.NetworkInformation.Ping pingSender = new System.Net.NetworkInformation.Ping();
+                    System.Net.NetworkInformation.PingReply pingReply;
+                    string host;
+
+                    DateTime presenceDate;
+                    String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
+                    foreach (String url in urllist) {
+                        try {
+                            if (MZPState.Instance == null)
+                                break;
+                            host = new Uri(url).Host;
+                            pingReply = pingSender.Send(host, 1000);
+                            if (pingReply.Status == System.Net.NetworkInformation.IPStatus.Success) {
+                                String webdata = web.DownloadString(url + IniFile.PARAM_REMOTE_SERVER_BT_STATUS_FILE[1]);
+                                String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                                var query1 = from line in btlist
+                                             let data = line.Split(',')
+                                             select new {
+                                                 BTAddress = data[0].Split(' ')[0],
+                                                 Date = data[1]
+                                             };
+                                List<String> currentList = query1.Select(x => x.BTAddress).ToList();
+                                if (query1.ToList().Count > 0)
+                                    presenceDate = Convert.ToDateTime(query1.ToList()[0].Date);
+                                else
+                                    presenceDate = DateTime.Now;
+                                UpdateBTDevices(currentList, presenceDate, url);
+                            }
+                        }
+                        catch (Exception e) {
+                            MLog.Log(null, "Download remote BT file for url=" + url + " error=" + e.Message);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) {
+                MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
+            }
 		}
 
 		private static void UpdateWifiDevices(List<String> currentList, DateTime presenceDate, String location) {

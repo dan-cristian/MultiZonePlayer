@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using ExifLib;
 using System.Threading;
 using fastJSON;
+using System.Globalization;
+                        
 
 namespace MultiZonePlayer {
 	public abstract class PlaylistBase {
@@ -378,7 +380,11 @@ namespace MultiZonePlayer {
                 if (Comment.Contains(IniFile.MEDIA_TAG_PLAYDATE)) {
                     parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYDATE, "" + Constants.MULTI_ENTRY_SEPARATOR);
                     if (!DateTime.TryParse(parameter, out p_playdate)) {
-                        MLog.LogInfo("Error reading PlayDate tag value from comment=" + Comment + " on file=" + SourceURL);
+                        if (!DateTime.TryParseExact(parameter, Constants.DATETIME_DB_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.None, out p_playdate)){
+                            if (!DateTime.TryParseExact(parameter, "MM/dd/yyyy h:mm:ss tt", CultureInfo.InvariantCulture, DateTimeStyles.None, out p_playdate)) {
+                                MLog.LogInfo("Error reading PlayDate tag value from comment=" + Comment + " on file=" + SourceURL);
+                            }
+                        }
                     }
                 }
 
@@ -469,9 +475,9 @@ namespace MultiZonePlayer {
 
                     parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYDATE, "" + Constants.MULTI_ENTRY_SEPARATOR);
                     if (parameter == null)
-                        Comment += IniFile.MEDIA_TAG_PLAYDATE + LastPlayDate.ToString() + Constants.MULTI_ENTRY_SEPARATOR;
+                        Comment += IniFile.MEDIA_TAG_PLAYDATE + LastPlayDate.ToString(Constants.DATETIME_DB_FORMAT) + Constants.MULTI_ENTRY_SEPARATOR;
                     else
-                        Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYDATE + parameter, IniFile.MEDIA_TAG_PLAYDATE + LastPlayDate);
+                        Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYDATE + parameter, IniFile.MEDIA_TAG_PLAYDATE + LastPlayDate.ToString(Constants.DATETIME_DB_FORMAT));
 				}
 
 				m_tagFile.Tag.Comment = Comment;

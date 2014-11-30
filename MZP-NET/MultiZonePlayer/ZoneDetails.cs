@@ -39,6 +39,7 @@ namespace MultiZonePlayer {
 		[Category("Edit"), Description("format widthXheight")]
 		public String CameraResolution = "";
 		public Boolean HasSpeakers = false;
+        public Boolean HasSpeakersCapability = false;
 		[Category("Edit")]
 		public int DefaultVolumePercent;
 		[Category("Edit")]
@@ -1103,6 +1104,11 @@ namespace MultiZonePlayer {
 			get { return Math.Round(DateTime.Now.Subtract(m_lastHumSet).TotalMinutes).ToString(); }
 		}
 
+        public void CheckAndActivateSpeakers(){
+            if (!OutputDeviceAutoCompleted().Equals("")) {
+                HasSpeakers = true;
+            }
+        }
 
 		#endregion
 		public static void LoadFromIni() {
@@ -1156,10 +1162,12 @@ namespace MultiZonePlayer {
 
 					OutputDeviceUserSelected = zonestorage.OutputDeviceUserSelected;
 					OutputKeywords = zonestorage.OutputKeywords;
-					//OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
-					if (!OutputDeviceAutoCompleted().Equals("")) {
-						HasSpeakers = true;
-					}
+                    if (OutputKeywords.Trim() != "") {
+                        HasSpeakersCapability = true;
+                        CheckAndActivateSpeakers();
+                        //OutputDeviceAutoCompleted = GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
+                        
+                    }
                     IsBluetoothOutputDevice = zonestorage.IsBluetoothOutputDevice;
 
 					WavedeviceIndex = GetWaveOutDeviceIndex(OutputKeywords);

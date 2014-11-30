@@ -182,13 +182,15 @@ namespace MultiZonePlayer
 
 			this.graphBuilder = (IGraphBuilder)new FilterGraph();
 
-#if DEBUG
+//#if DEBUG
 			rot = new DsROTEntry(this.graphBuilder);
-#endif
+            
+//#endif
 			hr = this.graphBuilder.AddSourceFilter(filename, "Input Source", out sourceFilter);
 			lastErrorMesg = filename;
 			DsError.ThrowExceptionForHR(hr);
 
+            
 			infiniteTeeFilter = (IBaseFilter)Marshal.BindToMoniker(DShowUtility.InfinitePinTeeFilter);
 			hr = this.graphBuilder.AddFilter(infiniteTeeFilter, "InfiniteTee");
 			DsError.ThrowExceptionForHR(hr);
@@ -210,6 +212,14 @@ namespace MultiZonePlayer
 
 			DShowUtility.GetFilterPins(sourceFilter, out pinCount, out pinList);
 			hr = this.graphBuilder.Render(pinList[0]);
+
+            /*if (filename.ToLower().Contains("dts")) {
+                IBaseFilter ac3filter = (IBaseFilter)Marshal.BindToMoniker(IniFile.PARAM_DTSFILTER_MONIKER[1]);
+                hr = this.graphBuilder.AddFilter(ac3filter, "AC3DTS");
+                DsError.ThrowExceptionForHR(hr);
+                DShowUtility.GetFilterPins(sourceFilter, out pinCount, out pinList);
+                hr = this.graphBuilder.Render(pinList[0]);
+            }*/
 
 			DShowUtility.GetFilterPins(infiniteTeeFilter, out pinCount, out pinList);
 			for (int i = 0; i < zoneForm.GetClonedZones().Count + 1; i++)
@@ -264,6 +274,9 @@ namespace MultiZonePlayer
         
 			}
 			*/
+            // Now that the filter has been added to the graph and we have
+            // rendered its stream, we can release this reference to the filter.
+            Marshal.ReleaseComObject(sourceFilter);
 
 			// Complete window initialization
 			//CheckSizeMenu(menuFileSizeNormal);

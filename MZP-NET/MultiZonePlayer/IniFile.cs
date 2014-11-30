@@ -80,7 +80,7 @@ namespace MultiZonePlayer
 			
             public const String DEFAULT_EXT_PLAYLIST = ".m3u";
             public const String POPM_CREATOR_NAME = "MZP";
-            public static String[] MUSIC_EXTENSION = new String[] { "mp3", "wav", "flac", "wma" };
+            public static String[] MUSIC_EXTENSION = new String[] { "wav", "flac", "wma", "mp3" };
 			public static String[] PICTURE_EXTENSION = new String[] { "jpg", "bmp", "png" };
 #if DEBUG
             public static String[] VIDEO_EXTENSION = new String[] {"mp4" };
@@ -260,6 +260,8 @@ namespace MultiZonePlayer
 
             public static String[] PARAM_SQLITEDB_PATH = new String[] { "PARAM_SQLITEDB_PATH", "c:\\sqlite\\Sensors.db3", "sqlite database full path and filename" };
 
+            public static String[] PARAM_DTSFILTER_MONIKER = new String[] { "PARAM_DTSFILTER_MONIKER", "@device:sw:{083863F1-70DE-11D0-BD40-00A0C911CE86}\\{A753A1EC-973E-4718-AF8E-A3F554D45C44}" };
+
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
@@ -365,7 +367,8 @@ namespace MultiZonePlayer
 				PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD,
 				PARAM_RECENT_RUN_INTERVAL_MINUTES,
 				PARAM_TEMP_TRESHHOLD,
-                PARAM_SQLITEDB_PATH
+                PARAM_SQLITEDB_PATH,
+                PARAM_DTSFILTER_MONIKER
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;
