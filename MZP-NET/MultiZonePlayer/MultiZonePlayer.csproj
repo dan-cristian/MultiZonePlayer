@@ -367,6 +367,7 @@
       <DependentUpon>ZonesForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="App.config" />
+    <None Include="Documentation\1wire-wiring.odg" />
     <None Include="MultiZonePlayer.ini" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -403,7 +404,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Documentation\" />
     <Folder Include="Icons\" />
     <Folder Include="Reports\" />
     <Folder Include="Tests\" />
@@ -412,6 +412,7 @@
     <None Include="Rules.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="Documentation\raspberry setup.txt" />
     <Content Include="favicon.ico" />
     <Content Include="Scripts\alert.vbs" />
   </ItemGroup>

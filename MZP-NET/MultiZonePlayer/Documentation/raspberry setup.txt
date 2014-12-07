@@ -1,0 +1,33 @@
+#enable camera
+
+#http://www.raspberrypi.org/documentation/configuration/camera.md
+sudo apt-get update
+sudo apt-get upgrade
+
+#http://www.raspberrypi.org/forums/viewtopic.php?f=43&t=63276
+sudo apt-get dist-upgrade
+sudo rpi-update
+
+#http://www.raspberrypi.org/forums/viewtopic.php?f=43&t=61771
+sudo apt-get install cmake
+git clone https://github.com/silvanmelchior/userland.git
+cd userland
+./buildme
+sudo ln -s /opt/vc/bin/raspimjpeg /usr/bin/raspimjpeg
+
+git clone https://github.com/silvanmelchior/RPi_Cam_Web_Interface.git
+cd RPi_Cam_Web_Interface
+chmod u+x RPi_Cam_Web_Interface_Installer.sh
+
+#hotspot
+#http://www.daveconroy.com/turn-your-raspberry-pi-into-a-wifi-hotspot-with-edimax-nano-usb-ew-7811un-rtl8188cus-chipset/
+
+#BLE
+http://www.theregister.co.uk/2013/11/29/feature_diy_apple_ibeacons/
+http://www.forum-raspberrypi.de/Thread-raspbian-bluez-5-x-kann-nicht-erstellt-werden
+
+#syslog
+add line last row in "/etc/rsyslog.conf"
+*.*	@192.168.0.10:514
+
+#startup: http://raspberrywebserver.com/serveradmin/run-a-script-on-start-up.html

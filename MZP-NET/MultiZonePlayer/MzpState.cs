@@ -62,6 +62,7 @@ namespace MultiZonePlayer {
 		private SysLog m_syslog;
 		private ScriptingRule m_rule = new ScriptingRule();
 		private MacroEntry m_macro = new MacroEntry();
+        private RemoteHotSpot m_remotehotspot = new RemoteHotSpot();
 		private Boolean m_homeMessageActive = false;
 		private String m_homeMessage = "";
 		public ScriptingRule ScriptRule {
@@ -138,6 +139,7 @@ namespace MultiZonePlayer {
 			LoadSystemAndUserControls();
 			UtilityCost.LoadFromIni();
 			LightSensor.LoadFromIni();
+            m_remotehotspot.LoadFromIni(IniFile.INI_SECTION_REMOTEHOTSPOT);
 
 			MLog.Log(this, "Retrieving system available audio input devices");
 			DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
@@ -308,6 +310,7 @@ namespace MultiZonePlayer {
 				}
 				UtilityCost.SaveAllToIni();
 				LightSensor.SaveAllToIni();
+                m_remotehotspot.SaveAllToIni();
 				m_rule.SaveAllToIni();
 				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
@@ -535,6 +538,15 @@ namespace MultiZonePlayer {
 		public List<LightSensor> LightSensorList {
 			get { return LightSensor.StaticInstance.ValueList.Select(x => (LightSensor)x).ToList(); }
 		}
+
+        public RemoteHotSpot RemoteHotSpot{
+            get {
+                return (RemoteHotSpot)MultiZonePlayer.RemoteHotSpot.StaticInstance(typeof(MultiZonePlayer.RemoteHotSpot));
+            }
+        }
+        public List<RemoteHotSpot> RemoteHotSpotList {
+            get { return RemoteHotSpot.ValueList.Select(x => (RemoteHotSpot)x).ToList(); }
+        }
 
 		public ScriptingRule ScriptingRule {
 			get {
@@ -1362,13 +1374,13 @@ namespace MultiZonePlayer {
 			Performance.Create("Check Local Wifi", false, "",
 				Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
 			startDisc = DateTime.Now;
-			UserPresence.CheckRemoteWifi();
-			Performance.Create("Check Remote Wifi", false, "",
+			UserPresence.CheckRemoteWifiBT();
+			Performance.Create("Check Remote Wifi & BT", false, "",
 				Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
 			startDisc = DateTime.Now;
-			UserPresence.CheckRemoteBluetooth();
-			Performance.Create("Check Remote BT", false, "",
-				Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
+			//UserPresence.CheckRemoteBluetooth();
+			//Performance.Create("Check Remote BT", false, "",
+			//	Performance.PerformanceFlags.Speed, DateTime.Now.Subtract(startDisc).TotalMilliseconds);
 
 			Utilities.InternetConnectionState istate = Utilities.InternetConnectionState.INTERNET_CONNECTION_OFFLINE;
 			Utilities.InternetGetConnectedState(ref istate, 0);

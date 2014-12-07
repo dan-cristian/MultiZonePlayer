@@ -407,6 +407,9 @@ namespace MultiZonePlayer
 																					if (value.ToString().Contains(typeof(MacroEntry).ToString()))
 																						value = ((List<MacroEntry>)value)[Convert.ToInt32(parameters[0])];
 																					else
+                                                                                        if (value.ToString().Contains(typeof(RemoteHotSpot).ToString()))
+                                                                                            value = ((List<RemoteHotSpot>)value)[Convert.ToInt32(parameters[0])];
+                                                                                        else
 									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
 										exception = "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString();

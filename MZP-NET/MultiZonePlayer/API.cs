@@ -468,6 +468,11 @@ namespace MultiZonePlayer
 									MacroEntry.Add(macr, IniFile.INI_SECTION_MACRO);
 									macr.Name = "Default Macro " + macr.Id;
 									break;
+                                case "RemoteHotSpot":
+                                    RemoteHotSpot remote = new RemoteHotSpot();
+                                    remote.Name = "Default Remote " + remote.Id;
+                                    RemoteHotSpot.Add(remote, IniFile.INI_SECTION_REMOTEHOTSPOT);
+                                    break;
 								default:
 									Alert.CreateAlert("Error, classname not recognised on create field, class=" + classname, true);
 									break;

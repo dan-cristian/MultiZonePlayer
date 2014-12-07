@@ -77,6 +77,7 @@ namespace MultiZonePlayer
             public const String INI_SECTION_MUSICSCHEDULE = "MusicSchedule";
 			public const String INI_SECTION_SCRIPTINGRULES = "ScriptingRules";
 			public const String INI_SECTION_MACRO = "Macros";
+            public const String INI_SECTION_REMOTEHOTSPOT = "RemoteHotSpot";
 			
             public const String DEFAULT_EXT_PLAYLIST = ".m3u";
             public const String POPM_CREATOR_NAME = "MZP";
@@ -237,9 +238,9 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ROUTER_USER_NAME = new String[] { "PARAM_ROUTER_USER_NAME", "root", "User name for router" };
 			public static String[] PARAM_ROUTER_USER_PASS = new String[] { "PARAM_ROUTER_USER_PASS", "abcd1234", "router pass" };
 
-			public static String[] PARAM_REMOTE_SERVER_LIST = new String[] { "PARAM_REMOTE_SERVER_LIST", "http://192.168.0.110/", "URL list of remote servers (PIs) comma separated" };
-			public static String[] PARAM_REMOTE_SERVER_BT_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_BT_STATUS_FILE", "btstat.txt", "file name with BT status" };
-			public static String[] PARAM_REMOTE_SERVER_WIFI_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_WIFI_STATUS_FILE", "wifi.txt", "file name with wifi status" };
+            //public static String[] PARAM_REMOTE_SERVER_LIST = new String[] { "PARAM_REMOTE_SERVER_LIST", "http://192.168.0.111/,http://192.168.0.114/ ", "URL list of remote servers (PIs) comma separated" };
+			//public static String[] PARAM_REMOTE_SERVER_BT_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_BT_STATUS_FILE", "btstat.txt", "file name with BT status" };
+			//public static String[] PARAM_REMOTE_SERVER_WIFI_STATUS_FILE = new String[] { "PARAM_REMOTE_SERVER_WIFI_STATUS_FILE", "wifi.txt", "file name with wifi status" };
 
 			public static String[] PARAM_CLOSE_ACTIVE_ZONE_MUSIC = new String[] { "PARAM_CLOSE_ACTIVE_ZONE_MUSIC", "30", "minutes of user inactivity after which an active zone of type x will be closed" };
 			public static String[] PARAM_CLOSE_ACTIVE_ZONE_TV = new String[] { "PARAM_CLOSE_ACTIVE_ZONE_TV", "60", "minutes of user inactivity after which an active zone of type x will be closed" };
@@ -352,9 +353,9 @@ namespace MultiZonePlayer
 				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL,
 				PARAM_ROUTER_ACTIVE_WIFI_CLIENTS_URL_CUSTOM,
 				PARAM_ROUTER_LOGOUT_URL,
-				PARAM_REMOTE_SERVER_LIST,
-				PARAM_REMOTE_SERVER_BT_STATUS_FILE,
-				PARAM_REMOTE_SERVER_WIFI_STATUS_FILE,
+				//PARAM_REMOTE_SERVER_LIST,
+				//PARAM_REMOTE_SERVER_BT_STATUS_FILE,
+				//PARAM_REMOTE_SERVER_WIFI_STATUS_FILE,
 				PARAM_CLOSE_ACTIVE_ZONE_MUSIC,
 				PARAM_CLOSE_ACTIVE_ZONE_TV,
 				PARAM_CLOSE_ACTIVE_ZONE_VIDEO,

@@ -433,7 +433,7 @@ namespace MultiZonePlayer {
 					ScriptingRule.ExecuteRule(up, "User arrived on " + type + " user=" + user.Name);
 				}
 				else
-					MLog.Log(null, "Warning, Ignoring user presence when adding usr=" + user);
+					MLog.Log(null, "Warning, Ignoring presence when adding user=" + user.Name + " loc="+location + " date="+presenceDate.ToString());
 			}
 			return added;
 		}
@@ -538,7 +538,7 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public static void CheckRemoteBluetooth() {
+		/*public static void CheckRemoteBluetooth() {
             try {
                 if (ZoneDetails.ZoneDetailsList.Find(x => x.IsActive && x.IsBluetoothOutputDevice) == null) {
                     //scan remote only when no active zone with a BT audio device. if this scan runs periodic disconnect will be detected
@@ -585,7 +585,7 @@ namespace MultiZonePlayer {
             catch (Exception ex) {
                 MLog.Log(null, "CheckRemote Bluetooth error " + ex.Message);
             }
-		}
+		}*/
 
 		private static void UpdateWifiDevices(List<String> currentList, DateTime presenceDate, String location) {
 			User user;
@@ -656,9 +656,9 @@ namespace MultiZonePlayer {
 			}
 		}
 
-		public static void CheckRemoteWifi() {
+		public static void CheckRemoteWifiBT() {
 			try {
-				// based on linux iwevent output format
+				// based on linux iwevent output format - usually time zone is not working, 2 hrs behind
 				//Waiting for Wireless Events from interfaces...
 				//20:51:28.014276   wlan0    Expired node:00:13:02:40:68:56
 				//20:51:34.973318   wlan0    Registered node:00:13:02:40:68:56
@@ -668,7 +668,93 @@ namespace MultiZonePlayer {
 				System.Net.NetworkInformation.Ping pingSender = new System.Net.NetworkInformation.Ping();
 				System.Net.NetworkInformation.PingReply pingReply;
 				string host;
+
+                foreach (RemoteHotSpot remote in RemoteHotSpot.ValueList) {
+                    try {
+                        if (MZPState.Instance == null)
+                            break;
+                        host = new Uri(remote.BaseURL).Host;
+                        pingReply = pingSender.Send(host, 1000);
+                        if (pingReply.Status == System.Net.NetworkInformation.IPStatus.Success) {
+                            
+                            switch (remote.HotSpotType){
+                                case HotSpotType.RaspberryPI:
+                                    String webdata = web.DownloadString(remote.BaseURL + remote.WifiFileName);
+                                    String[] btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                                    var query1 = from line in btlist
+                                                 let data = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                                 select new {
+                                                     Time = data[0],
+                                                     Interface = data[1],
+                                                     Action = data[2],
+                                                     Address = data[3].SplitTwo("node:")[data[3].SplitTwo("node:").Length - 1]
+                                                 };
+
+                                    addedIncrement = query1.ToList().FindAll(x => x.Action == "Registered")
+                                            .OrderByDescending(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
+                                    removedIncrement = query1.ToList().FindAll(x => x.Action == "Expired")
+                                            .OrderBy(y => y.Time).Select(z => z.Address.ToUpper()).Distinct().ToList();
+
+                                    //remove expired entries that have a recent registered
+                                    foreach (string address in addedIncrement) {
+                                        if (removedIncrement.Contains(address.ToUpper())){
+                                            List<String> timeremoved = query1.ToList().FindAll(x => x.Action == "Expired" && x.Address.ToUpper() == address.ToUpper())
+                                                .OrderByDescending(y => y.Time).Select(z => z.Time).ToList();
+                                            List<String> timeadded = query1.ToList().FindAll(x => x.Action == "Registered" && x.Address.ToUpper() == address.ToUpper())
+                                                .OrderByDescending(y => y.Time).Select(z => z.Time).ToList();
+                                            if (timeadded.Count > 0 && timeremoved.Count > 0) {
+                                                if (timeadded[0].CompareTo(timeremoved[0])>0)
+                                                    removedIncrement.Remove(address);
+                                            }
+                                            
+                                        }
+
+                                    }
+
+                                    List<String> currentList;
+                                    if (addedIncrement != null)
+                                        currentList = addedIncrement.Except(removedIncrement).ToList();
+                                    else
+                                        currentList = new List<String>();
+                                    //fix for 2 hrs difference
+                                    UpdateWifiDevices(currentList, DateTime.Now.AddHours(2), remote.BaseURL);
+
+                                    //Check BT
+                                    if (ZoneDetails.ZoneDetailsList.Find(x => x.IsActive && x.IsBluetoothOutputDevice) == null) {
+                                    //scan remote only when no active zone with a BT audio device. if this scan runs periodic disconnect will be detected
+                                    //based on custom script loopforbt.sh:
+                                    //68:ED:43:08:10:40 Dan,2013-12-04 23:01:28
+                                    //
+                                        DateTime presenceDate;
+                                        webdata = web.DownloadString(remote.BaseURL+remote.BTFileName);
+                                        btlist = webdata.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                                        var query2 = from line in btlist
+                                                     let data = line.Split(',')
+                                                     select new {
+                                                         BTAddress = data[0].Split(' ')[0],
+                                                         Date = data[1]
+                                                     };
+                                        currentList = query2.Select(x => x.BTAddress).ToList();
+                                        if (query2.ToList().Count > 0)
+                                            presenceDate = Convert.ToDateTime(query2.ToList()[0].Date);
+                                        else
+                                            presenceDate = DateTime.Now;
+                                        UpdateBTDevices(currentList, presenceDate, remote.BaseURL);
+                                    }
+                                    break;
+                                case HotSpotType.Undefined:
+                                    Alert.CreateAlertOnce("Undefined remotehotspot "+ remote.BaseURL, "undefremote");
+                                    break;
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        MLog.Log(null, "Download remote WIFI or BT file for url=" + remote.BaseURL + " error=" + e.Message);
+                    }
+                }
+
 				//DateTime presenceDate;
+                /*
 				String[] urllist = IniFile.PARAM_REMOTE_SERVER_LIST[1].Split(',');
 				foreach (String url in urllist) {
 					try {
@@ -706,12 +792,13 @@ namespace MultiZonePlayer {
 								presenceDate = DateTime.Now;
 							UpdateBTDevices(currentList, presenceDate, url);
 							 */
+                /*
 						}
 					}
 					catch (Exception e) {
 						MLog.Log(null, "Download remote WIFI file for url=" + url + " error=" + e.Message);
 					}
-				}
+				}*/
 			}
 			catch (Exception ex) {
 				MLog.Log(null, "CheckRemote Wifi error " + ex.Message);
@@ -878,6 +965,30 @@ namespace MultiZonePlayer {
 			}
 		}
 	}
+
+    public class RemoteHotSpot : PersistentObject {
+        [Category("Edit")]
+        public String Name;
+        [Category("Edit")]
+        public bool IsActive = true;
+        [Category("Edit"), Description("like http://192.168.0.111/, end with slash always")]
+        public string BaseURL;
+        [Category("Edit"), Description("just file name, like wifi.txt")]
+        public string WifiFileName = "wifi.txt";
+        [Category("Edit")]
+        public string BTFileName = "btstat.txt";
+        [Category("Edit")]
+        public HotSpotType HotSpotType = HotSpotType.RaspberryPI;
+
+        public static new List<RemoteHotSpot> ValueList {
+            get {
+                if (GetValueList(typeof(RemoteHotSpot)) != null)
+                    return GetValueList(typeof(RemoteHotSpot)).Select(x => (RemoteHotSpot)x).ToList();
+                else return null;
+            }
+        }
+
+    }
 
 	public class PersistentObject {
 		private class ObjectStored{

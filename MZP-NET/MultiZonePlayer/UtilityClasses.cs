@@ -1672,6 +1672,11 @@ namespace MultiZonePlayer
 		Undefined
     }
 
+    public enum HotSpotType {
+        RaspberryPI,
+        Undefined
+    }
+
     public class MZPEvent
     {
         public enum EventType
