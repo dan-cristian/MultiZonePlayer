@@ -899,6 +899,14 @@ namespace MultiZonePlayer {
 				int.TryParse(IniFile.PARAM_CLOSE_ACTIVE_ZONE_TV[1], out tvInactivity);
 				int.TryParse(IniFile.PARAM_CLOSE_INACTIVE_ZONE[1], out inactiveZone);
 
+
+                bool isAlarm = false;
+                if (ZoneGeneric!=null && ZoneGeneric.MainZoneActivity!= null){
+                    if (ZoneGeneric.MainZoneActivity.GetType()==typeof(MusicActivity)){
+                        isAlarm = ((MusicActivity)ZoneGeneric.MainZoneActivity).IsAlarm;
+                    }
+                }
+                
 				//close if no recent activity detected on an active zone, except tv & video
 				if (ActivityType != GlobalCommands.nul) {
 					if (IsActive) {
@@ -918,7 +926,7 @@ namespace MultiZonePlayer {
 								duration = 60;
 								break;
 						}
-						if (DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes >= duration && LastMovementAge.TotalMinutes > 5) {
+						if (DateTime.Now.Subtract(LastLocalCommandDateTime).TotalMinutes >= duration && (LastMovementAge.TotalMinutes > 5 && !isAlarm)) {
 							toBeStopped = true;
 							MLog.Log(this, "zone to be CLOSED is active but no move for 5 mins and for too long than duration mins="+duration);
 						}

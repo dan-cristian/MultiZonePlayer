@@ -286,8 +286,8 @@ namespace MultiZonePlayer
 
         public override void PowerOn(int zoneId)
         {
-            if (!IsPowerOn(zoneId))
-            {
+            if (!IsPowerOn(zoneId)){
+                MLog.Log(this, "Power ON started zoneid = " + zoneId + " Index count=" + GetSocketIndexForZone(zoneId).Length);
 				AutoResetEvent ev = new AutoResetEvent(false);
                 Thread th = new Thread(() => PowerOnSync(zoneId, ev));
                 th.Name = "PowerOn zoneid=" + zoneId;
@@ -304,9 +304,7 @@ namespace MultiZonePlayer
 
         private bool PowerOnSync(int zoneId, AutoResetEvent ev)
         {
-			lock (m_usb8Relay)
-			{
-				MLog.Log(this, "Power ON started zoneid = " + zoneId + " Index count=" + GetSocketIndexForZone(zoneId).Length);
+			lock (m_usb8Relay){
 				Open();
 				String status = SendPowerCommand(zoneId, "1").ToString();
 				LogDebugInfo();
@@ -319,6 +317,7 @@ namespace MultiZonePlayer
 
         public override void PowerOff()
         {
+            MLog.Log(this, "Power OFF All started");
             AutoResetEvent ev = new AutoResetEvent(false);
 			Thread th = new Thread(() => PowerOffSync(ev));
             th.Name = "PowerOff zoneid=all";
@@ -335,8 +334,8 @@ namespace MultiZonePlayer
         public override void PowerOff(int zoneId)
         {
             //making an async call
-            if (IsPowerOn(zoneId))
-            {
+            if (IsPowerOn(zoneId)){
+                MLog.Log(this, "Power OFF started zoneid = " + zoneId + " Index=" + GetSocketIndexForZone(zoneId));
 				AutoResetEvent ev = new AutoResetEvent(false);
                 Thread th = new Thread(() => PowerOffSync(zoneId, ev));
                 th.Name = "PowerOff zoneid="+zoneId;
@@ -353,9 +352,7 @@ namespace MultiZonePlayer
 
         private bool PowerOffSync(int zoneId, AutoResetEvent ev)
         {
-			lock (m_usb8Relay)
-			{
-				MLog.Log(this, "Power OFF started zoneid = " + zoneId + " Index=" + GetSocketIndexForZone(zoneId));
+			lock (m_usb8Relay){
 				Open();
 				String status = SendPowerCommand(zoneId, "0").ToString();
 				LogDebugInfo();
@@ -368,10 +365,7 @@ namespace MultiZonePlayer
 
         private bool PowerOffSync(AutoResetEvent ev)
         {
-
-			lock (m_usb8Relay)
-			{
-				MLog.Log(this, "Power OFF All started");
+			lock (m_usb8Relay) {
 				Open();
 				String status = SendPowerCommand(STATE_ALL_OFF).ToString();
 				LogDebugInfo();

@@ -22,13 +22,14 @@
 <%%>
 </table><br />
 <table style="border-width:1px;border-color:Black;border-style:inset">
-<tr class="Header"><td>Connected Users</td><td>User</td><td>Type</td><td>BT Date</td><td>Wifi Date</td></tr>
+<tr class="Header"><td>Connected Users</td><td>User</td><td>Type</td><td>BT Date</td><td>Wifi Date</td><td>Location</td></tr>
 <%for;i;0;++;#S.UserPresenceList.Count#;%>
 <tr><td><button class="Small" onclick="window.open('?command=nul&id=#S.UserPresenceList.?,%i.User.Id#','_self')">?</button></td>
 <td>#S.UserPresenceList.?,%i.User.Name#</td>
 <td>#S.UserPresenceList.?,%i.Type#</td>
 <td>last at #S.UserPresenceList.?,%i.LastBTActiveDate#, lost=#S.UserPresenceList.?,%i.BTLostContactCount#</td>
 <td>last at #S.UserPresenceList.?,%i.LastWifiActiveDate#, lost=#S.UserPresenceList.?,%i.WifiLostContactCount#</td>
+<td>#S.UserPresenceList.?,%i.User.Location#</td>
 </tr>
 <%%>
 </table>
