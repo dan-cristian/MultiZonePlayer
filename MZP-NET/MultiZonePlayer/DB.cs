@@ -180,15 +180,21 @@ namespace MultiZonePlayer {
                 try {
                     MLog.LogSql(cmd.CommandText + " ["+parameters+"]");
                     retval = cmd.ExecuteNonQuery();
-                    if (retval != 1)
+                    if (retval != 1) {
                         MLog.Log("Row in DB table " + tablename + " NOT inserted!");
+                        trans.Rollback();
+                    }
+                    else {
+                        trans.Commit();
+                        MLog.LogSql("INSERT OK");
+                    }
                 }
                 catch (Exception ex) {
                     MLog.Log("Error inserting row in table " + tablename + " err=" + ex.Message);
+                    MLog.LogSql("INSERT NOT OK: " + ex.Message);
                     trans.Rollback();
                 }
                 finally {
-                    trans.Commit();
                     cmd.Dispose();
                     m_dbcon.Close();
                 }

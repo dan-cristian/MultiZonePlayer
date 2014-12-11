@@ -468,6 +468,7 @@ namespace MultiZonePlayer
                                     maxwatts = Math.Max(maxwatts, yvalue);
                                     break;
                                 case Constants.CAPABILITY_WATER:
+                                case Constants.CAPABILITY_GAS:
                                     yvalue = row.Field<double>(DB.COL_COUNTER_MAINUNIT);
                                     series1.Points.AddXY(row.Field<DateTime>(DB.COL_COUNTER_DATETIME), yvalue);
                                     value += yvalue;
@@ -484,6 +485,7 @@ namespace MultiZonePlayer
                                     + " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
                                 break;
                             case Constants.CAPABILITY_WATER:
+                            case Constants.CAPABILITY_GAS:
                                 series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min=" + minY + " max=" + maxY;
                                 break;
                         }

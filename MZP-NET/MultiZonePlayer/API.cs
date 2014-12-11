@@ -401,7 +401,7 @@ namespace MultiZonePlayer
 							if (vals.GetValue(GlobalParams.direction) != null)
 								direction = Convert.ToInt16(vals.GetValue(GlobalParams.direction));
 							SimpleGraph graph = new SimpleGraph(type == "temphum", type == "closure", type == Constants.CAPABILITY_VOLTAGE,
-								type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER, type==Constants.CAPABILITY_ERROR);
+                                type == Constants.CAPABILITY_ELECTRICITY || type == Constants.CAPABILITY_WATER || type == Constants.CAPABILITY_GAS, type == Constants.CAPABILITY_ERROR);
 							String zoneStringList = vals.GetValue(GlobalParams.zoneid);
 							List<int> zoneIdList = new List<int>();
 							if (zoneStringList != null && zoneStringList.Contains(",")) {
@@ -419,6 +419,7 @@ namespace MultiZonePlayer
                                     break;
                                 case Constants.CAPABILITY_ELECTRICITY :
                                 case Constants.CAPABILITY_WATER:
+                                case Constants.CAPABILITY_GAS:
                                     graph.ShowDBCounterGraph(-1, "all", ageHours, type, direction);
                                     break;
                                 case Constants.CAPABILITY_ERROR:
