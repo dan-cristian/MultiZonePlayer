@@ -8,6 +8,7 @@
 <script type="text/JavaScript">
 	function loadAll(){
 	    ajaxCall('electricity', 'zone-graph-general.html?command=generatefullgraph&zoneid=-1&interval=24&type=Electricity&targetdiv=electricity');
+	    ajaxCall('gas',         'zone-graph-general.html?command=generatefullgraph&zoneid=-1&interval=24&type=Gas&targetdiv=gas');
 	    ajaxCall('water',       'zone-graph-general.html?command=generatefullgraph&zoneid=-1&interval=24&type=Water&targetdiv=water');
 		ajaxCall('voltage',     'zone-graph-general.html?command=generatefullgraph&zoneid=-1&interval=24&type=Voltage&targetdiv=voltage');
 		ajaxCall('temphum',     'zone-graph-general.html?command=generatefullgraph&zoneid=27,25,38&interval=24&type=temphum&targetdiv=temphum');
@@ -19,6 +20,7 @@
 <br />
 <div id="camera"></div>
 <div id="electricity"></div>
+<div id="gas"></div>
 <div id="water"></div>
 <div id="temphum"></div>
 <div id="voltage"></div>
