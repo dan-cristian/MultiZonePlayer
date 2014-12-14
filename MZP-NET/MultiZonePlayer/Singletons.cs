@@ -811,6 +811,8 @@ namespace MultiZonePlayer {
 		public EnumUtilityType Name;
 		[Category("Edit")]
 		public double UnitCost;
+        [Category("Edit"), Description("Describe the unit price (e.g. price per liter)")]
+        public double Description;
 
 		protected static List<Singleton> m_valueList = new List<Singleton>();
 

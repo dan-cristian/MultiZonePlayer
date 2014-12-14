@@ -434,11 +434,13 @@ namespace MultiZonePlayer
                 System.Windows.Forms.DataVisualization.Charting.Series[] series = new System.Windows.Forms.DataVisualization.Charting.Series[zoneCount];
                 System.Windows.Forms.DataVisualization.Charting.Series series1;
                 DataTable records;
+                ZoneDetails zone;
                 for (int i = 0; i < zoneCount; i++) {
                     records = DB.GetDataTable(DB.QUERYNAME_COUNTER_RECORDS, DB.PARAM_ZONEID, zoneList[i].ToString(),
                         DB.PARAM_START_DATETIME, m_lastUtilityReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
                         DB.PARAM_END_DATETIME, m_lastUtilityReference.ToString(Constants.DATETIME_DB_FORMAT),
                         DB.PARAMS.type.ToString(), utilityType);
+                    zone = ZoneDetails.GetZoneById(zoneList[i]);
                     double minY = double.MaxValue, maxY = double.MinValue;
                     if (records.Rows.Count > 0) {
                         series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
@@ -482,11 +484,13 @@ namespace MultiZonePlayer
                             case Constants.CAPABILITY_ELECTRICITY:
                                 avgwatts = totalwatts / records.Rows.Count;
                                 series1.Name = "units=" + Math.Round(value, 0) + " cost=" + Math.Round(cost, 0) 
-                                    + " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0);
+                                    + " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0)
+                                    + " unit="+zone.PulseMainUnitType;
                                 break;
                             case Constants.CAPABILITY_WATER:
                             case Constants.CAPABILITY_GAS:
-                                series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min=" + minY + " max=" + maxY;
+                                series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min=" + minY + " max=" + maxY 
+                                    +" unit=" + zone.PulseMainUnitType;
                                 break;
                         }
                         if (zoneId == -1)
