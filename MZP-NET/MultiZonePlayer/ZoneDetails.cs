@@ -108,6 +108,7 @@ namespace MultiZonePlayer {
 		public ulong LastCounterCount = 0;
 		public DateTime LastPulseSamplingStart = DateTime.Now;
         private DateTime m_lastCounterWriteToDB = DateTime.MinValue;
+        private Boolean m_counterZeroUnitNeedsRecord = true;
 		//private DateTime m_lastCounterSamplingStart = DateTime.Now;
 		[Category("Edit")]
 		public String PulseMainUnitType = "";
@@ -376,7 +377,10 @@ namespace MultiZonePlayer {
 							+ " counterdelta=" + PulseCountInTimeSample + " in zone " + ZoneName + " lastpulsesampling="+LastPulseSamplingStart, true);
 					}
 
-                    if (PulseCountInTimeSample != 0 || DateTime.Now.Subtract(m_lastCounterWriteToDB).TotalHours>=1) {//do not write if no pulses were recorded, but write one record per hour just in case
+                    if ((PulseCountInTimeSample != 0 || m_counterZeroUnitNeedsRecord) || DateTime.Now.Subtract(m_lastCounterWriteToDB).TotalHours>=1) {//do not write if no pulses were recorded, but write one record per hour just in case
+                        //record first 0 consumption then stop recording zeros for a while
+                        m_counterZeroUnitNeedsRecord = (PulseCountInTimeSample != 0);
+                    
                         UtilityCost utilCost = UtilityCost.UtilityCostList.Find(x => x.Name.Equals(UtilityType));
                         // TODO: split consumption evenly when PC down for long
                         //PulseMainUnitsCount += PulseLastMainUnitsCount;
@@ -433,7 +437,7 @@ namespace MultiZonePlayer {
                         }
                     }
 					LastPulseSamplingStart = DateTime.Now;
-					PulseCountInTimeSample = 0;
+                    PulseCountInTimeSample = 0;
 					SaveEntryToIni();//save in case of power outage
 				}
 				else {
