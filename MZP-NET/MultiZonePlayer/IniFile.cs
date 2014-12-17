@@ -213,6 +213,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS = new String[] { "PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS", "BlackBerry 9360","list of values separated by |" };
 
             public static String[] PARAM_XBMC_PROCESS_NAME = new String[] { "PARAM_XBMC_PROCESS_NAME", "XBMC" };
+            public static String[] PARAM_XBMC_MAINWINDOW_NAME = new String[] { "PARAM_XBMC_MAINWINDOW_NAME", "Kodi", "Window and Class name of this player, used for window on foreground detection" };
             public static String[] PARAM_XBMC_APP_PATH = new String[] { "PARAM_XBMC_APP_PATH", "c:\\Program Files (x86)\\XBMC\\XBMC.exe" };
             public static String[] PARAM_BOOT_TIME_SECONDS = new String[] { "PARAM_BOOT_TIME_SECONDS", "30" };
 
@@ -337,6 +338,7 @@ namespace MultiZonePlayer
                 PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS,
                 PARAM_XBMC_PROCESS_NAME,
                 PARAM_XBMC_APP_PATH,
+                PARAM_XBMC_MAINWINDOW_NAME,
                 PARAM_BOOT_TIME_SECONDS,
 				PARAM_LASTFM_API_KEY,
 				PARAM_LASTFM_SECRET_KEY,
@@ -389,50 +391,32 @@ namespace MultiZonePlayer
             /// Key Name
             /// <PARAM name="Value"></PARAM>
             /// Value Name
-            public static void IniWriteValuetoTemp(string Section, string Key, string Value)
-            {
-                /*if (m_iniTempPath == null)
-                    initPath();
-                
-                long res = Utilities.WritePrivateProfileString(Section, Key, Value, m_iniTempPath);
-                 */
-				if (Value == "") Value = ".";
-                IniWriteValuetoFinal(Section, Key, Value);
-            }
-
-            public static void IniWriteValuetoFinal(string Section, string Key, string Value)
-            {
-                if (m_iniTempPath == null)
-                    initPath();
-                if (Value == "") Value = ".";
-                long res = Utilities.WritePrivateProfileString(Section, Key, Value, m_iniFinalPath);
-            }
-
-            public static void IniBeginSave()
-            {
-                if (m_iniFinalPath == null)
-                    initPath();
-                try
-                {
-                    File.Delete(m_iniTempPath);
-                }
-                catch (Exception ex)
-                {
-                    MLog.Log(ex, "Cannot delete " + m_iniTempPath);
-                }
-            }
-
-            public static void IniCompleteSave()
-            {
-                try
-                {
-                    File.Delete(m_iniOldPath);
-                    File.Move(m_iniFinalPath, m_iniOldPath);
-                    File.Move(m_iniTempPath, m_iniFinalPath);
-                }
-                catch (Exception ex)
-                {
-                    MLog.Log(ex, "Cannot delete " + m_iniOldPath);
+            public static void IniWriteValue(string Section, string Key, string Value){
+                lock (m_iniFinalPath) {
+                    try {
+                        if (m_iniFinalPath == null)
+                            initPath();
+                        if (File.Exists(m_iniOldPath)) {
+                            File.Delete(m_iniOldPath);
+                        }
+                        if (File.Exists(m_iniTempPath)) {
+                            File.Move(m_iniTempPath, m_iniOldPath);
+                        }
+                        File.Copy(m_iniFinalPath, m_iniTempPath);
+                        if (Value == "") Value = ".";
+                        long res = Utilities.WritePrivateProfileString(Section, Key, Value, m_iniTempPath);
+                        try {
+                            File.Move(m_iniFinalPath, m_iniOldPath);
+                            File.Move(m_iniTempPath, m_iniFinalPath);
+                        }
+                        catch (Exception ex1) {
+                            Alert.CreateAlert("Potential error on commiting ini file, ex=" + ex1.Message, true);
+                            File.Move(m_iniTempPath, m_iniFinalPath);
+                        }
+                    }
+                    catch (Exception ex2) {
+                        Alert.CreateAlert("Potential error on saving ini file, ex=" + ex2.Message, true);
+                    }
                 }
             }
 

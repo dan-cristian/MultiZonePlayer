@@ -4,22 +4,28 @@ Loop
 Sleep 5000
 IfWinExist, ahk_class TPasswordDlg
 {	
+	;MsgBox Win1
 	ControlGet, OutputVar, Visible, , TEdit1, 1
 	if ErrorLevel {
-		;MsgBox There was a problem.
+		;MsgBox There was a problem getting login username field
 	}
 	else {
-		ControlSend TEdit1, master{Enter}, 1
+		;MsgBox Loging In text=%OutputVar%
+		ControlSetText TEdit1, master, 1
 		ControlSend TEdit2, 1234{Enter}, 1
 		WinWait ahk_class TMainForm
-		Sleep 2000
+		Sleep 5000
 		WinActivate
-		Send {Enter}
+		ControlSend TDBGrid1, {Enter}
+		;Send {Enter}
 		Sleep 5000
 		;WinMinimize
-		WinMove ,,100,100,300,300
+		;WinMove ,,100,100,300,300
 	}
 	
+}
+else {
+	;MsgBox No login box found
 }
 
 ifWinExist, ahk_class TMainForm
@@ -27,8 +33,10 @@ ifWinExist, ahk_class TMainForm
 	ControlGetText, OutputVar, TRzBitBtn1, 
 	If (OutputVar="`&Connect")
 	{
-		ControlClick, TRzBitBtn1,
+		Send {F6}
+		;ControlClick, TRzBitBtn1,
 		Sleep 5000
+		
 
 	}
 	else
@@ -49,11 +57,20 @@ ifWinExist, ahk_class TMainForm
 				ControlClick, X264 Y140
 				;Minimise
 				Sleep 1000
+				WinActivate
+				WinMinimize
 				;WinWait ahk_class TMainForm
 				;Send {Alt}+{Space}
 				;Send n
 			}
 		}
+	}
+
+	ControlGet, OutputVar, Enabled,, TZoneDigiplex32, 
+	if (OutputVar=0)
+	{
+		;MsgBox Monitoring not active, closing winload
+		WinKill, WinLoad
 	}
 }
 else

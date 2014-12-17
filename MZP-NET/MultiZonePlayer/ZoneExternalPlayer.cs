@@ -127,7 +127,7 @@ namespace MultiZonePlayer
 
 				if (Utilities.GetForegroundWindow() != GetXBMCHandle())//(!m_bringToForegroundOnce) 
 					{
-					MLog.Log(this, "Sending XMBC to foreground, previous foreground win="
+					MLog.Log(this, "Sending XBMC to foreground, previous foreground win="
 						+ Utilities.GetForegroundWindow() + " xmbc=" + GetXBMCHandle());
 					//TODO: improve detection of cases when app is shown on main screem in foreground and is not moved to 2nd screen
 					
@@ -358,7 +358,7 @@ namespace MultiZonePlayer
 
 		private IntPtr GetXBMCHandle()
 		{
-			return Utilities.FindWindow("XBMC", "XBMC");
+            return Utilities.FindWindow(IniFile.PARAM_XBMC_MAINWINDOW_NAME[1], IniFile.PARAM_XBMC_MAINWINDOW_NAME[1]);
 		}
 
         private void GetXBMCStatus()

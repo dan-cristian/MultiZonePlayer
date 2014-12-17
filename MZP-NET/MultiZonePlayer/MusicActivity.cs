@@ -179,41 +179,45 @@ namespace MultiZonePlayer
 
 			public override void Play()
             {
-                String musicFile;
+                String musicFile = null;
 
                 if (m_dcPlay.GetState() == ZoneState.Running)
                     Stop();
-                if (CurrentItem != null){
-                    musicFile = CurrentItem.SourceURL;
-                    if (File.Exists(musicFile)){
-                        //m_currentPlayList.MediaItemValueChange(musicFile, WindowsMediaItem.keyPlayCount, 1, 0, int.MaxValue);
-						MLog.Log(this, "Playing file" + CurrentItem.SourceURL + " playcount=" + CurrentItem.PlayCount + " vol="+m_dcPlay.GetVolumeLevel());
-                        //init amp power if needed
-                        m_zoneDetails.ZoneState = ZoneState.Running;//Ensure power remains on until music starts
-                        Tick();//force update current song details at start
-                        m_zoneDetails.PowerControlOn();
-						int loop = 0;
-						while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50){//usefull for HDMI devices
-							MLog.Log(this, "Waiting, device not yet available for zone " + m_zoneDetails.ZoneName);
-							System.Threading.Thread.Sleep(500);
-							loop++;
-						}
-						if (loop >= 50){
-							MLog.Log(this, "Error, NO device available for zone " + m_zoneDetails.ZoneName);
-                            Stop();
-						}
-						else{
-							m_dcPlay.OpenClip(musicFile, this.m_zoneForm);
-							if (m_dcPlay.GetState() == ZoneState.Running){
-								m_zoneDetails.ZoneState = ZoneState.Running;
-							}
-							m_songList[m_currentSongKey].IncreasePlayCount();
-						}
+
+                for (int i = 0; i < 7; i++) {
+                    if (CurrentItem != null) {
+                        musicFile = CurrentItem.SourceURL;
+                        if (!File.Exists(musicFile)) {
+                            MLog.Log(this, "At Play, File does not exist, name=" + musicFile + ", trying next");
+                            AdvanceNext();
+                        }
+                        else break;
                     }
-                    else{
-                        MLog.Log(this, "At Play, File does not exist, name=" + musicFile);
-                        //Next();
-                    }
+                }
+                if (CurrentItem != null && File.Exists(musicFile)){
+                    //m_currentPlayList.MediaItemValueChange(musicFile, WindowsMediaItem.keyPlayCount, 1, 0, int.MaxValue);
+					MLog.Log(this, "Playing file" + CurrentItem.SourceURL + " playcount=" + CurrentItem.PlayCount + " vol="+m_dcPlay.GetVolumeLevel());
+                    //init amp power if needed
+                    m_zoneDetails.ZoneState = ZoneState.Running;//Ensure power remains on until music starts
+                    Tick();//force update current song details at start
+                    m_zoneDetails.PowerControlOn();
+					int loop = 0;
+					while (!m_zoneDetails.HasOutputDeviceAvailable() && loop <50){//usefull for HDMI devices
+						MLog.Log(this, "Waiting, device not yet available for zone " + m_zoneDetails.ZoneName);
+						System.Threading.Thread.Sleep(500);
+						loop++;
+					}
+					if (loop >= 50){
+						MLog.Log(this, "Error, NO device available for zone " + m_zoneDetails.ZoneName);
+                        Stop();
+					}
+					else{
+						m_dcPlay.OpenClip(musicFile, this.m_zoneForm);
+						if (m_dcPlay.GetState() == ZoneState.Running){
+							m_zoneDetails.ZoneState = ZoneState.Running;
+						}
+						m_songList[m_currentSongKey].IncreasePlayCount();
+					}
                 }
                 else
                     MLog.Log(this, "Error no current item to play");
@@ -322,19 +326,23 @@ namespace MultiZonePlayer
                 m_dcPlay.ModifyRate(-0.25);
             }
 
-			public override void Next()
-            {
-                AudioItem currentItem = m_songList[m_currentSongKey];
+			public override void Next(){
                 Stop();
+                AdvanceNext();
+                if (m_songList!= null && m_songList.Count > 0)
+                    Play();
+                else
+                    MLog.Log(this, "No songs in songlist, not going next");
+            }
+
+            //move song pointer
+            private void AdvanceNext() {
+                AudioItem currentItem = m_songList[m_currentSongKey];
                 if (m_songList != null)
                 {
                     m_currentSongKey++;
                     if (m_currentSongKey == m_songList.Count)
                         m_currentSongKey = 0;
-                    if (m_songList.Count > 0)
-                        Play();
-                    else
-                        MLog.Log(this, "No songs in songlist, not going next");
                 }
             }
 

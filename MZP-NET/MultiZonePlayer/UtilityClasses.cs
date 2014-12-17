@@ -1033,7 +1033,7 @@ namespace MultiZonePlayer
             foreach (MoodMusic mood in list)
             {
                 json = fastJSON.JSON.ToJSON(mood);
-                IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_MUSICMOOD, r.ToString(), json);
+                IniFile.IniWriteValue(IniFile.INI_SECTION_MUSICMOOD, r.ToString(), json);
                 r++;
             }
         }
@@ -1079,7 +1079,7 @@ namespace MultiZonePlayer
             foreach (MusicScheduleEntry entry in list)
             {
                 json = fastJSON.JSON.ToJSON(entry);
-                IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_MUSICSCHEDULE, r.ToString(), json);
+                IniFile.IniWriteValue(IniFile.INI_SECTION_MUSICSCHEDULE, r.ToString(), json);
                 r++;
             }
         }
@@ -1340,7 +1340,7 @@ namespace MultiZonePlayer
             foreach (ControlDevice ctrl in p_list)
             {
                 if (lastzoneid != ctrl.ZoneId) { r = 0; lastzoneid = ctrl.ZoneId; };
-                IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONECONTROLDEVICENAME + ctrl.ZoneId, r.ToString(), ctrl.DeviceName);
+                IniFile.IniWriteValue(IniFile.INI_SECTION_ZONECONTROLDEVICENAME + ctrl.ZoneId, r.ToString(), ctrl.DeviceName);
                 r++;
             }
         }

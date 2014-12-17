@@ -155,7 +155,7 @@ namespace MultiZonePlayer
                 {
                     ZoneDetails zone = ZoneDetails.GetZoneById(Convert.ToInt16(zoneId));
                     
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_ZONES, zoneId.ToString(), "");
+                    IniFile.IniWriteValue(IniFile.INI_SECTION_ZONES, zoneId.ToString(), "");
                     if (zone == null)
                     {
                         zone = new ZoneDetails();
@@ -254,7 +254,7 @@ namespace MultiZonePlayer
                     if (hIndex[userId] == null) hIndex.Add(userId, "0");
                     index = Convert.ToInt32(hIndex[userId]);
 
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_PLAYLIST + userId, index.ToString(), objPlayListPath.ToString());
+                    IniFile.IniWriteValue(IniFile.INI_SECTION_PLAYLIST + userId, index.ToString(), objPlayListPath.ToString());
 
                     index++;
                     hIndex[userId] = index.ToString();
@@ -318,14 +318,14 @@ namespace MultiZonePlayer
 
                 if (inputId != null && inputType != null && inputDevice != null)
                 {
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InputName", inputName.ToString());
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InputTypeId_Inputs", inputType.ToString());
+                    IniFile.IniWriteValue(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InputName", inputName.ToString());
+                    IniFile.IniWriteValue(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InputTypeId_Inputs", inputType.ToString());
                     if (inZoneId != null)
                     {
-                        IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_INPUTS, inZoneId.ToString(), inputDevice.ToString());
-                        IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InZoneId", inZoneId.ToString());
+                        IniFile.IniWriteValue(IniFile.INI_SECTION_INPUTS, inZoneId.ToString(), inputDevice.ToString());
+                        IniFile.IniWriteValue(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InZoneId", inZoneId.ToString());
                     }
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InputDeviceName", inputDevice.ToString());
+                    IniFile.IniWriteValue(IniFile.INI_SECTION_INPUTDEVICE + inputId.ToString(), "InputDeviceName", inputDevice.ToString());
                 }
             }
         }
@@ -430,7 +430,7 @@ namespace MultiZonePlayer
 				//then save
                 if (pname != null)
                 {
-                    IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_PARAMS, pname,pvalue);
+                    IniFile.IniWriteValue(IniFile.INI_SECTION_PARAMS, pname,pvalue);
                 }
             }
         }

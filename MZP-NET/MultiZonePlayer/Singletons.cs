@@ -291,7 +291,7 @@ namespace MultiZonePlayer {
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); param.UseExtensions = false;
 			foreach (User user in m_valueList) {
 				json = fastJSON.JSON.ToJSON(user, param);
-				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_USERS, r.ToString(), json);
+				IniFile.IniWriteValue(IniFile.INI_SECTION_USERS, r.ToString(), json);
 				r++;
 			}
 		}
@@ -849,7 +849,7 @@ namespace MultiZonePlayer {
 			param.UseExtensions = false;
 			foreach (Object obj in m_valueList) {
 				json = fastJSON.JSON.ToJSON(obj, param);
-				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_UTILITYCOST, r.ToString(), json);
+				IniFile.IniWriteValue(IniFile.INI_SECTION_UTILITYCOST, r.ToString(), json);
 				r++;
 			}
 		}
@@ -941,7 +941,7 @@ namespace MultiZonePlayer {
 			param.UseExtensions = false;
 			foreach (Object obj in m_valueList) {
 				json = fastJSON.JSON.ToJSON(obj, param);
-				IniFile.IniWriteValuetoTemp(IniFile.INI_SECTION_LIGHTSENSOR, r.ToString(), json);
+				IniFile.IniWriteValue(IniFile.INI_SECTION_LIGHTSENSOR, r.ToString(), json);
 				r++;
 			}
 		}
@@ -1092,7 +1092,7 @@ namespace MultiZonePlayer {
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters();
 			param.UseExtensions = false;
 			json = fastJSON.JSON.ToJSON(this, param);
-			IniFile.IniWriteValuetoTemp(GetList(this).IniSectionName, this.Id.ToString(), json);
+			IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
 		}
 		
 		public void SaveAllToIni() {

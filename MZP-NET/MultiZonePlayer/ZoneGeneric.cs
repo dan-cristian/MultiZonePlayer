@@ -610,6 +610,7 @@ namespace MultiZonePlayer {
 										if (!zMusic.IsAlarm) //(!m_mainZoneActivity.GetState().Equals(Metadata.ZoneState.Running))
 										{
 											zMusic.IsAlarm = true;
+                                            m_zoneDetails.RequirePowerForced = true;
 											//set musicalarm mood if exists
 											MoodMusic mood =
 												MZPState.Instance.MoodMusicList.Find(x => x.Name.Equals(GlobalCommands.musicalarm.ToString()));

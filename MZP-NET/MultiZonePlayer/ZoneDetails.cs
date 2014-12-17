@@ -710,7 +710,7 @@ namespace MultiZonePlayer {
 		}
 		public void PowerControlOff() {
 			bool switchedOff = false;
-
+            RequirePowerForced = false;
 			if (HasPowerCapabilities) {
                 switch (this.PowerType) { 
                     case (MultiZonePlayer.PowerType.Denkovi):
@@ -1277,7 +1277,7 @@ namespace MultiZonePlayer {
 			fastJSON.JSONParameters param = new fastJSON.JSONParameters(); 
 			param.UseExtensions = false;
 			String json = JSON.ToJSON(this, param);
-			IniFile.IniWriteValuetoFinal(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
+			IniFile.IniWriteValue(IniFile.INI_SECTION_ZONESTATE, ZoneId.ToString(), json);
 			
 			//update dependencies if fields have changed - not a good ideea as triggers activity change
 			//MZPState.Instance.WDIO.SetPinTypes(this);
