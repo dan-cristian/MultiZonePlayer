@@ -380,6 +380,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="scheduler.ini" />
+    <None Include="Scripts\close_others.ahk" />
+    <None Include="Scripts\enable-http-listen.bat" />
+    <None Include="Scripts\open_winload_2.ahk" />
+    <None Include="Scripts\reset-winload-port.bat" />
+    <None Include="Scripts\SyncMZP-BatchRun.ffs_batch" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
@@ -409,6 +414,9 @@
     <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="utils\devcon.exe" />
+    <Content Include="utils\graphedt.exe" />
+    <Content Include="utils\proppage.dll" />
     <None Include="Rules.ini">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

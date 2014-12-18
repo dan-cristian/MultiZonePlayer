@@ -1,0 +1,2 @@
+..\utils\devcon disable @FTDIBUS\VID_0403+PID_6001+A410A2F7A\0000
+..\utils\devcon enable @FTDIBUS\VID_0403+PID_6001+A410A2F7A\0000

@@ -1620,7 +1620,7 @@ namespace MultiZonePlayer {
 					}
 
 					if (!zone.RequirePower && zone.IsPowerOn) {
-						//MLog.Log("Powering off zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
+						MLog.Log("Powering off zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
 						zone.PowerControlOff();
 					}
 

@@ -39,7 +39,7 @@ namespace MultiZonePlayer
            
         private PlayMode m_playMode = PlayMode.Default1;
         private Boolean m_isAlarm = false;
-        private String m_alarmStartMinute = "";
+        private DateTime m_alarmStartTime = DateTime.MinValue;
         private bool m_isGuideMode = false;
         private string m_numericCmd = "";
 
@@ -183,6 +183,11 @@ namespace MultiZonePlayer
 
                 if (m_dcPlay.GetState() == ZoneState.Running)
                     Stop();
+
+                if (m_songList.Count == 0) {
+                    LoadDefaultPlaylist();
+                    MLog.Log("No songs in current playlist, loading default playlist");
+                }
 
                 for (int i = 0; i < 7; i++) {
                     if (CurrentItem != null) {
@@ -466,11 +471,9 @@ namespace MultiZonePlayer
             #region GetSet
             public bool IsAlarm
             {
-                get {
-                    if (m_isAlarm)
-                    {
-                        if (!DateTime.Now.ToString("mm").Equals(m_alarmStartMinute))
-                        {
+                get {//consider this activity in alarm state for 2 minutes. during this the volume will slowly grow and no other alarms will be triggered.
+                    if (m_isAlarm){
+                        if (DateTime.Now.Subtract(m_alarmStartTime).TotalMinutes>=2){
                             m_isAlarm = false;
                         }
                     }
@@ -478,7 +481,7 @@ namespace MultiZonePlayer
                     }
                 set { 
                     m_isAlarm = value;
-                    m_alarmStartMinute = DateTime.Now.ToString("mm");
+                    m_alarmStartTime = DateTime.Now;
                     if (value)
                         SetVolumeLevel(m_zoneDetails.GetDefaultAlarmVolume());
                 }
@@ -874,6 +877,7 @@ namespace MultiZonePlayer
                 //return result;
             }
 			public override void Tick(){
+                //slowly grow alarm volume until reaches alarm set level
                 if (IsAlarm && GetVolumeLevel() < m_zoneForm.ZoneDetails.GetDefaultVolume()){
                     SetVolumeLevel(GetVolumeLevel() + 100);
 					MLog.Log(this, "Setting alarm volume on " + m_zoneDetails.ZoneName + " vol="+GetVolumeLevel());

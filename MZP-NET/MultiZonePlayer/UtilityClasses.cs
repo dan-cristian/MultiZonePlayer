@@ -273,7 +273,8 @@ namespace MultiZonePlayer
 			GlobalCommands.chup, GlobalCommands.chdown,
  			GlobalCommands.volumedown, GlobalCommands.volumeup,
   			GlobalCommands.next, GlobalCommands.previous,
-  			GlobalCommands.music, GlobalCommands.video, GlobalCommands.xbmc, GlobalCommands.streammp3, GlobalCommands.radio,
+  			GlobalCommands.music, GlobalCommands.musicalarm,
+            GlobalCommands.video, GlobalCommands.xbmc, GlobalCommands.streammp3, GlobalCommands.radio,
    			GlobalCommands.doorring, GlobalCommands.enter 
 		};
 		
