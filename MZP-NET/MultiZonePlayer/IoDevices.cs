@@ -1228,8 +1228,8 @@ namespace MultiZonePlayer {
 					}
 				}
 
-				String[] adapterNames = IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1].Split(';');
-				String[] adapterPorts = IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1].Split(';');
+				String[] adapterNames = IniFile.PARAM_ONEWIRE_ADAPTER_NAME[1].Split(Constants.MULTI_ENTRY_SEPARATOR);
+                String[] adapterPorts = IniFile.PARAM_ONEWIRE_ADAPTER_PORTNAME[1].Split(Constants.MULTI_ENTRY_SEPARATOR);
                 
 				if (adapterNames.Length == adapterPorts.Length) {
 					for (int i = 0; i < adapterNames.Length; i++) {
@@ -1438,31 +1438,76 @@ namespace MultiZonePlayer {
 		}
 
 		public void ReadLoop() {
-			List<Thread> threadList = new List<Thread>();
+			List<Thread> localThreadList = new List<Thread>();
+            List<Thread> remoteThreadList = new List<Thread>();
 			String adapterId;
+
 			while (MZPState.Instance != null) {
 				foreach (DSPortAdapter adapter in m_adapterList) {
 					adapterId = (adapter.getAdapterVersion() + adapter.getPortName());
-					if (threadList.Find(x => x.Name == adapterId) == null) {
-						MLog.Log(this, "Adding new 1wire thread for adapter " + adapterId + " total threads="+threadList.Count);
+					if (localThreadList.Find(x => x.Name == adapterId) == null) {
+						MLog.Log(this, "Adding new 1wire thread for adapter " + adapterId + " total threads="+localThreadList.Count);
 						Thread th= new Thread(() => this.ReadAdapterInLoop(adapter));
 						th.Name = adapterId;
 						th.Start();
-						threadList.Add(th);
+						localThreadList.Add(th);
 					}
 				}
 				if (m_adapterList == null || m_adapterList.Count==0 || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
 					Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", false);
-					foreach (Thread th in threadList) {
+					foreach (Thread th in localThreadList) {
 						th.Abort();
 					}
-					threadList.Clear();
+					localThreadList.Clear();
 					Reinitialise();
 				}
+
+                String[] remoteservers = IniFile.PARAM_ONEWIRE_REMOTE_SERVER_LIST[1].Split(Constants.MULTI_ENTRY_SEPARATOR);
+                foreach (String serverUrl in remoteservers) {
+                    if (remoteThreadList.Find(x => x.Name == serverUrl) == null) {
+                        if (serverUrl != "") {
+                            MLog.Log(this, "Adding new 1wire thread for remote server" + serverUrl+ " total threads=" + remoteThreadList.Count);
+                            Thread th = new Thread(() => this.ReadRemoteOwfs(serverUrl));
+                            th.Name = serverUrl;
+                            th.Start();
+                            remoteThreadList.Add(th);
+                        }
+                    }
+                }
 				Thread.Sleep(1000);
 			}
 			MLog.Log(this, "OneWire ReadLoop exit");
 		}
+
+        ///
+        private void ReadRemoteOwfs(String serverUrl){
+            int i = 0;
+            WebClient client = new WebClient();
+            string weboutput;
+            List<String> shortAddressListTemperature;
+            while (MZPState.Instance != null) {
+                try {
+                    weboutput = client.DownloadString(serverUrl + "/json");
+                    shortAddressListTemperature = new List<string>();
+                    string[] lines = weboutput.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                    foreach (String line in lines) {
+                        if (line.StartsWith("28"))
+                            shortAddressListTemperature.Add(line.Substring(3,12));// + line.Substring(0, 2));
+                    }
+                    if (i > Convert.ToInt16(IniFile.PARAM_ONEWIRE_SLOW_READ_DELAY[1])) {
+                        //slow tick
+                        i = 0;
+                        ProcessOwfsTemperature(serverUrl, shortAddressListTemperature, SensorDevice.ONEWIRE_TEMPDEV_NAME);
+                    }
+                    i++;
+                    Thread.Sleep(1000);
+                }
+                catch (Exception ex) {
+                    MLog.Log(ex, this, "Error on 1wire remote loop server " + serverUrl);
+                }
+            }
+        }
+
 
 		/// <summary>
 		/// Reads one wire components. DS2423 which is time critical is read mixed with others
@@ -1493,6 +1538,81 @@ namespace MultiZonePlayer {
 			MLog.Log(this, "OneWire ReadAdapterInLoop exit adapter " + adapter.getAddressAsString());
 		}
 
+        /// <summary>
+        /// Download owfs httpd page for each temp sensor
+        /// </summary>
+        /// <param name="serverUrl"></param>
+        /// <param name="familyname"></param>
+        /// <param name="family"></param>
+        private void ProcessOwfsTemperature(String serverUrl, List<String> temperatureAddressList,String familyname) {
+            WebClient client = new WebClient();
+            ZoneDetails tempzone; ;
+            List<ZoneDetails> tempZones = new List<ZoneDetails>();
+            foreach (String addr in temperatureAddressList) {
+                tempzone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.Contains(addr));
+                if (tempzone != null)
+                    tempZones.Add(tempzone);
+            }
+            
+            String result, temp, sensorName, owfsaddress;
+            String delimStart="temperature";
+            int start, end;
+            SensorDevice dev;
+            double tempVal;
+
+            foreach (ZoneDetails zone in tempZones) {
+                sensorName = zone.GetTemperatureDeviceName(zone.TemperatureDeviceId);
+                owfsaddress = zone.TemperatureDeviceId.SubstringEnd(2)+"."+zone.TemperatureDeviceId.Substring(0, zone.TemperatureDeviceId.Length-2);
+                dev = SensorDevice.UpdateGetDevice(familyname, zone.TemperatureDeviceId, familyname, zone, SensorDevice.DeviceTypeEnum.OneWire, sensorName);
+                dev.StartProcessing();
+                try {
+                    result = client.DownloadString(serverUrl + "/json/" + owfsaddress + "/temperature").Trim();
+                }
+                catch (Exception ex) {
+                    dev.RecordError(ex);
+                    dev.EndProcessing();
+                    break;
+                }
+                //get temperature value
+                start = result.LastIndexOf(delimStart)+delimStart.Length;
+                //start = result.IndexOf(delimStart, start)+delimStart.Length;
+                //end = result.IndexOf(delimEnd, start);
+                temp = result.Substring(start, result.Length - start).Trim();
+                if (!Double.TryParse(temp, out tempVal)) {
+                    MLog.Log("Warning, invalid temperature value read [" + temp + "]");
+                    dev.RecordError(new InvalidCastException());
+                }
+                else {
+                    //tempVal = Convert.ToDouble(temp);
+                    SetDeviceTemperature(tempVal, dev);
+                    SetZoneTemperature(zone, tempVal, familyname);
+                    dev.RecordSuccess();
+                }
+                dev.EndProcessing();
+            }
+        }
+
+        private void SetDeviceTemperature(double temp, SensorDevice dev) {
+            if (temp != Constants.TEMP_DEFAULT) {
+                if (dev.TemperatureResolutionIndex != -1)
+                    dev.Temperature = temp;
+                else
+                    dev.Temperature = Math.Round(temp, 2);
+            }
+            
+        }
+        private void SetZoneTemperature(ZoneDetails zone, double temp, string deviceId) {
+            zone.HasOneWireTemperatureSensor = true;
+            if (temp != Constants.TEMP_DEFAULT) {
+                if (zone.TemperatureResolutionDigits >= 0)
+                    zone.SetTemperature(Math.Round(temp, zone.TemperatureResolutionDigits), deviceId);
+                else
+                    zone.SetTemperature(temp, deviceId);
+            }
+            else {
+                MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
+            }
+        }
 		private Boolean ProcessElement(List<ZoneDetails> zoneList, OneWireContainer element, SensorDevice dev) {
 			sbyte[] state, initialState;
 			Boolean result = true;
@@ -1510,24 +1630,10 @@ namespace MultiZonePlayer {
 							state = temp.readDevice();
 							temp.doTemperatureConvert(state);
 							tempVal = temp.getTemperature(state);
-							if (tempVal != Constants.TEMP_DEFAULT) {
-								if (dev.TemperatureResolutionIndex != -1)
-									dev.Temperature = tempVal;
-								else
-									dev.Temperature = Math.Round(tempVal, 2);
-							}
+                            SetDeviceTemperature(tempVal, dev);
 							foreach (ZoneDetails zone in zoneList) {
-								zone.HasOneWireTemperatureSensor = true;
 								SetResolution(element, zone, dev, tempVal);
-								if (tempVal != Constants.TEMP_DEFAULT) {
-									if (zone.TemperatureResolutionDigits >= 0)
-										zone.SetTemperature(Math.Round(tempVal, zone.TemperatureResolutionDigits), deviceId);
-									else
-										zone.SetTemperature(tempVal, deviceId);
-								}
-								else {
-									MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);
-								}
+                                SetZoneTemperature(zone, tempVal, deviceId);
 							}
 							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
 							break;
@@ -1821,17 +1927,8 @@ namespace MultiZonePlayer {
 								dev.Temperature = Math.Round(tempVal, 2);//too many digits, not needed
 							}
 							foreach (ZoneDetails zone in zoneList) {
-								zone.HasOneWireTemperatureSensor = true;
+                                SetZoneTemperature(zone, tempVal, deviceId);
 								SetResolution(element, zone, dev, tempVal);
-								if (tempVal != Constants.TEMP_DEFAULT) {
-									if (zone.TemperatureResolutionDigits >= 0)
-										zone.SetTemperature(Math.Round(tempVal, zone.TemperatureResolutionDigits), deviceId);
-									else
-										zone.SetTemperature(tempVal, deviceId);
-								}
-								else {
-									MLog.Log(this, "Reading DEFAULT temp via ds2438 in zone " + zone.ZoneName);
-								}
 							}
 							m_deviceAttributes[element.getAddressAsString() + "Temp"] = tempVal.ToString();
 							break;

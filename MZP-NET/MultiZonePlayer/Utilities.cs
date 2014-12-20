@@ -62,6 +62,16 @@ namespace MultiZonePlayer
 				return null;
 		}
 
+        /// <summary>
+        /// Returns the substring at the end of the string with length = endLength 
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="endCount"></param>
+        /// <returns></returns>
+        public static string SubstringEnd(this string text, int endLength) {
+            return text.Substring(text.Length - endLength, endLength);
+        }
+
 		public static String[] SplitTwo(this string text, String separator)
 		{
 			String[] result;
@@ -451,27 +461,27 @@ namespace MultiZonePlayer
 			int i = Utilities.GetPrivateProfileString(Section, Key, "", temp, 16384, path);
             return temp.ToString();
         }
-		
+
+        private static Object m_csvLock= new Object();
 		public static void AppendToCsvFile(string filename, string separator, params string[] values)
 		{
-			try
-			{
-				StreamWriter str = File.AppendText(IniFile.CurrentPath() + filename);
+            lock (m_csvLock) {
+                StreamWriter logStr = null;
+                try {
+                    logStr = File.AppendText(IniFile.CurrentPath() + filename);
 
-				lock (str)
-				{
-					foreach (string val in values)
-					{
-						str.Write(val + separator);
-					}
-					str.Write("\r\n");
-					str.Close();
-				}
-			}
-			catch (Exception ex)
-			{
-				MLog.Log(ex, "error append to csv file " + filename);
-			}
+                    foreach (string val in values) {
+                        logStr.Write(val + separator);
+                    }
+                    logStr.Write("\r\n");
+                    logStr.Close();
+                }
+                catch (Exception ex) {
+                    if (logStr != null)
+                        logStr.Close();
+                    MLog.Log(ex, "error append to csv file " + filename);
+                }
+            }
 		}
 
         public static void AppendToGenericLogFile(String text, EventSource logType){

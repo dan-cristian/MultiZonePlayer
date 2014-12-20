@@ -992,6 +992,41 @@ namespace MultiZonePlayer {
 
     }
 
+    public class Parameter : PersistentObject {
+        [Category("Edit")]
+        public String Name;
+        [Category("Edit")]
+        public String Value;
+        [Category("Edit")]
+        public string Description;
+
+        public Parameter() {
+            IniSectionName = IniFile.INI_SECTION_PARAMETER;
+            Name = "Default " + Id;
+        }
+        public static new List<Parameter> ValueList {
+            get {
+                if (GetValueList(typeof(Parameter)) != null)
+                    return GetValueList(typeof(Parameter)).Select(x => (Parameter)x).ToList();
+                else return null;
+            }
+        }
+        public Parameter GetByName(String name) {
+            return ParameterList.Find(x => x.Name == name);
+        }
+        /*public Parameter Instance {
+            get {
+                return (Parameter)StaticInstance(typeof(Parameter));
+            }
+        }*/
+        public List<Parameter> ParameterList{
+            get { return Parameter.ValueList.Select(x => (Parameter)x).ToList(); }
+        }
+    }
+
+    /// <summary>
+    /// NOTE: Update references on MZPState and 
+    /// </summary>
 	public class PersistentObject {
 		private class ObjectStored{
 			public String ObjectName=null; 
@@ -1004,6 +1039,7 @@ namespace MultiZonePlayer {
 		}
 		private static List<ObjectStored> m_objectIdList = new List<ObjectStored>();
 		private static List<ListStored> m_objectList = new List<ListStored>();
+        protected string IniSectionName;
 
 		[Category("Edit")]
 		public int Id = -1;
@@ -1032,6 +1068,10 @@ namespace MultiZonePlayer {
 				//new PersistentObject();
 			
 		}
+
+        public static void Add(PersistentObject newobj) {
+            Add(newobj, newobj.IniSectionName);
+        }
 		public static void Add(PersistentObject newobj, String iniSectionName){
 			ListStored list;
 			if (newobj.Id == -1) {

@@ -115,8 +115,10 @@ namespace MultiZonePlayer {
 		[Category("Edit"), Description("Max number of utility units that can be consumed / minute. Safety check for malfunctioning 1-wire. -1 if limit disabled.")]
 		public int MaxUtilityUnitsPerMinute = Constants.NOT_SET;
 
-		[Category("Edit"), Description("OneWire device id for temperature sensors. Format for multiple entries is <ADDRESS1XXXXX>[sensorname1-optional];<ADDRESS2XXXXX>[sensorname2-optional];etc.")]
+		[Category("Edit"), Description("OneWire device id for temperature sensors. Use UPPERCASE. Format for multiple entries is <ADDRESS1XXXXX>[sensorname1-optional];<ADDRESS2XXXXX>[sensorname2-optional];etc.")]
 		public String TemperatureDeviceId="";
+        [Category("Edit"), Description("OneWire device descriptions for temperature sensors. Format for multiple entries is sensorname1;sensorname2;etc.")]
+        public String TemperatureDeviceIdDescriptions = "";
 		[Category("Edit"), Description("OneWire device id for devices that supports IO operations. E.g. DS2406, DS2408")]
 		public String OneWireIODeviceId="";
 
@@ -1036,12 +1038,11 @@ namespace MultiZonePlayer {
 		//position in the 
 		public string GetTemperatureDeviceName(String deviceId) {
 			int position = GetTemperatureDevicePosition(deviceId);
-			string[] atoms = TemperatureDeviceId.ToLower().Split(Constants.MULTI_ENTRY_SEPARATOR);
-			String[] names = atoms[position].Split(Constants.DESCRIPTION_START_SEPARATOR);
-			if (names.Length >= 2)
-				return names[1].Replace("" + Constants.DESCRIPTION_END_SEPARATOR, "");
-			else
-				return "";
+			string[] atoms = TemperatureDeviceIdDescriptions.ToLower().Split(Constants.MULTI_ENTRY_SEPARATOR);
+            if (position < atoms.Length)
+                return atoms[position];
+            else
+                return "";
 		}
 		public void SetTemperature(double value, String deviceId) {
 			int position = GetTemperatureDevicePosition(deviceId);

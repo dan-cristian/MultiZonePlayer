@@ -410,6 +410,9 @@ namespace MultiZonePlayer
                                                                                         if (value.ToString().Contains(typeof(RemoteHotSpot).ToString()))
                                                                                             value = ((List<RemoteHotSpot>)value)[Convert.ToInt32(parameters[0])];
                                                                                         else
+                                                                                            if (value.ToString().Contains(typeof(Parameter).ToString()))
+                                                                                                value = ((List<Parameter>)value)[Convert.ToInt32(parameters[0])];
+                                                                                            else
 									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
 										exception = "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString();
@@ -1077,115 +1080,120 @@ namespace MultiZonePlayer
 		}
 
 
-		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-		public static void ExecuteRule(object callingInstance, params String[] values) {
-			//if (m_ruleList == null) LoadFromIni();
-			//string parameters = triggerField.Length>0?triggerField[0].ToString():"";
-			string triggerName;
-			var currentMethod = System.Reflection.MethodInfo.GetCurrentMethod();
-			var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        public static void ExecuteRule(object callingInstance, params String[] values) {
+            //if (m_ruleList == null) LoadFromIni();
+            //string parameters = triggerField.Length>0?triggerField[0].ToString():"";
+            try {
+                string triggerName;
+                var currentMethod = System.Reflection.MethodInfo.GetCurrentMethod();
+                var callingMethod = new System.Diagnostics.StackTrace(1, false).GetFrame(0).GetMethod();
 
-			int i = callingMethod.Name.IndexOf("set_");
-			if (i >= 0) {
-				triggerName = callingMethod.Name.Substring("set_".Length);
-				triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
-			}
-			else {
-				i = callingMethod.Name.IndexOf("Set");
-				if (i >= 0) {
-					triggerName = callingMethod.Name.Substring("Set".Length);
-					triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
-				}
-				else {
-					triggerName = callingMethod.Name;
-					/*
-					String parameters="";
-					if (values != null) {
-						foreach (String val in values) {
-							parameters += values + ",";
-						}
-					}
-					Alert.CreateAlert("No triggername found calling method=" + callingMethod.Name + " instance="+callingInstance+" parameters="+parameters, true);
-					return;
-					 */
-				}
-			}
-			if (TriggerList.Find(x => x == triggerName) == null) {
-				TriggerList.Add(triggerName);
-			}
+                int i = callingMethod.Name.IndexOf("set_");
+                if (i >= 0) {
+                    triggerName = callingMethod.Name.Substring("set_".Length);
+                    triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
+                }
+                else {
+                    i = callingMethod.Name.IndexOf("Set");
+                    if (i >= 0) {
+                        triggerName = callingMethod.Name.Substring("Set".Length);
+                        triggerName = callingMethod.DeclaringType.Name + "." + triggerName;
+                    }
+                    else {
+                        triggerName = callingMethod.Name;
+                        /*
+                        String parameters="";
+                        if (values != null) {
+                            foreach (String val in values) {
+                                parameters += values + ",";
+                            }
+                        }
+                        Alert.CreateAlert("No triggername found calling method=" + callingMethod.Name + " instance="+callingInstance+" parameters="+parameters, true);
+                        return;
+                         */
+                    }
+                }
+                if (TriggerList.Find(x => x == triggerName) == null) {
+                    TriggerList.Add(triggerName);
+                }
 
-			List<ScriptingRule> ruleList, filteredList;
-			if (ValueList != null) {
-				ruleList = ValueList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName == null);
-				filteredList = ValueList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName != null).ToList();
+                List<ScriptingRule> ruleList, filteredList;
+                if (ValueList != null) {
+                    ruleList = ValueList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName == null);
+                    filteredList = ValueList.FindAll(x => x.Trigger == triggerName && x.FilterFieldName != null).ToList();
 
-				if (filteredList != null) {
-					object val;
-					foreach (ScriptingRule r in filteredList) {
-						if (r.FilterFieldName == "")
-							ruleList.Add(r);
-						else {
-                            val = Reflect.ReflectLine(callingInstance, r.FilterFieldName);//Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
-							if (val != null && r.FilterFieldValue == val.ToString())
-								ruleList.Add(r);
-						}
-					}
-				}
+                    if (filteredList != null) {
+                        object val;
+                        foreach (ScriptingRule r in filteredList) {
+                            if (r.FilterFieldName == "")
+                                ruleList.Add(r);
+                            else {
+                                val = Reflect.ReflectLine(callingInstance, r.FilterFieldName);//Reflect.GetPropertyField(callingInstance, r.FilterFieldName);
+                                if (val != null && r.FilterFieldValue == val.ToString())
+                                    ruleList.Add(r);
+                            }
+                        }
+                    }
 
-				foreach (ScriptingRule rule in ruleList) {
-					string parsedCode = rule.JSCode;
-					//replacing variables
-					/*
-					if (rule.VariableList != null)
-					{
-						object value;
-						foreach (string variable in rule.VariableList)
-						{
-							value = Reflect.GetPropertyField(callingInstance, variable);
-							if (value != null) //TODO check the need
-								parsedCode = parsedCode.Replace("[" + variable + "]", value.ToString());
-							//else
-							//	MLog.Log(null, "No instance variable found for jscode, var=" + variable);
-						}
-					}*/
+                    foreach (ScriptingRule rule in ruleList) {
+                        string parsedCode = rule.JSCode;
+                        //replacing variables
+                        /*
+                        if (rule.VariableList != null)
+                        {
+                            object value;
+                            foreach (string variable in rule.VariableList)
+                            {
+                                value = Reflect.GetPropertyField(callingInstance, variable);
+                                if (value != null) //TODO check the need
+                                    parsedCode = parsedCode.Replace("[" + variable + "]", value.ToString());
+                                //else
+                                //	MLog.Log(null, "No instance variable found for jscode, var=" + variable);
+                            }
+                        }*/
 
-					try {
-						String displayValues = "";
-						if (values != null) {
-							foreach (String v in values) {
-								displayValues += v + ";";
-							}
-						}
-						displayValues = displayValues.Replace("=", ":").Replace(";",":");
-						parsedCode = parsedCode.Replace("%rule_message%", displayValues);
-						Reflect.GenericReflect(ref  parsedCode);
-						String JSResult = ExpressionEvaluator.EvaluateToString(parsedCode);
-						
-						MLog.Log("Script " + rule.Name + " values=" + displayValues + " returned result=[" + JSResult + "]");
-						string[] pairs = JSResult.Split(';');
-						string[] entry;
-						ValueList vals = new ValueList();
+                        try {
+                            String displayValues = "";
+                            if (values != null) {
+                                foreach (String v in values) {
+                                    displayValues += v + ";";
+                                }
+                            }
+                            displayValues = displayValues.Replace("=", ":").Replace(";", ":");
+                            parsedCode = parsedCode.Replace("%rule_message%", displayValues);
+                            Reflect.GenericReflect(ref  parsedCode);
+                            String JSResult = ExpressionEvaluator.EvaluateToString(parsedCode);
 
-						foreach (string pair in pairs) {
-							entry = pair.Split('=');
-							if (entry.Length > 1)
-								vals.Add(entry[0].ToLower().Trim(), entry[1].ToLower());
-							else
-								MLog.Log(null, "Missing parameters for JS command");
-						}
-						MLog.Log(null, "Execute RuleEngine command=" + rule.Name + " trigger=" + triggerName);
-						if (vals.Values.Count > 0)
-							API.DoCommand(vals);
-						else
-							MLog.Log(null, "Not executing JS script command due to missing values");
+                            MLog.Log("Script " + rule.Name + " values=" + displayValues + " returned result=[" + JSResult + "]");
+                            string[] pairs = JSResult.Split(';');
+                            string[] entry;
+                            ValueList vals = new ValueList();
 
-					}
-					catch (Exception ex) {
-						MLog.Log(ex, "Error reflect / JS / execute");
-					}
+                            foreach (string pair in pairs) {
+                                entry = pair.Split('=');
+                                if (entry.Length > 1)
+                                    vals.Add(entry[0].ToLower().Trim(), entry[1].ToLower());
+                                else
+                                    MLog.Log(null, "Missing parameters for JS command");
+                            }
+                            MLog.Log(null, "Execute RuleEngine command=" + rule.Name + " trigger=" + triggerName);
+                            if (vals.Values.Count > 0)
+                                API.DoCommand(vals);
+                            else
+                                MLog.Log(null, "Not executing JS script command due to missing values");
 
-				}
-			}
-		}
+                        }
+                        catch (Exception ex) {
+                            MLog.Log(ex, "Error reflect / JS / execute");
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex2) {
+                MLog.Log(ex2, "Error in execute rule");
+            }
+        }
 	}
 }

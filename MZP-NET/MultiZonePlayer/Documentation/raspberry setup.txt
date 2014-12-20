@@ -31,3 +31,11 @@ add line last row in "/etc/rsyslog.conf"
 *.*	@192.168.0.10:514
 
 #startup: http://raspberrywebserver.com/serveradmin/run-a-script-on-start-up.html
+
+
+#OWFS 1 wire
+#http://www.gaggl.com/2013/01/accessing-1-wire-devices-on-raspberry-pi-using-owfs/
+#http://blog.automated.it/2011/01/18/linkusbi-and-1-wire-setup/
+#http://owfs.org/index.php?page=linkusb
+
+sudo apt-get install owfs ow-shell

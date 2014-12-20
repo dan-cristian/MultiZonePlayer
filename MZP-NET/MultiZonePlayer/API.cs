@@ -475,7 +475,17 @@ namespace MultiZonePlayer
                                     RemoteHotSpot.Add(remote, IniFile.INI_SECTION_REMOTEHOTSPOT);
                                     break;
 								default:
-									Alert.CreateAlert("Error, classname not recognised on create field, class=" + classname, true);
+                                    try {
+                                        System.Runtime.Remoting.ObjectHandle handle = Activator.CreateInstance(null,
+                                            System.Reflection.Assembly.GetExecutingAssembly().GetName().Name + "." + classname);
+                                        //var obj = Activator.CreateInstance(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, classname);
+                                        PersistentObject pobj = (PersistentObject)handle.Unwrap();
+                                        PersistentObject.Add(pobj);
+                                    }
+                                    catch (Exception ex) {
+                                        Alert.CreateAlert("Error, classname not recognised on create field, class=" + classname
+                                            + " exception="+ex.Message, true);
+                                    }
 									break;
 							}
 							break;

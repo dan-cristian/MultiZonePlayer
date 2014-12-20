@@ -63,8 +63,15 @@ namespace MultiZonePlayer {
 		private ScriptingRule m_rule = new ScriptingRule();
 		private MacroEntry m_macro = new MacroEntry();
         private RemoteHotSpot m_remotehotspot = new RemoteHotSpot();
+        private Parameter m_parameter = new Parameter();
 		private Boolean m_homeMessageActive = false;
 		private String m_homeMessage = "";
+
+        public Parameter Parameter {
+            get { return m_parameter; }
+            set { m_parameter = value; }
+        }
+
 		public ScriptingRule ScriptRule {
 			get { return m_rule; }
 		}
@@ -140,6 +147,7 @@ namespace MultiZonePlayer {
 			UtilityCost.LoadFromIni();
 			LightSensor.LoadFromIni();
             m_remotehotspot.LoadFromIni(IniFile.INI_SECTION_REMOTEHOTSPOT);
+            m_parameter.LoadFromIni(IniFile.INI_SECTION_PARAMETER);
 
 			MLog.Log(this, "Retrieving system available audio input devices");
 			DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
@@ -312,6 +320,7 @@ namespace MultiZonePlayer {
 				LightSensor.SaveAllToIni();
                 m_remotehotspot.SaveAllToIni();
 				m_rule.SaveAllToIni();
+                m_parameter.SaveAllToIni();
 				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
 			}

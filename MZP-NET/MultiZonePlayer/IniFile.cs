@@ -78,6 +78,7 @@ namespace MultiZonePlayer
 			public const String INI_SECTION_SCRIPTINGRULES = "ScriptingRules";
 			public const String INI_SECTION_MACRO = "Macros";
             public const String INI_SECTION_REMOTEHOTSPOT = "RemoteHotSpot";
+            public const String INI_SECTION_PARAMETER = "Parameter";
 			
             public const String DEFAULT_EXT_PLAYLIST = ".m3u";
             public const String POPM_CREATOR_NAME = "MZP";
@@ -250,10 +251,10 @@ namespace MultiZonePlayer
 
 			public static String[] PARAM_ONEWIRE_ADAPTER_NAME = new String[] { "PARAM_ONEWIRE_ADAPTER_NAME", "{DS9097U_DS948X}", "adapter name, {DS9097U_DS948X} for LinkUSB" };
 			public static String[] PARAM_ONEWIRE_ADAPTER_PORTNAME = new String[] { "PARAM_ONEWIRE_ADAPTER_PORTNAME", "COM9", "adapter port, e.g. COM9" };
-			public static String[] PARAM_ONEWIRE_FAST_READ_DELAY = new String[] { "PARAM_ONEWIRE_FAST_READ_DELAY", "2", "number of seconds between reads for fast components, e.g. counters or IO" };
+			public static String[] PARAM_ONEWIRE_FAST_READ_DELAY = new String[] { "PARAM_ONEWIRE_FAST_READ_DELAY", "2", "number of miliseconds between reads for fast components, e.g. counters or IO" };
             public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
 			public static String[] PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX = new String[] { "PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX", "1", "resolutionList index for temp reading: 0=0.5, 1=0.25, 2=0...." };
-			
+            public static String[] PARAM_ONEWIRE_REMOTE_SERVER_LIST = new String[] { "PARAM_ONEWIRE_REMOTE_SERVER_LIST", "http://pi-casa:2121;", "list of owfs 1-wire servers, no slash after url, like http://pi-casa:2121;http://pi2:2121" };
 
 			public static String[] PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD = new String[] { "PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD", "15", "close power after x minutes of activity in a zone without user interaction or move" };
 			public static String[] PARAM_RECENT_RUN_INTERVAL_MINUTES = new String[] { "PARAM_RECENT_RUN_INTERVAL_MINUTES", "1", "number of minutes to keep a zone power on after recent run state, e.g. music playing" };
@@ -371,7 +372,8 @@ namespace MultiZonePlayer
 				PARAM_RECENT_RUN_INTERVAL_MINUTES,
 				PARAM_TEMP_TRESHHOLD,
                 PARAM_SQLITEDB_PATH,
-                PARAM_DTSFILTER_MONIKER
+                PARAM_DTSFILTER_MONIKER,
+                PARAM_ONEWIRE_REMOTE_SERVER_LIST
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;
