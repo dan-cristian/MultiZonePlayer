@@ -360,9 +360,10 @@ namespace MultiZonePlayer {
 				MLog.Log(this, "Ignoring closure level " + level);
 			}//ignoring other closure levels
 		}
-		public void RecordCounter(string id, ulong counter) {
+		public void RecordCounter(string id, ulong counter, DateTime datetime) {
 			if (id.Contains(CounterPageNameToInclude)) {
-				double lapsedMinutes = DateTime.Now.Subtract(LastPulseSamplingStart).TotalMinutes;
+                HasOneWireCounterDevice = true;
+				double lapsedMinutes = datetime.Subtract(LastPulseSamplingStart).TotalMinutes;
 				if ( lapsedMinutes >= PulseSampleMinutesFrequency) {
                     if (PulseCountInTimeSample == 0) {//when program is loaded or no previous counter record happened
                         //MLog.Log("debug this");
@@ -379,7 +380,7 @@ namespace MultiZonePlayer {
 							+ " counterdelta=" + PulseCountInTimeSample + " in zone " + ZoneName + " lastpulsesampling="+LastPulseSamplingStart, true);
 					}
 
-                    if ((PulseCountInTimeSample != 0 || m_counterZeroUnitNeedsRecord) || DateTime.Now.Subtract(m_lastCounterWriteToDB).TotalHours>=1) {//do not write if no pulses were recorded, but write one record per hour just in case
+                    if ((PulseCountInTimeSample != 0 || m_counterZeroUnitNeedsRecord) || datetime.Subtract(m_lastCounterWriteToDB).TotalHours >= 1) {//do not write if no pulses were recorded, but write one record per hour just in case
                         //record first 0 consumption then stop recording zeros for a while
                         m_counterZeroUnitNeedsRecord = (PulseCountInTimeSample != 0);
                     
@@ -426,11 +427,11 @@ namespace MultiZonePlayer {
                                     DB.COL_COUNTER_MAINUNIT, pulseUnitCountPerMissedFrame, DB.COL_COUNTER_SECONDARYUNIT, watts,
                                     DB.COL_COUNTER_UTILITYTYPE, UtilityType.ToString(), DB.COL_COUNTER_TOTALMAINUNIT, PulseLastMainUnitsCount,
                                     DB.COL_COUNTER_TOTALCOUNTER, counter, DB.COL_COUNTER_COST, cost);
-                                Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
-                                    PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), pulseUnitCountPerMissedFrame.ToString(),
-                                    cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString(), PulseMainUnitsCount.ToString());
+                                //Utilities.AppendToCsvFile(IniFile.CSV_UTILITIES, ",", ZoneName, LastPulseSamplingStart.ToString(IniFile.DATETIME_FULL_FORMAT),
+                                  //  PulseLastMainUnitsCount.ToString(), ZoneId.ToString(), UtilityType.ToString(), pulseUnitCountPerMissedFrame.ToString(),
+                                    //cost.ToString(), unitCost.ToString(), watts.ToString(), counter.ToString(), PulseMainUnitsCount.ToString());
                                 passes++;
-                                m_lastCounterWriteToDB = DateTime.Now;
+                                m_lastCounterWriteToDB = datetime;
                             }
                             while (totalLoggedPulses < PulseLastMainUnitsCount);
                             if (passes > 1) {
@@ -438,7 +439,7 @@ namespace MultiZonePlayer {
                             }
                         }
                     }
-					LastPulseSamplingStart = DateTime.Now;
+                    LastPulseSamplingStart = datetime;
                     PulseCountInTimeSample = 0;
 					SaveEntryToIni();//save in case of power outage
 				}
@@ -1044,7 +1045,7 @@ namespace MultiZonePlayer {
             else
                 return "";
 		}
-		public void SetTemperature(double value, String deviceId) {
+		public void SetTemperature(double value, String deviceId, DateTime datetime) {
 			int position = GetTemperatureDevicePosition(deviceId);
 			string devicename = GetTemperatureDeviceName(deviceId);
 			TemperatureEntry temp = m_temperatureList.Find(x => x.DeviceId == deviceId);
@@ -1065,11 +1066,11 @@ namespace MultiZonePlayer {
 				}
 				if (temp.Temperature != value) {
                     //DB.Temperature.WriteRecord(DateTime.Now, ZoneId, value, position, deviceId);
-                    DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT), 
+                    DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, datetime.ToString(Constants.DATETIME_DB_FORMAT), 
                             DB.COL_TEMPERATURE_ZONEID, ZoneId, DB.COL_TEMPERATURE_VALUE, value, DB.COL_TEMPERATURE_SENSORPOSITION, position,
                             DB.COL_TEMPERATURE_SENSORID, deviceId, DB.COL_TEMPERATURE_SENSORNAME, devicename);
                     Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
-                        Constants.CAPABILITY_TEMP, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT), value.ToString(), ZoneId.ToString(), position.ToString(), devicename);
+                        Constants.CAPABILITY_TEMP, datetime.ToString(Constants.DATETIME_DB_FORMAT), value.ToString(), ZoneId.ToString(), position.ToString(), devicename);
 					if (position == 0) {
 						ScriptingRule.ExecuteRule(this, "temp=" + value);
 						//Temperature = value;
@@ -1077,7 +1078,7 @@ namespace MultiZonePlayer {
 					//m_temperatureLast = m_temperature;
 				}
 				temp.Temperature = value;
-				m_lastTempSet = DateTime.Now;
+                m_lastTempSet = datetime;
 				if (Temperature > TemperatureMaxAlarm) {
 					Alert.CreateAlert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
 						+ ZoneName + ", temp is " + Temperature, this, false, null,
@@ -1451,7 +1452,8 @@ namespace MultiZonePlayer {
 			get { return m_pictureList; }
 		}
 
-		public void RecordVoltage(int voltageIndex, double value) {
+		public void RecordVoltage(int voltageIndex, double value, DateTime datetime) {
+            HasOneWireVoltageSensor = true;
 			if (voltageIndex == VoltageSensorIndex) {
 				if (MaxAllowedVoltageValue != Constants.NOT_SET && value > MaxAllowedVoltageValue) {
 					Alert.CreateAlertOnce("Recorded voltage " + value + " higher than max " + MaxAllowedVoltageValue + " in zone " + ZoneName, "MaxVoltageZone"+ZoneName);
@@ -1474,9 +1476,9 @@ namespace MultiZonePlayer {
 					lux = value * light.MaxLuxValue / light.MaxVoltageValue;
 				}
 				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName, Constants.CAPABILITY_VOLTAGE,
-						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), voltageIndex.ToString(),
+						datetime.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), voltageIndex.ToString(),
 						lux.ToString(), light!=null?light.Name:"[light sensor undefined]");
-                DB.WriteRecord(DB.TABLE_VOLTAGE, DB.COL_VOLTAGE_DATETIME, DateTime.Now.ToString(Constants.DATETIME_DB_FORMAT),
+                DB.WriteRecord(DB.TABLE_VOLTAGE, DB.COL_VOLTAGE_DATETIME, datetime.ToString(Constants.DATETIME_DB_FORMAT),
                                 DB.COL_VOLTAGE_ZONEID, ZoneId, DB.COL_VOLTAGE_VALUE, value.ToString());
 				m_voltage[voltageIndex] = value;
 			}

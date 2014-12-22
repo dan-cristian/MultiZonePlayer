@@ -32,6 +32,8 @@ add line last row in "/etc/rsyslog.conf"
 
 #startup: http://raspberrywebserver.com/serveradmin/run-a-script-on-start-up.html
 
+#ramdisk
+http://www.domoticz.com/wiki/Setting_up_a_RAM_drive_on_Raspberry_Pi
 
 #OWFS 1 wire
 #http://www.gaggl.com/2013/01/accessing-1-wire-devices-on-raspberry-pi-using-owfs/

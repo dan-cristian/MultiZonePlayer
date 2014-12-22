@@ -17,7 +17,7 @@ namespace MultiZonePlayer {
 		private static int m_recIndex = 0;
 		private ZonesForm m_zoneForm;
 		private DateTime m_lastContactMade = DateTime.MinValue, m_lastContactReleased = DateTime.MinValue;
-		private Boolean m_userConfirm = false;
+		//private Boolean m_userConfirm = false;
 		/// <summary>
 		/// Pattern is x-x-xx- where x is a press longer than 1 second and - is a press less than 1 second
 		/// </summary>
@@ -537,7 +537,7 @@ namespace MultiZonePlayer {
 					}
 					break;
 				case GlobalCommands.userconfirm:
-					m_userConfirm = true;
+					//m_userConfirm = true;
 					break;
 				case GlobalCommands.zoneautosetup:
 					//TODO: power on all amps
@@ -565,7 +565,7 @@ namespace MultiZonePlayer {
 					//identify raw inputs
 					//TODO: ask user to press keyboard in the zone and identify pressed raw input
 					//todo: remove invalid raw inpt devs
-					m_userConfirm = false;
+					//m_userConfirm = false;
 					Text2Speech.PlayMessage("Press button confirm from your device in maximum 5 seconds after you hear the sound", m_zoneDetails.ZoneGeneric);
 					
 					//associate amp power index
@@ -1007,7 +1007,7 @@ namespace MultiZonePlayer {
 			
 			switch (m_zoneDetails.ClosureType) {
 				case EnumClosureType.Counter:
-					m_zoneDetails.RecordCounter(id, counter);
+					m_zoneDetails.RecordCounter(id, counter, DateTime.Now);
 					break;
 				default:
 					MLog.Log(this, "Error, undefined closure type in CounterEvent for zone=" + m_zoneDetails.ZoneName);
