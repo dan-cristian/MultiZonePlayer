@@ -1058,38 +1058,38 @@ namespace MultiZonePlayer {
 			}
 			//device with position == 0 is representative for the current zone
 			if (position == 0 && Temperature != DEFAULT_TEMP_HUM &&  MaxTempUnitsVariationBetweenReads!=Constants.NOT_SET) {
-					if (Math.Abs(Temperature - value) > MaxTempUnitsVariationBetweenReads) {
-						Alert.CreateAlert("Too big variance in temperature detected, last val=" + Temperature + " current=" + value
-							+ " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
-						return;
-					}
+				if (Math.Abs(Temperature - value) > MaxTempUnitsVariationBetweenReads) {
+					Alert.CreateAlert("Too big variance in temperature detected, last val=" + Temperature + " current=" + value
+						+ " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
+					return;
 				}
-				if (temp.Temperature != value) {
-                    //DB.Temperature.WriteRecord(DateTime.Now, ZoneId, value, position, deviceId);
-                    DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, datetime.ToString(Constants.DATETIME_DB_FORMAT), 
-                            DB.COL_TEMPERATURE_ZONEID, ZoneId, DB.COL_TEMPERATURE_VALUE, value, DB.COL_TEMPERATURE_SENSORPOSITION, position,
-                            DB.COL_TEMPERATURE_SENSORID, deviceId, DB.COL_TEMPERATURE_SENSORNAME, devicename);
-                    Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
-                        Constants.CAPABILITY_TEMP, datetime.ToString(Constants.DATETIME_DB_FORMAT), value.ToString(), ZoneId.ToString(), position.ToString(), devicename);
-					if (position == 0) {
-						ScriptingRule.ExecuteRule(this, "temp=" + value);
-						//Temperature = value;
-					}
-					//m_temperatureLast = m_temperature;
+			}
+			if (temp.Temperature != value) {
+                //DB.Temperature.WriteRecord(DateTime.Now, ZoneId, value, position, deviceId);
+                DB.WriteRecord(DB.TABLE_TEMPERATURE, DB.COL_TEMPERATURE_DATETIME, datetime.ToString(Constants.DATETIME_DB_FORMAT), 
+                        DB.COL_TEMPERATURE_ZONEID, ZoneId, DB.COL_TEMPERATURE_VALUE, value, DB.COL_TEMPERATURE_SENSORPOSITION, position,
+                        DB.COL_TEMPERATURE_SENSORID, deviceId, DB.COL_TEMPERATURE_SENSORNAME, devicename);
+                Utilities.AppendToCsvFile(IniFile.CSV_TEMPERATURE_HUMIDITY, ",", ZoneName,
+                    Constants.CAPABILITY_TEMP, datetime.ToString(Constants.DATETIME_DB_FORMAT), value.ToString(), ZoneId.ToString(), position.ToString(), devicename);
+				if (position == 0) {
+					ScriptingRule.ExecuteRule(this, "temp=" + value);
+					//Temperature = value;
 				}
-				temp.Temperature = value;
-                m_lastTempSet = datetime;
-				if (Temperature > TemperatureMaxAlarm) {
-					Alert.CreateAlert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
+				//m_temperatureLast = m_temperature;
+			}
+			temp.Temperature = value;
+            m_lastTempSet = datetime;
+			if (Temperature > TemperatureMaxAlarm) {
+				Alert.CreateAlert("Max temperature [" + TemperatureMaxAlarm + "] exceeded on zone "
+					+ ZoneName + ", temp is " + Temperature, this, false, null,
+					Alert.NotificationFlags.NotifyUserAfterXHours, 1);
+			}
+			else
+				if (Temperature < TemperatureMinAlarm) {
+					Alert.CreateAlert("Min temperature [" + TemperatureMinAlarm + "] exceeded on zone "
 						+ ZoneName + ", temp is " + Temperature, this, false, null,
 						Alert.NotificationFlags.NotifyUserAfterXHours, 1);
 				}
-				else
-					if (Temperature < TemperatureMinAlarm) {
-						Alert.CreateAlert("Min temperature [" + TemperatureMinAlarm + "] exceeded on zone "
-							+ ZoneName + ", temp is " + Temperature, this, false, null,
-							Alert.NotificationFlags.NotifyUserAfterXHours, 1);
-					}
 		}
 		public double TemperatureTargetMaxTreshhold {
 			get { return TemperatureTarget + Convert.ToDouble(IniFile.PARAM_TEMP_TRESHHOLD[1]); }

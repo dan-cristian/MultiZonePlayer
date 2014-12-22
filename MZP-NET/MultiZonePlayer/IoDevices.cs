@@ -1500,7 +1500,7 @@ namespace MultiZonePlayer {
                         }
                         else {
                             classid = values[0];
-                            address = values[2];
+                            address = values[2].ToUpper();
                             zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.Contains(address) || x.OneWireIODeviceId.Contains(address));
                             if (zone != null) {
                                 switch (classid) {
@@ -1588,14 +1588,14 @@ namespace MultiZonePlayer {
             String sensorName;
             SensorDevice dev;
             double tempVal;
-            sensorName = zone.GetTemperatureDeviceName(zone.TemperatureDeviceId);
+            sensorName = zone.GetTemperatureDeviceName(address);
             dev = SensorDevice.UpdateGetDevice(familyname, address, familyname, zone, SensorDevice.DeviceTypeEnum.OneWireRemote, sensorName + "-" + server, datetime);
             if (!Double.TryParse(tempvalue, out tempVal)) {
                 MLog.Log("Warning, invalid temperature read value = [" + tempvalue + "] date=["+datetime+"]");
             }
             else {
                 SetDeviceTemperature(tempVal, dev);
-                SetZoneTemperature(zone, tempVal, familyname, datetime);
+                SetZoneTemperature(zone, tempVal, address, datetime);
                 dev.RecordSuccess();
             }
         }
