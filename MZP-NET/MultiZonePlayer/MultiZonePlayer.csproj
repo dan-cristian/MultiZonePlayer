@@ -143,10 +143,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="HE853, Version=1.5.1.0, Culture=neutral, PublicKeyToken=c5b100a8b7cb8aff, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>ThirdParty\HE853.dll</HintPath>
-    </Reference>
     <Reference Include="InTheHand.Net.Personal">
       <HintPath>ThirdParty\32feet\InTheHand.Net.Personal.dll</HintPath>
     </Reference>

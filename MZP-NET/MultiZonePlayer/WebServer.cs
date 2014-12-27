@@ -88,21 +88,16 @@ namespace MultiZonePlayer
 			Shutdown();
 		}
 
-		public void RunMainThread(HttpListener listener, String desc)
-		{
-			try
-			{
+		public void RunMainThread(HttpListener listener, String desc){
+			try{
 				listener.Start();
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex){
 				MLog.Log(ex, this, "Error listening " + desc);
 			}
 
-			while (listener.IsListening)
-			{
-				try
-				{
+			while (listener.IsListening){
+				try{
 					if (MZPState.Instance == null)
 						break;
 					//MLog.Log(null, "Web server waiting for requests");
@@ -119,21 +114,16 @@ namespace MultiZonePlayer
 							th.Name = "Web-work-thread-" + DateTime.Now.ToString() + ":" + ctx.Request.RawUrl;
 							th.Start();
 						}
-						else
-						{
+						else{
 							MLog.Log(this, "invalid user=" + identity.Name + " pass=" + identity.Password);
 							Thread.Sleep(3000);//anti brute force attack
 						}
 					}
-					else
-					{
+					else{
 						bool safe = true;//false;
-						if (ctx.Request.LocalEndPoint.Port.ToString().Equals(IniFile.PARAM_WEBSERVER_PORT_EXT_SAFE[1]))
-						{
-							foreach (String atom in IniFile.PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS[1].Split('|'))
-							{
-								if (ctx.Request.Headers.ToString().Contains(atom))
-								{
+						if (ctx.Request.LocalEndPoint.Port.ToString().Equals(IniFile.PARAM_WEBSERVER_PORT_EXT_SAFE[1])){
+							foreach (String atom in IniFile.PARAM_ACCEPTED_WEB_SAFE_DEVICES_HEADERS[1].Split('|')){
+								if (ctx.Request.Headers.ToString().Contains(atom)) {
 									safe = true;
 									break;
 								}
@@ -142,14 +132,12 @@ namespace MultiZonePlayer
 						else 
 							safe = true;
 
-						if (safe)
-						{
+						if (safe){
 							Thread th = new Thread(() => ProcessRequest(ctx));
-							th.Name = "Web-work-thread-" + DateTime.Now.ToString() + ":" + ctx.Request.RawUrl;
+							th.Name = "Web-work-thread-" + DateTime.Now.ToString() + "[IP " + ctx.Request.RemoteEndPoint +"] [" + ctx.Request.RawUrl+"]";
 							th.Start();
 						}
-						else
-						{
+						else{
 							MLog.Log(this, "Unsafe device on ext port " + ctx.Request.Headers);
 							Thread.Sleep(3000);//anti brute force attack
 						}

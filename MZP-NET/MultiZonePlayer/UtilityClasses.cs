@@ -612,6 +612,7 @@ namespace MultiZonePlayer
 		Denkovi,
 		Numato,
         Relay,
+        RemoteRelayPI,
 		None
 	}
 

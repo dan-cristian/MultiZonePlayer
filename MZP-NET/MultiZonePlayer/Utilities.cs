@@ -1283,13 +1283,12 @@ namespace MultiZonePlayer
         }
 
 
-        public static void LogWeb(HttpListenerRequest request)
-        {
-            try
-            {
-                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r", DateTime.Now.ToString(),
+        public static void LogWeb(HttpListenerRequest request){
+            try{
+                Utilities.AppendToGenericLogFile(String.Format("{0} {1} {2} {3} \r\n", DateTime.Now.ToString(),
                     request.RemoteEndPoint.Address, request.Url.AbsoluteUri, request.Headers.ToString().Replace('\n',' ').Replace('\r',' ')), 
                     EventSource.Web);
+                Utilities.AppendToGenericLogFile("-------------------------------------------------------------------\r\n", EventSource.Web);
             }
             catch (Exception)
             { }

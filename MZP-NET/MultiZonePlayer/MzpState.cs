@@ -31,7 +31,7 @@ namespace MultiZonePlayer {
 		private static RemotePipi[] remotePipi;
 		private static int maxRemotes = 10;
 		private List<ControlDevice> m_systemAvailableControlDevices = new List<ControlDevice>();
-		private static BasePowerControl m_powerControlDenkovi, m_powerControlNumato;
+		private static BasePowerControl m_powerControlDenkovi, m_powerControlNumato, m_powerControlRemoteRelayPI;
 
 		
 		private Hashtable m_zoneInputDeviceNames = null;
@@ -130,6 +130,7 @@ namespace MultiZonePlayer {
 			InitRemotes();
 			m_powerControlDenkovi = new DenkoviPowerControl("8 Relay Brd USB");
 			m_powerControlNumato = new NumatoLPTControl(888);
+            m_powerControlRemoteRelayPI = new RemoteRelayPI();
 
 			MLog.Log(this, "Retrieving system available audio output devices");
 
@@ -626,14 +627,14 @@ namespace MultiZonePlayer {
 			get { return m_systemAvailableControlDevices; }
 		}
 
-		public BasePowerControl PowerControl(int zoneid) {
+		/*public BasePowerControl PowerControl(int zoneid) {
 			if (MultiZonePlayer.ZoneDetails.GetZoneById(zoneid).PowerType == PowerType.Denkovi) {
 				return m_powerControlDenkovi;
 			}
 			else {
 				return m_powerControlNumato;
 			}
-		}
+		}*/
 
 		public BasePowerControl PowerControlNumato {
 			get { return m_powerControlNumato; }
@@ -643,7 +644,9 @@ namespace MultiZonePlayer {
 			get { return m_powerControlDenkovi; }
 		}
 
-		
+        public BasePowerControl PowerControlRemoteRelayPI {
+            get { return m_powerControlRemoteRelayPI; }
+        }
 
 		public void PowerControlOff() {
 			//m_powerControlDenkovi.PowerOff();

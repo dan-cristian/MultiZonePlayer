@@ -129,7 +129,7 @@ namespace MultiZonePlayer
             CommandResult cmdresult = new CommandResult();
             String cmdName, temp;
             String detailedStatus="";
-			int remoteid, macroid,zoneId, id;
+			int macroid,zoneId, id;
 
             try
             {
@@ -350,7 +350,7 @@ namespace MultiZonePlayer
 							MediaLibrary.AllPictureFiles.ForcePreviousPicture();
 							cmdresult.OutputMessage = "next picture set";
 							break;
-						case GlobalCommands.remotepoweron:
+						/*case GlobalCommands.remotepoweron:
 							remoteid=Convert.ToInt16(vals.GetValue(GlobalParams.remoteid));
 							cmdresult.OutputMessage = RemotePowerControl.SwitchOn(remoteid);
 							//result = MZPState.Instance.RemoteControl.RFOn(remoteid);
@@ -369,6 +369,7 @@ namespace MultiZonePlayer
 							//result = MZPState.Instance.RemoteControl.RFOff(remoteid);
 							//result = JsonResult(Metadata.ResultEnum.OK, "remotedim=" + result, null);
 							break;
+                         */
 						case GlobalCommands.macro:
 							string shortcut = vals.GetValue(GlobalParams.singleparamvalue);
 							macroid = MacroEntry.GetMacroIdByShortcut(shortcut, "");

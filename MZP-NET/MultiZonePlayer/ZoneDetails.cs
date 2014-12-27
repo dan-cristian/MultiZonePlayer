@@ -700,6 +700,9 @@ namespace MultiZonePlayer {
                         CommandResult res = new CommandResult();
                         ZoneGeneric.ProcessAction(GlobalCommands.closureclose, new ValueList(GlobalParams.id, WDIORelayOutputPinIndex.ToString(),CommandSources.system), ref res);
                         break;
+                    case MultiZonePlayer.PowerType.RemoteRelayPI:
+                        MZPState.Instance.PowerControlRemoteRelayPI.PowerPinOn(PowerIndex);
+                        break;
                 }
 				if (switchedOn) {
 					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, this.PowerType.ToString(),
@@ -733,6 +736,9 @@ namespace MultiZonePlayer {
                     case MultiZonePlayer.PowerType.Relay:
                         CommandResult res = new CommandResult();
                         ZoneGeneric.ProcessAction(GlobalCommands.closureopen, new ValueList(GlobalParams.id, WDIORelayOutputPinIndex.ToString(), CommandSources.system), ref res);
+                        break;
+                    case MultiZonePlayer.PowerType.RemoteRelayPI:
+                        MZPState.Instance.PowerControlRemoteRelayPI.PowerPinOff(PowerIndex);
                         break;
 				}
             

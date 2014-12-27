@@ -6,7 +6,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
-using HE853;
+using System.Net;
+//using HE853;
 
 namespace MultiZonePlayer
 {
@@ -116,11 +117,101 @@ namespace MultiZonePlayer
 			return m_deviceName;
 		}
         public abstract void PowerOn(int zoneId);
+        public abstract void PowerPinOn(int pinId);
         public abstract void PowerOff(int zoneId);
+        public abstract void PowerPinOff(int pinId);
         public abstract void PowerOff();
         public abstract bool IsPowerOn(int zoneId);
+        public abstract bool IsPowerPinOn(int pinId);
     }
 
+    class RemoteRelayPI : BasePowerControl {
+        private WebClient m_client;
+        private const string SCRIPT_GETIOSTATE = "/relayget.sh?";
+        private const string SCRIPT_SETOUTSTATE = "/relayset.sh?";
+        private const string VALUE_KEY= "RESULTOK";
+
+        public RemoteRelayPI() {
+            m_client = new WebClient();
+            Open();
+        }
+        protected override void Open() {
+            if (IsPowerControlOn())
+                MLog.Log(this, "RemoteRelayPI Opened OK");
+            else
+                MLog.Log(this, "RemoteRelayPI Not OK");
+        }
+
+        protected override void Close() {
+        }
+
+        public override bool IsPowerControlOn() {
+            String result = RunScript(SCRIPT_GETIOSTATE, "pin", "17");
+            return result=="1" || result=="0";
+        }
+
+        public override void PowerOn(int zoneId) {
+            
+            
+        }
+
+        public override void PowerOff(int zoneId) {
+            throw new NotImplementedException();
+        }
+
+        public override void PowerOff() {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsPowerOn(int zoneId) {
+            throw new NotImplementedException();
+        }
+
+        private String RunScript(string scriptname, params string[] args){
+            String result = "N/A";
+            String query="N/A";
+            try {
+                String paramlist = "";
+                foreach (String s in args) { paramlist += s + "&"; }
+                query = IniFile.PARAM_REMOTE_RELAY_PI[1] + scriptname + paramlist;
+                String html = m_client.DownloadString(query);
+                if (html.Contains(VALUE_KEY))
+                    result = GetResult(html);
+                else
+                    result = "NOT-OK";
+            }
+            catch (Exception ex) {
+                MLog.Log(this, "RemoteRelayPI RunScript Error, query=["+query+"] ex=" + ex.Message);
+                result = "ERR";
+            }
+            return result;
+        }
+        private String GetResult(string html) {
+            int start = html.LastIndexOf(VALUE_KEY);
+            if (start != -1) {
+                String[] result = html.Substring(start).SplitTwo("=");
+                if (result.Length >= 2)
+                    return result[1].Replace("\n","").Replace("\r","");
+                else
+                    return "";
+            }
+            else
+                return "";
+        }
+
+        public override void PowerPinOn(int pinId) {
+            RunScript(SCRIPT_SETOUTSTATE, "pin", ""+pinId, "on", "1");
+        }
+
+        public override void PowerPinOff(int pinId) {
+            RunScript(SCRIPT_SETOUTSTATE, "" + pinId, "0");
+        }
+
+        public override bool IsPowerPinOn(int pinId) {
+            String result = RunScript(SCRIPT_GETIOSTATE, "" + pinId);
+            return (result == "1");
+        }
+    }
     class DenkoviPowerControl : BasePowerControl, IMZPDevice
     {
         private FTD2XX_NET.FTDI m_usb8Relay;
@@ -511,7 +602,19 @@ namespace MultiZonePlayer
 		public string Name() {
 			return "Denkovi";
 		}
-	}
+
+        public override void PowerPinOn(int pinId) {
+            throw new NotImplementedException();
+        }
+
+        public override void PowerPinOff(int pinId) {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsPowerPinOn(int pinId) {
+            throw new NotImplementedException();
+        }
+    }
 
 	public class NumatoLPTControl : BasePowerControl, IMZPDevice
 	{
@@ -585,7 +688,19 @@ namespace MultiZonePlayer
 		public string Name() {
 			return "Numato";
 		}
-	}
+
+        public override void PowerPinOn(int pinId) {
+            throw new NotImplementedException();
+        }
+
+        public override void PowerPinOff(int pinId) {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsPowerPinOn(int pinId) {
+            throw new NotImplementedException();
+        }
+    }
 
     class  GembirdPowerControl: BasePowerControl
     {
@@ -725,9 +840,22 @@ namespace MultiZonePlayer
         {
             return IniFile.PARAM_POWER_CONTROL_APP_PROCESSNAME[1];
         }
+
+        public override void PowerPinOn(int pinId) {
+            throw new NotImplementedException();
+        }
+
+        public override void PowerPinOff(int pinId) {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsPowerPinOn(int pinId) {
+            throw new NotImplementedException();
+        }
     }
 
-	public class RemotePowerControl
+	/*
+    public class RemotePowerControl
 	{
 		private static IDevice device;
 		public static string SwitchOff(int remoteid)
@@ -793,4 +921,5 @@ namespace MultiZonePlayer
 			return result;
 		}
 	}
+     */
 }

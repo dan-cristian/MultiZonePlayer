@@ -267,6 +267,8 @@ namespace MultiZonePlayer
 
             public static String[] PARAM_DTSFILTER_MONIKER = new String[] { "PARAM_DTSFILTER_MONIKER", "@device:sw:{083863F1-70DE-11D0-BD40-00A0C911CE86}\\{A753A1EC-973E-4718-AF8E-A3F554D45C44}" };
 
+            public static String[] PARAM_REMOTE_RELAY_PI = new String[] { "PARAM_REMOTE_RELAY_PI", "http://192.168.0.110/cgi-bin", "URL of the PI remote relay controller" };
+
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
 			public static String DATETIME_MONTH_FORMAT = "MMM";
@@ -377,7 +379,8 @@ namespace MultiZonePlayer
 				PARAM_TEMP_TRESHHOLD,
                 PARAM_SQLITEDB_PATH,
                 PARAM_DTSFILTER_MONIKER,
-                PARAM_ONEWIRE_REMOTE_SERVER_LIST
+                PARAM_ONEWIRE_REMOTE_SERVER_LIST,
+                PARAM_REMOTE_RELAY_PI
              };
             private static string m_iniFinalPath =  null;
             private static string m_iniTempPath = null;
