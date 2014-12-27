@@ -170,7 +170,7 @@ namespace MultiZonePlayer {
 		public MediaItemBase MediaItem;
 
 		public Boolean CameraAlertActive = true;
-		private List<PictureSnapshot> m_pictureList = new List<PictureSnapshot>();
+		//private List<PictureSnapshot> m_pictureList = new List<PictureSnapshot>();
 		private Boolean m_movementAlert = false, m_movementAlertLast = false;
 
 		public DateTime LastAlarmMovementDateTime = DateTime.MinValue;
@@ -1303,7 +1303,7 @@ namespace MultiZonePlayer {
 				else if (fileName.Contains(EventSource.Closure.ToString()))
 					pict.EventSource = EventSource.Closure;
 				else pict.EventSource = EventSource.Undefined;
-				PictureList.Add(pict);
+				//PictureList.Add(pict);
 			}
 		}
 
@@ -1448,9 +1448,9 @@ namespace MultiZonePlayer {
 			return NearbyZonesIdList.Contains(zoneId.ToString() + ";");
 		}
 
-		public List<PictureSnapshot> PictureList {
+		/*public List<PictureSnapshot> PictureList {
 			get { return m_pictureList; }
-		}
+		}*/
 
 		public void RecordVoltage(int voltageIndex, double value, DateTime datetime) {
             HasOneWireVoltageSensor = true;

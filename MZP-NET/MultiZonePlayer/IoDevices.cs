@@ -114,7 +114,7 @@ namespace MultiZonePlayer {
 		}
 
 		public static SensorDevice UpdateGetDevice(String name, String address, String family, ZoneDetails zone, DeviceTypeEnum devtype, String otherInfo, DateTime readdate) {
-			SensorDevice dev = m_deviceList.Find(x => x.Address == address&& x.DeviceType == devtype);
+			SensorDevice dev = m_deviceList.Find(x => x.Address == address);
 			if (dev == null) {
 				dev = new SensorDevice(name, address, family, zone, devtype, otherInfo);
 				m_deviceList.Add(dev);
@@ -124,6 +124,7 @@ namespace MultiZonePlayer {
 				dev.Zone = zone;
 				dev.Family = family;
 				dev.OtherInfo = otherInfo;
+                dev.DeviceType = devtype;
 			}
 			dev.LastRead = readdate;
 			return dev;
@@ -1444,38 +1445,43 @@ namespace MultiZonePlayer {
 			String adapterId;
 
 			while (MZPState.Instance != null) {
-				foreach (DSPortAdapter adapter in m_adapterList) {
-					adapterId = (adapter.getAdapterVersion() + adapter.getPortName());
-					if (localThreadList.Find(x => x.Name == adapterId) == null) {
-						MLog.Log(this, "Adding new 1wire thread for adapter " + adapterId + " total threads="+localThreadList.Count);
-						Thread th= new Thread(() => this.ReadAdapterInLoop(adapter));
-						th.Name = adapterId;
-						th.Start();
-						localThreadList.Add(th);
-					}
-				}
-				if (m_adapterList == null || m_adapterList.Count==0 || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
-					Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", false);
-					foreach (Thread th in localThreadList) {
-						th.Abort();
-					}
-					localThreadList.Clear();
-					Reinitialise();
-				}
-
-                String[] remoteservers = IniFile.PARAM_ONEWIRE_REMOTE_SERVER_LIST[1].Split(Constants.MULTI_ENTRY_SEPARATOR);
-                foreach (String serverUrl in remoteservers) {
-                    if (remoteThreadList.Find(x => x.Name == serverUrl) == null) {
-                        if (serverUrl != "") {
-                            MLog.Log(this, "Adding new 1wire thread for remote server" + serverUrl+ " total threads=" + remoteThreadList.Count);
-                            Thread th = new Thread(() => this.ReadRemoteOwfs(serverUrl));
-                            th.Name = serverUrl;
+                try {
+                    foreach (DSPortAdapter adapter in m_adapterList) {
+                        adapterId = (adapter.getAdapterVersion() + adapter.getPortName());
+                        if (localThreadList.Find(x => x.Name == adapterId) == null) {
+                            MLog.Log(this, "Adding new 1wire thread for adapter " + adapterId + " total threads=" + localThreadList.Count);
+                            Thread th = new Thread(() => this.ReadAdapterInLoop(adapter));
+                            th.Name = adapterId;
                             th.Start();
-                            remoteThreadList.Add(th);
+                            localThreadList.Add(th);
                         }
                     }
+                    if (m_adapterList == null || m_adapterList.Count == 0 || DateTime.Now.Subtract(m_lastOKRead).TotalMinutes > 10) {
+                        Alert.CreateAlert("Reinitialising OneWire as no components were found during last 10 minutes", false);
+                        foreach (Thread th in localThreadList) {
+                            th.Abort();
+                        }
+                        localThreadList.Clear();
+                        Reinitialise();
+                    }
+
+                    String[] remoteservers = IniFile.PARAM_ONEWIRE_REMOTE_SERVER_LIST[1].Split(Constants.MULTI_ENTRY_SEPARATOR);
+                    foreach (String serverUrl in remoteservers) {
+                        if (remoteThreadList.Find(x => x.Name == serverUrl) == null) {
+                            if (serverUrl != "") {
+                                MLog.Log(this, "Adding new 1wire thread for remote server" + serverUrl + " total threads=" + remoteThreadList.Count);
+                                Thread th = new Thread(() => this.ReadRemoteOwfs(serverUrl));
+                                th.Name = serverUrl;
+                                th.Start();
+                                remoteThreadList.Add(th);
+                            }
+                        }
+                    }
+                    Thread.Sleep(1000);
                 }
-				Thread.Sleep(1000);
+                catch (Exception ex) {
+                    Alert.CreateAlertOnce("Errloop1wire", "Error on looping 1wire adapters and remote, ex="+ex.Message);
+                }
 			}
 			MLog.Log(this, "OneWire ReadLoop exit");
 		}
@@ -1499,6 +1505,11 @@ namespace MultiZonePlayer {
                             MLog.Log("Warning, invalid remoteowfs date read line=[" + line + "]");
                         }
                         else {
+                            if (DateTime.Now.Subtract(datetime).TotalMinutes > 10) {
+                                Alert.CreateAlertOnce("Remote OWFS records are >10 minutes old, probably system was shutdown or net interrupted, processing lines count="
+                                    + lines.Length + " first datetime=" + datetime.ToString(Constants.DATETIME_DB_FORMAT) 
+                                    + " last datetime="+lines[lines.Length-1][1], "remoteowfs-oldrecs");
+                            }
                             classid = values[0];
                             address = values[2].ToUpper();
                             zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.Contains(address) || x.OneWireIODeviceId.Contains(address));

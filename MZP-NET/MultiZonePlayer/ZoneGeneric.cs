@@ -217,9 +217,9 @@ namespace MultiZonePlayer {
 					m_zoneDetails.MovementAlert = true;
 					m_zoneDetails.IncreaseCameraCountIfArmed();
 					m_zoneDetails.LastCamAlertDateTime = DateTime.Now;
-					MZPState.Instance.ZoneEvents.AddCamAlert(vals);
-					String camId = vals.GetValue(GlobalParams.oid);
-					string message = "Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
+                    //MZPState.Instance.ZoneEvents.AddCamAlert(vals);
+					String camId = vals.GetValue(GlobalParams.alertsource);
+					string message = vals.GetValue(GlobalParams.msg);//"Cam alert from camid=" + camId + " zone is " + m_zoneDetails.ZoneName;
 					if (m_zoneDetails.IsArmed || (MZPState.Instance.SystemAlarm.IsArmed && MZPState.Instance.SystemAlarm.AreaId==m_zoneDetails.AlarmAreaId)) {
 						Alert.CreateAlert(message, m_zoneDetails, false, null, Alert.NotificationFlags.NeedsImmediateUserAck, 3);
 					}
@@ -1031,8 +1031,7 @@ namespace MultiZonePlayer {
 					pict.EventSource = source;
 					pict.DateTimeTaken = DateTime.Now;
 					pict.ThumbFileName = System.IO.Path.GetFileName(Utilities.GenerateThumb(fullfilepath, "png", 48));
-					m_zoneDetails.PictureList.Add(pict);
-
+					//m_zoneDetails.PictureList.Add(pict);
 					return fullfilepath;
 				}
 			}

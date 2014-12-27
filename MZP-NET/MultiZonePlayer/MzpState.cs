@@ -39,7 +39,7 @@ namespace MultiZonePlayer {
 		public Boolean IsShuttingDown = false;
 		private List<MoodMusic> m_moodMusicList;
 		private Cron m_cron;
-		private MultiZonePlayer.Tail m_Tail;
+		private MultiZonePlayer.Tail m_paradoxTail;
 		private ZoneEvents m_zoneEvents;
 		private Alarm m_systemAlarm;
 		private Boolean m_isFollowMeMusic = false;
@@ -175,16 +175,18 @@ namespace MultiZonePlayer {
 			}
 
 			MLog.Log(this, "Loading other settings from ini");
-
 			LoadIniInput();
 			LoadPlaylist();
 			m_zoneEvents = new ZoneEvents();
 			WebServer.Initialise();
 			Test.RunTest();
 
-			m_Tail = new MultiZonePlayer.Tail(IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[1]);
-			m_Tail.MoreData += new MultiZonePlayer.Tail.MoreDataHandler(m_zoneEvents.Tail_MoreData_PARADOX);
-
+            if (IniFile.PARAM_PARADOX_WINLOAD_ENABLE[1] == "1") {
+                m_paradoxTail = new MultiZonePlayer.Tail(IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[1]);
+                m_paradoxTail.MoreData += new MultiZonePlayer.Tail.MoreDataHandler(m_zoneEvents.Tail_MoreData_PARADOX);
+            }
+            else
+                MLog.Log(this, "Winload Paradox is not enabled, not initialising monitor alert");
 			Thread lazyLoad = new Thread(() => LoadSerials());
 			lazyLoad.Name = "LoadSerials";
 			lazyLoad.Start();
@@ -301,7 +303,7 @@ namespace MultiZonePlayer {
 				}
 				PowerControlOff();
 				WebServer.Shutdown();
-				m_Tail.Stop();
+                if (m_paradoxTail!=null) m_paradoxTail.Stop();
 				m_syslog.Stop();
 				foreach (Display disp in m_displayList) {
 					disp.Disconnect();
@@ -979,12 +981,14 @@ namespace MultiZonePlayer {
 		}
 
 		private void HealthCheckiSpy() {
-			if (!Utilities.IsProcAlive(IniFile.PARAM_ISPY_PROCNAME[1])) {
-				MLog.Log(this, "iSpy proc not running, restarting. Searched for proc:" + IniFile.PARAM_ISPY_PROCNAME[1]);
-				Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
-				RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1],
-					System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
-			}
+            if (IniFile.PARAM_ISPY_ENABLE[1] == "1") {
+                if (!Utilities.IsProcAlive(IniFile.PARAM_ISPY_PROCNAME[1])) {
+                    MLog.Log(this, "iSpy proc not running, restarting. Searched for proc:" + IniFile.PARAM_ISPY_PROCNAME[1]);
+                    Utilities.CloseProcSync(IniFile.PARAM_ISPY_OTHERPROC[1]);
+                    RestartGenericProc(IniFile.PARAM_ISPY_PROCNAME[1], IniFile.PARAM_ISPY_APP_PATH[1],
+                        System.Diagnostics.ProcessWindowStyle.Minimized, System.Diagnostics.ProcessPriorityClass.BelowNormal);
+                }
+            }
 		}
 
         private void ReduceProgramsPriority() {
@@ -1012,39 +1016,41 @@ namespace MultiZonePlayer {
             }
         }
 		private void HealthCheckWinload() {
-			if (!Utilities.IsProcAlive(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1])) {
-				MLog.Log(this, "WINLOAD proc not running, restarting");
-				m_isWinloadLoading = true;
-				RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
-					IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal,
-					System.Diagnostics.ProcessPriorityClass.BelowNormal);
-			}
-			else {
-				if ((DateTime.Now.Subtract(SystemAlarm.LastAreaStateChange).Duration().TotalDays > 1)
-				    && (DateTime.Now.Subtract(SystemAlarm.LastAlarmEventDateTime).Duration().TotalDays > 1)) {
-					//MLog.Log(this, "WINLOAD suspected to be not connected");
-				}
+            if (IniFile.PARAM_PARADOX_WINLOAD_ENABLE[1] == "1") {
+                if (!Utilities.IsProcAlive(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1])) {
+                    MLog.Log(this, "WINLOAD proc not running, restarting");
+                    m_isWinloadLoading = true;
+                    RestartGenericProc(IniFile.PARAM_PARADOX_WINLOAD_PROCNAME[1],
+                        IniFile.PARAM_PARADOX_WINLOAD_APP_PATH[1], System.Diagnostics.ProcessWindowStyle.Normal,
+                        System.Diagnostics.ProcessPriorityClass.BelowNormal);
+                }
+                else {
+                    if ((DateTime.Now.Subtract(SystemAlarm.LastAreaStateChange).Duration().TotalDays > 1)
+                        && (DateTime.Now.Subtract(SystemAlarm.LastAlarmEventDateTime).Duration().TotalDays > 1)) {
+                        //MLog.Log(this, "WINLOAD suspected to be not connected");
+                    }
 
-				DateTime lastCamEvent = m_initMZPStateDateTime;
-				foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
-					if (zone.HasMotionSensor && zone.HasCamera) {
-						if (zone.LastCamAlertDateTime.CompareTo(lastCamEvent) > 0) {
-							lastCamEvent = zone.LastCamAlertDateTime;
-						}
-					}
-				}
-				DateTime alarmRefTime = DateTime.Compare(m_initMZPStateDateTime, m_systemAlarm.LastAlarmEventDateTime) > 0
-					? m_initMZPStateDateTime
-					: m_systemAlarm.LastAlarmEventDateTime;
-				double diff = lastCamEvent.Subtract(alarmRefTime).TotalMinutes;
-				if (diff > 60) {
-					//MLog.Log(this, "WINLOAD potential error, not running, time dif in min=" + diff);
-					//LogEvent(MZPEvent.EventSource.System, "Winload restarting, was not responsive", MZPEvent.EventType.Security, MZPEvent.EventImportance.Error);
-					//m//_systemAlarm.LastAlarmEventDateTime = DateTime.Now;
-					//RestartWinload();
-				}
-				//else MLog.Log(this, "WINLOAD move diff OK, min=" + diff);
-			}
+                    DateTime lastCamEvent = m_initMZPStateDateTime;
+                    foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+                        if (zone.HasMotionSensor && zone.HasCamera) {
+                            if (zone.LastCamAlertDateTime.CompareTo(lastCamEvent) > 0) {
+                                lastCamEvent = zone.LastCamAlertDateTime;
+                            }
+                        }
+                    }
+                    DateTime alarmRefTime = DateTime.Compare(m_initMZPStateDateTime, m_systemAlarm.LastAlarmEventDateTime) > 0
+                        ? m_initMZPStateDateTime
+                        : m_systemAlarm.LastAlarmEventDateTime;
+                    double diff = lastCamEvent.Subtract(alarmRefTime).TotalMinutes;
+                    if (diff > 60) {
+                        //MLog.Log(this, "WINLOAD potential error, not running, time dif in min=" + diff);
+                        //LogEvent(MZPEvent.EventSource.System, "Winload restarting, was not responsive", MZPEvent.EventType.Security, MZPEvent.EventImportance.Error);
+                        //m//_systemAlarm.LastAlarmEventDateTime = DateTime.Now;
+                        //RestartWinload();
+                    }
+                    //else MLog.Log(this, "WINLOAD move diff OK, min=" + diff);
+                }
+            }
 		}
 
 		private void AutoArmCheck() {

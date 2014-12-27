@@ -165,6 +165,7 @@ namespace MultiZonePlayer
             public static String[] PARAM_ISPY_PROCNAME = new String[] { "PARAM_ISPY_PROCNAME", "ispy" };
             public static String[] PARAM_ISPY_OTHERPROC = new String[] { "PARAM_ISPY_OTHERPROC", "ffmpeg" };
             public static String[] PARAM_ISPY_APP_PATH = new String[] { "PARAM_ISPY_APP_PATH", "c:\\Program Files\\iSpy\\iSpy\\iSpy.exe"};
+            public static String[] PARAM_ISPY_ENABLE = new String[] { "PARAM_ISPY_ENABLE", "0", "Enable ispy auto launch and check, 1 for true, 0 for false" };
             public static String[] PARAM_HUBIC_PROCNAME = new String[] { "PARAM_HUBIC_PROCNAME", "hubiC" };
             public static String[] PARAM_DROPBOX_PROCNAME = new String[] { "PARAM_DROPBOX_PROCNAME", "Dropbox" };
             public static String[] PARAM_CRYPTSYNC_PROCNAME = new String[] { "PARAM_CRYPTSYNC_PROCNAME", "CryptSync" };
@@ -181,7 +182,8 @@ namespace MultiZonePlayer
             public static String[] PARAM_PARADOX_WINLOAD_DATA_FILE = new String[] { "PARAM_PARADOX_WINLOAD_DATA_FILE", "1.txt" };
             public static String[] PARAM_PARADOX_WINLOAD_PROCNAME = new String[] { "PARAM_PARADOX_WINLOAD_PROCNAME", "WinLoad" };
             public static String[] PARAM_PARADOX_WINLOAD_APP_PATH = new String[] { "PARAM_PARADOX_WINLOAD_APP_PATH", "c:\\Program Files\\Paradox Security Systems\\WinLoad\\WinLoad.exe" };
-
+            public static String[] PARAM_PARADOX_WINLOAD_ENABLE = new String[] { "PARAM_PARADOX_WINLOAD_ENABLE", "0", "Enable winload auto launch and log file check, 1 for true, 0 for false" };
+            
             public static String[] PARAM_GTALK_USERNAME = new String[] { "PARAM_GTALK_USERNAME", "antonio.gaudi33@gmail.com" };
             public static String[] PARAM_GTALK_USERPASS = new String[] { "PARAM_GTALK_USERPASS", "S9mRs4vm" };
 			public static String[] PARAM_GTALK_USERNAME_EMAILNAME = new String[] { "PARAM_GTALK_USERNAME_EMAILNAME", "Antonio Gaudi 33" };
@@ -254,7 +256,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ONEWIRE_FAST_READ_DELAY = new String[] { "PARAM_ONEWIRE_FAST_READ_DELAY", "2", "number of miliseconds between reads for fast components, e.g. counters or IO" };
             public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
 			public static String[] PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX = new String[] { "PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX", "1", "resolutionList index for temp reading: 0=0.5, 1=0.25, 2=0...." };
-            public static String[] PARAM_ONEWIRE_REMOTE_SERVER_LIST = new String[] { "PARAM_ONEWIRE_REMOTE_SERVER_LIST", "http://pi-casa/onewire.php;", "list of owfs 1-wire servers urls, like http://pi-casa/onewire.php;http://pi2/onewire.php" };
+            public static String[] PARAM_ONEWIRE_REMOTE_SERVER_LIST = new String[] { "PARAM_ONEWIRE_REMOTE_SERVER_LIST", "http://192.168.0.110/onewire.php;", "list of owfs 1-wire servers urls, like http://pi-casa/onewire.php;http://pi2/onewire.php" };
 
 			public static String[] PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD = new String[] { "PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD", "15", "close power after x minutes of activity in a zone without user interaction or move" };
 			public static String[] PARAM_RECENT_RUN_INTERVAL_MINUTES = new String[] { "PARAM_RECENT_RUN_INTERVAL_MINUTES", "1", "number of minutes to keep a zone power on after recent run state, e.g. music playing" };
@@ -306,6 +308,7 @@ namespace MultiZonePlayer
                 PARAM_ISPY_PROCNAME,
                 PARAM_ISPY_OTHERPROC,
                 PARAM_ISPY_APP_PATH,
+                PARAM_ISPY_ENABLE,
                 PARAM_WEB_USER,
                 PARAM_WEB_PASS,
                 PARAM_WEB_DEFAULT_PAGE,
@@ -316,6 +319,7 @@ namespace MultiZonePlayer
                 PARAM_PARADOX_WINLOAD_DATA_FILE,
                 PARAM_PARADOX_WINLOAD_APP_PATH,
                 PARAM_PARADOX_WINLOAD_PROCNAME,
+                PARAM_PARADOX_WINLOAD_ENABLE,
                 PARAM_GTALK_USERNAME,
                 PARAM_GTALK_USERPASS,
                 //PARAM_GTALK_SERVER,
