@@ -838,6 +838,7 @@ namespace MultiZonePlayer
 		public const string STR_TIMEOUT = "[timeout]";
 		public const string STR_EXCEPTION = "[exception]";
         public const string DATETIME_DB_FORMAT = "yyyy-MM-dd HH:mm:ss.sss";
+        public const int INTERVAL_SHOW_INIT_ERRORS_MINUTES = 10;
 	}
 
 

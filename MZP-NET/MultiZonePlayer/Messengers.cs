@@ -26,6 +26,7 @@ namespace MultiZonePlayer
     class GTalkMessengers:IMessenger, IMZPDevice
     {
 		private int m_reinitTries=0;
+        private DateTime m_lastInitFailed = DateTime.MinValue;
         agsXMPP.XmppClientConnection objXmpp;
         String m_user, m_password;
         //ValueList<String> m_rosterList;
@@ -50,38 +51,38 @@ namespace MultiZonePlayer
                 objXmpp.Close();
         }
 
-        public void Reinitialise()
-        {
-			m_reinitTries++;
-            m_presenceList = new List<agsXMPP.protocol.client.Presence>();
-            objXmpp = new agsXMPP.XmppClientConnection();
-            agsXMPP.Jid jid = null;
-            jid = new agsXMPP.Jid(m_user);
-            objXmpp.Password = m_password;
-            objXmpp.Username = jid.User;
-            objXmpp.Server = jid.Server;
-            objXmpp.AutoResolveConnectServer = true;
-            objXmpp.OnPresence += new agsXMPP.protocol.client.PresenceHandler(xmpp_OnPresence);
-			objXmpp.OnError += new ErrorHandler(objXmpp_OnError);
-            Login();
+        public void Reinitialise(){
+            try {
+                m_reinitTries++;
+                m_presenceList = new List<agsXMPP.protocol.client.Presence>();
+                objXmpp = new agsXMPP.XmppClientConnection();
+                agsXMPP.Jid jid = null;
+                jid = new agsXMPP.Jid(m_user);
+                objXmpp.Password = m_password;
+                objXmpp.Username = jid.User;
+                objXmpp.Server = jid.Server;
+                objXmpp.AutoResolveConnectServer = true;
+                objXmpp.OnPresence += new agsXMPP.protocol.client.PresenceHandler(xmpp_OnPresence);
+                objXmpp.OnError += new ErrorHandler(objXmpp_OnError);
+                Login();
+            }
+            catch (Exception ex) {
+                if (DateTime.Now.Subtract(m_lastInitFailed).TotalMinutes > Constants.INTERVAL_SHOW_INIT_ERRORS_MINUTES) {
+                    MLog.Log(this, "Error reinit gtalk retry count="+m_reinitTries+", ex=" + ex.ToString());
+                    m_lastInitFailed = DateTime.Now;
+                }
+            }
         }
 
         private void Login()
         {
-            MLog.Log(this, "GTalk Messenger login start");
-            try
-            {
-                objXmpp.OnMessage += messageReceived;
-                objXmpp.OnAuthError += loginFailed;
-                objXmpp.OnLogin += loggedIn;
-                objXmpp.Open();
-				m_reinitTries = 0;
-                MLog.Log(this, "GTalk Messenger login completed");
-            }
-            catch (Exception ex)
-            {
-                MLog.Log(ex, this, "GTalk Messenger login error");
-            }
+            //MLog.Log(this, "GTalk Messenger login start");
+            objXmpp.OnMessage += messageReceived;
+            objXmpp.OnAuthError += loginFailed;
+            objXmpp.OnLogin += loggedIn;
+            objXmpp.Open();
+			m_reinitTries = 0;
+            //MLog.Log(this, "GTalk Messenger login completed");
         }
 
 		public Boolean IsFaulty()
@@ -143,7 +144,7 @@ namespace MultiZonePlayer
         }
 		private void objXmpp_OnError(object sender, Exception ex)
 		{
-			MLog.Log(ex, this, "GTALK ON ERROR");
+			//MLog.Log(ex, this, "GTALK ON ERROR");
 		}
 
         /*
@@ -167,10 +168,9 @@ namespace MultiZonePlayer
         public Boolean SendMessageToTarget(String message)
         {
 			Boolean result = false ;
-            if (!objXmpp.Authenticated)
-            {
+            if (!objXmpp.Authenticated){
                 MLog.Log(this, "Messenger not authenticated, try relogin");
-                Login();
+                Reinitialise();
             }
 
 			string[] targets = IniFile.PARAM_GTALK_TARGETUSER[1].Split(';');
@@ -193,7 +193,7 @@ namespace MultiZonePlayer
 			if (!objXmpp.Authenticated)
 			{
 				MLog.Log(this, "Messenger not authenticated, try relogin");
-				Login();
+				Reinitialise();
 			}
 
 			if (objXmpp != null && objXmpp.Authenticated)
@@ -293,7 +293,7 @@ namespace MultiZonePlayer
         {
 			if (!objXmpp.Binded)
 			{
-				MLog.Log(this, "Error GTALK, not binded");
+				//MLog.Log(this, "Error GTALK, not binded");
 				return false;
 			}
             if (!objXmpp.Authenticated)
