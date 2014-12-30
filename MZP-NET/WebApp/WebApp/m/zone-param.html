@@ -17,12 +17,12 @@
 <~if;"#S.GetEditableFieldList,%_classname.?,%j.Editor#"!="textarea"~>
 <input type="text" name="text#S.GetEditableFieldList,%_classname.?,%j.Editor#" 
        size="#S.GetEditableFieldList,%_classname.?,%j.EditorSize#" 
-       value="#S.%_classnameList.?,%_index:S.GetEditableFieldList,%_classname.?,%j.Name#"/>
+       value="#S.%_classname.ValueList.?,%_index:S.GetEditableFieldList,%_classname.?,%j.Name#"/>
 <~~>
 <~if;"#S.GetEditableFieldList,%_classname.?,%j.Editor#"=="textarea"~>
 <textarea name="text" cols="#S.GetEditableFieldList,%_classname.?,%j.EditorSize1#" 
     rows="#S.GetEditableFieldList,%_classname.?,%j.EditorSize2#">
-#S.%_classnameList.?,%_index:S.GetEditableFieldList,%_classname.?,%j.Name#</textarea>
+#S.%_classname.ValueList.?,%_index:S.GetEditableFieldList,%_classname.?,%j.Name#</textarea>
 <~~>
 <input name="field" type="hidden" value="#S.GetEditableFieldList,%_classname.?,%j.Name#"/>
 #S.GetEditableFieldList,%_classname.?,%j.Name#, #S.GetEditableFieldList,%_classname.?,%j.Type#, #S.GetEditableFieldList,%_classname.?,%j.Description#

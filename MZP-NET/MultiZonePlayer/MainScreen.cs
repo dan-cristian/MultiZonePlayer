@@ -11,14 +11,86 @@ namespace MultiZonePlayer
 {
     public partial class MainScreen : Form
     {
+        public static MainScreen parentForm = null;
         public FormOptions m_formOptions=null;
         private ControlCenter m_controlForm;
         private VideoPlayList m_videoForm;
+        private RawInputDevice m_rawDeviceId = null;
 
+        public RawInputDevice RawDeviceId {
+            get { return m_rawDeviceId; }
+        }
+        private RawInputDevice.DeviceEventHandler m_rawevent = null;
         public MainScreen()
         {
+            parentForm = this;
             MZPState.Initialise();
             InitializeComponent();
+        }
+
+        // required by RawInput, The WndProc is overridden to allow InputDevice to intercept
+        // messages to the window and thus catch WM_INPUT messages
+        protected override void WndProc(ref Message message) {
+            if (m_rawDeviceId != null) {
+                m_rawDeviceId.ProcessMessage(message);
+            }
+            base.WndProc(ref message);
+        }
+
+        public void RegisterRawInput() {
+            //clean previous rawdevice
+            try {
+                if (m_rawDeviceId != null && m_rawevent != null) {
+                    m_rawDeviceId.KeyPressed -= m_rawevent;
+                    m_rawDeviceId = null;
+                }
+            }
+            catch (Exception ex) {
+                MLog.Log(this, "Err removing event handler ex=" + ex.Message);
+            }
+
+            //not needed
+            //Program.kh = new KeyboardHook(KeyboardHook.Parameters.PassAllKeysToNextApp);
+            
+            // Create a new InputDevice object, get the number of
+            // keyboards, and register the method which will handle the 
+            // InputDevice KeyPressed event
+            m_rawDeviceId = new RawInputDevice(Handle);
+            m_rawevent = new RawInputDevice.DeviceEventHandler(m_KeyPressed);
+            m_rawDeviceId.KeyPressed += m_rawevent;
+        }
+
+        
+        /*public void RegisterRawInput() {
+            RegisterRawInput();
+            Program.kh = new KeyboardHook(KeyboardHook.Parameters.PassAllKeysToNextApp);
+            
+            //Program.kh.KeyIntercepted += new KeyboardHook.KeyboardHookEventHandler(kh_KeyIntercepted);
+        }*/
+
+        /*void kh_KeyIntercepted(KeyboardHook.KeyboardHookEventArgs e) {
+            //Check if this key event is being passed to
+            //other applications and disable TopMost in 
+            //case they need to come to the front
+            if (e.PassThrough) {
+                this.TopMost = false;
+            }
+
+            MLog.LogKey(String.Format("KeyHook: {0} code={1} pass={2} name={3} up={4}",
+                e.keySet, e.KeyCode, e.PassThrough, e.KeyName, e.keyUp));
+            //ds.Draw(e.KeyName);
+        }*/
+
+        private void m_KeyPressed(object sender, ref RawInputDevice.KeyControlEventArgs e) {
+            MLog.LogKey(String.Format("Raw: {0} down={1}", e.Keyboard.vKey, e.Keyboard.isKeyDownWinMessage));
+            KeyDetail kd = new KeyDetail(e.Keyboard.vKey, e.Keyboard.deviceName, e.Keyboard.Name,
+                e.Keyboard.isKeyDownWinMessage, e.Keyboard.isKeyUpWinMessage);
+            if (parentForm.m_formOptions != null && parentForm.m_formOptions.Visible) {
+                parentForm.m_formOptions.m_KeyPressed(kd);
+                return;
+            }
+
+            API.DoCommandFromRawInput(kd);
         }
 
         private void ShowNewForm(object sender, EventArgs e)

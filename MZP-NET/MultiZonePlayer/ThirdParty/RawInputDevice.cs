@@ -307,6 +307,7 @@ namespace MultiZonePlayer
         }
 
         #endregion Variables and event handling
+        public DateTime m_registeredDateTime = DateTime.Now;
 
         #region InputDevice( IntPtr hwnd )
 
@@ -329,8 +330,7 @@ namespace MultiZonePlayer
             rid_keyboard[0].dwFlags = RIDEV_INPUTSINK;
             rid_keyboard[0].hwndTarget = hwnd;
 
-            if (!RegisterRawInputDevices(rid_keyboard, (uint)rid_keyboard.Length, (uint)Marshal.SizeOf(rid_keyboard[0])))
-            {
+            if (!RegisterRawInputDevices(rid_keyboard, (uint)rid_keyboard.Length, (uint)Marshal.SizeOf(rid_keyboard[0]))){
                 throw new ApplicationException( "Failed to register raw input keyboard device(s)." );
             }
 
@@ -341,8 +341,7 @@ namespace MultiZonePlayer
             rid_keypad[0].dwFlags = RIDEV_INPUTSINK;
             rid_keypad[0].hwndTarget = hwnd;
 
-            if (!RegisterRawInputDevices(rid_keypad, (uint)rid_keypad.Length, (uint)Marshal.SizeOf(rid_keypad[0])))
-            {
+            if (!RegisterRawInputDevices(rid_keypad, (uint)rid_keypad.Length, (uint)Marshal.SizeOf(rid_keypad[0]))){
                 throw new ApplicationException("Failed to register raw input keypad device(s).");
             }
 
@@ -362,8 +361,6 @@ namespace MultiZonePlayer
             {
                 throw new ApplicationException("Failed to register raw input mouse device(s).");
             }*/
-            
-
             EnumerateDevices();
         }
 

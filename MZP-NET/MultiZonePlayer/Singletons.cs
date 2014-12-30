@@ -1024,8 +1024,36 @@ namespace MultiZonePlayer {
         }
     }
 
+    public class Schedule : PersistentObject {
+        [Category("Edit")]
+        public String Name;
+        [Category("Edit"), Description("When the cron definition will apply, replacing the default zone cron one")]
+        public String OnCondition;
+        [Category("Edit"), Description("Short description about rule purpose")]
+        public string Description;
+
+        public Schedule() {
+            IniSectionName = this.GetType().Name;
+            Name = "Default " + Id;
+        }
+        public static new List<Schedule> ValueList {
+            get {
+                if (GetValueList(typeof(Schedule)) != null)
+                    return GetValueList(typeof(Schedule)).Select(x => (Schedule)x).ToList();
+                else return null;
+            }
+        }
+        public Schedule GetByName(String name) {
+            return ValueList.Find(x => x.Name == name);
+        }
+        
+        /*
+        public List<Schedule> ScheduleList {
+            get { return Schedule.ValueList.Select(x => (Schedule)x).ToList(); }
+        }*/
+    }
     /// <summary>
-    /// NOTE: Update references on MZPState and 
+    /// NOTE: Update references on MZPState."name"List and Reflect.GetPropertyField
     /// </summary>
 	public class PersistentObject {
 		private class ObjectStored{
@@ -1111,8 +1139,23 @@ namespace MultiZonePlayer {
 				return null;
 		}
 
-		public virtual void LoadFromIni(String iniSectionName) {
-			Hashtable values = IniFile.LoadAllIniEntriesByIntKey(iniSectionName);
+        public void LoadFromIni() {
+            LoadFromIni(this.GetType().Name);
+        }
+
+        public void LoadFromIni(bool separateIniFile) {
+            if (separateIniFile)
+                PrivLoadFromIni(this.GetType().Name, this.GetType().Name + ".ini");
+            else
+                LoadFromIni(this.GetType().Name);
+        }
+
+        public virtual void LoadFromIni(String iniSectionName) {
+            PrivLoadFromIni(iniSectionName, "");
+        }
+
+		private void PrivLoadFromIni(String iniSectionName, String fileName) {
+			Hashtable values = IniFile.LoadAllIniEntriesByIntKey(iniSectionName, fileName);
 			PersistentObject item;
 			try {
 				foreach (String json in values.Values) {
@@ -1134,11 +1177,27 @@ namespace MultiZonePlayer {
 			json = fastJSON.JSON.ToJSON(this, param);
 			IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
 		}
-		
+
+        private void SaveEntryToIni(bool separateIniFile) {
+            String json;
+            fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+            param.UseExtensions = false;
+            json = fastJSON.JSON.ToJSON(this, param);
+            if (separateIniFile)
+                IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json, GetList(this).IniSectionName+".ini");
+            else
+                IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
+        }
+
 		public void SaveAllToIni() {
 			foreach (PersistentObject item in ValueList) {
 				item.SaveEntryToIni();
 			}
 		}
+        public void SaveAllToIni(bool separateIniFile) {
+            foreach (PersistentObject item in ValueList) {
+                item.SaveEntryToIni(separateIniFile);
+            }
+        }
 	}
 }

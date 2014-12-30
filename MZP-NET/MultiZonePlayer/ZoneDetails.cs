@@ -149,7 +149,8 @@ namespace MultiZonePlayer {
 		public double MaxAllowedVoltageValue = Constants.NOT_SET;
 
 		public Boolean ScheduledHeatActive = false;
-		public String CronSchedule = "";
+		[Description("Default cron schedule, if no other conditional schedules are defined")]
+        public String CronSchedule = "";
 		[Category("Edit")]
 		public String Color;
 

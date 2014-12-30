@@ -400,41 +400,65 @@ namespace MultiZonePlayer
             /// Key Name
             /// <PARAM name="Value"></PARAM>
             /// Value Name
-            public static void IniWriteValue(string Section, string Key, string Value){
+            private static void PrivIniWriteValue(string Section, string Key, string Value, String fileName){
                 lock (m_iniFinalPath) {
+                    fileName = "\\" + fileName;
+                    String p_iniFinalPath, p_iniOldPath, p_iniTempPath;
                     try {
                         if (m_iniFinalPath == null)
-                            initPath();
-                        if (File.Exists(m_iniOldPath)) {
-                            File.Delete(m_iniOldPath);
+                            initPath(INI_FILE, out m_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
+
+                        if (fileName == "") {
+                            //main ini file
+                            p_iniFinalPath = m_iniFinalPath;
+                            p_iniOldPath = m_iniOldPath;
+                            p_iniTempPath = m_iniTempPath;
                         }
-                        if (File.Exists(m_iniTempPath)) {
-                            File.Move(m_iniTempPath, m_iniOldPath);
+                        else {
+                            initPath(fileName, out p_iniFinalPath, out p_iniTempPath, out p_iniOldPath);
                         }
-                        File.Copy(m_iniFinalPath, m_iniTempPath);
+                        
+                        if (File.Exists(p_iniOldPath)) {
+                            File.Delete(p_iniOldPath);
+                        }
+                        if (File.Exists(p_iniTempPath)) {
+                            File.Move(p_iniTempPath, p_iniOldPath);
+                        }
+                        if (File.Exists(p_iniFinalPath)) {
+                            File.Copy(p_iniFinalPath, p_iniTempPath);
+                        }
                         if (Value == "") Value = ".";
-                        long res = Utilities.WritePrivateProfileString(Section, Key, Value, m_iniTempPath);
+                        long res = Utilities.WritePrivateProfileString(Section, Key, Value, p_iniTempPath);
                         try {
-                            File.Move(m_iniFinalPath, m_iniOldPath);
-                            File.Move(m_iniTempPath, m_iniFinalPath);
+                            if (File.Exists(p_iniFinalPath)) {
+                                File.Move(p_iniFinalPath, p_iniOldPath);
+                            }
+                            File.Move(p_iniTempPath, p_iniFinalPath);
                         }
                         catch (Exception ex1) {
-                            Alert.CreateAlert("Potential error on commiting ini file, ex=" + ex1.Message, true);
-                            File.Move(m_iniTempPath, m_iniFinalPath);
+                            Alert.CreateAlert("Potential error on commiting ini file "+fileName+", ex=" + ex1.Message, true);
+                            File.Move(p_iniTempPath, p_iniFinalPath);
                         }
                     }
                     catch (Exception ex2) {
-                        Alert.CreateAlert("Potential error on saving ini file, ex=" + ex2.Message, true);
+                        Alert.CreateAlert("Potential error on saving ini file "+fileName+", ex=" + ex2.Message, true);
                     }
                 }
             }
 
-            private static void initPath()
+            public static void IniWriteValue(string Section, string Key, string Value) {
+                PrivIniWriteValue(Section, Key, Value, "");
+            }
+
+            public static void IniWriteValue(string Section, string Key, string Value, string fileName) {
+                PrivIniWriteValue(Section, Key, Value, fileName);
+            }
+            private static void initPath(String fileName, out String main, out String tmp, out String old)
             {
                 //path = Directory.GetCurrentDirectory() + INI_FILE;
-                m_iniFinalPath = CurrentPath() + INI_FILE;
-                m_iniTempPath = CurrentPath() + INI_FILE + ".tmp";
-                m_iniOldPath = CurrentPath() + INI_FILE + ".old";
+                main = CurrentPath() + fileName;
+                tmp= CurrentPath() + fileName + ".tmp";
+                old = CurrentPath() + fileName + ".old";
                 
             }
 
@@ -467,17 +491,19 @@ namespace MultiZonePlayer
                 return entries;
             }
 
-            public static Hashtable LoadAllIniEntriesByIntKey(String sectionName)
-            {
+            public static Hashtable LoadAllIniEntriesByIntKey(String sectionName) {
+                return PrivLoadAllIniEntriesByIntKey(sectionName, "");
+            }
+            public static Hashtable LoadAllIniEntriesByIntKey(String sectionName, String iniFileName) {
+                return PrivLoadAllIniEntriesByIntKey(sectionName, iniFileName);
+            }
 
+            private static Hashtable PrivLoadAllIniEntriesByIntKey(String sectionName, String iniFileName) {
                 Hashtable entries = new Hashtable();
                 String entry;
-
-
                 int i = 0;
-                do
-                {
-                    entry = IniReadValue(sectionName, i.ToString());
+                do{
+                    entry = IniReadValue(sectionName, i.ToString(), iniFileName);
                     if (entry == "") break;
                     if (entry == ".") entry = "";
                     //hack to support network paths
@@ -487,7 +513,6 @@ namespace MultiZonePlayer
                     i++;
                 }
                 while (true);
-
                 return entries;
             }
 
@@ -525,12 +550,31 @@ namespace MultiZonePlayer
                 return entries;
             }
 
-            
-            public static string IniReadValue(string Section, string Key)
-            {
+
+            public static string IniReadValue(string Section, string Key) {
                 if (m_iniFinalPath == null)
-                    initPath();
+                    initPath(INI_FILE, out m_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
                 return Utilities.IniReadValue(Section, Key, m_iniFinalPath);
+            }
+
+            public static string IniReadValue(string Section, string Key, String iniFileName) {
+                return PrivIniReadValue(Section, Key, iniFileName);
+            }
+
+            private static string PrivIniReadValue(string Section, string Key, String iniFileName)
+            {
+                String p_iniFinalPath, p_iniTempPath, p_iniOldPath;
+                if (iniFileName == "") {
+                    if (m_iniFinalPath == null)
+                        initPath(INI_FILE, out m_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
+                    p_iniFinalPath = m_iniFinalPath;
+                }
+                else
+                {
+                    iniFileName = "\\"+iniFileName;
+                    initPath(iniFileName, out p_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
+                }
+                return Utilities.IniReadValue(Section, Key, p_iniFinalPath);
             }
 
 			public static bool IsWhiteListed(string window)

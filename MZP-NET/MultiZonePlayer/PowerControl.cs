@@ -130,7 +130,7 @@ namespace MultiZonePlayer
         private const string SCRIPT_GETIOSTATE = "/relayget.sh?";
         private const string SCRIPT_SETOUTSTATE = "/relayset.sh?";
         private const string VALUE_KEY= "RESULTOK";
-
+        private int[] m_outputPinList = new int[40];//for B and B+
         public RemoteRelayPI() {
             m_client = new WebClient();
             Open();
@@ -200,7 +200,7 @@ namespace MultiZonePlayer
         }
 
         public override void PowerPinOn(int pinId) {
-            RunScript(SCRIPT_SETOUTSTATE, "pin", ""+pinId, "on", "1");
+            RunScript(SCRIPT_SETOUTSTATE, "pin", ""+pinId, "value", "1");
         }
 
         public override void PowerPinOff(int pinId) {

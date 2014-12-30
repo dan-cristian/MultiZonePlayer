@@ -64,6 +64,12 @@ namespace MultiZonePlayer {
 		private MacroEntry m_macro = new MacroEntry();
         private RemoteHotSpot m_remotehotspot = new RemoteHotSpot();
         private Parameter m_parameter = new Parameter();
+        private Schedule m_schedule = new Schedule();
+
+        public Schedule Schedule {
+            get { return m_schedule; }
+            set { m_schedule = value; }
+        }
 		private Boolean m_homeMessageActive = false;
 		private String m_homeMessage = "";
 
@@ -149,6 +155,7 @@ namespace MultiZonePlayer {
 			LightSensor.LoadFromIni();
             m_remotehotspot.LoadFromIni(IniFile.INI_SECTION_REMOTEHOTSPOT);
             m_parameter.LoadFromIni(IniFile.INI_SECTION_PARAMETER);
+            m_schedule.LoadFromIni(true);
 
 			MLog.Log(this, "Retrieving system available audio input devices");
 			DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
@@ -229,8 +236,8 @@ namespace MultiZonePlayer {
 				}
 			}
 
-			LogEvent(EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative,
-				null);
+            MainScreen.parentForm.RegisterRawInput();
+			LogEvent(EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative,null);
 		}
 
 		private void LoadSerials() {
@@ -299,6 +306,12 @@ namespace MultiZonePlayer {
 		public void Shutdown() {
 			try {
 				IsShuttingDown = true;
+                UtilityCost.SaveAllToIni();
+                LightSensor.SaveAllToIni();
+                m_remotehotspot.SaveAllToIni();
+                m_rule.SaveAllToIni();
+                m_parameter.SaveAllToIni();
+                m_schedule.SaveAllToIni(true);
 				foreach (string file in Directory.GetFiles(IniFile.CurrentPath(), "*" + IniFile.TEMP_EXTENSION)) {
 					File.Delete(file);
 				}
@@ -319,11 +332,7 @@ namespace MultiZonePlayer {
 				foreach (IMessenger mes in m_messengerList) {
 					mes.Close();
 				}
-				UtilityCost.SaveAllToIni();
-				LightSensor.SaveAllToIni();
-                m_remotehotspot.SaveAllToIni();
-				m_rule.SaveAllToIni();
-                m_parameter.SaveAllToIni();
+				
 				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
 			}
@@ -353,6 +362,9 @@ namespace MultiZonePlayer {
 			}
 			m_sysState = new MZPState();
 		}
+
+        
+        
 
 		public static bool IsInitialised {
 			get { return m_sysState != null; }
@@ -1474,9 +1486,7 @@ namespace MultiZonePlayer {
 			}
 			CheckForExternalZoneEvents();
 			CleanTempFiles();
-			if (MZPState.Instance == null) {
-				return;
-			}
+			if (MZPState.Instance == null) return;
 			CheckForWakeTimers();
 			if (MZPState.Instance == null) {
 				return;
@@ -1509,7 +1519,12 @@ namespace MultiZonePlayer {
 			if (MediaLibrary.AllAudioFiles != null) {
 				MediaLibrary.AllAudioFiles.SaveUpdatedItems();
 			}
-
+            if (MainScreen.parentForm!=null){
+                //periodic re-register of raw input, sometimes hook is lost
+                if (DateTime.Now.Subtract(MainScreen.parentForm.RawDeviceId.m_registeredDateTime).TotalMinutes>=5) {
+                    MainScreen.parentForm.RegisterRawInput();
+                }
+            }
 
 		}
 	}
