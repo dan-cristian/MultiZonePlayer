@@ -151,12 +151,11 @@ namespace MultiZonePlayer
         }
 
         public override void PowerOn(int zoneId) {
-            
-            
+            PowerPinOn(ZoneDetails.GetZoneById(zoneId).PowerIndex);
         }
 
         public override void PowerOff(int zoneId) {
-            throw new NotImplementedException();
+            PowerPinOff(ZoneDetails.GetZoneById(zoneId).PowerIndex);
         }
 
         public override void PowerOff() {
@@ -204,7 +203,7 @@ namespace MultiZonePlayer
         }
 
         public override void PowerPinOff(int pinId) {
-            RunScript(SCRIPT_SETOUTSTATE, "" + pinId, "0");
+            RunScript(SCRIPT_SETOUTSTATE, "pin", ""+pinId, "value", "0");
         }
 
         public override bool IsPowerPinOn(int pinId) {

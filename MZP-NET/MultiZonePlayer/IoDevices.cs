@@ -1677,10 +1677,10 @@ namespace MultiZonePlayer {
         private void SetZoneTemperature(ZoneDetails zone, double temp, string deviceId, DateTime datetime) {
             zone.HasOneWireTemperatureSensor = true;
             if (temp != Constants.TEMP_DEFAULT) {
-                if (zone.TemperatureResolutionDigits >= 0)
-                    zone.SetTemperature(Math.Round(temp, zone.TemperatureResolutionDigits), deviceId, datetime);
-                else
+                //if (zone.TemperatureResolutionDigits >= 0)
                     zone.SetTemperature(temp, deviceId, datetime);
+                //else
+                //    zone.SetTemperature(temp, deviceId, datetime);
             }
             else {
                 MLog.Log(this, "Reading DEFAULT temp in zone " + zone.ZoneName);

@@ -609,7 +609,8 @@ namespace MultiZonePlayer
 
 	public enum PowerType
 	{
-		Denkovi,
+		Undefined,
+        Denkovi,
 		Numato,
         Relay,
         RemoteRelayPI,

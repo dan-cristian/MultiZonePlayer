@@ -1011,16 +1011,36 @@ namespace MultiZonePlayer {
                 else return null;
             }
         }
-        public Parameter GetByName(String name) {
-            return ParameterList.Find(x => x.Name == name);
+        public static Parameter GetByName(String name) {
+            if (PrivParameterList != null)
+                return PrivParameterList.Find(x => x.Name == name);
+            else return null;
+        }
+
+        public static Boolean IsTrue(String name) {
+            Parameter param = GetByName(name);
+            if (param == null) return true;
+            else 
+                return param.Value == "1";
         }
         /*public Parameter Instance {
             get {
                 return (Parameter)StaticInstance(typeof(Parameter));
             }
         }*/
-        public List<Parameter> ParameterList{
-            get { return Parameter.ValueList.Select(x => (Parameter)x).ToList(); }
+        private static List<Parameter> PrivParameterList{
+            get {
+                if (ValueList != null)
+                    return Parameter.ValueList.Select(x => (Parameter)x).ToList();
+                else return null;
+            }
+        }
+        public List<Parameter> ParameterList {
+            get {
+                if (ValueList != null)
+                    return Parameter.ValueList.Select(x => (Parameter)x).ToList();
+                else return null;
+            }
         }
     }
 
@@ -1062,15 +1082,11 @@ namespace MultiZonePlayer {
         /// <summary>
         /// Only one value in the list
         /// </summary>
-        public HouseState(bool separateIniFile)
-            : base(separateIniFile) {
+        public HouseState()
+            : base() {
                 m_oneItemValueList = true;
         }
-        /// <summary>
-        /// Default constructor for adding fields by user
-        /// </summary>
-        public HouseState() {
-        }
+        
         public static new List<HouseState> ValueList {
             get {
                 if (GetValueList(typeof(HouseState)) != null)
@@ -1105,14 +1121,11 @@ namespace MultiZonePlayer {
 		private static List<ObjectStored> m_objectIdList = new List<ObjectStored>();
 		private static List<ListStored> m_objectList = new List<ListStored>();
         protected string IniSectionName;
-        public Boolean SaveInSeparateIni = false;
+        //public Boolean SaveInSeparateIni = false;
         //for convenience to access this single element directly
         protected Boolean m_oneItemValueList = false;
 		[Category("Edit")]
 		public int Id = -1;
-        public PersistentObject(Boolean saveInSeparateIni):base(){
-            SaveInSeparateIni = saveInSeparateIni;
-        }
         public PersistentObject() {
             IniSectionName = this.GetType().Name;
         }
@@ -1191,13 +1204,7 @@ namespace MultiZonePlayer {
             PrivLoadFromIni(this.GetType().Name);
         }
 		private void PrivLoadFromIni(String iniSectionName) {
-            String fileName;
-            String className = this.GetType().Name;
-            if (this.SaveInSeparateIni)
-                fileName = className+ ".ini";
-            else
-                fileName = "";//default ini
-
+            String fileName = this.GetType().Name + ".ini";
             Hashtable values = IniFile.LoadAllIniEntriesByIntKey(iniSectionName, fileName);
 			PersistentObject item;
 			try {
@@ -1212,34 +1219,41 @@ namespace MultiZonePlayer {
                             //int id = ValueList[0].Id;
                             //ValueList[0] = this;
                             //ValueList[0].Id = id;
-                            Alert.CreateAlert("One item value list has unexpected no. of elements, count=" + ValueList.Count + " obj=" + className, true);
+                            Alert.CreateAlert("One item value list has unexpected no. of elements, count=" + ValueList.Count + " obj=" + fileName, true);
                         }
                     }
-                    else Alert.CreateAlert("Warning, One item value list has no elements, create one, obj=" + className, true);
+                    else Alert.CreateAlert("Warning, One item value list has no elements, create one, obj=" + fileName, true);
                 }
 			}
 			catch (Exception ex) {
-				string err = "Error loading persistent object " + className + " from ini section " + iniSectionName;
+				string err = "Error loading persistent object " + fileName + " from ini section " + iniSectionName;
 				MLog.Log(ex, err);
 				throw new Exception(err, ex);
 			}
 		}
 
 		public void SaveEntryToIni() {
-            String json;
-            fastJSON.JSONParameters param = new fastJSON.JSONParameters();
-            param.UseExtensions = false;
-            json = fastJSON.JSON.ToJSON(this, param);
-            //if (p_saveInSeparateIni)
-                IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json, GetList(this).IniSectionName+".ini");
-            //else
-            //    IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
+            try {
+                String json;
+                fastJSON.JSONParameters param = new fastJSON.JSONParameters();
+                param.UseExtensions = false;
+                json = fastJSON.JSON.ToJSON(this, param);
+                //if (p_saveInSeparateIni)
+                IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json, GetList(this).IniSectionName + ".ini");
+                //else
+                //    IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
+            }
+            catch (Exception ex) {
+                MLog.Log(this, "Error saveentrytoini  ex=" + ex.Message);
+            }
         }
 
 		public void SaveAllToIni() {
-			foreach (PersistentObject item in ValueList) {
-				item.SaveEntryToIni();
-			}
+            if (ValueList != null) {
+                foreach (PersistentObject item in ValueList) {
+                    item.SaveEntryToIni();
+                }
+            }
 		}
 
         public virtual void OnPropertyChangedCustom(String propertyName) {

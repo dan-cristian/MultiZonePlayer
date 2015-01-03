@@ -720,42 +720,49 @@ namespace MultiZonePlayer {
 			}
 		}
 		public void PowerControlOff() {
-			bool switchedOff = false;
-            RequirePowerForced = false;
-			if (HasPowerCapabilities) {
-                switch (this.PowerType) { 
-                    case (MultiZonePlayer.PowerType.Denkovi):
-					    if (MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
-						    switchedOff = true;
-					    }
-					    MZPState.Instance.PowerControlDenkovi.PowerOff(ZoneId);
-					    m_lastPowerOn = DateTime.MinValue;
-                        break;
-                    case MultiZonePlayer.PowerType.Numato:
-					    if (MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
-						    switchedOff = true;
-					    }
-						MZPState.Instance.PowerControlNumato.PowerOff(ZoneId);
-						m_lastPowerOn = DateTime.MinValue;
-                        break;
-                    case MultiZonePlayer.PowerType.Relay:
-                        CommandResult res = new CommandResult();
-                        ZoneGeneric.ProcessAction(GlobalCommands.closureopen, new ValueList(GlobalParams.id, WDIORelayOutputPinIndex.ToString(), CommandSources.system), ref res);
-                        break;
-                    case MultiZonePlayer.PowerType.RemoteRelayPI:
-                        MZPState.Instance.PowerControlRemoteRelayPI.PowerPinOff(PowerIndex);
-                        break;
-				}
-            
-				if (switchedOff) {
-					Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, this.PowerType.ToString(),
-						DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOff", ZoneId.ToString(),
-						Constants.EVENT_TYPE_POWER);
-				}
-			}
-			else {
-				MLog.Log(this, "Error, Power OFF command sent to zone without power cap: " + ZoneName);
-			}
+            try {
+                bool switchedOff = false;
+                RequirePowerForced = false;
+                if (HasPowerCapabilities) {
+                    switch (this.PowerType) {
+                        case (MultiZonePlayer.PowerType.Denkovi):
+                            if (MZPState.Instance.PowerControlDenkovi.IsPowerOn(ZoneId)) {
+                                switchedOff = true;
+                            }
+                            MZPState.Instance.PowerControlDenkovi.PowerOff(ZoneId);
+                            m_lastPowerOn = DateTime.MinValue;
+                            break;
+                        case MultiZonePlayer.PowerType.Numato:
+                            if (MZPState.Instance.PowerControlNumato.IsPowerOn(ZoneId)) {
+                                switchedOff = true;
+                            }
+                            MZPState.Instance.PowerControlNumato.PowerOff(ZoneId);
+                            m_lastPowerOn = DateTime.MinValue;
+                            break;
+                        case MultiZonePlayer.PowerType.Relay:
+                            if (ZoneGeneric != null) {
+                                CommandResult res = new CommandResult();
+                                ZoneGeneric.ProcessAction(GlobalCommands.closureopen, new ValueList(GlobalParams.id, WDIORelayOutputPinIndex.ToString(), CommandSources.system), ref res);
+                            }
+                            break;
+                        case MultiZonePlayer.PowerType.RemoteRelayPI:
+                            MZPState.Instance.PowerControlRemoteRelayPI.PowerPinOff(PowerIndex);
+                            break;
+                    }
+
+                    if (switchedOff) {
+                        Utilities.AppendToCsvFile(IniFile.CSV_CLOSURES, ",", ZoneName, this.PowerType.ToString(),
+                            DateTime.Now.ToString(IniFile.DATETIME_FULL_FORMAT), "PowerOff", ZoneId.ToString(),
+                            Constants.EVENT_TYPE_POWER);
+                    }
+                }
+                else {
+                    MLog.Log(this, "Error, Power OFF command sent to zone without power cap: " + ZoneName);
+                }
+            }
+            catch (Exception ex) { 
+                MLog.Log(ex, this, "Err powerOff zone "+ZoneName); 
+            }
 		}
 		public Boolean HasPowerCapabilities {
 			get {
@@ -1415,10 +1422,17 @@ namespace MultiZonePlayer {
 		}
 
 		public void Close() {
-			ZoneClose();
-			SaveEntryToIni();
-			if (WDIORelayOutputPinIndex != Constants.NOT_SET)
-				MZPState.Instance.WDIO.SetOutputLow(WDIORelayOutputPinIndex);
+            try {
+                ZoneClose();
+                SaveEntryToIni();
+                if (PowerType == PowerType.Relay) {
+                    if (WDIORelayOutputPinIndex != Constants.NOT_SET)
+                        MZPState.Instance.WDIO.SetOutputLow(WDIORelayOutputPinIndex);
+                }
+            }
+            catch (Exception ex) {
+                MLog.Log(ex, this, "Err close zone " + ZoneName);
+            }
 		}
 
 		public int GetDefaultVolume() {

@@ -65,7 +65,7 @@ namespace MultiZonePlayer {
         private RemoteHotSpot m_remotehotspot = new RemoteHotSpot();
         private Parameter m_parameter = new Parameter();
         private Schedule m_schedule = new Schedule();
-        private HouseState m_houseState = new HouseState(true);
+        private HouseState m_houseState = new HouseState();
 
         public HouseState HouseState {
             get { return m_houseState; }
@@ -236,12 +236,15 @@ namespace MultiZonePlayer {
 			sl.Name = "Syslog";
 			sl.Start();
 
-			//adding displays
-			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
-				if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString())) {
-					m_displayList.Add(new DisplayLGTV(zone.DisplayConnection, zone));
-				}
-			}
+			//adding displays if initialised
+            if (Parameter.IsTrue(IniFile.PAR_INITIALISE_TV)) {
+                foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+                    if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString())) {
+                        m_displayList.Add(new DisplayLGTV(zone.DisplayConnection, zone));
+                    }
+                }
+            }
+            else Alert.CreateAlert("TV not initialised due to parameter setting set to off", true);
 
             MainScreen.parentForm.RegisterRawInput();
 			LogEvent(EventSource.System, "System started", MZPEvent.EventType.Functionality, MZPEvent.EventImportance.Informative,null);
@@ -311,14 +314,15 @@ namespace MultiZonePlayer {
 		}
 
 		public void Shutdown() {
-			try {
+            if (Instance == null)
+                return;
+            try {
 				IsShuttingDown = true;
                 UtilityCost.SaveAllToIni();
                 LightSensor.SaveAllToIni();
                 m_remotehotspot.SaveAllToIni();
                 m_rule.SaveAllToIni();
                 m_parameter.SaveAllToIni();
-                m_schedule.SaveAllToIni();
                 m_schedule.SaveAllToIni();
                 m_houseState.SaveAllToIni();
 				foreach (string file in Directory.GetFiles(IniFile.CurrentPath(), "*" + IniFile.TEMP_EXTENSION)) {
@@ -328,7 +332,8 @@ namespace MultiZonePlayer {
 				WebServer.Shutdown();
                 if (m_paradoxTail!=null) m_paradoxTail.Stop();
 				m_syslog.Stop();
-				foreach (Display disp in m_displayList) {
+                MediaLibrary.SaveLibraryToIni();
+                foreach (Display disp in m_displayList) {
 					disp.Disconnect();
 				}
 				foreach (IMessenger msg in m_messengerList) {
@@ -341,11 +346,10 @@ namespace MultiZonePlayer {
 				foreach (IMessenger mes in m_messengerList) {
 					mes.Close();
 				}
-				
-				MediaLibrary.SaveLibraryToIni();
 				m_sysState = null;
 			}
-			catch (Exception) {
+			catch (Exception ex) {
+                MLog.Log(ex, this, "Exception on shutdown");
 			}
 			finally {
 				m_sysState = null;
@@ -673,7 +677,7 @@ namespace MultiZonePlayer {
 			//m_powerControlDenkovi.PowerOff();
 			//m_powerControlNumato.PowerOff();
 			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
-				if ((zone.ActivityType != GlobalCommands.xbmc) || (!zone.IsActive)) {
+				if ((zone.ActivityType != GlobalCommands.xbmc)) {
 					MLog.Log(this, "Powering off zone " + zone.ZoneName + " activity=" + zone.ActivityType + " active=" + zone.IsActive
 					               + " reqpower=" + zone.RequirePower);
 					zone.PowerControlOff();
@@ -690,7 +694,12 @@ namespace MultiZonePlayer {
                     return m_powerControlNumato.IsPowerOn(zoneid);
                 case PowerType.Relay:
                     return zone.IsClosureContactMade;
+                case PowerType.RemoteRelayPI:
+                    return m_powerControlRemoteRelayPI.IsPowerPinOn(zone.PowerIndex);
+                case PowerType.None:
+                    return false;
                 default:
+                    Alert.CreateAlert("Unhandled ispoweron for zone " + zone.ZoneName + " power type=" + zone.PowerType, true);
                     return false;
             }
 		}
@@ -1289,20 +1298,25 @@ namespace MultiZonePlayer {
 				Display.InputTypeEnum input = display.InputType;
 			}
 
+
 			foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
 				if (!zone.IsActive) {
-					if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString())) {
-						Display display = m_displayList.Find(x => x.Connection.Equals(zone.DisplayConnection));
+					//check if TV is on
 
-						if (display.GetType().Equals(typeof (DisplayLGTV))) {
-							if (((DisplayLGTV) display).IsOnCached) {
-								ValueList val = new ValueList(GlobalParams.command,
-									GlobalCommands.tv.ToString(), CommandSources.system);
-								val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
-								API.DoCommand(val);
-							}
-						}
-					}
+                    if (Parameter.IsTrue(IniFile.PAR_INITIALISE_TV)) {
+                        if (zone.DisplayType.Equals(Display.DisplayTypeEnum.LGTV.ToString())) {
+                            Display display = m_displayList.Find(x => x.Connection.Equals(zone.DisplayConnection));
+
+                            if (display.GetType().Equals(typeof(DisplayLGTV))) {
+                                if (((DisplayLGTV)display).IsOnCached) {
+                                    ValueList val = new ValueList(GlobalParams.command,
+                                        GlobalCommands.tv.ToString(), CommandSources.system);
+                                    val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
+                                    API.DoCommand(val);
+                                }
+                            }
+                        }
+                    }
 
 					if (zone.DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString())) {
 						if (Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1])) {

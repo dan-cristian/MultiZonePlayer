@@ -194,6 +194,7 @@ namespace MultiZonePlayer
                         musicFile = CurrentItem.SourceURL;
                         if (!File.Exists(musicFile)) {
                             MLog.Log(this, "At Play, File does not exist, name=" + musicFile + ", trying next");
+                            CurrentItem.ToBeRemovedFromLibrary = true;
                             AdvanceNext();
                         }
                         else break;

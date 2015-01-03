@@ -247,6 +247,7 @@ namespace MultiZonePlayer {
 		public String Author = "";
 		public String Copyright;
         public Boolean IsFavorite = false;
+        public Boolean ToBeRemovedFromLibrary = false;
 
 		public bool RequireSave {
 			get { return m_requireSave; }
@@ -1186,6 +1187,7 @@ namespace MultiZonePlayer {
 
 		public override void SaveUpdatedItems() {
 			if (m_playlistItems != null) {
+                m_playlistItems.RemoveAll(x => x.ToBeRemovedFromLibrary == true);
 				List<AudioItem> clone = m_playlistItems.ToList();
 				foreach (MediaItemBase ai in clone) {
 					if (ai.RequireSave) {

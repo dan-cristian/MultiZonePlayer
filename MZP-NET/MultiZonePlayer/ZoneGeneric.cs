@@ -698,18 +698,21 @@ namespace MultiZonePlayer {
 
 							//check if TV
 						case GlobalCommands.tv:
-							if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof (ZoneDisplayLG))) {
-								m_mainZoneActivity.Close();
-								m_mainZoneActivity = null;
-							}
+                            if (Parameter.IsTrue(IniFile.PAR_INITIALISE_TV)){
+                                if ((m_mainZoneActivity != null) && (m_mainZoneActivity.GetType() != typeof(ZoneDisplayLG))) {
+                                    m_mainZoneActivity.Close();
+                                    m_mainZoneActivity = null;
+                                }
 
-							if (m_mainZoneActivity == null) {
-								InitZoneDisplayTV();
-							}
+                                if (m_mainZoneActivity == null) {
+                                    InitZoneDisplayTV();
+                                }
 
-							if (action != null && action.Equals(GlobalCommands.play.ToString())) {
-								m_mainZoneActivity.Play();
-							}
+                                if (action != null && action.Equals(GlobalCommands.play.ToString())) {
+                                    m_mainZoneActivity.Play();
+                                }
+                            }
+                            else Alert.CreateAlert("TV not initialised due to parameter setting set to off", true);
 							break;
 
 							//check if XBMC
