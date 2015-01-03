@@ -416,6 +416,9 @@ namespace MultiZonePlayer
                                                                                                 if (value.ToString().Contains(typeof(Schedule).ToString()))
                                                                                                     value = ((List<Schedule>)value)[Convert.ToInt32(parameters[0])];
                                                                                                 else
+                                                                                                    if (value.ToString().Contains(typeof(HouseState).ToString()))
+                                                                                                        value = ((List<HouseState>)value)[Convert.ToInt32(parameters[0])];
+                                                                                                    else
 									//"System.Collections.Generic.ValueList`1[System.String]"
 									{
 										exception = "Unknown secondary type for property index " + Clean(propName) + " type=" + value.ToString();

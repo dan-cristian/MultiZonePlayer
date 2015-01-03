@@ -1024,6 +1024,9 @@ namespace MultiZonePlayer {
         }
     }
 
+    /// <summary>
+    /// Schedule types used to trigger various house behaviours
+    /// </summary>
     public class Schedule : PersistentObject {
         [Category("Edit")]
         public String Name;
@@ -1032,8 +1035,7 @@ namespace MultiZonePlayer {
         [Category("Edit"), Description("Short description about rule purpose")]
         public string Description;
 
-        public Schedule() {
-            IniSectionName = this.GetType().Name;
+        public Schedule():base() {
             Name = "Default " + Id;
         }
         public static new List<Schedule> ValueList {
@@ -1043,17 +1045,52 @@ namespace MultiZonePlayer {
                 else return null;
             }
         }
-        public Schedule GetByName(String name) {
-            return ValueList.Find(x => x.Name == name);
-        }
-        
-        /*
-        public List<Schedule> ScheduleList {
-            get { return Schedule.ValueList.Select(x => (Schedule)x).ToList(); }
-        }*/
     }
     /// <summary>
-    /// NOTE: Update references on MZPState."name"List and Reflect.GetPropertyField
+    /// One object with house state, changed by user or by automatic system actions
+    /// </summary>
+    public class HouseState : PersistentObject {
+        [Category("Edit")]
+        public String Name = "Default field (this class should have just one entry)";
+        [Category("Edit"), Description("Schedule name from schedule list persistent object")]
+        public String ActiveScheduleName;
+        [Category("Edit"), Description("When the cron definition will apply, replacing the default zone cron one")]
+        public String OnCondition;
+        [Category("Edit"), Description("Short description about rule purpose")]
+        public string Description;
+
+        /// <summary>
+        /// Only one value in the list
+        /// </summary>
+        public HouseState(bool separateIniFile)
+            : base(separateIniFile) {
+                m_oneItemValueList = true;
+        }
+        /// <summary>
+        /// Default constructor for adding fields by user
+        /// </summary>
+        public HouseState() {
+        }
+        public static new List<HouseState> ValueList {
+            get {
+                if (GetValueList(typeof(HouseState)) != null)
+                    return GetValueList(typeof(HouseState)).Select(x => (HouseState)x).ToList();
+                else return null;
+            }
+        }
+        
+        public override void OnPropertyChangedCustom(string propertyName) {
+            switch (propertyName) {
+                default:
+                    MLog.Log(this, "No action for propery changed, prop=" + propertyName);
+                    break;
+            }
+        }
+        
+    }
+
+    /// <summary>
+    /// NOTE: Update references on MZPState.ObjectName getter and Reflect.GetPropertyField
     /// </summary>
 	public class PersistentObject {
 		private class ObjectStored{
@@ -1068,11 +1105,17 @@ namespace MultiZonePlayer {
 		private static List<ObjectStored> m_objectIdList = new List<ObjectStored>();
 		private static List<ListStored> m_objectList = new List<ListStored>();
         protected string IniSectionName;
-
+        public Boolean SaveInSeparateIni = false;
+        //for convenience to access this single element directly
+        protected Boolean m_oneItemValueList = false;
 		[Category("Edit")]
 		public int Id = -1;
-		public PersistentObject() {
-		}
+        public PersistentObject(Boolean saveInSeparateIni):base(){
+            SaveInSeparateIni = saveInSeparateIni;
+        }
+        public PersistentObject() {
+            IniSectionName = this.GetType().Name;
+        }
 		public int Index {
 			get { return ValueList.IndexOf(this); }
 		}
@@ -1118,6 +1161,7 @@ namespace MultiZonePlayer {
 				list.IniSectionName = iniSectionName;
 				m_objectList.Add(list);
 			}
+
 			list.ObjectList.Add(newobj);
 		}
 
@@ -1139,54 +1183,57 @@ namespace MultiZonePlayer {
 				return null;
 		}
 
-        public void LoadFromIni() {
-            LoadFromIni(this.GetType().Name);
-        }
-
-        public void LoadFromIni(bool separateIniFile) {
-            if (separateIniFile)
-                PrivLoadFromIni(this.GetType().Name, this.GetType().Name + ".ini");
-            else
-                LoadFromIni(this.GetType().Name);
-        }
-
         public virtual void LoadFromIni(String iniSectionName) {
-            PrivLoadFromIni(iniSectionName, "");
+            PrivLoadFromIni(iniSectionName);
         }
 
-		private void PrivLoadFromIni(String iniSectionName, String fileName) {
-			Hashtable values = IniFile.LoadAllIniEntriesByIntKey(iniSectionName, fileName);
+        public void LoadFromIni() {
+            PrivLoadFromIni(this.GetType().Name);
+        }
+		private void PrivLoadFromIni(String iniSectionName) {
+            String fileName;
+            String className = this.GetType().Name;
+            if (this.SaveInSeparateIni)
+                fileName = className+ ".ini";
+            else
+                fileName = "";//default ini
+
+            Hashtable values = IniFile.LoadAllIniEntriesByIntKey(iniSectionName, fileName);
 			PersistentObject item;
 			try {
 				foreach (String json in values.Values) {
 					item = (PersistentObject)fastJSON.JSON.ToObject(json, this.GetType());
 					Add(item, iniSectionName);
 				}
+
+                if (m_oneItemValueList) {
+                    if (ValueList != null) {
+                        if (ValueList.Count != 1) {
+                            //int id = ValueList[0].Id;
+                            //ValueList[0] = this;
+                            //ValueList[0].Id = id;
+                            Alert.CreateAlert("One item value list has unexpected no. of elements, count=" + ValueList.Count + " obj=" + className, true);
+                        }
+                    }
+                    else Alert.CreateAlert("Warning, One item value list has no elements, create one, obj=" + className, true);
+                }
 			}
 			catch (Exception ex) {
-				string err = "Error loading persistent object " + this.GetType().Name + " from ini section " + iniSectionName;
+				string err = "Error loading persistent object " + className + " from ini section " + iniSectionName;
 				MLog.Log(ex, err);
 				throw new Exception(err, ex);
 			}
 		}
 
 		public void SaveEntryToIni() {
-			String json;
-			fastJSON.JSONParameters param = new fastJSON.JSONParameters();
-			param.UseExtensions = false;
-			json = fastJSON.JSON.ToJSON(this, param);
-			IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
-		}
-
-        private void SaveEntryToIni(bool separateIniFile) {
             String json;
             fastJSON.JSONParameters param = new fastJSON.JSONParameters();
             param.UseExtensions = false;
             json = fastJSON.JSON.ToJSON(this, param);
-            if (separateIniFile)
+            //if (p_saveInSeparateIni)
                 IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json, GetList(this).IniSectionName+".ini");
-            else
-                IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
+            //else
+            //    IniFile.IniWriteValue(GetList(this).IniSectionName, this.Id.ToString(), json);
         }
 
 		public void SaveAllToIni() {
@@ -1194,10 +1241,10 @@ namespace MultiZonePlayer {
 				item.SaveEntryToIni();
 			}
 		}
-        public void SaveAllToIni(bool separateIniFile) {
-            foreach (PersistentObject item in ValueList) {
-                item.SaveEntryToIni(separateIniFile);
-            }
+
+        public virtual void OnPropertyChangedCustom(String propertyName) {
+            Alert.CreateAlert("Calling property changed base implementation, not ok, must be overriden by class, propname=" + propertyName, true);
         }
+        
 	}
 }

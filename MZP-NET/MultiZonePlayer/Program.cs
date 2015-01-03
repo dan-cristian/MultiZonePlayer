@@ -11,7 +11,7 @@ namespace MultiZonePlayer
 {
     static class Program
     {
-        public static KeyboardHook kh;
+        //public static KeyboardHook kh;
 
         /// <summary>
         /// The main entry point for the application.
@@ -52,8 +52,8 @@ namespace MultiZonePlayer
             }
             finally
             {
-                if (kh != null)
-                    ((IDisposable)kh).Dispose();
+                //if (kh != null)
+                //    ((IDisposable)kh).Dispose();
 
                 if (VlcContext.IsInitialized)
                 {

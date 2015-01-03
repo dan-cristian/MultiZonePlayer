@@ -17,7 +17,7 @@ namespace MultiZonePlayer
         protected static bool isPowerSavingMode = false;
         protected String m_deviceName;
         protected String m_socketsStatus="";
-
+        
 		public BasePowerControl()
 		{
 		}
@@ -483,7 +483,7 @@ namespace MultiZonePlayer
                     // checking if this zone is still active, if active and bool param is false will ignore
                     //TODO
 
-                    MLog.Log(this, "Sending power command " + state + " to zoneindex " + zoneIndex);
+                    MLog.Log(this, "Sending power command " + state + " to zoneindex " + zoneIndex + " zonename="+ZoneDetails.GetZoneById(zoneId));
                     initialState = initialState.Substring(0, zoneIndex - 1) + state + initialState.Substring(zoneIndex);
                     m_relayState = initialState;
 

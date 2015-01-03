@@ -65,6 +65,12 @@ namespace MultiZonePlayer {
         private RemoteHotSpot m_remotehotspot = new RemoteHotSpot();
         private Parameter m_parameter = new Parameter();
         private Schedule m_schedule = new Schedule();
+        private HouseState m_houseState = new HouseState(true);
+
+        public HouseState HouseState {
+            get { return m_houseState; }
+            set { m_houseState = value; }
+        }
 
         public Schedule Schedule {
             get { return m_schedule; }
@@ -155,7 +161,8 @@ namespace MultiZonePlayer {
 			LightSensor.LoadFromIni();
             m_remotehotspot.LoadFromIni(IniFile.INI_SECTION_REMOTEHOTSPOT);
             m_parameter.LoadFromIni(IniFile.INI_SECTION_PARAMETER);
-            m_schedule.LoadFromIni(true);
+            m_schedule.LoadFromIni();
+            m_houseState.LoadFromIni();
 
 			MLog.Log(this, "Retrieving system available audio input devices");
 			DShowUtility.GetDeviceOfCategory(DShowUtility.Clsid_AudioInput, out m_systemInputDeviceList);
@@ -311,7 +318,9 @@ namespace MultiZonePlayer {
                 m_remotehotspot.SaveAllToIni();
                 m_rule.SaveAllToIni();
                 m_parameter.SaveAllToIni();
-                m_schedule.SaveAllToIni(true);
+                m_schedule.SaveAllToIni();
+                m_schedule.SaveAllToIni();
+                m_houseState.SaveAllToIni();
 				foreach (string file in Directory.GetFiles(IniFile.CurrentPath(), "*" + IniFile.TEMP_EXTENSION)) {
 					File.Delete(file);
 				}

@@ -17,7 +17,7 @@ namespace MultiZonePlayer
         public class IniFile
         {
 
-            public const String INI_FILE = "\\MultiZonePlayer.ini";
+            public const String INI_FILE = "MultiZonePlayer.ini";
 			public const String MEDIA_MUSIC_STORAGE_FILE = "MediaMusic.data";
 			public const String MEDIA_VIDEO_STORAGE_FILE = "MediaVideo.data";
 			public const String MEDIA_PICTURE_STORAGE_FILE = "MediaPicture.data";
@@ -256,7 +256,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ONEWIRE_FAST_READ_DELAY = new String[] { "PARAM_ONEWIRE_FAST_READ_DELAY", "2", "number of miliseconds between reads for fast components, e.g. counters or IO" };
             public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
 			public static String[] PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX = new String[] { "PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX", "1", "resolutionList index for temp reading: 0=0.5, 1=0.25, 2=0...." };
-            public static String[] PARAM_ONEWIRE_REMOTE_SERVER_LIST = new String[] { "PARAM_ONEWIRE_REMOTE_SERVER_LIST", "http://192.168.0.110/onewire.php;", "list of owfs 1-wire servers urls, like http://pi-casa/onewire.php;http://pi2/onewire.php" };
+            public static String[] PARAM_ONEWIRE_REMOTE_SERVER_LIST = new String[] { "PARAM_ONEWIRE_REMOTE_SERVER_LIST", "http://192.168.0.113/onewire.php;http://192.168.0.110/onewire.php", "list of owfs 1-wire servers urls, like http://pi-casa/onewire.php;http://pi2/onewire.php" };
 
 			public static String[] PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD = new String[] { "PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD", "15", "close power after x minutes of activity in a zone without user interaction or move" };
 			public static String[] PARAM_RECENT_RUN_INTERVAL_MINUTES = new String[] { "PARAM_RECENT_RUN_INTERVAL_MINUTES", "1", "number of minutes to keep a zone power on after recent run state, e.g. music playing" };
@@ -267,7 +267,7 @@ namespace MultiZonePlayer
 
             public static String[] PARAM_DTSFILTER_MONIKER = new String[] { "PARAM_DTSFILTER_MONIKER", "@device:sw:{083863F1-70DE-11D0-BD40-00A0C911CE86}\\{A753A1EC-973E-4718-AF8E-A3F554D45C44}" };
 
-            public static String[] PARAM_REMOTE_RELAY_PI = new String[] { "PARAM_REMOTE_RELAY_PI", "http://192.168.0.110/cgi-bin", "URL of the PI remote relay controller" };
+            public static String[] PARAM_REMOTE_RELAY_PI = new String[] { "PARAM_REMOTE_RELAY_PI", "http://192.168.0.113/cgi-bin", "URL of the PI remote relay controller" };
 
 			public static String DATETIME_MINSECMILI_FORMAT = "mm:ss:fff";
             public static String DATETIME_DAYHR_FORMAT = "HH:mm";
@@ -382,9 +382,7 @@ namespace MultiZonePlayer
                 PARAM_ONEWIRE_REMOTE_SERVER_LIST,
                 PARAM_REMOTE_RELAY_PI
              };
-            private static string m_iniFinalPath =  null;
-            private static string m_iniTempPath = null;
-            private static string m_iniOldPath = null;
+            private static Object m_iniLock =  new Object();
             
             /// <summary>
             /// INIFile Constructor.
@@ -401,28 +399,22 @@ namespace MultiZonePlayer
             /// <PARAM name="Value"></PARAM>
             /// Value Name
             private static void PrivIniWriteValue(string Section, string Key, string Value, String fileName){
-                lock (m_iniFinalPath) {
-                    fileName = "\\" + fileName;
+                lock (m_iniLock) {
                     String p_iniFinalPath, p_iniOldPath, p_iniTempPath;
                     try {
-                        if (m_iniFinalPath == null)
-                            initPath(INI_FILE, out m_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
+                        //if (!File.Exists(GetIniMainPath(fileName)))
+                        //    fileName = INI_FILE;
 
-                        if (fileName == "") {
-                            //main ini file
-                            p_iniFinalPath = m_iniFinalPath;
-                            p_iniOldPath = m_iniOldPath;
-                            p_iniTempPath = m_iniTempPath;
-                        }
-                        else {
-                            initPath(fileName, out p_iniFinalPath, out p_iniTempPath, out p_iniOldPath);
-                        }
+                        p_iniFinalPath = GetIniMainPath(fileName);
+                        p_iniOldPath = GetIniOldPath(fileName);
+                        p_iniTempPath = GetIniTempPath(fileName);
+                        //initPath(INI_FILE, out m_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
                         
                         if (File.Exists(p_iniOldPath)) {
                             File.Delete(p_iniOldPath);
                         }
                         if (File.Exists(p_iniTempPath)) {
-                            File.Move(p_iniTempPath, p_iniOldPath);
+                            File.Delete(p_iniTempPath);
                         }
                         if (File.Exists(p_iniFinalPath)) {
                             File.Copy(p_iniFinalPath, p_iniTempPath);
@@ -447,13 +439,23 @@ namespace MultiZonePlayer
             }
 
             public static void IniWriteValue(string Section, string Key, string Value) {
-                PrivIniWriteValue(Section, Key, Value, "");
+                PrivIniWriteValue(Section, Key, Value, INI_FILE);
             }
 
             public static void IniWriteValue(string Section, string Key, string Value, string fileName) {
                 PrivIniWriteValue(Section, Key, Value, fileName);
             }
-            private static void initPath(String fileName, out String main, out String tmp, out String old)
+            private static String GetIniMainPath(string fileName) {
+                return CurrentPath() +  fileName;
+            }
+            private static String GetIniTempPath(string fileName) {
+                return CurrentPath() +  fileName + ".tmp";
+            }
+            private static String GetIniOldPath(string fileName) {
+                return CurrentPath() +  fileName + ".old";
+            }
+            /*
+             private static void initPath(String fileName, out String main, out String tmp, out String old)
             {
                 //path = Directory.GetCurrentDirectory() + INI_FILE;
                 main = CurrentPath() + fileName;
@@ -461,7 +463,7 @@ namespace MultiZonePlayer
                 old = CurrentPath() + fileName + ".old";
                 
             }
-
+            */
             public static String CurrentPath()
             {
                 //return Directory.GetCurrentDirectory();
@@ -552,9 +554,7 @@ namespace MultiZonePlayer
 
 
             public static string IniReadValue(string Section, string Key) {
-                if (m_iniFinalPath == null)
-                    initPath(INI_FILE, out m_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
-                return Utilities.IniReadValue(Section, Key, m_iniFinalPath);
+                return Utilities.IniReadValue(Section, Key, GetIniMainPath(INI_FILE));
             }
 
             public static string IniReadValue(string Section, string Key, String iniFileName) {
@@ -563,18 +563,9 @@ namespace MultiZonePlayer
 
             private static string PrivIniReadValue(string Section, string Key, String iniFileName)
             {
-                String p_iniFinalPath, p_iniTempPath, p_iniOldPath;
-                if (iniFileName == "") {
-                    if (m_iniFinalPath == null)
-                        initPath(INI_FILE, out m_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
-                    p_iniFinalPath = m_iniFinalPath;
-                }
-                else
-                {
-                    iniFileName = "\\"+iniFileName;
-                    initPath(iniFileName, out p_iniFinalPath, out m_iniTempPath, out m_iniOldPath);
-                }
-                return Utilities.IniReadValue(Section, Key, p_iniFinalPath);
+                if (!File.Exists(GetIniMainPath(iniFileName)))
+                    iniFileName = INI_FILE;
+                return Utilities.IniReadValue(Section, Key, GetIniMainPath(iniFileName));
             }
 
 			public static bool IsWhiteListed(string window)

@@ -1497,7 +1497,7 @@ namespace MultiZonePlayer {
                     weboutput = client.DownloadString(serverUrl);
                     lines = weboutput.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
                     string classid, address;
-                    ZoneDetails zone;
+                    List<ZoneDetails> zoneList;
                     DateTime datetime;
                     foreach (String line in lines) {
                         values = line.Split(new string[] {""+Constants.MULTI_ENTRY_SEPARATOR}, StringSplitOptions.RemoveEmptyEntries);
@@ -1512,35 +1512,37 @@ namespace MultiZonePlayer {
                             }
                             classid = values[0];
                             address = values[2].ToUpper();
-                            zone = ZoneDetails.ZoneDetailsList.Find(x => x.TemperatureDeviceId.Contains(address) || x.OneWireIODeviceId.Contains(address));
-                            if (zone != null) {
-                                switch (classid) {
-                                    case "28":
-                                        //0-id, 1-datetime, 2-address, 3-tempvalue
-                                        if (values.Length>=4)
-                                            ProcessOwfsTemperature(datetime, address, values[3], SensorDevice.ONEWIRE_TEMPDEV_NAME, zone, serverUrl);
-                                        break;
-                                    case "1D":
-                                        //0-id, 1-datetime, 2-adress, 3-counter1, 4-counter2
-                                        if (values.Length>=5)
-                                            ProcessOwfsCounter(datetime, address, values[3], values[4], SensorDevice.ONEWIRE_COUNTER_NAME, zone, serverUrl);
-                                        break;
-                                    case "26":
-                                        //0-id, 1-datetime, 2-address, 3-tempvalue, 4-IAD, 5-VAD, 6-VDD, 7-HUM
-                                        if (values.Length >= 8) {
-                                            ProcessOwfsTemperature(datetime, address, values[3], SensorDevice.ONEWIRE_SMARTBATDEV_NAME, zone, serverUrl);
-                                            ProcessOwfsVoltage(datetime, address, values[4], values[5], values[6], SensorDevice.ONEWIRE_SMARTBATDEV_NAME, zone, serverUrl);
-                                        }
-                                        break;
-                                    case "3A":
-                                        //0-id, 1-datetime, 2-address, 3-io1, 4-io2, 5-sensed1, 6-sensed2
-                                        if (values.Length >= 7)
-                                            ProcessOwfsIO(datetime, address, values[3], values[4], values[5], values[6], SensorDevice.ONEWIRE_IO2_NAME, zone, serverUrl);
-                                        break;
+                            zoneList = ZoneDetails.ZoneDetailsList.FindAll(x => x.TemperatureDeviceId.Contains(address) || x.OneWireIODeviceId.Contains(address));
+                            foreach (ZoneDetails zone in zoneList) {
+                                if (zone != null) {
+                                    switch (classid) {
+                                        case "28":
+                                            //0-id, 1-datetime, 2-address, 3-tempvalue
+                                            if (values.Length >= 4)
+                                                ProcessOwfsTemperature(datetime, address, values[3], SensorDevice.ONEWIRE_TEMPDEV_NAME, zone, serverUrl);
+                                            break;
+                                        case "1D":
+                                            //0-id, 1-datetime, 2-adress, 3-counter1, 4-counter2
+                                            if (values.Length >= 5)
+                                                ProcessOwfsCounter(datetime, address, values[3], values[4], SensorDevice.ONEWIRE_COUNTER_NAME, zone, serverUrl);
+                                            break;
+                                        case "26":
+                                            //0-id, 1-datetime, 2-address, 3-tempvalue, 4-IAD, 5-VAD, 6-VDD, 7-HUM
+                                            if (values.Length >= 8) {
+                                                ProcessOwfsTemperature(datetime, address, values[3], SensorDevice.ONEWIRE_SMARTBATDEV_NAME, zone, serverUrl);
+                                                ProcessOwfsVoltage(datetime, address, values[4], values[5], values[6], SensorDevice.ONEWIRE_SMARTBATDEV_NAME, zone, serverUrl);
+                                            }
+                                            break;
+                                        case "3A":
+                                            //0-id, 1-datetime, 2-address, 3-io1, 4-io2, 5-sensed1, 6-sensed2
+                                            if (values.Length >= 7)
+                                                ProcessOwfsIO(datetime, address, values[3], values[4], values[5], values[6], SensorDevice.ONEWIRE_IO2_NAME, zone, serverUrl);
+                                            break;
+                                    }
                                 }
-                            }
-                            else {
-                                Alert.CreateAlert("1wire remote temp device not associated, addr=" + address, true);
+                                else {
+                                    Alert.CreateAlert("1wire remote temp device not associated, addr=" + address, true);
+                                }
                             }
                         }
                     }

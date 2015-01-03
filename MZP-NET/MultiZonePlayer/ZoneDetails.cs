@@ -140,6 +140,7 @@ namespace MultiZonePlayer {
 		public int TemperatureResolutionDigits = Constants.NOT_SET;
 		[Category("Edit"), Description("Max number of temp units variation / minute. Safety check for malfunctioning 1-wire. -1 if limit disabled.")]
 		public int MaxTempUnitsVariationBetweenReads = Constants.NOT_SET;
+        private bool m_maxtempVariationDetected = false;
 
 		[Category("Edit"), Description("Index of voltage to be tracked, usually=2 in a DS2438 1 wire index")]
 		public int VoltageSensorIndex = 2;
@@ -434,7 +435,7 @@ namespace MultiZonePlayer {
                                 passes++;
                                 m_lastCounterWriteToDB = datetime;
                             }
-                            while (totalLoggedPulses < PulseLastMainUnitsCount);
+                            while (totalLoggedPulses < PulseLastMainUnitsCount && passes < 500);//fail safe for very lpng shutdowns
                             if (passes > 1) {
                                 Alert.CreateAlert("Splited large counter consumption in zone " + ZoneName + " passes=" + passes, true);
                             }
@@ -702,7 +703,10 @@ namespace MultiZonePlayer {
                         ZoneGeneric.ProcessAction(GlobalCommands.closureclose, new ValueList(GlobalParams.id, WDIORelayOutputPinIndex.ToString(),CommandSources.system), ref res);
                         break;
                     case MultiZonePlayer.PowerType.RemoteRelayPI:
-                        MZPState.Instance.PowerControlRemoteRelayPI.PowerPinOn(PowerIndex);
+                        if (!MZPState.Instance.PowerControlRemoteRelayPI.IsPowerPinOn(PowerIndex)) {
+                            switchedOn = true;
+                            MZPState.Instance.PowerControlRemoteRelayPI.PowerPinOn(PowerIndex);
+                        }
                         break;
                 }
 				if (switchedOn) {
@@ -1065,11 +1069,20 @@ namespace MultiZonePlayer {
 			}
 			//device with position == 0 is representative for the current zone
 			if (position == 0 && Temperature != DEFAULT_TEMP_HUM &&  MaxTempUnitsVariationBetweenReads!=Constants.NOT_SET) {
-				if (Math.Abs(Temperature - value) > MaxTempUnitsVariationBetweenReads) {
-					Alert.CreateAlert("Too big variance in temperature detected, last val=" + Temperature + " current=" + value
-						+ " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
-					return;
-				}
+                if ((Math.Abs(Temperature - value) > MaxTempUnitsVariationBetweenReads)) {
+                    if (m_maxtempVariationDetected == false) {//first read will be ignored
+                        Alert.CreateAlert("Too big variance in temperature detected, last val=" + Temperature + " current=" + value
+                            + " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
+                        m_maxtempVariationDetected = true;
+                        return;
+                    }
+                    else {//second read will be accepted
+                        m_maxtempVariationDetected = false;
+                        Alert.CreateAlert("Variance in temperature detected and stable after 1st read, so accepted, last val=" + Temperature + " current=" + value
+                            + " max variation set is=" + MaxTempUnitsVariationBetweenReads + " in zone " + ZoneName, true);
+
+                    }
+                }
 			}
 			if (temp.Temperature != value) {
                 //DB.Temperature.WriteRecord(DateTime.Now, ZoneId, value, position, deviceId);
@@ -1625,12 +1638,12 @@ namespace MultiZonePlayer {
 				if (fastActions) {
 					//turn on or off power
 					if (zone.RequirePower && !zone.IsPowerOn) {
-						MLog.Log("Powering on zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
+						MLog.Log("Powering on zone "+zone.ZoneName+", require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
 						zone.PowerControlOn();
 					}
 
 					if (!zone.RequirePower && zone.IsPowerOn) {
-						MLog.Log("Powering off zone, require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
+                        MLog.Log("Powering off zone " + zone.ZoneName + ", require power DETAILS: " + zone.RequirePowerDetails + zone.RequirePower);
 						zone.PowerControlOff();
 					}
 

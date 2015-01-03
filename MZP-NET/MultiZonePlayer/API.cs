@@ -528,7 +528,9 @@ namespace MultiZonePlayer
 								try { ((Singleton)fieldObj).SaveEntryToIni();
 								}
 								catch (Exception) {
-									((PersistentObject)fieldObj).SaveEntryToIni();
+									PersistentObject  pObj =  (PersistentObject)fieldObj;
+                                    pObj.OnPropertyChangedCustom(field);
+                                    pObj.SaveEntryToIni();
 								}
 								
 								cmdresult.OutputMessage += "Field " + field + " set to " + text + " for id="+id;
