@@ -9,7 +9,7 @@ using System.IO;
 
 namespace MultiZonePlayer {
 
-	public class ZoneDetails : Singleton{
+	public class ZoneDetails : Singleton, IUPSNotify {
 		//private static List<ZoneDetails> m_valueList = new List<ZoneDetails>();
 		public int ZoneId = -1;
 		[Category("Edit")]
@@ -122,6 +122,13 @@ namespace MultiZonePlayer {
 		[Category("Edit"), Description("OneWire device id for devices that supports IO operations. E.g. DS2406, DS2408")]
 		public String OneWireIODeviceId="";
 
+        [Category("Edit"), Description("Chose UPS type, leave undefined if n/a")]
+        public UPSType UPSType = UPSType.Undefined;
+        [Category("Edit"), Description("COM port for UPS if this zone is an UPS. E.g. COM1")]
+        public String UPSSerialPortAddress="";
+
+        public double InputVoltage;
+        
 		public int WDIORelayOutputPinIndex = Constants.NOT_SET;
 		public int WDIOButtonPinIndex = Constants.NOT_SET;
 		public int WDIOSwitchPinIndex = Constants.NOT_SET;
@@ -197,6 +204,7 @@ namespace MultiZonePlayer {
 		protected static int m_intervalImmediate, m_intervalRecent, m_intervalPast;
 		protected static List<Singleton> m_valueList = new List<Singleton>();
 		protected Boolean m_hasOneWireTempSensor = false,m_hasOneWireIODevice=false,m_hasOneWireVoltageSensor=false,m_hasOneWireCounterDevice=false;
+        protected Boolean m_hasUPSTemperatureSensor = false, m_hasUPSVoltageSensor;
 		protected int m_OneWireIOPortCount = 0;
 		protected ZoneGeneric m_zoneGeneric;
 		private List<SensorDevice> m_sensorList = new List<SensorDevice>();
@@ -767,7 +775,7 @@ namespace MultiZonePlayer {
 		public Boolean HasPowerCapabilities {
 			get {
 				return //PowerIndex != -1 && 
-                    PowerType != PowerType.None;
+                    (PowerType != PowerType.None) && (PowerType!= PowerType.Undefined);
 			}
 		}
 		public Boolean HasClosures {
@@ -811,8 +819,9 @@ namespace MultiZonePlayer {
 			get {
 				double tempAge = DateTime.Now.Subtract(m_lastTempSet).TotalHours;
 				RFXDeviceDefinition.RFXDevice device = RFXDeviceDefinition.GetDevice(ZoneId);
-				return (tempAge<=1 && (HasOneWireTemperatureSensor ||
-						(device != null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum)));
+                Boolean result = (tempAge <= 1 && (HasOneWireTemperatureSensor || m_hasUPSTemperatureSensor ||
+                        (device != null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum)));
+				return result;
 			}
 		}
 		public Boolean HasHumiditySensor {
@@ -821,6 +830,13 @@ namespace MultiZonePlayer {
 				return (device != null && device.DeviceType == RFXDeviceDefinition.DeviceTypeEnum.temp_hum);
 			}
 		}
+
+        public Boolean HasVoltageSensor {
+            get {
+                Boolean result = (HasOneWireVoltageSensor || m_hasUPSVoltageSensor);
+                return result;
+            }
+        }
 		public Boolean ContainsDisplay {
 			get {
 				return ZoneDetails.ZoneDetailsList.Find(x => x.ParentZoneId == ZoneId && x.HasDisplay) != null
@@ -1158,9 +1174,7 @@ namespace MultiZonePlayer {
 		#endregion
 		public static void LoadFromIni() {
 			//Hashtable zoneValues = IniFile.LoadAllIniEntriesByIntKey(IniFile.INI_SECTION_ZONES);
-
 			ZoneDetails zone;
-
 			m_intervalImmediate = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[0]);
 			m_intervalRecent = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[1]);
 			m_intervalPast = Convert.ToInt16(IniFile.PARAM_GENERIC_INTERVAL_SPLIT[1].Split('-')[2]);
@@ -1283,6 +1297,12 @@ namespace MultiZonePlayer {
 
 					LocationName = zonestorage.LocationName;
 
+                    UPSType = zonestorage.UPSType;
+                    UPSSerialPortAddress = zonestorage.UPSSerialPortAddress;
+                    if (UPSType != MultiZonePlayer.UPSType.Undefined) {
+                        InitialiseUPS();
+                    }
+
 					LoadPicturesFromDisk();
 				}
 				else {
@@ -1342,6 +1362,16 @@ namespace MultiZonePlayer {
 			return GetOutputDeviceNameAutocompleted(OutputDeviceUserSelected, OutputKeywords);
 		}
 
+        private void InitialiseUPS() {
+            switch (UPSType) {
+                case UPSType.NikyS:
+                    MZPState.Instance.UpsList.Add(new NikysUPS(UPSSerialPortAddress, this));
+                    break;
+                default:
+                    Alert.CreateAlert("Unknown UPS type " + UPSType, true);
+                    break;
+            }
+        }
         /// <summary>
         /// Return the directshow device guid
         /// </summary>
@@ -1486,7 +1516,13 @@ namespace MultiZonePlayer {
 			get { return m_pictureList; }
 		}*/
 
-		public void RecordVoltage(int voltageIndex, double value, DateTime datetime) {
+        public void SetInputVoltage(double value, DateTime datetime) {
+            InputVoltage = value;
+            DB.WriteRecord(DB.TABLE_VOLTAGE, DB.COL_VOLTAGE_DATETIME, datetime.ToString(Constants.DATETIME_DB_FORMAT),
+                                DB.COL_VOLTAGE_ZONEID, ZoneId, DB.COL_VOLTAGE_VALUE, value.ToString());
+        }
+
+		public void Record1WireVoltage(int voltageIndex, double value, DateTime datetime) {
             HasOneWireVoltageSensor = true;
 			if (voltageIndex == VoltageSensorIndex) {
 				if (MaxAllowedVoltageValue != Constants.NOT_SET && value > MaxAllowedVoltageValue) {
@@ -1505,6 +1541,7 @@ namespace MultiZonePlayer {
 
 			lastVal = m_voltage[voltageIndex];
 			if (lastVal != value) {
+                SetInputVoltage(value, datetime);
 				double lux=-1d;
 				if (value>=0 && light != null && light.ApplyForVoltageIndex == voltageIndex && light.MaxVoltageValue != 0){
 					lux = value * light.MaxLuxValue / light.MaxVoltageValue;
@@ -1512,8 +1549,6 @@ namespace MultiZonePlayer {
 				Utilities.AppendToCsvFile(IniFile.CSV_VOLTAGE, ",", ZoneName, Constants.CAPABILITY_VOLTAGE,
 						datetime.ToString(IniFile.DATETIME_FULL_FORMAT), value.ToString(), ZoneId.ToString(), voltageIndex.ToString(),
 						lux.ToString(), light!=null?light.Name:"[light sensor undefined]");
-                DB.WriteRecord(DB.TABLE_VOLTAGE, DB.COL_VOLTAGE_DATETIME, datetime.ToString(Constants.DATETIME_DB_FORMAT),
-                                DB.COL_VOLTAGE_ZONEID, ZoneId, DB.COL_VOLTAGE_VALUE, value.ToString());
 				m_voltage[voltageIndex] = value;
 			}
 		}
@@ -1674,7 +1709,6 @@ namespace MultiZonePlayer {
 			}
 		}
 
-
 		#endregion
 
 		#region  zone generic
@@ -1683,7 +1717,35 @@ namespace MultiZonePlayer {
 		}
 		#endregion
 
-	}
+        public void ReceiveState(GenericUPS.UPSState state) {
+            switch (UPSType) {
+                case UPSType.NikyS:
+                    m_hasUPSTemperatureSensor = true;
+                    m_hasUPSVoltageSensor = true;
+                    double temp = Convert.ToDouble(state.Temperature);
+                    double inputvolt = Convert.ToDouble(state.InputVoltage);
+                    double load = Convert.ToDouble(state.LoadPercent);
+                    double outvolt = Convert.ToDouble(state.OutputVoltage);
+                    double batvolt = Convert.ToDouble(state.BatteryVoltage);
+                    SetTemperature(temp, state.UPSId, DateTime.Now);
+                    SetInputVoltage(inputvolt, DateTime.Now);
+                    SetUPSLoad(load, DateTime.Now);
+
+                    SensorDevice dev = SensorDevice.UpdateGetDevice(ZoneName, state.UPSId, "UPS", this, SensorDevice.DeviceTypeEnum.UPS, "", DateTime.Now);
+                    dev.Temperature = temp;
+                    dev.Voltage[0] = inputvolt;
+                    dev.Voltage[1] = outvolt;
+                    dev.Voltage[2] = batvolt;
+                    dev.OtherInfo = "load "+load+"%" + " remaining mins="+state.RemainingMinutes + " bitstat=" + state.OtherStatus;
+                    dev.RecordSuccess();
+                    break;
+                }
+        }
+
+        private void SetUPSLoad(Double value, DateTime datetime) {
+            //TODO
+        }
+    }
 
 
 	public enum ZoneState {
@@ -1733,7 +1795,12 @@ namespace MultiZonePlayer {
 		NormalClosed,
 		Button
 	}
-
+    public enum UPSType{
+        Undefined,
+        Mustek,
+        APC,
+        NikyS
+    }
 	
 	/*
 	public class ClosureOpenCloseRelay {

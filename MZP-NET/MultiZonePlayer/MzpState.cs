@@ -53,7 +53,8 @@ namespace MultiZonePlayer {
 		private List<Display> m_displayList = new List<Display>();
 		private List<ZoneGeneric> m_activeZones = new List<ZoneGeneric>();
 		//private List<MacroEntry> m_macroList;
-		private List<GenericUPS> m_upsList;
+        private List<GenericUPS> m_upsList = new List<GenericUPS>();
+
 		private DateTime m_lastRulesFileModifiedDate = DateTime.MinValue;
 		private DateTime m_lastScheduleFileModifiedDate = DateTime.MinValue, m_lastBTCheck = DateTime.MinValue;
 		private WDIO m_wdio;
@@ -132,15 +133,23 @@ namespace MultiZonePlayer {
 			get { return m_wdio; }
 		}
 
+
+        public List<GenericUPS> UpsList {
+            get { return m_upsList; }
+        }
 		public MZPState() {
 			m_sysState = this;
 			m_notifyState = new NotifyState();
 			MLog.LoadFromIni();
 			MLog.Log(this, "\r\n-----------------START--------------------");
-
+            m_parameter.LoadFromIni(IniFile.INI_SECTION_PARAMETER);
 			m_systemAlarm = new Alarm(Convert.ToInt16(IniFile.PARAM_ALARM_SECURE_AREA_ID[1]));
 			InitRemotes();
-			m_powerControlDenkovi = new DenkoviPowerControl("8 Relay Brd USB");
+
+            if (Parameter.IsTrue(IniFile.PAR_INITIALISE_DENKOVI)) {
+                m_powerControlDenkovi = new DenkoviPowerControl("8 Relay Brd USB");
+            }
+            else Alert.CreateAlert("Denkovi not initialised due to parameter setting set to off", true);
 			m_powerControlNumato = new NumatoLPTControl(888);
             m_powerControlRemoteRelayPI = new RemoteRelayPI();
 
@@ -148,6 +157,7 @@ namespace MultiZonePlayer {
 
 			String deviceName;
 			RFXDeviceDefinition.LoadFromIni();
+
 			MLog.Log(this, "Loading m_valueList from ini");
 			MultiZonePlayer.ZoneDetails.LoadFromIni();
 			User.LoadFromIni();
@@ -160,7 +170,7 @@ namespace MultiZonePlayer {
 			UtilityCost.LoadFromIni();
 			LightSensor.LoadFromIni();
             m_remotehotspot.LoadFromIni(IniFile.INI_SECTION_REMOTEHOTSPOT);
-            m_parameter.LoadFromIni(IniFile.INI_SECTION_PARAMETER);
+           
             m_schedule.LoadFromIni();
             m_houseState.LoadFromIni();
 
@@ -212,10 +222,9 @@ namespace MultiZonePlayer {
 
 			LoadMacrosandRules();
 
-			m_upsList = new List<GenericUPS>();
 			m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
 			m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
-            m_upsList.Add(new NikysUPS());
+            //m_upsList.Add(new NikysUPS());
 			MediaLibrary.InitialiseLibrary();
 
 			m_cron = new Cron();
@@ -690,7 +699,10 @@ namespace MultiZonePlayer {
             ZoneDetails zone= MultiZonePlayer.ZoneDetails.GetZoneById(zoneid);
             switch (zone.PowerType) {
                 case PowerType.Denkovi:
-			    	return m_powerControlDenkovi.IsPowerOn(zoneid);
+                    if (Parameter.IsTrue(IniFile.PAR_INITIALISE_DENKOVI)) {
+                        return m_powerControlDenkovi.IsPowerOn(zoneid);
+                    }
+                    else return false;
                 case PowerType.Numato:
                     return m_powerControlNumato.IsPowerOn(zoneid);
                 case PowerType.Relay:
@@ -1534,8 +1546,8 @@ namespace MultiZonePlayer {
 			if (MZPState.Instance == null) {
 				return;
 			}
-			m_powerControlDenkovi.timerPowerSaving_Tick();
-			m_powerControlNumato.timerPowerSaving_Tick();
+			//m_powerControlDenkovi.timerPowerSaving_Tick();
+			//m_powerControlNumato.timerPowerSaving_Tick();
 			if (MZPState.Instance == null) {
 				return;
 			}

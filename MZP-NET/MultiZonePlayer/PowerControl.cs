@@ -208,7 +208,7 @@ namespace MultiZonePlayer
         }
 
         public override bool IsPowerPinOn(int pinId) {
-            String result = RunScript(SCRIPT_GETIOSTATE, "" + pinId);
+            String result = RunScript(SCRIPT_GETIOSTATE, "pin", ""+pinId);
             return (result == "1");
         }
     }

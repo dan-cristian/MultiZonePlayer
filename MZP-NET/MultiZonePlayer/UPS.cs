@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using System.Net;
 
 namespace MultiZonePlayer {
+    public interface IUPSNotify {
+        void ReceiveState(GenericUPS.UPSState state);
+    }
     public abstract class GenericUPS {
         public class UPSState {
             public Boolean LastPowerFailDateTime;
             //common
-            public string Temperature, BatteryVoltage;
+            public string UPSId, Temperature, BatteryVoltage;
             public Boolean PowerFail, TestInProgress;
             //Mustek only
             public string IPVoltage, IPFaultVoltage, OPVoltage, OPCurrent, IPFrequency, /*BatteryVoltage,*/ UPSStatus;
@@ -28,6 +31,9 @@ namespace MultiZonePlayer {
     public class NikysUPS : GenericUPS, IMZPDevice {
         private SimpleSerialConnector m_serialConnector;
         private string m_lastResponse;
+        private IUPSNotify m_handler;
+        public String UPSId ="";
+        private string m_comport;
         public enum COMMANDS {
             GETUPSSTATUS_Q,
             GETUPSINFO_I,
@@ -40,7 +46,9 @@ namespace MultiZonePlayer {
         //status bits, 0 default value, 1 for activity
         //01234(ups on?)5(ups on battery/power fail)67(beeper off)
 
-        public NikysUPS() {
+        public NikysUPS(String comport, IUPSNotify handler) {
+            m_handler = handler;
+            m_comport = comport;
             Initialise();
         }
         public bool IsFunctional() {
@@ -62,24 +70,35 @@ namespace MultiZonePlayer {
         }
 
         public override string Name() {
-            return this.GetType().Name;
+            return this.GetType().Name + " " + m_serialConnector.Connection;
         }
 
         public override void Initialise() {
             //note it works only with CR (CR+LF gives timeouts)
-            m_serialConnector = new SimpleSerialConnector("COM1", "2400", CommunicationManager.TransmissionType.TextR);
+            m_serialConnector = new SimpleSerialConnector(m_comport, "2400", CommunicationManager.TransmissionType.TextR);
             m_serialConnector.StandardTimeoutMili = 3000;
             if (m_serialConnector.TestConnection()) {
                 MLog.Log(this, Name() + " connected succesfully to port ");
-                //FIRST COMMAND does not get a response from UPS for some reason
-                m_serialConnector.SendCommand(COMMANDS.GETUPSINFO_I, "");
+                String upsid;
+                //FIRST COMMAND does not get a response from UPS for some reason, so trying few times
+                for (int i = 0; i < 3; i++) { 
+                    upsid = m_serialConnector.SendCommand(COMMANDS.GETUPSINFO_I, "");
+                    if (upsid != Constants.STR_TIMEOUT && upsid != Constants.STR_EXCEPTION){
+                        UPSId = upsid.Replace(" ", "");
+                        break;
+                    }
+                }
             }
         }
 
+        //status example for nicky S
+        //(219.7 150.0 226.8 011 49.9 56.2 30.0 00001001
         public override void GetStatus() {
             String res = m_serialConnector.SendCommand(COMMANDS.GETUPSSTATUS_Q, "1");
             MLog.Log(this,"NIKY=" + res);
+            res = res.Replace("(", "");// 
             string[] values = res.Split(' ');
+            LastStatus.UPSId = UPSId;
             if (values.Length >= 8) {
                 LastStatus.InputVoltage = values[0];
                 LastStatus.RemainingMinutes = values[1];
@@ -104,6 +123,7 @@ namespace MultiZonePlayer {
                             DB.COL_POWERFEED_remainingminutes.ToString(), LastStatus.RemainingMinutes,
                             DB.COL_POWERFEED_powersource.ToString(), Name());
                     m_lastResponse = res;
+                    m_handler.ReceiveState(LastStatus);
                 }
             }
             else MLog.Log("Unexpected number of values from UPS received, cnt= " + values.Length);

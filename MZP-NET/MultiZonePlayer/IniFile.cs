@@ -128,6 +128,8 @@ namespace MultiZonePlayer
 			public const string DEVICE_TYPE_RELAY = "Relay";
 
             public const string PAR_INITIALISE_TV = "INITIALISE-TV";
+            public const string PAR_INITIALISE_DENKOVI = "INITIALISE-DENKOVI";
+
 			public static String[] PARAM_ALARM_SECURE_AREA_ID = new String[] { "PARAM_ALARM_SECURE_AREA_ID", "1" , "Area ID to secure when armed"};
             public static String[] PARAM_RADIO_APP = new String[] { "RADIO_APP", "c:\\Program Files\\VideoMate\\ComproFM 2\\ComproFM.exe" };
             public static String[] PARAM_RADIO_APP_WIN_TITLE = new String[] { "PARAM_RADIO_APP_WIN_TITLE", "ComproFM" };

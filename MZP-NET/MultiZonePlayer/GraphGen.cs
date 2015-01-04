@@ -124,7 +124,7 @@ namespace MultiZonePlayer
                     if (records.Rows.Count > 0) {
                         graphcolor = poscount>1 ? m_colors[positionIndex] : System.Drawing.Color.FromName(color);
                         var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
-                            Name = "Temp " + positionName,
+                            Name = "Temp " + positionValue,
                             Color = graphcolor,
                             IsVisibleInLegend = true,
                             IsXValueIndexed = false,

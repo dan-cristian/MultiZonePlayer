@@ -26,7 +26,7 @@ namespace MultiZonePlayer {
 		public const string ONEWIRE_COUNTER_NAME = "DS2423";
 		public const string ONEWIRE_IO2_NAME = "DS2413";
 		
-		public enum DeviceTypeEnum { OneWire, OneWireRemote, RFX };
+		public enum DeviceTypeEnum { Undefined, OneWire, OneWireRemote, RFX, UPS };
 
 		public String Name;
 		public String Address;
@@ -106,6 +106,10 @@ namespace MultiZonePlayer {
 						Alert.CreateAlert("Unknown RFX device name " + name, true);
 					}
 					break;
+                case DeviceTypeEnum.UPS:
+                    m_hasTemp = true;
+                    m_hasVoltage = true;
+                    break;
 			}
 		}
 
@@ -1640,9 +1644,9 @@ namespace MultiZonePlayer {
                 dev.Voltage[0] = iad;
                 dev.Voltage[1] = vad;
                 dev.Voltage[2] = vdd;
-                zone.RecordVoltage(0, iad, datetime);
-                zone.RecordVoltage(1, vad, datetime);
-                zone.RecordVoltage(2, vdd, datetime);
+                zone.Record1WireVoltage(0, iad, datetime);
+                zone.Record1WireVoltage(1, vad, datetime);
+                zone.Record1WireVoltage(2, vdd, datetime);
                 dev.RecordSuccess();
             }
         }
@@ -1986,7 +1990,7 @@ namespace MultiZonePlayer {
 							for (int i = 0; i < voltage.Length; i++) {
 								foreach (ZoneDetails zone in zoneList) {
 									zone.HasOneWireVoltageSensor = true;
-									zone.RecordVoltage(i, voltage[i], DateTime.Now);
+									zone.Record1WireVoltage(i, voltage[i], DateTime.Now);
 								}
 								dev.Voltage[i] = Math.Round(voltage[i], 4);//more than 4 is not relevant for display
 							}

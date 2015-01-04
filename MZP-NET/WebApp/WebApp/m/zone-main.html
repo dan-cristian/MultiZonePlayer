@@ -77,7 +77,7 @@
 <%if;#Zones,%_zoneid.ScheduledHeatActive#%>
 <img src="img/schedule.png" />
 <%%>
-<%if;#Zones,%_zoneid.HasOneWireVoltageSensor#%><button class="Small" onclick="ajaxCall('voltage','zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Voltage', false)">Voltage</button><%%>
+<%if;#Zones,%_zoneid.HasVoltageSensor#%><button class="Small" onclick="ajaxCall('voltage', 'zone-graph-general.html?command=generategraph&zoneid=%_zoneid&interval=48&type=Voltage&targetdiv=voltage&direction=0', false)">Voltage</button><%%>
 <div id="camera"></div>
 <div id="temp-hum"></div>
 <div id="event"></div>
