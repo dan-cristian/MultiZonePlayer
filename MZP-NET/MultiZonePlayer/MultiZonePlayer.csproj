@@ -292,6 +292,7 @@
     <Compile Include="ThirdParty\USBHandlerv3.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="UPS.cs" />
     <Compile Include="Utilities.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -126,13 +126,12 @@ namespace MultiZonePlayer
     }
 
     class RemoteRelayPI : BasePowerControl {
-        private WebClient m_client;
+        private WebClient m_client = new WebClient();
         private const string SCRIPT_GETIOSTATE = "/relayget.sh?";
         private const string SCRIPT_SETOUTSTATE = "/relayset.sh?";
         private const string VALUE_KEY= "RESULTOK";
         private int[] m_outputPinList = new int[40];//for B and B+
         public RemoteRelayPI() {
-            m_client = new WebClient();
             Open();
         }
         protected override void Open() {
@@ -168,20 +167,22 @@ namespace MultiZonePlayer
 
         private String RunScript(string scriptname, params string[] args){
             String result = "N/A";
-            String query="N/A";
-            try {
-                String paramlist = "";
-                foreach (String s in args) { paramlist += s + "&"; }
-                query = IniFile.PARAM_REMOTE_RELAY_PI[1] + scriptname + paramlist;
-                String html = m_client.DownloadString(query);
-                if (html.Contains(VALUE_KEY))
-                    result = GetResult(html);
-                else
-                    result = "NOT-OK";
-            }
-            catch (Exception ex) {
-                MLog.Log(this, "RemoteRelayPI RunScript Error, query=["+query+"] ex=" + ex.Message);
-                result = "ERR";
+            lock (m_client) {
+                String query = "N/A";
+                try {
+                    String paramlist = "";
+                    foreach (String s in args) { paramlist += s + "&"; }
+                    query = IniFile.PARAM_REMOTE_RELAY_PI[1] + scriptname + paramlist;
+                    String html = m_client.DownloadString(query);
+                    if (html.Contains(VALUE_KEY))
+                        result = GetResult(html);
+                    else
+                        result = "NOT-OK";
+                }
+                catch (Exception ex) {
+                    MLog.Log(this, "RemoteRelayPI RunScript Error, query=[" + query + "] ex=" + ex.Message);
+                    result = "ERR";
+                }
             }
             return result;
         }

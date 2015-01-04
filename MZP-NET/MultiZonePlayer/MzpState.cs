@@ -215,6 +215,7 @@ namespace MultiZonePlayer {
 			m_upsList = new List<GenericUPS>();
 			m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
 			m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
+            m_upsList.Add(new NikysUPS());
 			MediaLibrary.InitialiseLibrary();
 
 			m_cron = new Cron();
@@ -1253,6 +1254,9 @@ namespace MultiZonePlayer {
 		public void CheckForUpsStatus() {
 			foreach (GenericUPS ups in m_upsList) {
 				ups.GetStatus();
+                if (ups.LastStatus.PowerFail) {
+                    Alert.CreateAlert("Power failure detected on UPS "+ ups.Name(), true);
+                }
 			}
 		}
 

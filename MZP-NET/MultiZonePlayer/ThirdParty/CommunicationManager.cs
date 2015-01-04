@@ -42,7 +42,7 @@ namespace MultiZonePlayer
         protected Boolean m_waitForResponse = false;
         protected Boolean m_lastOperationWasOK = true;
         protected String m_lastMessageResponse;
-
+        public int StandardTimeoutMili = 3000;
         public abstract String SendCommand(Enum cmd, String value);
         public abstract String GetCommandStatus(Enum cmd);
         protected abstract void ReceiveSerialResponse(String response);
@@ -199,6 +199,33 @@ namespace MultiZonePlayer
 
     }
 
+    public class SimpleSerialConnector : SerialBase {
+        private string m_comport, m_baud;
+        CommunicationManager.TransmissionType m_transtype;
+        public SimpleSerialConnector(string comport, string baud, CommunicationManager.TransmissionType transtype) {
+            m_comport = comport;
+            m_baud = baud;
+            m_transtype = transtype;
+            Reinitialise();
+        }
+        public void Reinitialise() {
+            Initialise(m_baud, "None", "One", "8", m_comport, m_transtype);
+        }
+
+        public override string SendCommand(Enum cmd, string value) {
+            String command = cmd.ToString().Split('_')[1] + value;
+            String result = WriteCommand(command, 1, StandardTimeoutMili);
+            return result;
+        }
+
+        public override string GetCommandStatus(Enum cmd) {
+            throw new NotImplementedException();
+        }
+
+        protected override void ReceiveSerialResponse(string response) {
+            MLog.Log(this, "Received unexpected simple serial response: " + response);
+        }
+    }
 	public class ExSerialPort : SerialPort
 	{
 		protected override void Dispose(bool disposing)

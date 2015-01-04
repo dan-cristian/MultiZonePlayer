@@ -51,6 +51,17 @@ namespace MultiZonePlayer {
         public static string COL_VOLTAGE_ZONEID = "zoneid";
         public static string COL_VOLTAGE_VALUE = "value";
 
+        public const string TABLE_POWERFEED = "powerfeed";
+        public static string COL_POWERFEED_DATETIME = "datetime";
+        //public static string COL_POWERFEED_ = "";
+        public static string COL_POWERFEED_powersource = "powersource";
+        public static string COL_POWERFEED_inputvoltage = "inputvoltage";
+        public static string COL_POWERFEED_outputvoltage = "outputvoltage";
+        public static string COL_POWERFEED_loadpercent = "loadpercent";
+        public static string COL_POWERFEED_powerfailed = "powerfailed";
+        public static string COL_POWERFEED_remainingminutes = "remainingminutes";
+
+
         public static Object m_lock = new Object();
 
         public enum PARAMS {
