@@ -348,7 +348,12 @@ namespace MultiZonePlayer
 		public string Name() {
 			return "GTALK";
 		}
-	}
+
+
+        public string Status() {
+            return "";
+        }
+    }
 
 	class EmailNotifier
 	{

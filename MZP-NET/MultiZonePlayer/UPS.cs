@@ -128,6 +128,11 @@ namespace MultiZonePlayer {
             }
             else MLog.Log("Unexpected number of values from UPS received, cnt= " + values.Length);
         }
+
+
+        public string Status() {
+            return m_lastResponse;
+        }
     }
 
     public class APCUPS : GenericUPS, IMZPDevice {
@@ -170,6 +175,11 @@ namespace MultiZonePlayer {
 
         public override string Name() {
             return m_eventSource;
+        }
+
+
+        public string Status() {
+            return "";
         }
     }
 
@@ -279,6 +289,11 @@ namespace MultiZonePlayer {
 
         public override string Name() {
             return "Mustek";
+        }
+
+
+        public string Status() {
+            return m_lastHtml;
         }
     }
 

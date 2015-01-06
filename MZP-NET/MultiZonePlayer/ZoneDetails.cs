@@ -64,7 +64,9 @@ namespace MultiZonePlayer {
 		public Boolean HasMicrophone = false;
 		public Boolean HasDisplay = false;
 		public Boolean HasVideoPlayer = false;
+        [Category("Edit"), Description("COMport for the display, e.g. COM1 for an old TV connected to serial")]
 		public String DisplayConnection = "";
+        [Category("Edit"), Description("Display type, for example LGTV")]//TODO must be refactored
 		public String DisplayType = "";
 		public Boolean RequirePowerForced = false;
 		[Category("Edit")]

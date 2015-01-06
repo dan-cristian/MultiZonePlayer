@@ -125,14 +125,18 @@ namespace MultiZonePlayer
         public abstract bool IsPowerPinOn(int pinId);
     }
 
-    class RemoteRelayPI : BasePowerControl {
+    class RemoteRelayPI : BasePowerControl, IMZPDevice {
         private WebClient m_client = new WebClient();
         private const string SCRIPT_GETIOSTATE = "/relayget.sh?";
         private const string SCRIPT_SETOUTSTATE = "/relayset.sh?";
         private const string VALUE_KEY= "RESULTOK";
-        private int[] m_outputPinList = new int[40];//for B and B+
+        private int[] m_outputPinList = new int[20];//for A/B model 
+        private bool m_lastResultWasOK = false;
         public RemoteRelayPI() {
             Open();
+            for (int i = 0; i < m_outputPinList.Length; i++) {
+                m_outputPinList[i] = 9;
+            }
         }
         protected override void Open() {
             if (IsPowerControlOn())
@@ -168,14 +172,17 @@ namespace MultiZonePlayer
         private String RunScript(string scriptname, params string[] args){
             String result = "N/A";
             lock (m_client) {
+                m_lastResultWasOK = false;
                 String query = "N/A";
                 try {
                     String paramlist = "";
                     foreach (String s in args) { paramlist += s + "&"; }
                     query = IniFile.PARAM_REMOTE_RELAY_PI[1] + scriptname + paramlist;
                     String html = m_client.DownloadString(query);
-                    if (html.Contains(VALUE_KEY))
+                    if (html.Contains(VALUE_KEY)) {
                         result = GetResult(html);
+                        m_lastResultWasOK = true;
+                    }
                     else
                         result = "NOT-OK";
                 }
@@ -209,7 +216,41 @@ namespace MultiZonePlayer
 
         public override bool IsPowerPinOn(int pinId) {
             String result = RunScript(SCRIPT_GETIOSTATE, "pin", ""+pinId);
-            return (result == "1");
+            bool ison = (result == "1");
+            m_outputPinList[pinId] = ison ? 1 : 0;
+            return ison;
+        }
+
+        public bool IsFunctional() {
+            return m_lastResultWasOK;
+        }
+
+        public bool IsEnabled() {
+            throw new NotImplementedException();
+        }
+
+        public void Enable() {
+            throw new NotImplementedException();
+        }
+
+        public void Disable() {
+            //throw new NotImplementedException();
+        }
+
+        public string Type() {
+            return "Relay Pi";
+        }
+
+        public string Name() {
+            return IniFile.PARAM_REMOTE_RELAY_PI[1];
+        }
+
+        public string Status() {
+            string result = "";
+            for (int i = 0; i < m_outputPinList.Length; i++) {
+                result += m_outputPinList[i];
+            }
+            return result;
         }
     }
     class DenkoviPowerControl : BasePowerControl, IMZPDevice
@@ -614,6 +655,11 @@ namespace MultiZonePlayer
         public override bool IsPowerPinOn(int pinId) {
             throw new NotImplementedException();
         }
+
+
+        public string Status() {
+            return m_socketsStatus;
+        }
     }
 
 	public class NumatoLPTControl : BasePowerControl, IMZPDevice
@@ -699,6 +745,11 @@ namespace MultiZonePlayer
 
         public override bool IsPowerPinOn(int pinId) {
             throw new NotImplementedException();
+        }
+
+
+        public string Status() {
+            return m_socketsStatus;
         }
     }
 

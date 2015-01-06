@@ -442,7 +442,12 @@ namespace MultiZonePlayer {
 		public string Name() {
 			return m_deviceName;
 		}
-	}
+
+
+        public string Status() {
+            return m_lastMessageResponse;
+        }
+    }
 
 	internal class SMS : GenericModem, IMZPDevice {
 		public enum SMSCommandsEnum {
@@ -493,7 +498,12 @@ namespace MultiZonePlayer {
 		public string Name() {
 			return "Cell Phone";
 		}
-	}
+
+
+        public string Status() {
+            return m_lastMessageResponse;
+        }
+    }
 
 	internal class RFXCom : SerialBase, IMessenger, IMZPDevice {
 		private static string CMD_RESET = "0D 00 00 00 00 00 00 00 00 00 00 00 00 00";
@@ -672,7 +682,12 @@ namespace MultiZonePlayer {
 		public string Name() {
 			return "RFXCom";
 		}
-	}
+
+
+        public string Status() {
+            return m_lastMessageResponse;
+        }
+    }
 
 	public class WDIO : GenericModem, IMessenger, IMZPDevice {
 		private String m_lastState, m_channel;
@@ -691,15 +706,24 @@ namespace MultiZonePlayer {
 		}
 
 		public override void Reinitialise() {
-			ManagementItem item =
-				ManagementItem.GetManagementItemsInfo()
-					.Find(x => x.Manufacturer.ToLower().Equals(IniFile.PARAM_WDIO_MANUFACTURER_NAME[1].ToLower()));
-			if (item != null) {
-				int start = item.Name.IndexOf("COM");
-				string port = item.Name.Substring(start);
-				port = port.Remove(port.Length - 1);
-				IniFile.PARAM_WDIO_COMPORT[1] = port;
-			}
+            int elements = ManagementItem.GetManagementItemsInfo().FindAll(x => x.Manufacturer.ToLower().Equals(IniFile.PARAM_WDIO_MANUFACTURER_NAME[1].ToLower())).Count;
+            if (elements == 1) {
+                ManagementItem item = ManagementItem.GetManagementItemsInfo()
+                    .Find(x => x.Manufacturer.ToLower().Equals(IniFile.PARAM_WDIO_MANUFACTURER_NAME[1].ToLower()));
+                if (item != null) {
+                    int start = item.Name.IndexOf("COM");
+                    string port = item.Name.Substring(start);
+                    port = port.Remove(port.Length - 1);
+                    IniFile.PARAM_WDIO_COMPORT[1] = port;
+                    MLog.Log(this, "Only one ports found for WDIO manufacturer, using port determined automatically");
+                }
+            }
+            else if (elements > 1) {
+                MLog.Log(this, "Multiple ports found for WDIO manufacturer, using port specified in INI file");
+            }
+            else
+                MLog.Log(this, "Warning, no port found for WDIO manufacturer, trying with port in INI file");
+			
 			MLog.Log(this, "Reinitialising WDIO on com " + IniFile.PARAM_WDIO_COMPORT[1]);
 			bool initok = Reinitialise("9600", "None", "One", "8", IniFile.PARAM_WDIO_COMPORT[1],
 				CommunicationManager.TransmissionType.TextR,
@@ -940,7 +964,12 @@ namespace MultiZonePlayer {
 		public string Name() {
 			return "WDIO";
 		}
-	}
+
+
+        public string Status() {
+            return m_lastMessageResponse;
+        }
+    }
 
 	public class GPIO : GenericModem, IMessenger, IMZPDevice {
 		private String m_state, m_lastState;
@@ -1126,7 +1155,12 @@ namespace MultiZonePlayer {
 		public string Name() {
 			return "GPIO";
 		}
-	}
+
+
+        public string Status() {
+            return m_lastMessageResponse;
+        }
+    }
 
 	public class OneWire : IMessenger, DeviceMonitorEventListener, IMZPDevice {
 		private List<DSPortAdapter> m_adapterList = new List<DSPortAdapter>();
@@ -2145,7 +2179,12 @@ namespace MultiZonePlayer {
 				return "OneWire";
 			}
 		}
-	}
+
+
+        public string Status() {
+            return "";
+        }
+    }
 
 	public class Monitor {
 		[StructLayout(LayoutKind.Sequential)]
@@ -2672,5 +2711,10 @@ namespace MultiZonePlayer {
 		public string Name() {
 			return "Bluetooth";
 		}
-	}
+
+
+        public string Status() {
+            return "";
+        }
+    }
 }

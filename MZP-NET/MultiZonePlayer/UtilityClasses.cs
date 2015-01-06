@@ -415,6 +415,7 @@ namespace MultiZonePlayer
 		void Disable();
 		String Type();
 		String Name();
+        String Status();
 	}
 
 	public class ValueList

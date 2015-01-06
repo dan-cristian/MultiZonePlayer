@@ -129,6 +129,10 @@ namespace MultiZonePlayer
 
             public const string PAR_INITIALISE_TV = "INITIALISE-TV";
             public const string PAR_INITIALISE_DENKOVI = "INITIALISE-DENKOVI";
+            public const string PAR_INITIALISE_NUMATO = "INITIALISE-NUMATO";
+            public const string PAR_INITIALISE_APC = "INITIALISE-APC";
+            public const string PAR_INITIALISE_MUSTEK = "INITIALISE-MUSTEK";
+            public const string PAR_INITIALISE_WINLOAD = "INITIALISE-WINLOAD";
 
 			public static String[] PARAM_ALARM_SECURE_AREA_ID = new String[] { "PARAM_ALARM_SECURE_AREA_ID", "1" , "Area ID to secure when armed"};
             public static String[] PARAM_RADIO_APP = new String[] { "RADIO_APP", "c:\\Program Files\\VideoMate\\ComproFM 2\\ComproFM.exe" };
@@ -259,7 +263,7 @@ namespace MultiZonePlayer
 			public static String[] PARAM_ONEWIRE_FAST_READ_DELAY = new String[] { "PARAM_ONEWIRE_FAST_READ_DELAY", "2", "number of miliseconds between reads for fast components, e.g. counters or IO" };
             public static String[] PARAM_ONEWIRE_SLOW_READ_DELAY = new String[] { "PARAM_ONEWIRE_SLOW_READ_DELAY", "10", "number of pause cycles x 3 seconds usually" };
 			public static String[] PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX = new String[] { "PARAM_ONEWIRE_TEMP_RESOLUTION_INDEX", "1", "resolutionList index for temp reading: 0=0.5, 1=0.25, 2=0...." };
-            public static String[] PARAM_ONEWIRE_REMOTE_SERVER_LIST = new String[] { "PARAM_ONEWIRE_REMOTE_SERVER_LIST", "http://192.168.0.113/onewire.php;http://192.168.0.110/onewire.php", "list of owfs 1-wire servers urls, like http://pi-casa/onewire.php;http://pi2/onewire.php" };
+            public static String[] PARAM_ONEWIRE_REMOTE_SERVER_LIST = new String[] { "PARAM_ONEWIRE_REMOTE_SERVER_LIST", "http://192.168.0.113/onewire.php", "list of owfs 1-wire servers urls, like http://pi-casa/onewire.php;http://pi2/onewire.php" };
 
 			public static String[] PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD = new String[] { "PARAM_POWER_CLOSE_AFTER_ACTIVITY_PERIOD", "15", "close power after x minutes of activity in a zone without user interaction or move" };
 			public static String[] PARAM_RECENT_RUN_INTERVAL_MINUTES = new String[] { "PARAM_RECENT_RUN_INTERVAL_MINUTES", "1", "number of minutes to keep a zone power on after recent run state, e.g. music playing" };
@@ -359,6 +363,7 @@ namespace MultiZonePlayer
 				PARAM_RELAY_DEVICE_NAME,
 				PARAM_GPIO_CDC_MANUFACTURER_NAME,
 				PARAM_WDIO_MANUFACTURER_NAME,
+                PARAM_WDIO_COMPORT,
 				PARAM_WDIO_CHANNEL,
 				PARAM_TIMESPAN_FORMAT,
 				PARAM_ROUTER_HOST,

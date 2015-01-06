@@ -150,7 +150,10 @@ namespace MultiZonePlayer {
                 m_powerControlDenkovi = new DenkoviPowerControl("8 Relay Brd USB");
             }
             else Alert.CreateAlert("Denkovi not initialised due to parameter setting set to off", true);
-			m_powerControlNumato = new NumatoLPTControl(888);
+            if (Parameter.IsTrue(IniFile.PAR_INITIALISE_NUMATO)) {
+                m_powerControlNumato = new NumatoLPTControl(888);
+            }
+            else Alert.CreateAlert("Numato not initialised due to parameter setting set to off", true);
             m_powerControlRemoteRelayPI = new RemoteRelayPI();
 
 			MLog.Log(this, "Retrieving system available audio output devices");
@@ -206,12 +209,12 @@ namespace MultiZonePlayer {
 			WebServer.Initialise();
 			Test.RunTest();
 
-            if (IniFile.PARAM_PARADOX_WINLOAD_ENABLE[1] == "1") {
+            if (Parameter.IsTrue(IniFile.PAR_INITIALISE_WINLOAD)) {
                 m_paradoxTail = new MultiZonePlayer.Tail(IniFile.PARAM_PARADOX_WINLOAD_DATA_FILE[1]);
                 m_paradoxTail.MoreData += new MultiZonePlayer.Tail.MoreDataHandler(m_zoneEvents.Tail_MoreData_PARADOX);
             }
-            else
-                MLog.Log(this, "Winload Paradox is not enabled, not initialising monitor alert");
+            else Alert.CreateAlert("Winload not initialised due to parameter setting set to off", true);
+
 			Thread lazyLoad = new Thread(() => LoadSerials());
 			lazyLoad.Name = "LoadSerials";
 			lazyLoad.Start();
@@ -221,10 +224,14 @@ namespace MultiZonePlayer {
 			//th.Start();
 
 			LoadMacrosandRules();
-
-			m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
-			m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
-            //m_upsList.Add(new NikysUPS());
+            if (Parameter.IsTrue(IniFile.PAR_INITIALISE_MUSTEK)) {
+                m_upsList.Add(new MustekUPS(IniFile.PARAM_UPS_MUSTEK_STATUS_URL[1]));
+            }
+            else Alert.CreateAlert("Mustek not initialised due to parameter setting set to off", true);
+            if (Parameter.IsTrue(IniFile.PAR_INITIALISE_APC)) {
+                m_upsList.Add(new APCUPS("Application", IniFile.PARAM_UPS_APC_LOG_SOURCE[1]));
+            }
+            else Alert.CreateAlert("APC not initialised due to parameter setting set to off", true);
 			MediaLibrary.InitialiseLibrary();
 
 			m_cron = new Cron();
@@ -625,8 +632,13 @@ namespace MultiZonePlayer {
 					if (dev is IMZPDevice)
 						obj.Add(dev as IMZPDevice);
 				}
-				obj.Add(m_powerControlDenkovi as IMZPDevice);
-				obj.Add(m_powerControlNumato as IMZPDevice);
+                if (m_powerControlDenkovi != null)
+				    obj.Add(m_powerControlDenkovi as IMZPDevice);
+				if (m_powerControlNumato!=null)
+                    obj.Add(m_powerControlNumato as IMZPDevice);
+                if (m_powerControlRemoteRelayPI != null)
+                    obj.Add(m_powerControlRemoteRelayPI as IMZPDevice);
+
 				obj.Add(m_bt);
 				return obj;
 			}

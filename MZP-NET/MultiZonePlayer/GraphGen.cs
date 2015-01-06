@@ -124,7 +124,7 @@ namespace MultiZonePlayer
                     if (records.Rows.Count > 0) {
                         graphcolor = poscount>1 ? m_colors[positionIndex] : System.Drawing.Color.FromName(color);
                         var series1 = new System.Windows.Forms.DataVisualization.Charting.Series {
-                            Name = "Temp " + positionValue,
+                            Name = "Temp " + positionName + "("+positionValue+")",
                             Color = graphcolor,
                             IsVisibleInLegend = true,
                             IsXValueIndexed = false,
@@ -295,12 +295,13 @@ namespace MultiZonePlayer
                     zoneList = GetZoneList(zoneIdList);
                 }
                 List<int> positionList = new List<int>();
+                DataTable records;
+                DateTime datetime; 
+                double value, min = double.MaxValue, max=double.MinValue, total=0;
+                Color graphcolor;
                 foreach (ZoneDetails zone in zoneList) {
                     zoneId = zone.ZoneId;
-                    DataTable records;
-                    DateTime datetime; double value;
                     color = zone.Color != null ? zone.Color : "Black";
-                    Color graphcolor;
                     records = DB.GetDataTable(DB.QUERYNAME_VOLTAGE_RECORDS,
                         DB.PARAM_ZONEID, zoneId.ToString(),
                         DB.PARAM_START_DATETIME, m_lastVoltageReference.AddHours(-ageHours).ToString(Constants.DATETIME_DB_FORMAT),
@@ -312,7 +313,7 @@ namespace MultiZonePlayer
                             Color = graphcolor,
                             IsVisibleInLegend = true,
                             IsXValueIndexed = false,
-                            ChartType = SeriesChartType.StepLine,
+                            ChartType = SeriesChartType.Line,
                             BorderWidth = 1
                         };
                         this.chart1.Series.Add(series1);
@@ -320,7 +321,11 @@ namespace MultiZonePlayer
                             datetime = row.Field<DateTime>(DB.COL_VOLTAGE_DATETIME);
                             value = row.Field<Double>(DB.COL_VOLTAGE_VALUE);
                             series1.Points.AddXY(datetime, value);
+                            min = Math.Min(min, value);
+                            max = Math.Max(max, value);
+                            total += value;
                         }
+                        series1.Name += " avg=" + Math.Round(total / records.Rows.Count, 2) + " min=" + min + " max=" + max;
                     }
                     records.Clear();
                 }
@@ -483,14 +488,14 @@ namespace MultiZonePlayer
                         switch (utilityType) {
                             case Constants.CAPABILITY_ELECTRICITY:
                                 avgwatts = totalwatts / records.Rows.Count;
-                                series1.Name = "units=" + Math.Round(value, 0) + " cost=" + Math.Round(cost, 0) 
+                                series1.Name = "units=" + Math.Round(value, 0) + " "+zone.PulseMainUnitType + " cost=" + Math.Round(cost, 0) 
                                     + " watts min=" + Math.Round(minwatts, 0) + " max=" + Math.Round(maxwatts, 0) + " avg=" + Math.Round(avgwatts, 0)
-                                    + " unit="+zone.PulseMainUnitType;
+                                    ;
                                 break;
                             case Constants.CAPABILITY_WATER:
                             case Constants.CAPABILITY_GAS:
-                                series1.Name = "units=" + Math.Round(value, 2) + " cost=" + Math.Round(cost, 2) + " min=" + minY + " max=" + maxY 
-                                    +" unit=" + zone.PulseMainUnitType;
+                                series1.Name = "units=" + Math.Round(value, 2) +" "+ zone.PulseMainUnitType+ " cost=" + Math.Round(cost, 2) + " min=" + minY + " max=" + maxY 
+                                    ;
                                 break;
                         }
                         if (zoneId == -1)

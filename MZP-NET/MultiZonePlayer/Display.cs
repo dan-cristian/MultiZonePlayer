@@ -22,6 +22,7 @@ namespace MultiZonePlayer {
 		}
 
 		public enum DisplayTypeEnum {
+            Undefined,
 			LGTV,
 			XBMC //not ok here, xbmc not a serial display
 		}
