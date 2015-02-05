@@ -27,6 +27,12 @@ using Vlc.DotNet.Core;
 using Vlc.DotNet.Core.Medias;
 using Vlc.DotNet.Forms;
 
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
+
+
+using System.Collections.Generic;
+
 namespace MultiZonePlayer
 {
     public partial class Test : Form
@@ -161,7 +167,40 @@ namespace MultiZonePlayer
         private void button3_Click(object sender, EventArgs e)
         {
             //PlatformInvokeTst.MainA();
-            SomeMethod();
+            //SomeMethod();
+            testmqtt();
+        }
+
+        public static void testmqtt() {
+
+            // create client instance 
+            MqttClient client = new MqttClient("192.168.0.9", 1883, false, null );
+
+            // register to message received 
+            client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+            //client.Connect("dancri77", "dancri77_broker", "abc");
+            client.Connect("dancri77_new", "dancri77_mzp","abc");
+            MLog.Log(""+client.IsConnected);
+            client.Subscribe(new string[] { "beagle_account/beagle_client/netech_alarm/data" }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE });
+            //client.Subscribe(new string[] { "helloosgi/data" }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE }); 
+        }
+
+        public static void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e) {
+            MLog.Log("message received " + e.Message + " chars=" + System.Text.Encoding.UTF8.GetString(e.Message));
+            //byte[] b = new byte[98];
+            //for (int i = 0; i < 98; i++) { b[i] = e.Message[i]; }
+            Stream stream = new MemoryStream(e.Message);
+            string m = "";
+            foreach (byte b in e.Message) { m += b.ToString() + ","; }
+            //var result = ProtoBuf.Serializer.Deserialize<KuraPayload>(stream);
+            kuradatatypes.KuraPayload.Builder newmsg = kuradatatypes.KuraPayload.CreateBuilder();
+
+            kuradatatypes.KuraPayload recmsg = kuradatatypes.KuraPayload.CreateBuilder().MergeFrom(e.Message).Build();
+
+
+            //var msg = ProtoBuf.Serializer.Deserialize<kuradatatypes.KuraPayload>(stream);
+            //Kuradatatypes.KuraPayload msg;
+            //msg = Kuradatatypes.KuraPayload.Deserialize(e.Message);
         }
 
           protected void SomeMethod()
@@ -325,10 +364,6 @@ namespace MultiZonePlayer
         }
 
 	}
-
-        
-
-
 
     }
 

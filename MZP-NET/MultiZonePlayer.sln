@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiZonePlayer", "MultiZonePlayer\MultiZonePlayer.csproj", "{308C26B0-F067-4A8A-B275-24A430FA01E4}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -37,6 +37,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MzpMonitor", "MzpMonitor\MzpMonitor.csproj", "{0746C19D-05FC-4B2C-B6BE-DA2E21AEFD05}"
 EndProject
 Project("{F088123C-0E9E-452A-89E6-6BA2F21D5CAC}") = "ModelingProject1", "ModelingProject1\ModelingProject1.modelproj", "{C28542DA-DF9F-4791-A2A7-F7A55981CE1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M2Mqtt", "M2Mqtt\M2Mqtt.csproj", "{A11AEF5A-B246-4FE8-8330-06DB73CC8074}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -190,6 +192,18 @@ Global
 		{C28542DA-DF9F-4791-A2A7-F7A55981CE1F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C28542DA-DF9F-4791-A2A7-F7A55981CE1F}.Release|x64.ActiveCfg = Release|Any CPU
 		{C28542DA-DF9F-4791-A2A7-F7A55981CE1F}.Release|x86.ActiveCfg = Release|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Release|x64.ActiveCfg = Release|Any CPU
+		{A11AEF5A-B246-4FE8-8330-06DB73CC8074}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

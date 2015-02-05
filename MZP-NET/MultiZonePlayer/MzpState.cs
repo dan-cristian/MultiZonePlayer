@@ -1356,6 +1356,8 @@ namespace MultiZonePlayer {
 					}
 				}
 			}
+
+
 		}
 
 		private void LogEvent(MZPEvent mzpevent) {

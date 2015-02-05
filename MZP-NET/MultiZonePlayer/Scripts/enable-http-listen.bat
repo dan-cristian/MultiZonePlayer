@@ -1,3 +1,4 @@
+#first line is enough
 netsh http add urlacl http://*:80/ user=Everyone listen=yes
 netsh http add urlacl http://+:80/ user=Everyone listen=yes
 

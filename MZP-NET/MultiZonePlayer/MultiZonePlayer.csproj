@@ -139,12 +139,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\DirectShowLib-2008.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
+    <Reference Include="Google.ProtocolBuffers">
+      <HintPath>..\..\..\test\protobuf-csharp-port-2.4.1.521-release-binaries\Release\net40\Google.ProtocolBuffers.dll</HintPath>
     </Reference>
     <Reference Include="InTheHand.Net.Personal">
       <HintPath>ThirdParty\32feet\InTheHand.Net.Personal.dll</HintPath>
+    </Reference>
+    <Reference Include="M2Mqtt">
+      <HintPath>..\M2Mqtt\bin\Debug\M2Mqtt.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.JScript" />
     <Reference Include="OneWireAPI.NET">
@@ -272,6 +274,7 @@
     <Compile Include="IniFile.cs" />
     <Compile Include="PowerControl.cs" />
     <Compile Include="ThirdParty\Keyboard.cs" />
+    <Compile Include="ThirdParty\Kurapayload.cs" />
     <Compile Include="ThirdParty\RawInputDevice.cs" />
     <Compile Include="IZoneActivity.cs" />
     <Compile Include="MainScreen.cs">

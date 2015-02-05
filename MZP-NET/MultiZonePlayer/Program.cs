@@ -30,12 +30,13 @@ namespace MultiZonePlayer
 						Application.EnableVisualStyles();
 						Application.SetCompatibleTextRenderingDefault(false);
                         //MessageBox.Show("press ok to continue, for debug remote connect delay");
+                        //Test.testmqtt();
 						Application.Run(new MainScreen());
 						Test.RunTest();
 					}
 					else
 					{
-						MessageBox.Show("ANother MZP instance already running");
+						MessageBox.Show("Another MZP instance already running");
 						spi.RaiseOtherProcess();
 					}
 				}
