@@ -145,8 +145,9 @@
     <Reference Include="InTheHand.Net.Personal">
       <HintPath>ThirdParty\32feet\InTheHand.Net.Personal.dll</HintPath>
     </Reference>
-    <Reference Include="M2Mqtt">
-      <HintPath>..\M2Mqtt\bin\Debug\M2Mqtt.dll</HintPath>
+    <Reference Include="M2Mqtt, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ThirdParty\m2mqtt\M2Mqtt.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.JScript" />
     <Reference Include="OneWireAPI.NET">
