@@ -219,6 +219,7 @@ namespace MultiZonePlayer
 		source,
 		direction,
 		controldevicename,
+        pinindex,//=alarm pin index
 		r//random no
 	}
 	public class CommandSyntax

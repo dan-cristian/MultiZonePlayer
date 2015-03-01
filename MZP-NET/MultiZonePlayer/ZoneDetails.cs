@@ -56,7 +56,7 @@ namespace MultiZonePlayer {
 		public String ControlDeviceName = "";
 		//public Boolean HasCamera = false;
 		public Boolean IsArmed = false;
-		[Category("Edit"), Description("ID from winload/paradox system")]
+		[Category("Edit"), Description("ID from winload/paradox system OR PinIndex from custom GPIO beagle/PI software")]
 		public int AlarmZoneId = Constants.NOT_SET;
 		[Category("Edit"), Description("ID used to arm an entire area")]
 		public int AlarmAreaId = Constants.NOT_SET;

@@ -2242,7 +2242,10 @@ namespace MultiZonePlayer {
 		private static int listSettingsIndex, listDevicesIndex=0;
 
 		public static void RefreshFrequencySecondary() {
-			MLog.Log(null, "Refreshing screen");
+            
+            return;
+
+            MLog.Log(null, "Refreshing screen");
 			EnumDevices();
 			for (int i = 0; i < System.Windows.Forms.Screen.AllScreens.Length; i++) {
 				//if (!MainDevice(i))

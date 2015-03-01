@@ -203,6 +203,16 @@ namespace MultiZonePlayer
                             //resvalue = values;
                             //result = JsonResult(res, err, values);
                             break;
+                        case GlobalCommands.alarmevent: //alarm sensor event
+                            if (zoneId == -1) {
+                                //if we don't have zoneid, add it from camera id
+                                int pinindex = Convert.ToInt16(vals.GetValue(GlobalParams.pinindex));
+                                zoneId = MZPState.Instance.GetZoneIdByAlarmZoneId(pinindex);
+                                vals.Add(GlobalParams.zoneid, zoneId.ToString());
+                            }
+                            //then pass command
+                            DoZoneCommand(apicmd, vals, zoneId, ref cmdresult);
+                            break;
                         case GlobalCommands.sleep:
                             cmdresult.Result = GoToSleep(out cmdresult.ErrorMessage);
                             //result = JsonResult(res, err, null);
