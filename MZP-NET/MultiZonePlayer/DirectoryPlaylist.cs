@@ -455,18 +455,21 @@ namespace MultiZonePlayer {
 		}
 
 		public override void SaveItem() {
-			String parameter, initialComment="";
+			String parameter, initialComment="", step="1";
 			try {
 				m_tagFile = TagLib.File.Create(SourceURL);
+                step = "2";
 				initialComment = m_tagFile.Tag.Comment;
 				Banshee.Streaming.StreamRatingTagger.StoreRatingAndPlayCount(Rating, PlayCount, m_tagFile);
-				if (SaveRatingInComment) {
+                step = "3";
+                if (SaveRatingInComment) {
 					parameter = Comment.Substring(IniFile.MEDIA_TAG_RATING, ""+Constants.MULTI_ENTRY_SEPARATOR);
                     if (parameter == null)
                         Comment += IniFile.MEDIA_TAG_RATING + Rating + Constants.MULTI_ENTRY_SEPARATOR;
                     else
                         Comment = Comment.Replace(IniFile.MEDIA_TAG_RATING + parameter, IniFile.MEDIA_TAG_RATING + Rating);
 				}
+                step = "4";
 				if (SavePlayCountInComment) {
                     parameter = Comment.Substring(IniFile.MEDIA_TAG_PLAYCOUNT, "" + Constants.MULTI_ENTRY_SEPARATOR);
                     if (parameter == null)
@@ -480,9 +483,10 @@ namespace MultiZonePlayer {
                     else
                         Comment = Comment.Replace(IniFile.MEDIA_TAG_PLAYDATE + parameter, IniFile.MEDIA_TAG_PLAYDATE + LastPlayDate.ToString(Constants.DATETIME_DB_FORMAT));
 				}
-
+                step = "5";
 				m_tagFile.Tag.Comment = Comment;
 				m_tagFile.Save();
+                step = "6";
 				m_requireSave = false;
                 MLog.LogInfo("SAVED tag for " + SourceURL + " PlayCount="+PlayCount+" InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
 			}
@@ -494,7 +498,7 @@ namespace MultiZonePlayer {
 				MLog.LogInfo("Unable to save tag for " + SourceURL + " PlayCount=" + PlayCount + " ex=" + ex.Message + " InitialComment=" + initialComment + " NewComment=" + m_tagFile.Tag.Comment);
 			}
 			catch (Exception ee) {
-				MLog.Log(this, "Unknown exception "+ee.Message+" on save tag, not saving, " + SourceURL);
+				MLog.Log(this, "Unknown exception "+ee.Message+" step="+step+" on save tag, not saving, " + SourceURL);
 			}
 		}
 	}
