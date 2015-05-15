@@ -1572,12 +1572,12 @@ namespace MultiZonePlayer {
 			if (MediaLibrary.AllAudioFiles != null) {
 				MediaLibrary.AllAudioFiles.SaveUpdatedItems();
 			}
-            if (MainScreen.parentForm!=null){
+            //if (MainScreen.parentForm!=null){
                 //periodic re-register of raw input, sometimes hook is lost
-                if (DateTime.Now.Subtract(MainScreen.parentForm.RawDeviceId.m_registeredDateTime).TotalMinutes>=5) {
-                    MainScreen.parentForm.RegisterRawInput();
-                }
-            }
+            //    if (DateTime.Now.Subtract(MainScreen.parentForm.RawDeviceId.m_registeredDateTime).TotalMinutes>=5) {
+            //        MainScreen.parentForm.RegisterRawInput();
+            //    }
+            //}
 
 		}
 	}
