@@ -14,7 +14,7 @@
 <hr />
 <form action="?zoneid=%_zoneid" method="post">
 <input name="command" type="hidden" value="setartistlist"/>
-<select multiple="yes" size="6" name="selectedindex">
+<select multiple="yes" size="15" name="selectedindex">
 #GetCmdValues,%_zoneid,artistlist,option,-1#
 </select><br />
 <input type="submit" value="Select Artists" />
@@ -22,7 +22,7 @@
 <hr />
 <form action="?zoneid=%_zoneid" method="post">
 <input name="command" type="hidden" value="setgenrelist"/>
-<select multiple="yes" size="6" name="selectedindex">
+<select multiple="yes" size="15" name="selectedindex">
 #GetCmdValues,%_zoneid,genrelist,option,-1#
 </select><br />
 <input type="submit" value="Select Genres" />
