@@ -1502,6 +1502,24 @@ namespace MultiZonePlayer {
             foreach (ZoneDetails zone in zoneswithspeakers) {
                 zone.CheckAndActivateSpeakers();
             }
+
+            List<SoundSession> active_sessions = CoreAudioSoundDetector.GetActiveSoundSessions();
+            if (active_sessions.Count > 0) {
+                //power on the associated power socket to turn on the amplifier
+                foreach (SoundSession session in active_sessions) {
+                    int count = DShowUtility.SystemDeviceFriendlyNameList.Count;
+                    for (int i = 0; i < count; i++) {
+                        if (DShowUtility.SystemDeviceNameList[i].ToUpper().Contains(session.Id1.ToUpper())) {
+                            //find associated zone and power on
+                            foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
+                                if (zone.OutputDeviceAutoCompleted().Equals(DShowUtility.SystemDeviceNameList[i])) {
+                                    zone.ZoneState = ZoneState.Running;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 		public void TickFast() {
 			CheckAlerts();
