@@ -1346,6 +1346,8 @@ namespace MultiZonePlayer {
                         }
                     }
 
+                    //disabled as auto sound detect feature was implemented
+                    /*
 					if (zone.DisplayType.Equals(Display.DisplayTypeEnum.XBMC.ToString())) {
 						if (Utilities.IsProcAlive(IniFile.PARAM_XBMC_PROCESS_NAME[1])) {
 							ValueList val = new ValueList(GlobalParams.command,
@@ -1353,7 +1355,7 @@ namespace MultiZonePlayer {
 							val.Add(GlobalParams.zoneid, zone.ZoneId.ToString());
 							API.DoCommand(val);
 						}
-					}
+					}*/
 				}
 			}
 
@@ -1513,6 +1515,9 @@ namespace MultiZonePlayer {
                             //find associated zone and power on
                             foreach (ZoneDetails zone in ZoneDetails.ZoneDetailsList) {
                                 if (zone.OutputDeviceAutoCompleted().Equals(DShowUtility.SystemDeviceNameList[i])) {
+                                    if (!zone.IsPowerOn) {
+                                        MLog.Log(this, "Sound detected in sound card for zone " + zone.ZoneName + ", powering ON");
+                                    }
                                     zone.ZoneState = ZoneState.Running;
                                 }
                             }
